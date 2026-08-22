@@ -637,6 +637,8 @@ Với MVP MVC thuần, có thể chưa cần React.
 
 ## 13. Tiêu chí nghiệm thu MVP
 
+Trạng thái triển khai thực tế không được suy ra chỉ từ việc có route hoặc màn hình. Khi nghiệm thu, dùng ma trận `docs/ma-tran-doi-chieu-dac-ta-mvp.md` để kiểm tra đủ hành vi, dữ liệu, quyền truy cập và kiểm thử tương ứng.
+
 ### Trải nghiệm bé
 
 - Bé bắt đầu bài học hôm nay với tối đa hai thao tác từ trang chủ.

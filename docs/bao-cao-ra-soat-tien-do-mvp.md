@@ -14,6 +14,8 @@ Source hiện tại là **bản MVP kỹ thuật đang hoạt động**, chưa h
 
 Không nên ghi hệ thống “đã hoàn thành toàn bộ Giai đoạn 0-7” tại thời điểm này.
 
+Ma trận truy vết từng yêu cầu, màn hình và tiêu chí nghiệm thu được lưu tại `docs/ma-tran-doi-chieu-dac-ta-mvp.md`.
+
 ## 2. Kết quả kiểm tra kỹ thuật
 
 | Hạng mục | Kết quả |
