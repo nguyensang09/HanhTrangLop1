@@ -1,0 +1,82 @@
+@model CreateChoiceItemViewModel
+@{
+    ViewData["Title"] = "Tạo bài chọn đáp án";
+    var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
+    var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Activity Builder</p>
+            <h1>Tạo bài chọn đáp án</h1>
+        </div>
+        <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Kho nội dung</a>
+    </div>
+
+    <form class="soft-card admin-form" asp-action="CreateChoice" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="Title">Tên bài</label>
+        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Nhận biết chữ B" />
+
+        <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
+        <select asp-for="SkillGroupId" class="form-control">
+            @foreach (var group in skillGroups)
+            {
+                <option value="@group.Id">@group.Name</option>
+            }
+        </select>
+
+        <label asp-for="TopicId">Chủ đề</label>
+        <select asp-for="TopicId" class="form-control">
+            <option value="">Không chọn</option>
+            @foreach (var topic in topics)
+            {
+                <option value="@topic.Id">@topic.Name</option>
+            }
+        </select>
+
+        <label asp-for="InteractionType">Dạng tương tác</label>
+        <select asp-for="InteractionType" class="form-control">
+            <option value="@InteractionTypes.SingleChoice">Chọn một đáp án</option>
+            <option value="@InteractionTypes.ListenAndChoose">Nghe và chọn</option>
+            <option value="@InteractionTypes.DragDrop">Kéo - thả</option>
+            <option value="@InteractionTypes.Matching">Nối cặp</option>
+            <option value="@InteractionTypes.Ordering">Sắp xếp</option>
+        </select>
+
+        <label asp-for="InstructionText">Lời hướng dẫn</label>
+        <input asp-for="InstructionText" class="form-control" placeholder="Con hãy chọn đáp án đúng." />
+
+        <label asp-for="PromptText">Câu hỏi</label>
+        <input asp-for="PromptText" class="form-control" placeholder="Chữ nào là chữ B?" />
+
+        <div class="three-column-form">
+            <div>
+                <label asp-for="ChoiceA">Lựa chọn 1</label>
+                <input asp-for="ChoiceA" class="form-control" />
+            </div>
+            <div>
+                <label asp-for="ChoiceB">Lựa chọn 2</label>
+                <input asp-for="ChoiceB" class="form-control" />
+            </div>
+            <div>
+                <label asp-for="ChoiceC">Lựa chọn 3</label>
+                <input asp-for="ChoiceC" class="form-control" />
+            </div>
+        </div>
+
+        <label asp-for="CorrectAnswer">Đáp án đúng</label>
+        <input asp-for="CorrectAnswer" class="form-control" placeholder="Nhập đúng một giá trị trong các lựa chọn" />
+
+        <label asp-for="Level">Độ khó</label>
+        <select asp-for="Level" class="form-control">
+            <option value="1">Dễ</option>
+            <option value="2">Trung bình</option>
+            <option value="3">Nâng cao</option>
+        </select>
+
+        <button class="app-btn mt-4" type="submit">Xuất bản bài</button>
+    </form>
+</section>

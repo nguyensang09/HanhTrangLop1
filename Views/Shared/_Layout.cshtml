@@ -1,45 +1,48 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - HanhTrangLop1</title>
+    <title>@ViewData["Title"] - Hành Trang Lớp 1</title>
     <script type="importmap"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HanhTrangLop1.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="app-shell">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">HanhTrangLop1</a>
+        <nav class="navbar navbar-expand-lg app-navbar">
+            <div class="container">
+                <a class="navbar-brand app-brand" asp-area="" asp-controller="Home" asp-action="Index">Sóc Nâu Đồng Hành</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        aria-expanded="false" aria-label="Mở điều hướng">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div class="navbar-collapse collapse justify-content-end">
+                    <ul class="navbar-nav align-items-lg-center gap-lg-2">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Kids" asp-action="Home">Khu học của bé</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Parent" asp-action="Dashboard">Phụ huynh</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a></li>
+                        <li class="nav-item"><a class="btn app-btn app-btn-small" asp-controller="Parent" asp-action="Login">Đăng nhập</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="app-page">
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="app-footer">
         <div class="container">
-            &copy; 2026 - HanhTrangLop1 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            Hành Trang Lớp 1 - học vui 10 đến 15 phút mỗi ngày.
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

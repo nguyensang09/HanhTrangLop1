@@ -1,0 +1,108 @@
+@model LearnViewModel
+@{
+    ViewData["Title"] = Model.Item.Title;
+}
+
+<section class="learn-screen">
+    <div class="kid-topbar">
+        <a class="icon-link" asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">arrow_back</span></a>
+        <h1>@Model.Item.Title</h1>
+        <div class="star-pill"><span class="material-symbols-outlined">star</span>125</div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
+    {
+        <div class="feedback-band @(Model.IsCorrect == true ? "success" : "retry")">
+            <span class="material-symbols-outlined">@(Model.IsCorrect == true ? "celebration" : "tips_and_updates")</span>
+            <strong>@Model.FeedbackMessage</strong>
+        </div>
+    }
+
+    <div class="instruction-band">
+        <span class="material-symbols-outlined">volume_up</span>
+        <strong>@Model.Item.InstructionText</strong>
+    </div>
+
+    @if (Model.Item.InteractionType == InteractionTypes.Tracing)
+    {
+        <div class="tracing-board tracing-canvas-host"
+             data-tracing-min-points="@Model.TracingMinPoints"
+             data-tracing-symbol="@Model.TracingSymbol">
+            <div class="trace-letter">@Model.TracingSymbol</div>
+            <div class="trace-start"></div>
+            <div class="trace-path path-one"></div>
+            <div class="trace-path path-two"></div>
+            <div class="trace-path path-three"></div>
+            <canvas class="tracing-canvas" width="720" height="720" aria-label="Bảng tô nét"></canvas>
+            <div class="board-actions">
+                <button class="tracing-undo" type="button" title="Hoàn tác"><span class="material-symbols-outlined">undo</span></button>
+                <button class="tracing-clear" type="button" title="Xóa nét"><span class="material-symbols-outlined">delete</span></button>
+            </div>
+        </div>
+        <form class="tracing-submit-form" asp-controller="Kids" asp-action="CompleteTracing" asp-route-id="@Model.Item.Id" method="post">
+            <input class="tracing-strokes-input" type="hidden" name="StrokeDataJson" value="[]" />
+            <input class="tracing-metrics-input" type="hidden" name="MetricsJson" value="{}" />
+            <p class="tracing-status">Con tô theo nét gợi ý nhé.</p>
+            <button class="app-btn app-btn-wide tracing-submit-button" type="submit" disabled>Con đã tô xong</button>
+        </form>
+    }
+    else if (Model.CurrentQuestion is not null)
+    {
+        <form class="choice-board interaction-@Model.Item.InteractionType" asp-controller="Kids" asp-action="Answer" asp-route-id="@Model.Item.Id" method="post">
+            <input type="hidden" name="QuestionId" value="@Model.CurrentQuestion.Id" />
+            <div class="interaction-badge">
+                <span class="material-symbols-outlined">
+                    @(Model.Item.InteractionType == InteractionTypes.ListenAndChoose ? "hearing" :
+                        Model.Item.InteractionType == InteractionTypes.DragDrop ? "drag_indicator" :
+                        Model.Item.InteractionType == InteractionTypes.Matching ? "conversion_path" :
+                        Model.Item.InteractionType == InteractionTypes.Ordering ? "sort" : "touch_app")
+                </span>
+                <strong>
+                    @(Model.Item.InteractionType == InteractionTypes.ListenAndChoose ? "Nghe - chọn" :
+                        Model.Item.InteractionType == InteractionTypes.DragDrop ? "Kéo - thả" :
+                        Model.Item.InteractionType == InteractionTypes.Matching ? "Nối cặp" :
+                        Model.Item.InteractionType == InteractionTypes.Ordering ? "Sắp xếp" : "Chọn đáp án")
+                </strong>
+            </div>
+            <h2>@Model.CurrentQuestion.PromptText</h2>
+            @if (Model.Item.InteractionType == InteractionTypes.DragDrop)
+            {
+                <p class="interaction-hint">Bản MVP: con chạm vào thẻ muốn kéo đến ô đúng.</p>
+            }
+            else if (Model.Item.InteractionType == InteractionTypes.Matching)
+            {
+                <p class="interaction-hint">Bản MVP: con chọn cặp nối đúng.</p>
+            }
+            else if (Model.Item.InteractionType == InteractionTypes.Ordering)
+            {
+                <p class="interaction-hint">Bản MVP: con chọn thứ tự đúng.</p>
+            }
+            <div class="choice-grid">
+                @foreach (var choice in Model.Choices)
+                {
+                    <button name="AnswerValue" value="@choice.Value" type="submit">@choice.Text</button>
+                }
+            </div>
+        </form>
+    }
+
+    @if (Model.IsCorrect == true && Model.NextItemId.HasValue)
+    {
+        <a class="app-btn app-btn-wide" asp-controller="Kids" asp-action="Learn" asp-route-id="@Model.NextItemId">Tiếp tục</a>
+    }
+    else if (Model.IsCorrect == true)
+    {
+        <a class="app-btn app-btn-wide" asp-controller="Kids" asp-action="Summary">Xem tổng kết</a>
+    }
+    else
+    {
+        <button class="app-btn app-btn-wide disabled-button" disabled>Tiếp tục</button>
+    }
+</section>
+
+@section Scripts {
+    @if (Model.Item.InteractionType == InteractionTypes.Tracing)
+    {
+        <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
+    }
+}

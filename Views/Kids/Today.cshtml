@@ -1,0 +1,57 @@
+@model TodayLessonViewModel
+@{
+    ViewData["Title"] = "Bài học hôm nay";
+    var progressPercent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
+}
+
+<section class="kid-screen">
+    <div class="kid-topbar">
+        <a class="icon-link" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">arrow_back</span></a>
+        <div>
+            <p class="eyebrow">Lộ trình hôm nay</p>
+            <h1>@Model.ChildProfile.Nickname học hôm nay</h1>
+        </div>
+    </div>
+
+    <div class="soft-card today-progress-card">
+        <div>
+            <strong>@Model.CompletedCount/@Model.TotalCount hoạt động</strong>
+            <span>Học khoảng @Model.Session.PlannedMinutes phút, nghỉ mắt khi thấy mỏi nhé.</span>
+        </div>
+        <div class="progress-track"><div style="width:@progressPercent%"></div></div>
+    </div>
+
+    <div class="today-line">
+        @foreach (var step in Model.Steps)
+        {
+            var statusClass = step.Status.ToString().ToLowerInvariant();
+            <article class="today-step @statusClass">
+                <div class="step-dot">
+                    <span class="material-symbols-outlined">
+                        @(step.Status == TodayLessonStepStatus.Completed ? "check" :
+                            step.Status == TodayLessonStepStatus.NeedsPractice ? "refresh" :
+                            step.Status == TodayLessonStepStatus.Active ? "edit" : "lock")
+                    </span>
+                </div>
+                <div class="soft-card step-card">
+                    <small>
+                        @(step.Status == TodayLessonStepStatus.Completed ? $"Hoàn thành - {step.StarsEarned} sao" :
+                            step.Status == TodayLessonStepStatus.NeedsPractice ? "Cần luyện thêm" :
+                            step.Status == TodayLessonStepStatus.Active ? "Đang học" : "Sắp mở")
+                    </small>
+                    <h2>@step.Item.Title</h2>
+                    <p>@step.Item.InstructionText</p>
+                    @if (step.Status != TodayLessonStepStatus.Locked)
+                    {
+                        <a class="mini-action" asp-controller="Kids" asp-action="Learn" asp-route-id="@step.Item.Id">
+                            <span class="material-symbols-outlined">play_circle</span>
+                            @(step.Status == TodayLessonStepStatus.Completed ? "Ôn lại" : "Vào bài")
+                        </a>
+                    }
+                </div>
+            </article>
+        }
+    </div>
+
+    <a class="app-btn app-btn-muted app-btn-wide mt-4" asp-controller="Kids" asp-action="Summary">Tổng kết buổi học</a>
+</section>

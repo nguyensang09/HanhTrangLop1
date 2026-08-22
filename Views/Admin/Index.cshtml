@@ -1,0 +1,37 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<section class="admin-layout">
+    <aside class="admin-side">
+        <div class="squirrel-face small">Admin</div>
+        <h1>Admin Central</h1>
+        <a class="active" asp-action="Index"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
+        <a asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho nội dung</a>
+    </aside>
+    <main class="admin-main">
+        <div class="dashboard-header">
+            <h1>Dashboard Overview</h1>
+            <a class="app-btn app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">add</span>Create Activity</a>
+        </div>
+        <div class="stat-row">
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">extension</span><strong>@Model.TotalActivities</strong><span>Total Activities</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">verified</span><strong>@Model.PublishedActivities</strong><span>Published</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">draft</span><strong>@Model.DraftActivities</strong><span>Draft</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">category</span><strong>@Model.SkillGroups</strong><span>Skill Groups</span></div>
+        </div>
+        <div class="soft-card">
+            <h2>Recent Activity</h2>
+            <table class="app-table">
+                <thead><tr><th>Activity Name</th><th>Category</th><th>Status</th></tr></thead>
+                <tbody>
+                @foreach (var item in Model.RecentItems)
+                {
+                    <tr><td>@item.Title</td><td>@item.SkillGroup?.Name</td><td>@item.Status</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</section>

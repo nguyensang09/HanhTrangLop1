@@ -1,8 +1,51 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model HomeIndexViewModel
+@{
+    ViewData["Title"] = "Chào mừng";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero-wrap">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <p class="eyebrow">Hành trang vào lớp 1</p>
+            <h1>Xin chào bé!</h1>
+            <p class="hero-text">Cùng Sóc Nâu luyện chữ, làm quen số, chơi toán trực quan và tích lũy những kỹ năng nhỏ mỗi ngày.</p>
+            <div class="hero-actions">
+                <a class="app-btn" asp-controller="Kids" asp-action="Home">
+                    <span class="material-symbols-outlined">play_circle</span>
+                    Bắt đầu ngay
+                </a>
+                <a class="app-btn app-btn-muted" asp-controller="Parent" asp-action="Login">
+                    <span class="material-symbols-outlined">family_restroom</span>
+                    Góc phụ huynh
+                </a>
+                <a class="app-btn app-btn-muted" asp-controller="Profiles" asp-action="Index">
+                    <span class="material-symbols-outlined">face</span>
+                    Chọn hồ sơ
+                </a>
+            </div>
+        </div>
+        <div class="hero-card">
+            <div class="squirrel-face">Sóc</div>
+            <h2>Chào mừng bạn nhỏ!</h2>
+            <p>Hôm nay mình học nhẹ nhàng, vui vẻ và không áp lực nhé.</p>
+        </div>
+    </div>
+</section>
+
+<section class="container stat-row">
+    <div class="soft-card stat-card">
+        <span class="material-symbols-outlined">category</span>
+        <strong>@Model.SkillGroupCount</strong>
+        <span>nhóm kỹ năng</span>
+    </div>
+    <div class="soft-card stat-card">
+        <span class="material-symbols-outlined">auto_stories</span>
+        <strong>@Model.PublishedItemCount</strong>
+        <span>bài đã xuất bản</span>
+    </div>
+    <div class="soft-card stat-card">
+        <span class="material-symbols-outlined">child_care</span>
+        <strong>@Model.ChildProfileCount</strong>
+        <span>hồ sơ bé</span>
+    </div>
+</section>

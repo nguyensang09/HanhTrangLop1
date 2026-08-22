@@ -1,0 +1,31 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Tạo tài khoản";
+}
+
+<section class="auth-panel">
+    <div class="soft-card form-card">
+        <h1>Tạo tài khoản phụ huynh</h1>
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+
+            <label asp-for="Password">Mật khẩu</label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+
+            <label asp-for="ChildNickname">Tên bé</label>
+            <input asp-for="ChildNickname" class="form-control" />
+            <span asp-validation-for="ChildNickname" class="text-danger"></span>
+
+            <button class="app-btn app-btn-wide" type="submit">Tạo tài khoản</button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,46 @@
+@model KidsHomeViewModel
+@{
+    ViewData["Title"] = "Khu học của bé";
+}
+
+<section class="kid-screen">
+    <div class="kid-topbar">
+        <div>
+            <p class="eyebrow">Sóc Nâu Đồng Hành</p>
+            <h1>Chào @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")!</h1>
+        </div>
+        <a class="star-pill" asp-controller="Profiles" asp-action="Index"><span class="material-symbols-outlined">face</span>Đổi bé</a>
+    </div>
+
+    <div class="message-card">
+        <button class="sound-button" aria-label="Nghe lời chào">
+            <span class="material-symbols-outlined">volume_up</span>
+        </button>
+        <strong>Hôm nay mình học một chút thôi nhé.</strong>
+        <span>Bắt đầu bằng nét chữ, rồi chơi với số và hình.</span>
+    </div>
+
+    <a class="app-btn app-btn-wide" asp-controller="Kids" asp-action="Today">
+        <span class="material-symbols-outlined">play_arrow</span>
+        Bắt đầu học
+    </a>
+
+    <h2 class="section-title">Nhóm kỹ năng</h2>
+    <div class="skill-grid">
+        @foreach (var group in Model.SkillGroups)
+        {
+            <a class="skill-tile" asp-controller="Kids" asp-action="Today" style="--tile-color:@group.Color">
+                <span class="material-symbols-outlined">@group.IconKey</span>
+                <strong>@group.Name</strong>
+                <small>@group.Description</small>
+            </a>
+        }
+    </div>
+</section>
+
+<nav class="kid-bottom-nav">
+    <a asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span>Trang chủ</a>
+    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span>Bài tập</a>
+    <a asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span>Quà tặng</a>
+    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span>Phụ huynh</a>
+</nav>

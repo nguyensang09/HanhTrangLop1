@@ -1,0 +1,44 @@
+@model IReadOnlyList<LearningItem>
+@{
+    ViewData["Title"] = "Kho nội dung";
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Quản trị nội dung</p>
+            <h1>Kho bài học</h1>
+        </div>
+        <div class="hero-actions">
+            <a class="app-btn app-btn-small" asp-action="CreateChoice">
+                <span class="material-symbols-outlined">add</span>
+                Tạo bài tương tác
+            </a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
+        </div>
+    </div>
+
+    <div class="soft-card">
+        <table class="app-table">
+            <thead>
+            <tr>
+                <th>Tên bài</th>
+                <th>Nhóm</th>
+                <th>Dạng</th>
+                <th>Trạng thái</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.SkillGroup?.Name</td>
+                    <td>@item.InteractionType</td>
+                    <td>@item.Status</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

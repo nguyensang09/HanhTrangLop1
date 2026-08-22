@@ -1,0 +1,50 @@
+@model ChildProfileFormViewModel
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Sửa hồ sơ bé" : "Thêm hồ sơ bé";
+}
+
+<section class="auth-panel">
+    <div class="soft-card form-card">
+        <h1>@ViewData["Title"]</h1>
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <label asp-for="Nickname">Tên bé</label>
+            <input asp-for="Nickname" class="form-control" />
+            <span asp-validation-for="Nickname" class="text-danger"></span>
+
+            <label asp-for="BirthYear">Năm sinh</label>
+            <input asp-for="BirthYear" class="form-control" />
+            <span asp-validation-for="BirthYear" class="text-danger"></span>
+
+            <label asp-for="AvatarKey">Nhân vật</label>
+            <select asp-for="AvatarKey" class="form-control">
+                <option value="soc-nau">Sóc Nâu</option>
+                <option value="tho-trang">Thỏ Trắng</option>
+                <option value="gau-vang">Gấu Vàng</option>
+            </select>
+            <span asp-validation-for="AvatarKey" class="text-danger"></span>
+
+            <label asp-for="DailyLearningMinutes">Thời lượng học mỗi ngày</label>
+            <select asp-for="DailyLearningMinutes" class="form-control">
+                <option value="10">10 phút</option>
+                <option value="15">15 phút</option>
+                <option value="20">20 phút</option>
+            </select>
+            <span asp-validation-for="DailyLearningMinutes" class="text-danger"></span>
+
+            <label class="check-row">
+                <input asp-for="SoundEnabled" />
+                Bật âm thanh hướng dẫn
+            </label>
+
+            <button class="app-btn app-btn-wide" type="submit">Lưu hồ sơ</button>
+            <a class="form-back-link" asp-action="Profiles">Quay lại danh sách</a>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

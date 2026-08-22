@@ -1,0 +1,47 @@
+@model SessionSummaryViewModel
+@{
+    ViewData["Title"] = "Tổng kết buổi học";
+}
+
+<section class="kid-screen">
+    <div class="kid-topbar">
+        <div>
+            <p class="eyebrow">Hoàn thành hôm nay</p>
+            <h1>Giỏi lắm, @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")!</h1>
+        </div>
+        <div class="star-pill"><span class="material-symbols-outlined">star</span>@Model.StarsEarned</div>
+    </div>
+
+    <div class="summary-hero">
+        <div class="squirrel-face">Sóc</div>
+        <div>
+            <h2>Mình đã học xong một buổi ngắn rồi.</h2>
+            <p>Bé hoàn thành @Model.CompletedItems bài, nhận @Model.StarsEarned sao. Những bài cần luyện thêm sẽ được Sóc Nâu nhắc nhẹ ở lần sau.</p>
+        </div>
+    </div>
+
+    <div class="stat-row">
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">task_alt</span><strong>@Model.CompletedItems</strong><span>Bài hoàn thành</span></div>
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">tips_and_updates</span><strong>@Model.NeedsPracticeItems</strong><span>Cần luyện thêm</span></div>
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">schedule</span><strong>@((Model.Session?.ActualSeconds ?? 0) / 60) phút</strong><span>Thời gian</span></div>
+    </div>
+
+    <div class="soft-card summary-list">
+        <h2>Các hoạt động vừa học</h2>
+        @foreach (var attempt in Model.Attempts)
+        {
+            <div class="summary-row">
+                <span class="material-symbols-outlined">@(attempt.Status == "completed" ? "check_circle" : "refresh")</span>
+                <div>
+                    <strong>@attempt.LearningItem?.Title</strong>
+                    <small>@(attempt.Status == "completed" ? "Hoàn thành" : "Cần luyện thêm") - @attempt.StarsEarned sao</small>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="hero-actions">
+        <a class="app-btn" asp-controller="Kids" asp-action="Rewards">Nhận quà</a>
+        <a class="app-btn app-btn-muted" asp-controller="Kids" asp-action="Home">Về trang chủ</a>
+    </div>
+</section>

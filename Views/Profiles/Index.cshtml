@@ -1,0 +1,44 @@
+@model ChildProfileListViewModel
+@{
+    ViewData["Title"] = "Chọn hồ sơ";
+}
+
+<section class="kid-screen">
+    <div class="kid-topbar">
+        <a class="icon-link" asp-controller="Home" asp-action="Index"><span class="material-symbols-outlined">arrow_back</span></a>
+        <div>
+            <p class="eyebrow">Ai học hôm nay?</p>
+            <h1>Chọn hồ sơ</h1>
+        </div>
+    </div>
+
+    @if (!Model.Children.Any())
+    {
+        <div class="soft-card empty-state">
+            <h2>Chưa có hồ sơ bé</h2>
+            <p>Phụ huynh tạo hồ sơ đầu tiên để bé bắt đầu học nhé.</p>
+            <a class="app-btn" asp-controller="Parent" asp-action="Register">Tạo tài khoản phụ huynh</a>
+        </div>
+    }
+    else
+    {
+        <div class="profile-grid">
+            @foreach (var child in Model.Children)
+            {
+                var isSelected = Model.SelectedChildProfileId == child.Id;
+                <form asp-action="Select" method="post" class="profile-card @(isSelected ? "selected" : "")">
+                    <input type="hidden" name="childProfileId" value="@child.Id" />
+                    <button type="submit">
+                        <span class="profile-avatar">@child.Nickname.Substring(0, 1).ToUpperInvariant()</span>
+                        <strong>@child.Nickname</strong>
+                        <small>@child.DailyLearningMinutes phút mỗi ngày</small>
+                        @if (isSelected)
+                        {
+                            <em>Đang chọn</em>
+                        }
+                    </button>
+                </form>
+            }
+        </div>
+    }
+</section>

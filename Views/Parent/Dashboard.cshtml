@@ -1,0 +1,68 @@
+@model ParentDashboardViewModel
+@{
+    ViewData["Title"] = "Tổng quan phụ huynh";
+}
+
+<section class="dashboard-wrap container">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Sóc Nâu Đồng Hành</p>
+            <h1>Tổng quan học tập</h1>
+        </div>
+        <form asp-action="Logout" method="post">
+            <button class="app-btn app-btn-muted app-btn-small" type="submit">Đăng xuất</button>
+        </form>
+        <a class="app-btn app-btn-small" asp-action="Profiles">
+            <span class="material-symbols-outlined">face</span>
+            Quản lý hồ sơ
+        </a>
+    </div>
+
+    <div class="stat-row">
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">schedule</span><strong>@Model.TotalLearningMinutes phút</strong><span>Tổng thời gian</span></div>
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">task_alt</span><strong>@Model.TotalCompletedItems</strong><span>Bài hoàn thành</span></div>
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">tips_and_updates</span><strong>@Model.TotalNeedsPracticeItems</strong><span>Cần luyện thêm</span></div>
+    </div>
+
+    <div class="soft-card">
+        <h2>Hồ sơ bé</h2>
+        @foreach (var child in Model.Children)
+        {
+            <p><strong>@child.Nickname</strong> - học @child.DailyLearningMinutes phút mỗi ngày</p>
+        }
+    </div>
+
+    <div class="soft-card mt-4">
+        <h2>Kỹ năng cốt lõi</h2>
+        @if (!Model.ProgressItems.Any())
+        {
+            <p>Chưa có dữ liệu tiến độ. Bé học xong buổi đầu tiên thì báo cáo sẽ xuất hiện ở đây.</p>
+        }
+        @foreach (var progress in Model.ProgressItems)
+        {
+            <div class="progress-row">
+                <span>@progress.SkillGroup?.Name</span>
+                <div class="progress-track"><div style="width:@progress.MasteryLevel%"></div></div>
+                <strong>@progress.MasteryLevel%</strong>
+            </div>
+        }
+    </div>
+
+    <div class="soft-card mt-4">
+        <h2>Hoạt động gần đây</h2>
+        @if (!Model.RecentAttempts.Any())
+        {
+            <p>Chưa có hoạt động nào được ghi nhận.</p>
+        }
+        @foreach (var attempt in Model.RecentAttempts)
+        {
+            <div class="summary-row">
+                <span class="material-symbols-outlined">@(attempt.Status == "completed" ? "check_circle" : "refresh")</span>
+                <div>
+                    <strong>@attempt.LearningItem?.Title</strong>
+                    <small>@attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm") - @(attempt.Status == "completed" ? "Hoàn thành" : "Cần luyện thêm")</small>
+                </div>
+            </div>
+        }
+    </div>
+</section>

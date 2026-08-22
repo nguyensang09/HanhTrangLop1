@@ -1,0 +1,50 @@
+@model ChildProfileListViewModel
+@{
+    ViewData["Title"] = "Quản lý hồ sơ bé";
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Góc phụ huynh</p>
+            <h1>Hồ sơ bé</h1>
+        </div>
+        <a class="app-btn app-btn-small" asp-action="CreateProfile">
+            <span class="material-symbols-outlined">add</span>
+            Thêm hồ sơ
+        </a>
+    </div>
+
+    @if (!Model.Children.Any())
+    {
+        <div class="soft-card empty-state">
+            <h2>Chưa có hồ sơ</h2>
+            <p>Tạo hồ sơ đầu tiên để hệ thống đề xuất bài học phù hợp cho bé.</p>
+            <a class="app-btn" asp-action="CreateProfile">Tạo hồ sơ bé</a>
+        </div>
+    }
+    else
+    {
+        <div class="profile-grid parent-profile-grid">
+            @foreach (var child in Model.Children)
+            {
+                <article class="soft-card parent-profile-card">
+                    <span class="profile-avatar">@child.Nickname.Substring(0, 1).ToUpperInvariant()</span>
+                    <div>
+                        <h2>@child.Nickname</h2>
+                        <p>Năm sinh: @(child.BirthYear?.ToString() ?? "Chưa đặt")</p>
+                        <p>Thời lượng: @child.DailyLearningMinutes phút mỗi ngày</p>
+                        <p>Âm thanh: @(child.SoundEnabled ? "Bật" : "Tắt")</p>
+                    </div>
+                    <div class="profile-actions">
+                        <a class="app-btn app-btn-muted app-btn-small" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@child.Id">Cho bé học</a>
+                        <a class="app-btn app-btn-muted app-btn-small" asp-action="EditProfile" asp-route-id="@child.Id">Sửa</a>
+                        <form asp-action="DeleteProfile" asp-route-id="@child.Id" method="post">
+                            <button class="danger-link" type="submit">Xóa</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>

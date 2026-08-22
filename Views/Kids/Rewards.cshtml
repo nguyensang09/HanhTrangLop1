@@ -1,0 +1,27 @@
+@model IReadOnlyList<RewardDefinition>
+@{
+    ViewData["Title"] = "Quà tặng";
+}
+
+<section class="kid-screen">
+    <div class="kid-topbar">
+        <a class="icon-link" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">arrow_back</span></a>
+        <h1>Khu vườn của bé</h1>
+    </div>
+
+    <div class="garden-card">
+        <div class="squirrel-face">Sóc</div>
+        <p>Khi hoàn thành bài học, bé sẽ nhận thêm sao, huy hiệu và vật phẩm để trang trí khu vườn.</p>
+    </div>
+
+    <div class="skill-grid">
+        @foreach (var reward in Model)
+        {
+            <div class="skill-tile">
+                <span class="material-symbols-outlined">@reward.IconKey</span>
+                <strong>@reward.Name</strong>
+                <small>@reward.RewardType</small>
+            </div>
+        }
+    </div>
+</section>
