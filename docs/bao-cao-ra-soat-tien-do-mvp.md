@@ -22,8 +22,8 @@ Ma trận truy vết từng yêu cầu, màn hình và tiêu chí nghiệm thu �
 |---|---|
 | Build Release | Thành công, 0 warning, 0 error |
 | Migration SQL Server LocalDB | Database đã ở migration `InitialCreate`, không còn migration chờ chạy |
-| Health check | `status = ok`, kết nối DB thành công, 5 nhóm kỹ năng, 7 bài published, 1 hồ sơ mẫu |
-| Seed khởi đầu | Có role, admin, phụ huynh mẫu, hồ sơ bé, nhóm kỹ năng, chủ đề, bài học và phần thưởng mẫu |
+| Health check | Kết nối database thành công |
+| Seed khởi đầu | Tạo role, Admin và danh mục chương trình cố định gồm 10 nhóm/43 chủ đề; không tạo phụ huynh, hồ sơ bé, bài học hoặc phần thưởng mẫu |
 | Đăng nhập phụ huynh | Thành công, mở được dashboard và báo cáo |
 | Đăng nhập admin | Thành công, mở được dashboard và kho nội dung |
 | Test tự động | Chưa có test project; lệnh `dotnet test` không phát hiện bài test để chạy |
@@ -53,14 +53,13 @@ Hai điểm cuối là rủi ro riêng tư cần xử lý trước khi có nhi�
 
 ### Giai đoạn 2: Hoàn thành một phần
 
-Đã có dữ liệu động từ SQL, màn hình làm bài chung, lưu `LearningAttempt`/`QuestionAttempt`, phản hồi, sao và admin tạo bài chọn đáp án.
+Đã có dữ liệu động từ SQL, danh sách bài đã xuất bản theo từng nhóm kỹ năng, màn hình làm bài chung, lưu `LearningAttempt`/`QuestionAttempt`, phản hồi và sao. Engine đã chạy riêng cho chọn một, chọn nhiều, nghe-chọn, kéo-thả, nối cặp, sắp xếp, đếm, tạo số lượng, so sánh, phân loại và nghe truyện. Ngữ cảnh nhóm được giữ khi mở bài, làm bài và chuyển sang bài tiếp theo.
 
 Còn thiếu:
 
-- Kéo-thả, nối cặp và sắp xếp hiện dùng thao tác chọn một phương án mô phỏng, chưa phải tương tác thật.
-- Nút nghe-chọn và biểu tượng âm thanh chưa phát audio thật.
 - Chưa quản lý nhiều câu hỏi đầy đủ trong một bài.
-- Seed chưa đủ bộ chữ A, số 1-5, đếm 1-5 và phân biệt hình dạng như lộ trình ghi.
+- Âm thanh/hình ảnh mới nhận URL; chưa có kho media, upload, thu âm và kiểm tra file.
+- Chưa có editor kéo-thả trực quan để đặt vùng đích/hotspot lên hình.
 - Chưa lưu số lần thử/gợi ý đúng theo nhiều lần tương tác; mỗi lần gửi hiện tạo một attempt mới với `AttemptCount = 1`.
 
 ### Giai đoạn 3: Hoàn thành một phần
@@ -85,7 +84,7 @@ Còn thiếu:
 - Server chưa tự kiểm tra metrics; luôn lưu bài tô là hoàn thành và tin dữ liệu client gửi lên.
 - Chưa có các bước xem mẫu, nét đậm, nét mờ, tự vẽ và luyện lại riêng nét sai.
 - Chưa có nút nghe lại/hoạt ảnh vẽ mẫu.
-- Seed mới có chữ `A`, chưa có `a` và số `5` dạng tô nét.
+- Không seed bài tô nét mẫu; nội dung do quản trị tạo.
 - Admin mới nhập ký hiệu và số điểm tối thiểu, chưa nhập/chỉnh `TracingTemplate.GuideJson`.
 
 ### Giai đoạn 5: Hoàn thành một phần
@@ -101,12 +100,12 @@ Còn thiếu:
 
 ### Giai đoạn 6: Hoàn thành một phần
 
-Đã có dashboard admin, danh sách/lọc/chi tiết/sửa bài, tạo bài chọn và tô nét, các trạng thái `draft/review/published/archived`, cùng bản ghi `ContentReview` khi gửi duyệt.
+Đã có dashboard admin, màn cấu trúc chương trình chỉ đọc, danh sách bài lọc theo nhóm/trạng thái/dạng, trình tạo ba cột theo giao diện Stitch, xem trước điện thoại, 11 mẫu hoạt động, trình tạo tô nét riêng, các trạng thái `draft/review/published/archived` và bản ghi `ContentReview`. Nhóm/chủ đề là danh mục hệ thống cố định; quản trị chỉ tạo bài. Form tự lọc và chọn chủ đề theo nhóm, server kiểm tra lại quan hệ trước khi lưu.
 
 Còn thiếu:
 
-- CRUD riêng cho nhóm kỹ năng, chủ đề, ngân hàng câu hỏi và tài nguyên hình/âm thanh.
-- Preview bài trên các kích thước màn hình.
+- Ngân hàng nhiều câu hỏi và quản lý tài nguyên hình/âm thanh.
+- Preview hiện mới mô phỏng điện thoại, chưa có chế độ tablet/desktop và chưa chạy thử bài ngay trong editor.
 - Chưa ghi `AuditLogs` cho thao tác admin dù đã có bảng.
 - Chưa tách quyền `ContentEditor` và `Reviewer`; admin hiện tự đổi mọi trạng thái.
 - Dashboard chưa có tỷ lệ hoàn thành theo bài và danh sách lỗi phổ biến.
@@ -133,7 +132,8 @@ Còn thiếu trước khi nghiệm thu:
 
 - Model và mapping: `Models/*`, `Data/ApplicationDbContext.cs`.
 - Lịch sử schema: `Data/Migrations/*`.
-- Dữ liệu khởi đầu: `Data/SeedDataInitializer.cs`.
+- Danh mục chương trình cố định: `Data/CurriculumCatalog.cs`.
+- Seed idempotent: `Data/SeedDataInitializer.cs`.
 - Database local mặc định: `(localdb)\\MSSQLLocalDB`, database `HanhTrangLop1`.
 
 Đây là **Code First có migration**. Không có thao tác scaffold model từ database nên không được mô tả là DB First.
@@ -157,9 +157,9 @@ Script/migration không chứa dữ liệu học phát sinh. Khi chuyển hệ t
 ## 5. Thứ tự công việc tiếp theo
 
 1. Khóa quyền truy cập hồ sơ bé theo gia đình/tài khoản và bổ sung cổng người lớn.
-2. Hoàn thiện engine tương tác thật cùng audio và luồng thử lại.
-3. Hoàn thiện tracing dựa trên template/checkpoint, chấm ở server và seed `A`, `a`, `5`.
+2. Hoàn thiện upload/media, editor vùng tương tác và luồng thử lại nhiều lần.
+3. Hoàn thiện tracing dựa trên template/checkpoint và chấm ở server.
 4. Hoàn thiện phần thưởng, cài đặt phụ huynh và báo cáo lỗi chi tiết.
-5. Hoàn thiện admin cho nhóm/chủ đề/câu hỏi/tài nguyên, audit và reviewer.
+5. Hoàn thiện admin cho ngân hàng câu hỏi/tài nguyên, audit và reviewer; danh mục chương trình tiếp tục là dữ liệu hệ thống chỉ đọc.
 6. Thêm unit/integration test, kiểm thử responsive/accessibility và backup/restore.
 7. Chỉ sau các bước trên mới đánh dấu Giai đoạn 7 hoàn thành và phát hành MVP cho nhiều gia đình.

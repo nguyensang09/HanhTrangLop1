@@ -8,41 +8,42 @@
 
 **Sản phẩm chưa hoàn thành theo phạm vi MVP trong đặc tả gốc.**
 
-Hệ thống hiện phù hợp để tiếp tục phát triển và trình diễn kiến trúc/luồng mẫu. Chưa phù hợp phát hành cho nhiều gia đình vì còn thiếu nội dung, audio, tương tác thật, bảo vệ dữ liệu hồ sơ trẻ, chấm tracing, phần thưởng, admin đầy đủ và kiểm thử tự động.
+Hệ thống hiện phù hợp để tiếp tục phát triển và trình diễn kiến trúc/luồng mẫu. Chưa phù hợp phát hành cho nhiều gia đình vì còn thiếu bộ nội dung, kho media, bảo vệ dữ liệu hồ sơ trẻ, chấm tracing, phần thưởng, admin nâng cao và kiểm thử tự động.
 
-Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, Identity, SQL Server, migration, seed, hồ sơ phụ huynh, phiên học mẫu, lưu attempt, báo cáo cơ bản và admin bài học mức đầu.
+Các phần đã vận hành gồm ASP.NET Core MVC, Identity, SQL Server, migration, danh mục chương trình cố định, hồ sơ phụ huynh, phiên học, lưu attempt, báo cáo cơ bản, trình tạo bài theo mẫu và các runtime tương tác chính.
 
 ## 2. Độ phủ nội dung MVP
 
-Đặc tả đề xuất tối thiểu khoảng 190 bài trên 12 nhóm. Database hiện có 7 `LearningItems`, 7 `Questions`, 1 `TracingTemplate` và 7 bài đều ở trạng thái `published`.
+Đặc tả đề xuất tối thiểu khoảng 190 bài. Source không seed bài học; số lượng thực tế phụ thuộc nội dung quản trị nhập. Tại lần rà soát này, LocalDB chỉ còn 2 bài do người dùng tự tạo sau khi đã xóa toàn bộ bài mẫu cũ. Danh mục hệ thống gồm 10 nhóm và 43 chủ đề, trong đó một số nhóm gần nhau của đặc tả được hợp nhất.
 
 | Nhóm nội dung | Đặc tả | Hiện có | Trạng thái |
 |---|---:|---:|---|
 | Vẽ theo nét cơ bản | 12 | 0 | Chưa đạt |
-| Vẽ chữ in hoa | 29 | 1 chữ A | Một phần |
+| Vẽ chữ in hoa | 29 | Do quản trị nhập | Chưa đủ nội dung |
 | Vẽ chữ in thường | 29 | 0 | Chưa đạt |
 | Vẽ chữ số 0-9 | 10 | 0 | Chưa đạt |
-| Chữ cái | 20 | 2 bài mẫu về A | Một phần |
-| Nhận biết chữ số | 15 | 2 bài mẫu | Một phần |
-| Số lượng và toán học | 20 | 2 bài mẫu | Một phần |
+| Chữ cái | 20 | Do quản trị nhập | Chưa đủ nội dung |
+| Nhận biết chữ số | 15 | Do quản trị nhập | Chưa đủ nội dung |
+| Số lượng và toán học | 20 | Do quản trị nhập | Chưa đủ nội dung |
 | Bổ trợ vận động tinh | 10 | 0 | Chưa đạt |
 | Hình dạng và không gian | 10 | 0 | Chưa đạt |
 | Tư duy logic | 15 | 0 | Chưa đạt |
 | Ghi nhớ | 10 | 0 | Chưa đạt |
 | Kỹ năng sống | 10 | 0 | Chưa đạt |
 
-Độ phủ số lượng hiện tại là 7/190, khoảng 3,7%. Các nhóm kỹ năng và chủ đề trong database mới là cấu trúc danh mục, không được tính là bài học hoàn chỉnh.
+Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catalogs` tính độ phủ động từ số chủ đề đã có ít nhất một bài; không ghi cứng tỷ lệ vào tài liệu.
 
 ## 3. Dạng tương tác tối thiểu
 
 | Yêu cầu | Trạng thái | Bằng chứng/thiếu sót |
 |---|---|---|
 | Chọn một đáp án | Đạt | Có form lựa chọn, chấm đáp án và lưu attempt |
-| Chọn nhiều đáp án | Chưa đạt | Chưa có model, UI và cách chấm nhiều lựa chọn |
-| Kéo-thả | Một phần | Có loại `drag_drop` nhưng UI vẫn chọn một nút đáp án |
-| Nối cặp | Một phần | Có loại `matching` nhưng UI vẫn chọn một cặp dựng sẵn |
-| Sắp xếp | Một phần | Có loại `ordering` nhưng UI vẫn chọn một chuỗi dựng sẵn |
-| Nghe và chọn | Một phần | Có loại và biểu tượng, chưa phát file audio |
+| Chọn nhiều đáp án | Đạt mức cơ bản | Chọn nhiều, chuẩn hóa tập đáp án và chấm/lưu attempt |
+| Kéo-thả | Đạt mức cơ bản | Có kéo vào đích và thao tác chạm dự phòng |
+| Nối cặp | Đạt mức cơ bản | Ghép từng cặp và chấm toàn bộ mapping |
+| Sắp xếp | Đạt mức cơ bản | Đổi thứ tự bằng nút lên/xuống và chấm chuỗi kết quả |
+| Nghe và chọn | Một phần | Phát audio từ URL và chọn đáp án; chưa có upload/thu âm/fallback |
+| Đếm, tạo số lượng, so sánh, phân loại, nghe truyện | Đạt mức cơ bản | Có cấu hình riêng trong admin, runtime riêng và đáp án chuẩn hóa |
 | Vẽ theo nét đa bước | Một phần | Có canvas và lưu điểm vẽ; chưa có xem mẫu/nét đậm/nét mờ/tự vẽ |
 
 ## 4. Chức năng tối thiểu
@@ -51,13 +52,13 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 |---|---|---|
 | Tài khoản phụ huynh và hồ sơ trẻ | Đạt | Đăng ký, đăng nhập, CRUD và chọn hồ sơ hoạt động |
 | Bài học hôm nay | Một phần | Có session/timeline; thuật toán chưa tính đúng thời lượng và đa dạng tương tác |
-| Danh mục chữ cái và chữ số riêng | Chưa đạt | Chưa có bản đồ/danh mục riêng, nhóm kỹ năng dẫn về cùng bài hôm nay |
+| Danh mục chữ cái và chữ số riêng | Một phần | Mỗi nhóm kỹ năng đã có danh sách bài riêng; chưa có bản đồ học theo từng chữ và từng số |
 | Lưu tiến độ và tiếp tục bài đang học | Một phần | Lưu attempt và timeline; chưa khôi phục câu đang làm/dữ liệu chưa submit khi reload |
-| Giọng đọc hướng dẫn | Chưa đạt | Chưa có audio asset được sử dụng; `MediaAssets = 0` |
+| Giọng đọc hướng dẫn | Một phần | Bài nghe phát được URL âm thanh; chưa có kho media và audio cho mọi hướng dẫn |
 | Chấm kết quả và gợi ý | Một phần | Chọn đáp án có chấm; gợi ý chưa có luồng sử dụng nhiều mức |
-| Sao, huy hiệu và phần thưởng | Một phần | Có 2 định nghĩa; `ChildRewards = 0`, chưa có nghiệp vụ cấp thưởng |
+| Sao, huy hiệu và phần thưởng | Một phần | Có model/giao diện nền; không seed định nghĩa và chưa có nghiệp vụ cấp thưởng đầy đủ |
 | Báo cáo phụ huynh | Một phần | Có tổng quan/lịch sử; chưa có phân tích chi tiết theo chữ, số và lỗi thường nhầm |
-| Trang quản trị và trình tạo bài | Một phần | Có bài chọn/tô nét; thiếu nhóm, chủ đề, câu hỏi, media và phần thưởng |
+| Trang quản trị và trình tạo bài | Một phần | Có danh mục cố định chỉ đọc, builder 3 cột/preview/11 mẫu, tô nét và xuất bản; còn thiếu ngân hàng nhiều câu hỏi, upload media và phần thưởng |
 | Responsive điện thoại/tablet/máy tính | Một phần | CSS responsive và canvas co giãn; chưa có biên bản đủ ba cỡ và tiêu đề tracing mobile còn xuống dòng xấu |
 
 ## 5. Danh sách màn hình
@@ -70,10 +71,10 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 | Chọn hồ sơ | Đạt về UI, chưa đạt quyền riêng tư |
 | Trang chủ | Đạt mức cơ bản |
 | Bài học hôm nay | Đạt mức cơ bản |
-| Danh sách nhóm kỹ năng | Một phần, chỉ hiển thị ở trang chủ |
+| Danh sách nhóm kỹ năng | Đạt mức cơ bản; từ trang chủ có thể mở nội dung của từng nhóm |
 | Bản đồ học chữ cái | Chưa đạt |
 | Bản đồ học chữ số | Chưa đạt |
-| Danh sách bài tập từng nhóm | Chưa đạt |
+| Danh sách bài tập từng nhóm | Đạt mức cơ bản; chỉ hiển thị bài đã xuất bản và có trạng thái học gần nhất |
 | Màn hình làm bài | Đạt mức cơ bản |
 | Màn hình gợi ý | Chưa đạt màn hình/luồng riêng |
 | Màn hình tạm nghỉ | Chưa đạt |
@@ -103,8 +104,8 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 |---|---|
 | Bảng điều khiển | Đạt mức cơ bản |
 | Quản lý người dùng | Chưa đạt |
-| Quản lý nhóm và chủ đề | Chưa đạt |
-| Quản lý bài học | Một phần |
+| Cấu trúc nhóm và chủ đề | Đạt theo quyết định thiết kế; 10 nhóm/43 chủ đề cố định, chỉ đọc và có thống kê độ phủ |
+| Quản lý bài học | Đạt mức cơ bản; lọc, tạo/sửa câu hỏi đầu tiên bằng mẫu chuyên biệt và quản lý trạng thái |
 | Ngân hàng câu hỏi | Chưa đạt |
 | Quản lý hình ảnh và âm thanh | Chưa đạt |
 | Kiểm duyệt nội dung | Một phần |
@@ -118,9 +119,9 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 | Tiêu chí | Trạng thái | Kết quả đối chiếu |
 |---|---|---|
 | Bắt đầu bài học trong tối đa hai thao tác | Đạt | Trang chủ dẫn trực tiếp tới bài hôm nay |
-| Yêu cầu quan trọng có thể nghe | Chưa đạt | Nút/biểu tượng chưa phát audio |
+| Yêu cầu quan trọng có thể nghe | Một phần | Dạng nghe phát URL audio; các màn và hướng dẫn khác chưa có audio đầy đủ |
 | Vùng bấm đủ lớn, đáp án không quá sát | Đạt mức cơ bản | Nút chính 52-56 px trong kiểm tra mobile |
-| Trạng thái đúng/sai/kéo/đã chọn rõ | Một phần | Đúng/sai có phản hồi; chưa có trạng thái kéo thật |
+| Trạng thái đúng/sai/kéo/đã chọn rõ | Đạt mức cơ bản | Có phản hồi, trạng thái chọn, kéo-thả, nối cặp và phân loại |
 | Bài đang làm lưu khi reload/đổi thiết bị | Chưa đạt | Chỉ dữ liệu đã submit được lưu; không có resume câu đang làm |
 | Tracing đúng mẫu, điểm đầu và chiều nét | Một phần | Có mẫu/điểm đầu dựng cứng; chưa đọc template và chưa thể hiện chiều nét |
 
@@ -128,11 +129,11 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 
 | Tiêu chí | Trạng thái | Kết quả đối chiếu |
 |---|---|---|
-| Nội dung riêng 0-9 và làm quen 10-20 | Chưa đạt | Mới có số 5 và sắp xếp 1-3 |
+| Nội dung riêng 0-9 và làm quen 10-20 | Chưa đạt | Đã có chủ đề cố định nhưng chưa nhập đủ bài |
 | Mỗi số có bài nhận biết, tô và ghép lượng | Chưa đạt | Không đủ 0-9, chưa có tracing chữ số |
 | Phân biệt nhận biết chữ số và đếm lượng | Một phần | Có hai nhóm dữ liệu, chưa có taxonomy/chỉ số báo cáo đủ sâu |
 | Báo cáo phạm vi đếm và số thường nhầm | Chưa đạt | Báo cáo mới tổng hợp theo nhóm |
-| Cộng-bớt có biểu diễn trực quan | Chưa đạt | Chưa có bài cộng-bớt |
+| Cộng-bớt có biểu diễn trực quan | Một phần | Có engine số lượng/so sánh và chủ đề, chưa có mẫu phép tính chuyên biệt |
 
 ### Phụ huynh và quản trị
 
@@ -140,8 +141,8 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 |---|---|---|
 | Phụ huynh xem tiến độ theo nhóm | Đạt mức cơ bản | Có `SkillProgress` và báo cáo theo nhóm |
 | Khu phụ huynh tránh thao tác vô tình của trẻ | Chưa đạt | Chưa có PIN/câu hỏi người lớn |
-| Admin tạo và xuất bản bài không sửa code | Đạt mức cơ bản | Có tạo bài và đổi trạng thái |
-| Bài nháp không xuất hiện cho trẻ | Một phần | Danh sách/session lọc published, nhưng route `/kids/learn/{id}` chưa kiểm tra status |
+| Admin tạo và xuất bản bài không sửa code | Đạt mức cơ bản | Builder hỗ trợ 11 mẫu, tự lọc/chọn chủ đề, preview, sửa cấu hình và đổi trạng thái |
+| Bài nháp không xuất hiện cho trẻ | Đạt | Danh sách, phiên học, route xem bài và các POST làm bài đều yêu cầu trạng thái `published` |
 
 ## 7. Đối chiếu giao diện mẫu
 
@@ -165,30 +166,29 @@ Các phần đã vận hành ổn định gồm nền tảng ASP.NET Core MVC, I
 | Hạng mục | Trạng thái |
 |---|---|
 | SQL Server + EF Core migration | Đạt |
-| Seed role/tài khoản/nội dung khởi đầu | Đạt mức prototype |
+| Seed role/Admin/danh mục cố định | Đạt; idempotent, không tạo bài học hay dữ liệu người dùng mẫu |
 | Dựng DB trên máy mới | Đạt qua migration + seed |
 | Backup/restore dữ liệu người dùng | Chưa kiểm thử |
 | Media assets | Chưa có dữ liệu và chức năng upload |
 | Audit admin | Có bảng, chưa có bản ghi/nghiệp vụ |
-| Content review | Có 1 bản ghi thử, quy trình còn đơn giản |
+| Content review | Có nghiệp vụ ghi khi gửi duyệt, quy trình còn đơn giản |
 | Unit/integration test | Chưa có test project |
 
 ## 9. Lỗi chặn phát hành nhiều gia đình
 
 1. `/profiles` đang trả toàn bộ hồ sơ trẻ trong database.
 2. `/kids/home?childProfileId=...` và session chưa kiểm tra hồ sơ thuộc gia đình nào.
-3. `/kids/learn/{id}` và các POST làm bài chưa yêu cầu `published`, nên bài nháp có thể được truy cập nếu biết ID.
-4. Server tin metrics tracing từ client và luôn ghi hoàn thành.
-5. Không có cổng người lớn/PIN khi trẻ mở khu phụ huynh.
-6. Tài khoản/mật khẩu seed mặc định còn nằm trong cấu hình dùng chung.
-7. Chưa có test tự động cho quyền dữ liệu, attempt và migration.
+3. Server tin metrics tracing từ client và luôn ghi hoàn thành.
+4. Không có cổng người lớn/PIN khi trẻ mở khu phụ huynh.
+5. Tài khoản/mật khẩu seed mặc định còn nằm trong cấu hình dùng chung.
+6. Chưa có test tự động cho quyền dữ liệu, attempt và migration.
 
 ## 10. Điều kiện để đánh dấu hoàn thành MVP
 
 Chỉ đánh dấu sản phẩm hoàn thành khi:
 
 1. Xử lý toàn bộ lỗi chặn phát hành tại Mục 9.
-2. Hoàn thành các dạng tương tác thật và audio.
+2. Hoàn thiện kho media/audio, editor vùng tương tác và luồng thử lại; các runtime tương tác chính đã có mức cơ bản.
 3. Hoàn thiện tracing đa bước có template/checkpoint và chấm server.
 4. Bổ sung đủ bộ nội dung MVP đã thống nhất; nếu giảm từ 190 bài phải cập nhật đặc tả và được chấp thuận.
 5. Hoàn thiện phần thưởng, báo cáo chi tiết và admin còn thiếu.

@@ -70,13 +70,62 @@ public class KidsController : Controller
         return View(model);
     }
 
+    [HttpGet("skills/{id:guid}")]
+    public async Task<IActionResult> Skill(Guid id)
+    {
+        var skillGroup = await _db.SkillGroups
+            .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
+        if (skillGroup is null)
+        {
+            return NotFound();
+        }
+
+        var child = await GetSelectedChildProfileAsync();
+        var items = await _db.LearningItems
+            .Include(x => x.Topic)
+            .Include(x => x.Questions)
+            .Where(x => x.SkillGroupId == id && x.Status == ContentStatus.Published)
+            .OrderBy(x => x.Level)
+            .ThenBy(x => x.Title)
+            .ToListAsync();
+
+        var itemIds = items.Select(x => x.Id).ToList();
+        var latestAttempts = child is null || itemIds.Count == 0
+            ? []
+            : await _db.LearningAttempts
+                .Where(x => x.ChildProfileId == child.Id && itemIds.Contains(x.LearningItemId))
+                .OrderByDescending(x => x.StartedAt)
+                .ToListAsync();
+
+        var model = new SkillLearningListViewModel
+        {
+            ChildProfile = child,
+            SkillGroup = skillGroup,
+            Items = items.Select(item =>
+            {
+                var latestAttempt = latestAttempts.FirstOrDefault(x => x.LearningItemId == item.Id);
+                return new SkillLearningItemViewModel
+                {
+                    Item = item,
+                    LatestStatus = latestAttempt?.Status,
+                    StarsEarned = latestAttempt?.StarsEarned ?? 0
+                };
+            }).ToList()
+        };
+
+        return View(model);
+    }
+
     [HttpGet("learn/{id:guid}")]
-    public async Task<IActionResult> Learn(Guid id)
+    public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId)
     {
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                x.Status == ContentStatus.Published &&
+                (!skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value));
 
         if (item is null)
         {
@@ -92,7 +141,8 @@ public class KidsController : Controller
             Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
             TracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
             TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
-            NextItemId = await FindNextItemIdInCurrentSessionAsync(item.Id)
+            NextItemId = await FindNextItemIdAsync(item, skillGroupId),
+            ReturnSkillGroupId = skillGroupId
         };
 
         return View(model);
@@ -100,7 +150,7 @@ public class KidsController : Controller
 
     [HttpPost("learn/{id:guid}/answer")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Answer(Guid id, SubmitAnswerViewModel answer)
+    public async Task<IActionResult> Answer(Guid id, SubmitAnswerViewModel answer, Guid? skillGroupId)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -111,7 +161,10 @@ public class KidsController : Controller
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                x.Status == ContentStatus.Published &&
+                (!skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value));
 
         var question = item?.Questions.FirstOrDefault(x => x.Id == answer.QuestionId);
         if (item is null || question is null)
@@ -164,7 +217,8 @@ public class KidsController : Controller
             TracingMinPoints = LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
             FeedbackMessage = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect),
             IsCorrect = isCorrect,
-            NextItemId = await FindNextItemIdInCurrentSessionAsync(item.Id)
+            NextItemId = await FindNextItemIdAsync(item, skillGroupId),
+            ReturnSkillGroupId = skillGroupId
         };
 
         return View("Learn", model);
@@ -172,7 +226,7 @@ public class KidsController : Controller
 
     [HttpPost("learn/{id:guid}/complete-tracing")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CompleteTracing(Guid id, SubmitTracingViewModel tracing)
+    public async Task<IActionResult> CompleteTracing(Guid id, SubmitTracingViewModel tracing, Guid? skillGroupId)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -182,7 +236,11 @@ public class KidsController : Controller
 
         var item = await _db.LearningItems
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .FirstOrDefaultAsync(x => x.Id == id && x.InteractionType == InteractionTypes.Tracing);
+            .FirstOrDefaultAsync(x =>
+                x.Id == id &&
+                x.Status == ContentStatus.Published &&
+                x.InteractionType == InteractionTypes.Tracing &&
+                (!skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value));
         if (item is null)
         {
             return NotFound();
@@ -224,10 +282,15 @@ public class KidsController : Controller
         await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect: true);
         await _db.SaveChangesAsync();
 
-        var nextItemId = await FindNextItemIdInCurrentSessionAsync(item.Id);
+        var nextItemId = await FindNextItemIdAsync(item, skillGroupId);
         if (nextItemId.HasValue)
         {
-            return RedirectToAction(nameof(Learn), new { id = nextItemId.Value });
+            return RedirectToAction(nameof(Learn), new { id = nextItemId.Value, skillGroupId });
+        }
+
+        if (skillGroupId.HasValue)
+        {
+            return RedirectToAction(nameof(Skill), new { id = skillGroupId.Value });
         }
 
         return RedirectToAction(nameof(Summary));
@@ -343,5 +406,25 @@ public class KidsController : Controller
 
         var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child);
         return await _todayLessonService.FindNextItemIdAsync(session, currentItemId);
+    }
+
+    private async Task<Guid?> FindNextItemIdAsync(LearningItem currentItem, Guid? skillGroupId)
+    {
+        if (!skillGroupId.HasValue)
+        {
+            return await FindNextItemIdInCurrentSessionAsync(currentItem.Id);
+        }
+
+        var itemIds = await _db.LearningItems
+            .Where(x => x.SkillGroupId == skillGroupId.Value && x.Status == ContentStatus.Published)
+            .OrderBy(x => x.Level)
+            .ThenBy(x => x.Title)
+            .Select(x => x.Id)
+            .ToListAsync();
+
+        var currentIndex = itemIds.IndexOf(currentItem.Id);
+        return currentIndex >= 0 && currentIndex + 1 < itemIds.Count
+            ? itemIds[currentIndex + 1]
+            : null;
     }
 }

@@ -29,7 +29,7 @@
     <div class="skill-grid">
         @foreach (var group in Model.SkillGroups)
         {
-            <a class="skill-tile" asp-controller="Kids" asp-action="Today" style="--tile-color:@group.Color">
+            <a class="skill-tile" asp-controller="Kids" asp-action="Skill" asp-route-id="@group.Id" style="--tile-color:@group.Color">
                 <span class="material-symbols-outlined">@group.IconKey</span>
                 <strong>@group.Name</strong>
                 <small>@group.Description</small>

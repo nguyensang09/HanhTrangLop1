@@ -14,17 +14,19 @@
         <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Kho nội dung</a>
     </div>
 
-    <form class="soft-card admin-form" asp-action="CreateTracing" method="post">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form class="soft-card admin-form" asp-action="CreateTracing" method="post" data-admin-learning-form>
+        <div asp-validation-summary="All" class="text-danger"></div>
 
         <label asp-for="Title">Tên bài</label>
         <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ B" />
+        <span asp-validation-for="Title" class="text-danger"></span>
 
         <label asp-for="Symbol">Ký tự cần tô</label>
         <input asp-for="Symbol" class="form-control" maxlength="2" placeholder="A" />
+        <span asp-validation-for="Symbol" class="text-danger"></span>
 
         <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
-        <select asp-for="SkillGroupId" class="form-control">
+        <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
             @foreach (var group in skillGroups)
             {
                 <option value="@group.Id">@group.Name</option>
@@ -32,11 +34,11 @@
         </select>
 
         <label asp-for="TopicId">Chủ đề</label>
-        <select asp-for="TopicId" class="form-control">
+        <select asp-for="TopicId" class="form-control" data-topic-select>
             <option value="">Không chọn</option>
             @foreach (var topic in topics)
             {
-                <option value="@topic.Id">@topic.Name</option>
+                <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId">@topic.Name</option>
             }
         </select>
 
@@ -64,3 +66,7 @@
         <button class="app-btn mt-4" type="submit">Lưu bản nháp</button>
     </form>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

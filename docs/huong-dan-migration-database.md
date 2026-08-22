@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Hệ thống dùng EF Core Migration để tạo và cập nhật SQL Server database. Khi đóng gói source sang máy khác, chỉ cần chạy migration là tạo được schema ban đầu, sau đó ứng dụng sẽ tự nạp role, tài khoản mẫu và dữ liệu học tập mặc định nếu còn thiếu.
+Hệ thống dùng EF Core Migration để tạo và cập nhật SQL Server database. Khi đóng gói source sang máy khác, migration tạo schema; lần chạy ứng dụng đầu tiên sẽ nạp role, tài khoản Admin và danh mục chương trình cố định nếu còn thiếu.
 
 ## Hướng quản lý database
 
@@ -74,7 +74,7 @@ dotnet ef migrations script --idempotent -c ApplicationDbContext -o artifacts\da
 3. Tạo migration mới.
 4. Kiểm tra file migration trong `Data\Migrations`.
 5. Chạy `Update-Database`.
-6. Chạy ứng dụng để kiểm tra dữ liệu seed mặc định.
+6. Chạy ứng dụng để kiểm tra role, Admin và danh mục chương trình cố định.
 
 ## Xử lý lỗi Build failed trong PMC
 
@@ -94,12 +94,14 @@ Trong Visual Studio, cần chọn đúng:
 
 ## Lưu ý dữ liệu mặc định
 
-Không seed mật khẩu trực tiếp bằng SQL. Tài khoản mẫu được tạo bằng `UserManager` để đảm bảo hash mật khẩu đúng chuẩn Identity.
+Không seed mật khẩu trực tiếp bằng SQL. Tài khoản Admin nền tảng được tạo bằng `UserManager` để đảm bảo hash mật khẩu đúng chuẩn Identity.
 
 Tài khoản mặc định hiện tại:
 
 - Admin: `admin@hanhtranglop1.local` / `Admin@123456`
-- Phụ huynh: `phuhuynh@hanhtranglop1.local` / `Phuhuynh@123456`
+- Tài khoản phụ huynh không được tạo sẵn; người dùng tự đăng ký khi bắt đầu sử dụng.
+- Seed tạo 10 nhóm kỹ năng và 43 chủ đề cố định, nhưng không tạo bài học, hồ sơ bé, lịch sử học hoặc phần thưởng mẫu.
+- Quản trị tạo bài học trong các nhóm/chủ đề này; dữ liệu đã tạo không bị seed ghi đè hoặc xóa.
 
 Có thể đổi trong `appsettings.json`.
 

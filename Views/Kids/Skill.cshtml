@@ -1,0 +1,114 @@
+@model SkillLearningListViewModel
+@{
+    ViewData["Title"] = Model.SkillGroup.Name;
+    var progressPercent = Model.Items.Count == 0 ? 0 : Model.CompletedCount * 100 / Model.Items.Count;
+
+    static string GetInteractionName(string interactionType) => interactionType switch
+    {
+        InteractionTypes.Tracing => "Tô theo nét",
+        InteractionTypes.MultiSelect => "Chọn nhiều",
+        InteractionTypes.ListenAndChoose => "Nghe và chọn",
+        InteractionTypes.DragDrop => "Kéo thả",
+        InteractionTypes.Matching => "Nối cặp",
+        InteractionTypes.Ordering => "Sắp xếp",
+        InteractionTypes.Counting => "Đếm đồ vật",
+        InteractionTypes.QuantityBuilder => "Tạo số lượng",
+        InteractionTypes.Comparison => "So sánh",
+        InteractionTypes.Classification => "Phân loại",
+        InteractionTypes.StoryChoice => "Nghe truyện",
+        _ => "Chọn đáp án"
+    };
+
+    static string GetInteractionIcon(string interactionType) => interactionType switch
+    {
+        InteractionTypes.Tracing => "draw",
+        InteractionTypes.MultiSelect => "checklist",
+        InteractionTypes.ListenAndChoose => "hearing",
+        InteractionTypes.DragDrop => "pan_tool",
+        InteractionTypes.Matching => "conversion_path",
+        InteractionTypes.Ordering => "sort",
+        InteractionTypes.Counting => "counter_1",
+        InteractionTypes.QuantityBuilder => "shopping_basket",
+        InteractionTypes.Comparison => "compare_arrows",
+        InteractionTypes.Classification => "category",
+        InteractionTypes.StoryChoice => "auto_stories",
+        _ => "touch_app"
+    };
+}
+
+<section class="kid-screen skill-library-page">
+    <div class="kid-topbar skill-library-header">
+        <a class="icon-link" asp-controller="Kids" asp-action="Home" aria-label="Quay lại trang chủ">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div class="skill-library-heading">
+            <span class="skill-library-icon material-symbols-outlined" style="--skill-color:@Model.SkillGroup.Color">@Model.SkillGroup.IconKey</span>
+            <div>
+                <p class="eyebrow">Nhóm kỹ năng</p>
+                <h1>@Model.SkillGroup.Name</h1>
+            </div>
+        </div>
+    </div>
+
+    <p class="skill-library-description">@Model.SkillGroup.Description</p>
+
+    <div class="soft-card today-progress-card">
+        <div>
+            <strong>@Model.CompletedCount/@Model.Items.Count bài đã hoàn thành</strong>
+            <span>Con chọn một bài mình muốn học nhé.</span>
+        </div>
+        <div class="progress-track"><div style="width:@progressPercent%"></div></div>
+    </div>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="soft-card empty-state mt-4">
+            <span class="material-symbols-outlined">menu_book</span>
+            <h2>Nhóm này đang chuẩn bị bài mới</h2>
+            <p>Con quay lại sau nhé.</p>
+        </div>
+    }
+    else
+    {
+        <div class="learning-library-list">
+            @foreach (var row in Model.Items)
+            {
+                <article class="soft-card learning-library-item">
+                    <div class="learning-item-symbol" style="--skill-color:@Model.SkillGroup.Color">
+                        <span class="material-symbols-outlined">
+                            @GetInteractionIcon(row.Item.InteractionType)
+                        </span>
+                    </div>
+                    <div class="learning-item-copy">
+                        <div class="learning-item-meta">
+                            <span>@GetInteractionName(row.Item.InteractionType)</span>
+                            <span>Mức @row.Item.Level</span>
+                            <span>@row.Item.EstimatedMinutes phút</span>
+                        </div>
+                        <h2>@row.Item.Title</h2>
+                        <p>@row.Item.InstructionText</p>
+                        @if (row.LatestStatus == "completed")
+                        {
+                            <small class="learning-item-status completed"><span class="material-symbols-outlined">check_circle</span>Đã hoàn thành - @row.StarsEarned sao</small>
+                        }
+                        else if (row.LatestStatus == "needs_practice")
+                        {
+                            <small class="learning-item-status practice"><span class="material-symbols-outlined">refresh</span>Cùng luyện lại</small>
+                        }
+                    </div>
+                    <a class="app-btn app-btn-small" asp-controller="Kids" asp-action="Learn" asp-route-id="@row.Item.Id" asp-route-skillGroupId="@Model.SkillGroup.Id">
+                        <span class="material-symbols-outlined">play_arrow</span>
+                        @(row.LatestStatus is null ? "Vào bài" : "Học lại")
+                    </a>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+<nav class="kid-bottom-nav">
+    <a asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span>Trang chủ</a>
+    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span>Bài hôm nay</a>
+    <a asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span>Quà tặng</a>
+    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span>Phụ huynh</a>
+</nav>

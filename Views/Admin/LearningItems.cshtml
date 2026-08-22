@@ -10,9 +10,13 @@
             <h1>Kho bài học</h1>
         </div>
         <div class="hero-actions">
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="Catalogs">
+                <span class="material-symbols-outlined">account_tree</span>
+                Cấu trúc chương trình
+            </a>
             <a class="app-btn app-btn-small" asp-action="CreateChoice">
                 <span class="material-symbols-outlined">add</span>
-                Tạo bài chọn
+                Tạo bài tương tác
             </a>
             <a class="app-btn app-btn-small" asp-action="CreateTracing">
                 <span class="material-symbols-outlined">draw</span>
@@ -23,6 +27,16 @@
     </div>
 
     <form class="soft-card admin-filter" asp-action="LearningItems" method="get">
+        <div>
+            <label for="skillGroupId">Nhóm kỹ năng</label>
+            <select id="skillGroupId" name="skillGroupId" class="form-control">
+                <option value="">Tất cả</option>
+                @foreach (var group in Model.SkillGroups)
+                {
+                    <option value="@group.Id" selected="@(Model.SkillGroupId == group.Id)">@group.Name</option>
+                }
+            </select>
+        </div>
         <div>
             <label for="status">Trạng thái</label>
             <select id="status" name="status" class="form-control">
@@ -38,10 +52,16 @@
             <select id="interactionType" name="interactionType" class="form-control">
                 <option value="">Tất cả</option>
                 <option value="@InteractionTypes.SingleChoice" selected="@(Model.InteractionType == InteractionTypes.SingleChoice)">Chọn đáp án</option>
+                <option value="@InteractionTypes.MultiSelect" selected="@(Model.InteractionType == InteractionTypes.MultiSelect)">Chọn nhiều</option>
                 <option value="@InteractionTypes.ListenAndChoose" selected="@(Model.InteractionType == InteractionTypes.ListenAndChoose)">Nghe - chọn</option>
                 <option value="@InteractionTypes.DragDrop" selected="@(Model.InteractionType == InteractionTypes.DragDrop)">Kéo - thả</option>
                 <option value="@InteractionTypes.Matching" selected="@(Model.InteractionType == InteractionTypes.Matching)">Nối cặp</option>
                 <option value="@InteractionTypes.Ordering" selected="@(Model.InteractionType == InteractionTypes.Ordering)">Sắp xếp</option>
+                <option value="@InteractionTypes.Counting" selected="@(Model.InteractionType == InteractionTypes.Counting)">Đếm đồ vật</option>
+                <option value="@InteractionTypes.QuantityBuilder" selected="@(Model.InteractionType == InteractionTypes.QuantityBuilder)">Tạo số lượng</option>
+                <option value="@InteractionTypes.Comparison" selected="@(Model.InteractionType == InteractionTypes.Comparison)">So sánh</option>
+                <option value="@InteractionTypes.Classification" selected="@(Model.InteractionType == InteractionTypes.Classification)">Phân loại</option>
+                <option value="@InteractionTypes.StoryChoice" selected="@(Model.InteractionType == InteractionTypes.StoryChoice)">Nghe truyện</option>
                 <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô nét</option>
             </select>
         </div>
@@ -71,7 +91,14 @@
                     <td><span class="status-chip status-@item.Status">@item.Status</span></td>
                     <td class="table-actions">
                         <a class="mini-action" asp-action="LearningItemDetail" asp-route-id="@item.Id">Chi tiết</a>
-                        <a class="mini-action" asp-action="EditLearningItem" asp-route-id="@item.Id">Sửa</a>
+                        @if (item.InteractionType == InteractionTypes.Tracing)
+                        {
+                            <a class="mini-action" asp-action="EditLearningItem" asp-route-id="@item.Id">Sửa</a>
+                        }
+                        else
+                        {
+                            <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
+                        }
                     </td>
                 </tr>
             }

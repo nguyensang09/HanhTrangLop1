@@ -14,10 +14,14 @@
                 <span class="material-symbols-outlined">arrow_back</span>
                 Kho nội dung
             </a>
-            <a class="app-btn app-btn-small" asp-action="EditLearningItem" asp-route-id="@Model.Id">
-                <span class="material-symbols-outlined">edit</span>
-                Sửa
-            </a>
+            @if (Model.InteractionType == InteractionTypes.Tracing)
+            {
+                <a class="app-btn app-btn-small" asp-action="EditLearningItem" asp-route-id="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>
+            }
+            else
+            {
+                <a class="app-btn app-btn-small" asp-action="CreateChoice" asp-route-editId="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>
+            }
         </div>
     </div>
 

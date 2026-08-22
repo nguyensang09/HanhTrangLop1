@@ -1,0 +1,66 @@
+@model AdminCatalogViewModel
+@{
+    ViewData["Title"] = "Cấu trúc chương trình";
+    var topicCount = Model.SkillGroups.Sum(x => x.Topics.Count);
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Danh mục hệ thống</p>
+            <h1>Cấu trúc chương trình</h1>
+        </div>
+        <div class="dashboard-actions">
+            <a class="app-btn app-btn-small" asp-action="CreateChoice">
+                <span class="material-symbols-outlined">add</span>
+                Tạo bài học
+            </a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="curriculum-summary">
+        <div><strong>@Model.SkillGroups.Count</strong><span>Nhóm kỹ năng</span></div>
+        <div><strong>@topicCount</strong><span>Chủ đề chuẩn</span></div>
+        <div><strong>@Model.TotalLearningItems</strong><span>Bài học đã tạo</span></div>
+    </div>
+
+    <div class="curriculum-tree">
+        @foreach (var group in Model.SkillGroups)
+        {
+            var coverage = group.Topics.Count == 0
+                ? 0
+                : (int)Math.Round(group.Topics.Count(x => x.LearningItemCount > 0) * 100d / group.Topics.Count);
+            <section class="soft-card curriculum-group" style="--group-color:@group.SkillGroup.Color">
+                <header class="curriculum-group-header">
+                    <span class="curriculum-group-icon material-symbols-outlined">@group.SkillGroup.IconKey</span>
+                    <div>
+                        <h2>@group.SkillGroup.Name</h2>
+                        <p>@group.SkillGroup.Description</p>
+                    </div>
+                    <div class="curriculum-coverage">
+                        <strong>@coverage%</strong>
+                        <span>@group.LearningItemCount bài</span>
+                    </div>
+                </header>
+                <div class="curriculum-progress"><span style="width:@coverage%"></span></div>
+                <div class="curriculum-topic-list">
+                    @foreach (var topic in group.Topics)
+                    {
+                        <div class="curriculum-topic-row">
+                            <span class="material-symbols-outlined">@(topic.LearningItemCount > 0 ? "check_circle" : "radio_button_unchecked")</span>
+                            <div><strong>@topic.Topic.Name</strong><small>@topic.Topic.Code</small></div>
+                            <span class="topic-count">@topic.LearningItemCount bài</span>
+                            <a class="icon-button" asp-action="CreateChoice" asp-route-skillGroupId="@group.SkillGroup.Id" asp-route-topicId="@topic.Topic.Id" title="Tạo bài cho chủ đề" aria-label="Tạo bài cho @topic.Topic.Name">
+                                <span class="material-symbols-outlined">add</span>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+</section>

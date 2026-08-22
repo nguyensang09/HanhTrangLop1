@@ -28,7 +28,7 @@ Vì source hiện tại là dự án ASP.NET Core MVC mới gần như trống, 
    - Xem báo cáo tiến độ, nội dung bé hay nhầm, gợi ý học ngoài màn hình.
 
 3. Quản trị viên
-   - Quản lý nhóm kỹ năng, chủ đề, cấp độ.
+   - Xem cấu trúc nhóm kỹ năng/chủ đề cố định, theo dõi độ phủ và quản lý cấp độ bài học.
    - Tạo bài học, câu hỏi, đáp án, tài nguyên hình/âm thanh.
    - Duyệt, xuất bản, ẩn nội dung.
    - Xem thống kê sử dụng, lỗi thường gặp, tỷ lệ hoàn thành.
@@ -138,12 +138,16 @@ Lựa chọn này giải quyết đúng nhu cầu mang hệ thống sang máy kh
 
 - Source luôn đi kèm lịch sử migration nên không phụ thuộc file database trên máy phát triển.
 - Máy mới chạy `Update-Database` hoặc `dotnet ef database update` để tạo đúng schema.
-- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản khởi đầu và dữ liệu học tập mẫu nếu chưa có.
+- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản Admin và danh mục chương trình cố định nếu chưa có; không tạo bài học hoặc dữ liệu người dùng mẫu.
 - Có thể sinh script SQL idempotent từ migration để bàn giao cho DBA hoặc triển khai không cần EF CLI.
 
 Database First là quy trình ngược lại: schema SQL được thiết kế trước rồi dùng `Scaffold-DbContext` để sinh model. Không nên trộn Database First và Code First migration trong cùng một vòng đời schema vì dễ tạo hai nguồn chuẩn xung đột. Nếu sau này tổ chức yêu cầu DBA làm chủ schema, cần lập kế hoạch chuyển đổi riêng sang SQL Database Project/DACPAC và ngừng tạo migration từ model.
 
 Migration và seed chỉ tái tạo **cấu trúc cùng dữ liệu khởi đầu**. Dữ liệu phát sinh của phụ huynh, hồ sơ bé và lịch sử học phải được bảo vệ bằng quy trình backup/restore SQL Server; migration không thay thế backup.
+
+#### Quyết định về danh mục chương trình
+
+Nhóm kỹ năng và chủ đề là taxonomy chuẩn của hệ thống, không phải dữ liệu do người dùng tự thêm. Danh mục được định nghĩa bằng ID ổn định trong `Data/CurriculumCatalog.cs` và seed idempotent vào SQL Server. Trang quản trị chỉ hiển thị cây chương trình, số bài và độ phủ; người dùng quản trị chỉ tạo/sửa/xuất bản bài học trong taxonomy này. Khi cần thay đổi chương trình, phải sửa catalog trong source, rà soát ảnh hưởng dữ liệu rồi phát hành phiên bản mới.
 
 ## 5. Mô hình dữ liệu SQL đề xuất
 
@@ -405,7 +409,7 @@ Thời lượng đề xuất: 3-5 ngày.
 - Thêm EF Core, SQL Server provider, ASP.NET Core Identity.
 - Tạo DbContext, migration đầu tiên.
 - Cấu hình connection string theo môi trường.
-- Thiết lập seed dữ liệu: role, admin mặc định, nhóm kỹ năng, chủ đề mẫu.
+- Thiết lập seed dữ liệu: role, Admin mặc định, 10 nhóm kỹ năng và 43 chủ đề cố định.
 - Thiết lập layout chính, design token màu/font/icon.
 - Tạo trang lỗi, logging, validation cơ bản.
 
@@ -440,7 +444,7 @@ Thời lượng đề xuất: 2 tuần.
 - Admin nhập bài dạng chọn một đáp án, nghe-chọn, kéo-thả cơ bản.
 - Màn hình làm bài chung.
 - Lưu attempt, số lần thử, gợi ý, sao.
-- Seed bộ nội dung mẫu: chữ A, số 1-5, đếm 1-5, phân biệt hình dạng.
+- Không seed nội dung bài học; quản trị tự tạo và xuất bản nội dung theo từng chủ đề cố định.
 
 Tiêu chí hoàn thành:
 
@@ -473,7 +477,7 @@ Thời lượng đề xuất: 2-3 tuần.
 - Hiển thị nét mẫu, điểm bắt đầu, checkpoint, nút nghe lại, xóa, hoàn tác, làm lại.
 - Ghi nhận đường vẽ và metrics.
 - Admin nhập template nét cơ bản bằng JSON trước; editor trực quan để sau MVP.
-- Seed chữ A, a và số 5 theo mẫu.
+- Chuẩn bị template nét chuẩn để quản trị dùng khi tạo chữ và số; không tự nạp bài mẫu.
 
 Tiêu chí hoàn thành:
 
@@ -502,7 +506,7 @@ Tiêu chí hoàn thành:
 Thời lượng đề xuất: 2 tuần.
 
 - Admin dashboard.
-- Quản lý nhóm kỹ năng, chủ đề.
+- Hiển thị cấu trúc nhóm kỹ năng/chủ đề cố định và độ phủ nội dung; không cho người dùng sửa danh mục hệ thống.
 - Quản lý bài học, câu hỏi, tài nguyên.
 - Trạng thái draft/review/published/archived.
 - Audit log.
@@ -523,7 +527,7 @@ Thời lượng đề xuất: 1-2 tuần.
 - Tối ưu asset hình/âm thanh.
 - Bổ sung test đơn vị cho service quan trọng.
 - Bổ sung integration test cho luồng học, lưu attempt, báo cáo.
-- Chuẩn bị seed nội dung MVP.
+- Chuẩn bị quy trình nhập và kiểm duyệt bộ nội dung MVP; không đóng gói nội dung mẫu vào seed.
 - Cấu hình production: HTTPS, logging, backup database.
 
 Tiêu chí hoàn thành:
@@ -630,7 +634,7 @@ Với MVP MVC thuần, có thể chưa cần React.
 /admin                    Dashboard admin
 /admin/learning-items     Quản lý bài học
 /admin/learning-items/new Tạo bài
-/admin/skills             Nhóm kỹ năng
+/admin/catalogs           Cấu trúc chương trình cố định và độ phủ
 /admin/media              Tài nguyên
 /admin/reviews            Kiểm duyệt
 ```

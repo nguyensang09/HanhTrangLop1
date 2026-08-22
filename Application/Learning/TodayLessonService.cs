@@ -57,7 +57,7 @@ public class TodayLessonService
 
         var items = await _db.LearningItems
             .Include(x => x.SkillGroup)
-            .Where(x => ids.Contains(x.Id))
+            .Where(x => ids.Contains(x.Id) && x.Status == ContentStatus.Published)
             .ToListAsync();
 
         return ids
