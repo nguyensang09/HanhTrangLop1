@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Nghe câu chuyện và trả lời câu hỏi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#fbf9f1",
+                    "primary-fixed": "#ffdbc9",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "secondary-fixed": "#54fdc4",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#51fac1",
+                    "surface-bright": "#fbf9f1",
+                    "on-surface-variant": "#564338",
+                    "tertiary": "#006686",
+                    "on-tertiary-fixed": "#001f2a",
+                    "surface-tint": "#9b4500",
+                    "on-primary-fixed-variant": "#763300",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#bfe8ff",
+                    "surface-container-high": "#eae8e0",
+                    "primary": "#9b4500",
+                    "tertiary-container": "#53b5df",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "inverse-surface": "#30312c",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#00445a",
+                    "on-primary-fixed": "#331200",
+                    "outline-variant": "#ddc1b3",
+                    "surface-container-highest": "#e4e3db",
+                    "inverse-primary": "#ffb68d",
+                    "on-primary-container": "#6a2d00",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1b1c17",
+                    "on-secondary-fixed": "#002116",
+                    "surface-container": "#f0eee6",
+                    "surface-dim": "#dcdad2",
+                    "primary-fixed-dim": "#ffb68d",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "on-secondary-container": "#007152",
+                    "on-background": "#1b1c17",
+                    "background": "#fbf9f1",
+                    "secondary": "#006c4f",
+                    "outline": "#897266",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e4e3db",
+                    "surface-container-low": "#f5f4ec",
+                    "inverse-on-surface": "#f3f1e9",
+                    "primary-container": "#ff8c42"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "card-gap": "20px",
+                    "container-margin": "24px",
+                    "gutter": "16px",
+                    "touch-target-min": "48px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "title-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-hero": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "title-md": [
+                            "22px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-caps": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f1;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Soft, floating shadows for the claymorphic feel */
+        .clay-card {
+            background-color: #ffffff;
+            box-shadow: 0 10px 20px -5px rgba(255, 140, 66, 0.05), 0 4px 6px -2px rgba(255, 140, 66, 0.02);
+            border: 2px solid #bfe8ff; /* Lightened Sky Blue */
+            border-radius: 24px;
+        }
+
+        /* Pressable button effect */
+        .clay-button {
+            border-bottom-width: 4px;
+            transition: all 0.15s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-bottom: 2px;
+        }
+
+        /* Selection chips */
+        .answer-chip {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .answer-chip.selected {
+            background-color: #bfe8ff; /* Sky Blue */
+            border-color: #53b5df; /* Darker Sky Blue */
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(83, 181, 223, 0.2);
+        }
+        
+        /* Custom progress bar fill animation */
+        @keyframes fillProgress {
+            from { width: 0%; }
+            to { width: 33%; }
+        }
+        .progress-fill {
+            animation: fillProgress 1s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center">
+<!-- Top App Bar Shell (Suppressed Nav, kept header) -->
+<header class="w-full flex justify-between items-center px-container-margin py-unit h-touch-target-min bg-surface shadow-sm sticky top-0 z-50">
+<button aria-label="Back" class="w-12 h-12 flex items-center justify-center text-on-surface-variant hover:scale-105 transition-transform active:translate-y-0.5 active:shadow-none duration-150 rounded-full bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold text-primary">Bé Tập Nghe Hiểu</h1>
+<div class="flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full shadow-inner">
+<span class="font-label-caps text-label-caps text-primary">128</span>
+<span class="material-symbols-outlined text-primary-container" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-2xl px-container-margin py-6 flex-grow flex flex-col gap-6 md:px-0">
+<!-- Progress Bar -->
+<div class="w-full flex flex-col gap-2">
+<div class="flex justify-between items-center w-full px-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Câu hỏi 1 / 3</span>
+<span class="material-symbols-outlined text-secondary-container animate-pulse" data-icon="emoji_events">emoji_events</span>
+</div>
+<div class="w-full h-4 bg-surface-container-highest rounded-full overflow-hidden relative">
+<div class="h-full bg-secondary-container rounded-full progress-fill flex items-center justify-end pr-1">
+<span class="material-symbols-outlined text-white text-xs" data-icon="star" style="font-size: 14px;">star</span>
+</div>
+</div>
+</div>
+<!-- Central Story Illustration Card -->
+<div class="clay-card w-full flex flex-col items-center p-4 gap-4 relative overflow-hidden">
+<!-- decorative background blob -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-fixed-dim rounded-full blur-2xl opacity-40 z-0"></div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary-fixed-dim rounded-full blur-2xl opacity-30 z-0"></div>
+<div class="w-full aspect-video rounded-xl overflow-hidden z-10 shadow-inner relative">
+<img class="w-full h-full object-cover" data-alt="A warm, engaging illustration for young children showing a cute brown squirrel (Sóc Nâu) sharing bright red apples with a friendly bunny companion in a sunny forest clearing. Soft, rounded shapes, claymorphic style, bright light-mode colors with warm yellow sunlight and lush soft green grass. High quality vector-style art suitable for a preschool learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUyH8P5vWwcE54MpLsuvJCVWEYQCbY-W81gUlL7IaiAA_vehHPWSyta3uGipoPgIBLZcQhyvHNFDtE0G7jas3KUPlgN5JN_XF5EoV8r1-A7S1ieF2AezCQiuP8ji5-wLzQ5LH7qvDcu8QHKyRTxbKTH6fbVgAzLO2mGVRkVCf5lhQ8Q8nb9DZViXzCCMxb_DGkUCBlf6cAp47s58a_jE1JZ_YnP3AGAc2HTbEhblR-iQou0zNeU6dMqw"/>
+</div>
+<button aria-label="Nghe kể chuyện" class="clay-button bg-primary-container text-white px-8 py-3 rounded-full flex items-center gap-3 font-title-md text-title-md border-primary shadow-lg z-10 w-full md:w-auto justify-center group">
+<span class="material-symbols-outlined text-3xl group-active:scale-95 transition-transform" data-icon="play_circle">play_circle</span>
+                Nghe kể chuyện
+            </button>
+</div>
+<!-- Question Section -->
+<div class="w-full flex flex-col gap-6 bg-surface-container-low p-6 rounded-3xl mt-2 relative">
+<!-- Sóc Nâu Helper Icon (Persistent Character Element) -->
+<div class="absolute -top-6 left-6 w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center shadow-md border-2 border-white">
+<span class="material-symbols-outlined text-primary" data-icon="cruelty_free">cruelty_free</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface text-center mt-4">Sóc Nâu đã chia gì cho bạn?</h2>
+<!-- Visual Answer Choices Grid -->
+<div class="grid grid-cols-3 gap-4 w-full" id="answer-grid">
+<!-- Option 1: Apple (Correct) -->
+<div class="answer-chip bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square shadow-sm" onclick="selectAnswer(this)">
+<div class="w-16 h-16 rounded-full bg-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-error" data-icon="nutrition">nutrition</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface-variant text-center">Quả Táo</span>
+</div>
+<!-- Option 2: Carrot -->
+<div class="answer-chip bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square shadow-sm" onclick="selectAnswer(this)">
+<div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-primary" data-icon="park">park</span> <!-- Using park as a placeholder for a plant/carrot shape -->
+</div>
+<span class="font-title-md text-title-md text-on-surface-variant text-center">Cà Rốt</span>
+</div>
+<!-- Option 3: Candy -->
+<div class="answer-chip bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square shadow-sm" onclick="selectAnswer(this)">
+<div class="w-16 h-16 rounded-full bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-tertiary" data-icon="cookie">cookie</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface-variant text-center">Kẹo</span>
+</div>
+</div>
+<!-- Action Buttons (Hidden until selection) -->
+<div class="w-full flex justify-end pt-4 opacity-0 transition-opacity duration-300 pointer-events-none" id="action-area">
+<button class="clay-button bg-secondary text-white px-8 py-3 rounded-full flex items-center gap-2 font-title-md text-title-md border-secondary-container shadow-md">
+                    Tiếp tục
+                    <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<script>
+        function selectAnswer(element) {
+            // Remove selected class from all chips
+            const chips = document.querySelectorAll('.answer-chip');
+            chips.forEach(chip => {
+                chip.classList.remove('selected');
+            });
+
+            // Add selected class to clicked chip
+            element.classList.add('selected');
+
+            // Show continue button
+            const actionArea = document.getElementById('action-area');
+            actionArea.classList.remove('opacity-0', 'pointer-events-none');
+            actionArea.classList.add('opacity-100');
+            
+            // Add a little pop sound/animation logic here if needed
+        }
+    </script>
+</body></html>

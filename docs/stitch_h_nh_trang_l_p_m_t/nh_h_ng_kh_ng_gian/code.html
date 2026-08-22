@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trong và Ngoài - Sóc Nâu Đồng Hành</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#ffb68d",
+                        "background": "#fbf9f1",
+                        "outline": "#897266",
+                        "primary-container": "#ff8c42",
+                        "surface-container-highest": "#e4e3db",
+                        "on-secondary-fixed": "#002116",
+                        "tertiary": "#006686",
+                        "on-secondary-container": "#007152",
+                        "secondary-container": "#51fac1",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae8e0",
+                        "primary": "#9b4500",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "secondary-fixed": "#54fdc4",
+                        "secondary": "#006c4f",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#564338",
+                        "surface-tint": "#9b4500",
+                        "on-background": "#1b1c17",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f5f4ec",
+                        "on-primary-container": "#6a2d00",
+                        "tertiary-container": "#53b5df",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container": "#f0eee6",
+                        "inverse-surface": "#30312c",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-primary-fixed": "#331200",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-tertiary-container": "#00445a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-variant": "#e4e3db",
+                        "on-surface": "#1b1c17",
+                        "inverse-primary": "#ffb68d",
+                        "primary-fixed": "#ffdbc9",
+                        "surface-bright": "#fbf9f1",
+                        "on-tertiary-fixed": "#001f2a",
+                        "error": "#ba1a1a",
+                        "surface": "#fbf9f1",
+                        "surface-dim": "#dcdad2",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "touch-target-min": "48px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Draggable Element Styles */
+        .draggable {
+            cursor: grab;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            touch-action: none; /* Prevent scrolling on mobile while dragging */
+        }
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        .dragging {
+            opacity: 0.8;
+            z-index: 50;
+        }
+
+        /* Dropzone Styles */
+        .dropzone {
+            transition: all 0.3s ease;
+        }
+        .dropzone.drag-over {
+            background-color: rgba(83, 181, 223, 0.2); /* tertiary-container lightened */
+            border: 4px dashed var(--tw-colors-tertiary-container);
+            transform: scale(1.02);
+        }
+        
+        /* Success Animation */
+        @keyframes successPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .success-anim {
+            animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Button Press Effect */
+        .btn-press {
+            box-shadow: 0 4px 0 0 rgba(106, 45, 0, 1); /* on-primary-container */
+            transition: all 0.1s ease;
+        }
+        .btn-press:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 rgba(106, 45, 0, 1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-container-margin py-unit w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim shadow-sm border-b-4 border-surface-container-highest dark:border-surface-container rounded-b-xl">
+<button aria-label="Quay lại" class="w-[48px] h-[48px] flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:scale-105 transition-transform active:translate-y-0.5 active:border-b-2 transition-all">
+<span class="material-symbols-outlined text-3xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed-dim text-center flex-1 mx-4">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center gap-2 text-primary dark:text-primary-fixed-dim font-label-caps text-label-caps bg-surface-container py-2 px-4 rounded-full border-b-4 border-surface-container-highest shadow-sm">
+<span class="material-symbols-outlined text-primary-container" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>125</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-start p-container-margin w-full max-w-4xl mx-auto relative mb-24 md:mb-0">
+<!-- Sóc Nâu Dialogue / Instruction -->
+<div class="w-full bg-[#fde68a] border-b-4 border-[#d97706] rounded-2xl p-4 md:p-6 mb-8 flex items-start gap-4 shadow-sm relative overflow-hidden" style="background-color: #ffda73; border-color: #eab308;">
+<!-- Sóc Nâu Avatar -->
+<div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-surface shrink-0 border-4 border-white shadow-sm flex items-center justify-center overflow-hidden">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, friendly cartoon brown squirrel character with big eyes, rendered in a soft, 3D claymorphic style. The squirrel is smiling warmly, facing forward against a clean, warm cream background. The lighting is soft and high-key, enhancing the tactile, preschool-friendly aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5jF975NPgRpycZhl3LEOUsi6L7O7PmbDa4enM536p7d7x27ssocDtLeEw30dW6rB5euXw3p9ebDHUkr-WD5jgbzXWsqVjfo1Rpy_UZA5rftAso_s-tHeXe97hON9mx1o-UufOYEFTjSKyZWd0Bd-hIAKZMdKA9tkKoNelSJhsC88M9dBpt_vytDc1_QhPWdQXFNbfXQiZy7zsWR1z5kRBFnYlGFlr7MUxsgA9TLNOpiQJCtX1ix5JAQ"/>
+</div>
+<div class="flex-1">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-[#78350f] mb-2">Trong và Ngoài</h2>
+<p class="font-body-lg text-[#92400e]">Bé hãy kéo chú chim vào <strong>trong</strong> lồng nhé!</p>
+</div>
+<!-- Audio Button -->
+<button aria-label="Nghe hướng dẫn" class="w-[48px] h-[48px] shrink-0 bg-white rounded-full flex items-center justify-center text-[#d97706] shadow-sm hover:scale-105 active:scale-95 transition-transform" onclick="playInstructionSound()">
+<span class="material-symbols-outlined text-2xl" data-icon="volume_up">volume_up</span>
+</button>
+</div>
+<!-- Interactive Canvas -->
+<div class="w-full max-w-3xl aspect-[4/3] md:aspect-[16/9] bg-white rounded-[32px] border-4 border-surface-container-highest shadow-[0_20px_40px_-15px_rgba(255,140,66,0.15)] relative overflow-hidden flex flex-col items-center justify-center p-8 touch-none" id="interactive-area">
+<!-- Background Environment Hint -->
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at center, #bfe8ff 0%, transparent 70%);"></div>
+<!-- The Birdcage (Dropzone) -->
+<div class="dropzone relative w-64 h-80 rounded-[40px] border-8 border-surface-variant flex items-center justify-center bg-surface-container-lowest z-10 transition-all duration-300" id="cage-dropzone">
+<!-- Cage visual details (simplified css drawing) -->
+<div class="absolute inset-x-4 top-0 h-16 border-b-4 border-surface-variant rounded-t-[32px]"></div>
+<div class="absolute left-8 inset-y-0 w-2 bg-surface-variant"></div>
+<div class="absolute left-1/2 -translate-x-1/2 inset-y-0 w-2 bg-surface-variant"></div>
+<div class="absolute right-8 inset-y-0 w-2 bg-surface-variant"></div>
+<div class="absolute bottom-4 inset-x-2 h-4 bg-outline rounded-full"></div>
+<!-- Target Area Indicator -->
+<div class="absolute inset-4 rounded-[28px] border-4 border-dashed border-transparent transition-colors duration-300" id="cage-target-indicator"></div>
+<span class="absolute -top-12 text-outline-variant font-label-caps text-label-caps tracking-widest uppercase">Lồng Chim</span>
+</div>
+<!-- The Bird (Draggable) -->
+<div class="draggable absolute bottom-12 right-12 md:bottom-24 md:right-32 w-24 h-24 z-20 touch-none flex flex-col items-center justify-center" id="bird-draggable">
+<img alt="Chú chim nhỏ" class="w-full h-full object-contain pointer-events-none drop-shadow-md" data-alt="A cute, chunky cartoon yellow bird character with a soft, round body, rendered in a 3D claymorphic style. It has tiny wings, big friendly eyes, and an orange beak. It sits against a transparent or solid bright background. Soft, high-key lighting creates a tactile, squishy appearance suitable for a preschool learning game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3M1aK4CJSrzvUaGz20INf2-XvmV5R0r4qVekLDiGSUc6tlDyzuzo1IXDVZCBFLXl6QhaT0jApg3QqMhvl692t_O2i67QpUfalTdxsWhOjxDbGMR5McGz6v3qcor42bBQb_3KMjoWUon4ZCnDgPfF7mI8SNSKiT2c_KkZCoXg_BCyBMT03KxxSltMv6swCJHPj2-w_FHQ2hDHlYhXhOviF8HYKjhgkpqXJHkzfoIp_amJGOW2nyD6uDQ"/>
+<!-- Shadow hint -->
+<div class="w-16 h-4 bg-black/10 rounded-full blur-sm -mt-2 -z-10"></div>
+</div>
+<!-- Success Overlay (Hidden initially) -->
+<div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-40 hidden flex-col items-center justify-center" id="success-overlay">
+<div class="success-content hidden flex-col items-center justify-center text-center p-8 bg-surface-container-low rounded-3xl border-4 border-secondary-container shadow-xl">
+<div class="w-32 h-32 mb-6">
+<img alt="Thành công" class="w-full h-full object-contain" data-alt="A celebratory, animated graphic of a smiling sun and colorful confetti, bursting outward. Rendered in a soft, 3D claymorphic style with bright yellow, orange, and teal colors. High-key lighting, highly tactile, signifying a 'great job' reward in a preschool app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDG0rA1UA36Hf2X0kb8ZjDwqZed7bdzfABCwZeeU55heUxVnTE7SnWK1_jonmv2hcxyFJV0uj-NP0kPmxzmbDZ4mLDxLlDklXnTmyRJplUYYmtvFc-FPzbDNDPjDMVAoBkTa1Y9pTGwEC8kfsYe637ytp35rRiSuFCvKL4E2NO7Vrgsk5Gxf4rwfkbNleaMH1Wrj9Ldja0pD4MLP1yM4cdfBOtYYTWKSi2bfFhweA-2xJCS3pbeO-3rjg"/>
+</div>
+<h3 class="font-display-hero text-headline-lg-mobile md:text-headline-lg text-secondary mb-4">Hoan hô!</h3>
+<p class="font-body-lg text-on-surface-variant mb-8">Chú chim đã vào <strong>trong</strong> lồng an toàn rồi.</p>
+<button class="btn-press bg-primary-container text-white font-label-caps text-label-caps py-4 px-12 rounded-full flex items-center gap-2 text-xl" onclick="completeLevel()">
+<span>Hoàn thành</span>
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-container-margin pb-4 pt-2 bg-surface-container-low dark:bg-surface-container-lowest shadow-lg border-t-4 border-surface-container-highest dark:border-surface-container rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant p-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-caps text-[12px] leading-tight">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-2 translate-y-[-4px] border-b-4 border-primary hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="edit_square">edit_square</span>
+<span class="font-label-caps text-[12px] leading-tight">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant p-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="military_tech">military_tech</span>
+<span class="font-label-caps text-[12px] leading-tight">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant p-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="family_restroom">family_restroom</span>
+<span class="font-label-caps text-[12px] leading-tight">Phụ huynh</span>
+</a>
+</nav>
+<!-- Interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bird = document.getElementById('bird-draggable');
+            const cage = document.getElementById('cage-dropzone');
+            const targetIndicator = document.getElementById('cage-target-indicator');
+            const interactiveArea = document.getElementById('interactive-area');
+            const successOverlay = document.getElementById('success-overlay');
+            const successContent = document.querySelector('.success-content');
+
+            let isDragging = false;
+            let startX, startY;
+            let currentX = 0;
+            let currentY = 0;
+            let initialX = 0;
+            let initialY = 0;
+
+            // Audio context (mock)
+            function playSound(type) {
+                // In a real app, this would play actual audio files
+                console.log(`Playing sound: ${type}`);
+                if(type === 'success') {
+                    // Confetti logic could also go here
+                }
+            }
+
+            window.playInstructionSound = () => {
+                playSound('instruction');
+                // Visual feedback on the character could be added here
+            };
+
+            window.completeLevel = () => {
+                // Navigate to next screen or close
+                console.log("Level Complete clicked");
+                // Temporary reset for demo purposes
+                successOverlay.classList.add('hidden');
+                successContent.classList.remove('success-anim', 'flex');
+                successContent.classList.add('hidden');
+                bird.style.transform = `translate(0px, 0px)`;
+                bird.style.left = '';
+                bird.style.bottom = '';
+                bird.style.top = '';
+                currentX = 0; currentY = 0;
+            };
+
+            // Touch/Mouse Events
+            function dragStart(e) {
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - currentX;
+                    initialY = e.touches[0].clientY - currentY;
+                } else {
+                    initialX = e.clientX - currentX;
+                    initialY = e.clientY - currentY;
+                }
+                
+                if (e.target === bird || bird.contains(e.target)) {
+                    isDragging = true;
+                    bird.classList.add('dragging');
+                    playSound('grab');
+                }
+            }
+
+            function dragEnd(e) {
+                if (!isDragging) return;
+                
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                bird.classList.remove('dragging');
+                cage.classList.remove('drag-over');
+                targetIndicator.style.borderColor = 'transparent';
+
+                // Check collision/drop
+                const birdRect = bird.getBoundingClientRect();
+                const cageRect = cage.getBoundingClientRect();
+
+                // Simple AABB collision detection
+                const isInside = (
+                    birdRect.left > cageRect.left &&
+                    birdRect.right < cageRect.right &&
+                    birdRect.top > cageRect.top &&
+                    birdRect.bottom < cageRect.bottom
+                );
+
+                if (isInside) {
+                    // Success!
+                    playSound('success');
+                    // Snap to center of cage
+                    const cageCenterX = cageRect.left + cageRect.width / 2;
+                    const cageCenterY = cageRect.top + cageRect.height / 2;
+                    const birdCenterX = birdRect.left + birdRect.width / 2;
+                    const birdCenterY = birdRect.top + birdRect.height / 2;
+                    
+                    const snapX = currentX + (cageCenterX - birdCenterX);
+                    const snapY = currentY + (cageCenterY - birdCenterY);
+                    
+                    bird.style.transform = `translate(${snapX}px, ${snapY}px)`;
+                    
+                    // Show success modal after short delay
+                    setTimeout(() => {
+                        successOverlay.classList.remove('hidden');
+                        successOverlay.classList.add('flex');
+                        successContent.classList.remove('hidden');
+                        successContent.classList.add('flex', 'success-anim');
+                    }, 500);
+
+                } else {
+                    // Snap back logic if missed
+                    // bird.style.transform = `translate(0px, 0px)`;
+                    // currentX = 0; currentY = 0;
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault(); // Prevent scrolling
+                
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+
+                    bird.style.transform = `translate(${currentX}px, ${currentY}px)`;
+
+                    // Visual feedback when hovering over target
+                    const birdRect = bird.getBoundingClientRect();
+                    const cageRect = cage.getBoundingClientRect();
+                    
+                    // Relaxed collision for hover state
+                    if (
+                        birdRect.left < cageRect.right &&
+                        birdRect.right > cageRect.left &&
+                        birdRect.top < cageRect.bottom &&
+                        birdRect.bottom > cageRect.top
+                    ) {
+                        cage.classList.add('drag-over');
+                        targetIndicator.style.borderColor = 'var(--tw-colors-tertiary-container)';
+                    } else {
+                        cage.classList.remove('drag-over');
+                        targetIndicator.style.borderColor = 'transparent';
+                    }
+                }
+            }
+
+            // Event Listeners
+            interactiveArea.addEventListener("touchstart", dragStart, { passive: false });
+            interactiveArea.addEventListener("touchend", dragEnd, { passive: false });
+            interactiveArea.addEventListener("touchmove", drag, { passive: false });
+
+            interactiveArea.addEventListener("mousedown", dragStart);
+            interactiveArea.addEventListener("mouseup", dragEnd);
+            interactiveArea.addEventListener("mousemove", drag);
+            
+            // Prevent default drag behavior on images
+            bird.ondragstart = function() { return false; };
+        });
+    </script>
+</body></html>

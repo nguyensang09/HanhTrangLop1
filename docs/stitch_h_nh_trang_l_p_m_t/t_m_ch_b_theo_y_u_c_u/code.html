@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Học Chữ - Tìm chữ cái theo yêu cầu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#bfe8ff",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1b1c17",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-dim": "#dcdad2",
+                        "on-primary-fixed": "#331200",
+                        "inverse-surface": "#30312c",
+                        "surface-container-low": "#f5f4ec",
+                        "outline": "#897266",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-secondary-container": "#007152",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#564338",
+                        "surface-variant": "#e4e3db",
+                        "background": "#fbf9f1",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "surface-container": "#f0eee6",
+                        "primary-fixed": "#ffdbc9",
+                        "tertiary": "#006686",
+                        "tertiary-container": "#53b5df",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fbf9f1",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "secondary": "#006c4f",
+                        "outline-variant": "#ddc1b3",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#00445a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#54fdc4",
+                        "on-secondary-fixed": "#002116",
+                        "surface": "#fbf9f1",
+                        "on-primary-container": "#6a2d00",
+                        "inverse-primary": "#ffb68d",
+                        "surface-tint": "#9b4500",
+                        "secondary-container": "#51fac1",
+                        "on-tertiary-fixed": "#001f2a",
+                        "on-surface": "#1b1c17",
+                        "error": "#ba1a1a",
+                        "primary": "#9b4500",
+                        "surface-container-high": "#eae8e0",
+                        "primary-container": "#ff8c42",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#ffb68d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "card-gap": "20px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid var(--tw-colors-on-primary-fixed-variant, #763300);
+            transition: all 0.1s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .clay-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        .letter-circle {
+            border-bottom: 6px solid;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .letter-circle:active, .letter-circle.correct-anim {
+            transform: translateY(4px) scale(0.95);
+            border-bottom-width: 2px;
+        }
+        .letter-circle.correct {
+            background-color: theme('colors.secondary-fixed');
+            border-color: theme('colors.on-secondary-fixed-variant');
+            color: theme('colors.on-secondary-fixed');
+        }
+        .letter-circle.incorrect {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            opacity: 0.7;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-background dark:bg-surface-dim flat no shadows flex justify-between items-center px-container-margin py-unit z-40 pb-4">
+<button aria-label="Quay lại" class="flex items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant dark:text-surface-variant hover:bg-primary-container dark:hover:bg-on-primary-fixed-variant transition-colors rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed-dim text-center flex-1 mx-4 truncate">
+            Sóc Nâu Học Chữ
+        </h1>
+<div class="flex items-center justify-center h-touch-target-min px-4 bg-surface-container rounded-full shadow-sm text-primary dark:text-primary-fixed-dim font-title-md text-title-md">
+            ⭐ 125
+        </div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-container-margin py-6 flex flex-col max-w-3xl mx-auto w-full mb-24 relative z-10">
+<!-- Instruction Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 clay-card border-2 border-tertiary-fixed mb-8 pop-in relative z-20">
+<div class="flex items-start gap-4">
+<div class="w-16 h-16 shrink-0 bg-secondary-container rounded-full flex items-center justify-center overflow-hidden border-2 border-surface-container-highest">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, friendly brown squirrel character with large expressive eyes, rendered in a soft 3D claymorphic style with bright lighting. The squirrel is wearing a small green backpack and looking encouragingly at the viewer." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdawJ6vSer-GWBEKfYe6uH3FBU1R37igaySUZVJmHm5UpYZdS_3eJ3ErP3L9NxUOCbhNepaUGG0fQ4p19hjLh4D2s3AmziLMCc8Ie-8FkDY9qWilN6csk1et7cmE02N0rTksIy3Lcv8bSZEm4iofrQZj0SlRgMvC4HL5MHxI16FD-yIsszrXyx5BzA48WzApBE-rjq1qnDRqIxGdkDFj_7Wyqfz_xzVSg1noUUSk05s_-RedpJ8fp1yw"/>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-2xl rounded-tl-none p-4 relative shadow-sm border border-surface-variant">
+<p class="font-title-md text-title-md text-on-surface mb-2">Bé hãy tìm tất cả chữ <strong class="text-primary text-3xl font-display-hero align-middle ml-1">B</strong> nhé!</p>
+<button class="flex items-center gap-2 text-tertiary font-title-md hover:bg-tertiary-container hover:text-on-tertiary-container rounded-full px-4 py-2 transition-colors mt-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+                        Nghe lại
+                    </button>
+</div>
+</div>
+</div>
+<!-- Game Grid -->
+<div class="flex-1 flex flex-col justify-center items-center py-8">
+<div class="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-10 w-full max-w-lg mx-auto" id="letter-grid">
+<!-- Letters will be generated by JS -->
+</div>
+<!-- Success Message (Hidden initially) -->
+<div class="hidden mt-10 text-center pop-in" id="success-message">
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-secondary mb-4">Giỏi quá! Bé đã tìm được hết chữ B rồi!</p>
+<button class="clay-button bg-primary-container text-on-primary-container font-title-md text-title-md px-8 py-4 rounded-full inline-flex items-center gap-2">
+                    Bài tiếp theo
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Background Decoration (Soft, abstract shapes) -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+<div class="absolute top-20 left-10 w-64 h-64 bg-tertiary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+<div class="absolute top-40 right-10 w-72 h-72 bg-primary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+<div class="absolute -bottom-8 left-20 w-80 h-80 bg-secondary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+</div>
+<style>
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+    </style>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container dark:bg-surface-container-highest shadow-sm rounded-t-xl hidden md:flex">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:scale-110 transition-transform w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-6 py-2 border-b-4 border-on-secondary-container translate-y-0.5 border-b-2 transition-all w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:scale-110 transition-transform w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">workspace_premium</span>
+<span class="font-label-caps text-label-caps">Quà tặng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:scale-110 transition-transform w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">family_history</span>
+<span class="font-label-caps text-label-caps">Phụ huynh</span>
+</a>
+</nav>
+<!-- Mobile BottomNav (Same content, visible on mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container shadow-sm rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1 text-2xl">home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 border-b-2 border-on-secondary-container w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1 text-2xl" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1 text-2xl">workspace_premium</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 w-touch-target-min h-touch-target-min" href="#">
+<span class="material-symbols-outlined mb-1 text-2xl">family_history</span>
+</a>
+</nav>
+<script>
+        const letters = [
+            { char: 'A', bg: 'bg-error-container', border: 'border-[#ba1a1a]', text: 'text-on-error-container' },
+            { char: 'B', bg: 'bg-surface-container-highest', border: 'border-outline', text: 'text-on-surface', isTarget: true },
+            { char: 'C', bg: 'bg-tertiary-fixed', border: 'border-on-tertiary-fixed-variant', text: 'text-on-tertiary-container' },
+            { char: 'B', bg: 'bg-surface-container-highest', border: 'border-outline', text: 'text-on-surface', isTarget: true },
+            { char: 'D', bg: 'bg-primary-fixed', border: 'border-on-primary-fixed-variant', text: 'text-on-primary-fixed' },
+            { char: 'B', bg: 'bg-surface-container-highest', border: 'border-outline', text: 'text-on-surface', isTarget: true }
+        ];
+
+        const grid = document.getElementById('letter-grid');
+        let targetCount = letters.filter(l => l.isTarget).length;
+        let foundCount = 0;
+
+        letters.forEach((item, index) => {
+            const btn = document.createElement('button');
+            btn.className = `letter-circle w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center font-display-hero text-display-hero ${item.bg} ${item.border} ${item.text} mx-auto cursor-pointer select-none pop-in relative`;
+            btn.style.animationDelay = `${index * 0.1}s`;
+            
+            // Inner content wrapper
+            const content = document.createElement('span');
+            content.textContent = item.char;
+            btn.appendChild(content);
+
+            // Checkmark icon (hidden initially)
+            const icon = document.createElement('span');
+            icon.className = 'material-symbols-outlined absolute -top-2 -right-2 bg-secondary text-on-secondary rounded-full p-1 opacity-0 transition-opacity transform scale-50 shadow-md';
+            icon.style.fontVariationSettings = "'FILL' 1";
+            icon.textContent = 'check_circle';
+            btn.appendChild(icon);
+
+            btn.addEventListener('click', () => {
+                if (btn.classList.contains('correct')) return; // Already found
+
+                if (item.isTarget) {
+                    btn.classList.add('correct', 'correct-anim');
+                    icon.classList.remove('opacity-0', 'scale-50');
+                    icon.classList.add('opacity-100', 'scale-100');
+                    foundCount++;
+
+                    // Add a tiny star pop effect here if desired
+
+                    if (foundCount === targetCount) {
+                        setTimeout(() => {
+                            document.getElementById('success-message').classList.remove('hidden');
+                        }, 500);
+                    }
+                } else {
+                    btn.classList.remove('incorrect'); // Reset animation
+                    void btn.offsetWidth; // Trigger reflow
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            grid.appendChild(btn);
+        });
+    </script>
+</body></html>

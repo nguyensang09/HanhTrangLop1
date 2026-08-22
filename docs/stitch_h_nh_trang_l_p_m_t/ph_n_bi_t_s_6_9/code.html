@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phân biệt số 6 và số 9</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#27e0a9",
+                      "primary-container": "#ff8c42",
+                      "on-surface-variant": "#564338",
+                      "surface-bright": "#fbf9f1",
+                      "primary-fixed-dim": "#ffb68d",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#51fac1",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "inverse-primary": "#ffb68d",
+                      "secondary-fixed": "#54fdc4",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "inverse-surface": "#30312c",
+                      "surface-container-highest": "#e4e3db",
+                      "surface-container-high": "#eae8e0",
+                      "surface": "#fbf9f1",
+                      "inverse-on-surface": "#f3f1e9",
+                      "on-tertiary-fixed": "#001f2a",
+                      "outline-variant": "#ddc1b3",
+                      "surface-dim": "#dcdad2",
+                      "outline": "#897266",
+                      "surface-container": "#f0eee6",
+                      "surface-tint": "#9b4500",
+                      "primary-fixed": "#ffdbc9",
+                      "secondary": "#006c4f",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary": "#ffffff",
+                      "tertiary": "#006686",
+                      "on-primary-fixed": "#331200",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "background": "#fbf9f1",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#f5f4ec",
+                      "on-tertiary-container": "#00445a",
+                      "on-primary-fixed-variant": "#763300",
+                      "on-surface": "#1b1c17",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#bfe8ff",
+                      "on-secondary-fixed": "#002116",
+                      "on-background": "#1b1c17",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#9b4500",
+                      "surface-variant": "#e4e3db",
+                      "on-secondary-container": "#007152",
+                      "on-primary-container": "#6a2d00",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-gap": "20px",
+                      "unit": "8px",
+                      "container-margin": "24px",
+                      "gutter": "16px",
+                      "touch-target-min": "48px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        /* Tonal Offsets & Pressable Effect */
+        .btn-pressable {
+            border-bottom: 4px solid var(--tw-colors-on-primary-container);
+            transition: all 0.1s ease-in-out;
+        }
+        .btn-pressable:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-bottom: 2px; /* Compensate for layout shift */
+        }
+        .card-shadow {
+            box-shadow: 0 0 20px rgba(255,140,66,0.05);
+        }
+        
+        .clay-card {
+            background-color: #ffffff;
+            border: 2px solid var(--tw-colors-tertiary-fixed-dim);
+            border-radius: 24px;
+            box-shadow: 0 8px 0 var(--tw-colors-tertiary-fixed-dim), 0 15px 20px rgba(255, 140, 66, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .clay-card:hover {
+            transform: translateY(2px);
+            box-shadow: 0 6px 0 var(--tw-colors-tertiary-fixed-dim), 0 10px 15px rgba(255, 140, 66, 0.1);
+        }
+
+        .soc-nau-dialogue {
+            background-color: #fde68a; /* Warm yellow fallback */
+            background-color: var(--tw-colors-primary-fixed); /* Using available theme color closest to warm yellow/help */
+            border-radius: 24px 24px 24px 4px;
+            position: relative;
+        }
+        .soc-nau-dialogue::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: var(--tw-colors-primary-fixed) transparent transparent transparent;
+        }
+
+        /* Material Symbols Fill override */
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-[100px] pt-[80px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim font-headline-lg-mobile text-headline-lg-mobile docked full-width top-0 bg-surface-container-low dark:bg-surface-container-high shadow-sm fixed flex justify-between items-center w-full px-container-margin py-unit z-50">
+<button aria-label="Go back" class="flex items-center justify-center p-2 rounded-full hover:opacity-90 active:translate-y-0.5 transition-transform">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" style="font-size: 32px;">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-display-hero text-primary dark:text-primary-fixed-dim">Sóc Nâu Học Chữ</h1>
+<div class="flex items-center gap-1 bg-surface-container-highest px-3 py-1 rounded-full hover:opacity-90 active:translate-y-0.5 transition-transform">
+<span class="font-title-md text-title-md text-primary">125</span>
+<span>⭐</span>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-container-margin md:px-8 pt-6 pb-24">
+<!-- Sóc Nâu Dialogue -->
+<section class="flex items-end gap-4 mb-8">
+<div class="w-24 h-24 flex-shrink-0 relative rounded-full overflow-hidden border-4 border-surface-container-highest">
+<img alt="Sóc Nâu mascot" class="w-full h-full object-cover" data-alt="A cute, 3D clay-style illustration of a brown squirrel character (Sóc Nâu) wearing a small explorer hat. The squirrel has large, friendly eyes and is smiling enthusiastically. The background is a soft, solid pastel yellow. The lighting is soft and studio-like, enhancing the 3D claymorphic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAakz8LBDKHv33JmnJGhfvzqVWQjzE357z2lXinDYaHF6TmzLTujye4SIRpsG8OqIKcDURbEfoTco1byZ62Qk8vREo9EB8sZfCbNSA4YTBWOFDlJt7oSyhmatWpsuKHuXtN3Jw31Zf7qw8J7bx6AgiDQkze_tib3zv5Ab5jZucaXiIHcJK_Ie9MGlpnuJyfIRd8wKfptANVVLP_8TzBXaXwL6hlEkMRcv0U6fp-SCT47fd4o8jEh-qeYg"/>
+</div>
+<div class="soc-nau-dialogue p-4 md:p-6 shadow-sm flex items-center gap-3 w-full max-w-lg mb-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-weight="fill">volume_up</span>
+<p class="font-title-md text-title-md text-on-primary-container m-0">Số 6 và Số 9 khác nhau thế nào?</p>
+</div>
+</section>
+<!-- Main Content Area - Comparison -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-card-gap md:gap-8 items-stretch">
+<!-- Number 6 Card -->
+<div class="clay-card p-6 flex flex-col items-center text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-secondary-fixed opacity-10 rounded-2xl pointer-events-none group-hover:opacity-20 transition-opacity"></div>
+<h2 class="text-[120px] leading-none font-display-hero text-secondary mb-4 drop-shadow-md relative z-10">6</h2>
+<div class="bg-surface-bright rounded-xl p-4 w-full shadow-sm border border-surface-variant relative z-10 mb-6">
+<p class="font-body-lg text-body-lg text-on-surface mb-0">Bụng tròn ở dưới</p>
+</div>
+<!-- 6 Duck Toys Grid -->
+<div class="grid grid-cols-3 gap-3 w-full mt-auto relative z-10">
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpEkho3IgGKtNb7-bj6Qo7ezTCCncF_63dtLgWSd4kadkV-gYGTPgAHFAmPE6ESb_YAsjQxbEhJwv03YtdjgB48pDVU8sn3taXCbAtFp-uDc2GSbiSBxEMon6eSNw1lugnlZS_mleuBjSB98NfW5XpwkxtvBBHK6U4sZ7tQ8lbp4h0UH7eIhrTHYU3OvIA6inDNteDmJukfVGTdUD91uodcVTwy0MD-goFsO7w-msY0bdLFTZ65Uo64A"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgh63h6x05lkNDU-sBaqMhtv-59u9GJqOexZWZ5pj6SDyxV1re1KgN10u7B8rDWlBVNb7kK6ysNgAqVUjLfovm6s3xcI6WDu0fuLFavPGOmhd1yF65u4PcmgUHqEWy-A3gqT5PjL7BSkHK-x5IoRbnWq6JFTX-dghAKbOO5ZkK7miu1e6Nk1RCXVsUWpOYiNKAXl8SoAODr3bR2KHK4Eia-DxMdEeqwc2RnxvhLo2J404f9tUQnHXvPw"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOG4ibzOXBV0Hzh9uyBCHOT_K5XNW9YhTKAXe9dlFlEwS9IZ1k3BVO5I9eDMf3Sc5JFXr6ASz0GEp8yRCdLIY_t-sAgrb1ExLBGSEdDLEUbWxJhx91w57nEDkb0R01_PxTk_5TfxbzqwcWzAV-TjPT1EFJSf5hXqhj20EMSkyXi3Pmn3m9NjKfCrOrZ9m7o-nmDgwg06ubRQzo9dmEA0ELNlXgrXwB9z_7JuGNpY7-yvRZZt_hYur4ow"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLNDO9RD0CaxNqN_0bzEWznIj2NO0_gwL6vVvfCKD2MTua29pOulaHV_Fc-3-TPkL3KWzH3GxcE27c6XxgZcbTW2Y1_GaXtSq03yyjNC_su2Xk0W1AaLWNLt3q-cSSxcKCRitsQwkuRA62Fiec7H8cd4IyFipPTRAoDQ5o5-X4KJpFEBKUk6GzZ1GVM3rN1YKsrmfZxF_dJnKV6jAr5S0RDyhr-izFLKwVddEDJtHasRV2xCnzuYlstA"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCs2vqnk0qM9CskZUxnYSE3pEOMQFXB4BBstL6HHa3Qv38kADclIyT8-gPCjh7A9wIDzXRrX1UZWvKLLMwEbnTUbxBmyNgOkO8NxWbNZ6bv60Pe6eV7YnIoXup3pevcen-mCiGwSAlam33grCoo-64hXLmNcib5qEKB9IrkF--Z81o2o5AbV6bM8NauVgM6haek7OlJFR2Qe6Hk5sTSdvp2nhaAGjhGk98vyO4SJZHPgyHPex7xGZDLZA"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0YG2AuEM5QEoK3_FTsbhdNpqxw_wj9X-uTBvviAA3Rb7acVW3mMqxRo04HLGz1wetYgldRvg7ZC5Jlvgume6en5zBUngYCWoUaYkH7kIirOVyDu4CW2xwjTe6Y7yo37gT8h6NDWIQ5GdC-iArJmDJsSYjeFYpKEq835IRpHHgQqThJx9FWL7MBWJ4dwhLfq_khKWkxFTXGfbT-8raqE9q2rmcrs0UGpIMbB0Yl9tWDxCq2vdBQaNvQA"/></div>
+</div>
+</div>
+<!-- Number 9 Card -->
+<div class="clay-card p-6 flex flex-col items-center text-center relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary opacity-10 rounded-2xl pointer-events-none group-hover:opacity-20 transition-opacity"></div>
+<h2 class="text-[120px] leading-none font-display-hero text-primary mb-4 drop-shadow-md relative z-10">9</h2>
+<div class="bg-surface-bright rounded-xl p-4 w-full shadow-sm border border-surface-variant relative z-10 mb-6">
+<p class="font-body-lg text-body-lg text-on-surface mb-0">Đầu tròn ở trên</p>
+</div>
+<!-- 9 Duck Toys Grid -->
+<div class="grid grid-cols-3 gap-3 w-full mt-auto relative z-10">
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmT-6daD16cxpzDm8yfw5Tix0HNI500H06LOBtphoUU1turpc_MFY46qN3pNaFHBlz48XPLM-Ny2tg3tPwK73Fbv_2b8-iTJEcqvPWgUL1kshxacuoJpYRAhQc97TA9I86aN-AF1SD5toRj34qr44N0PdAX2HQMrA9F_VB3t2CMcQPVbwm_gURkw1oxK4TiScrJg20OVzSHpwTyJpx9U2hv9dNHIZNdNEuoNQ8G-h3PdhV-lKliWTKLQ"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA76FaInodn1u1oU_FZdsXX3F5A-N8QrNJzQw0nkMH_ItvGD1rm992qG-BldwjT4dzsN7aTs5HUQvPRKBi4fuLprSwrR2HSt54Y_xwmP096nwFnUbw_66fHzBTspJ30Bu8nv31AXag3koZHUd1MwhjP3NuSJP_oiaNOk-DqdCM4GdDRfbbsUt27eHUBj_QSyLtfotE80G2zwhgJGshwdyQhCcfF0OP0uDcGx1GWzOIxC7q2xx_vkXn-eA"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdpTqaHJH8qV45ClZbfpSxd-8oSRrrUmaJFdS627fTLiOJqV00jKjP13u5lAN4WYeIGIl2SyBzdaO8D3YL1UBqIk-3t4TAKMTscEf25dnkBj9teYeOjn5-_VKw10jXJqYKhSM3-1dS7nxh2Thf_7_TqiTRW1Yzh74o9-BMFXjBFK-dAvhGs1HKzdFgqYKjSGU2Xs-G3j19gTzLwpArvJ5aaOnXibNI6OhKRGuF-Fk2XawqVPT5zJJXwg"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbbEFCl0qI8QewBRQzS6cDyegZFyKp3CXelGqo4DJzUhIpaWWgD6jFg8virPB-hhpk3CNw0BFN1Ys8f-DpiqPMKbLHSRWnBLjAGXx44R7_HbVPsdj8s5F5kd8EqSciOxkTQvkFpEYOWN-Zg84-quSu-xy1NUH1p35fZY0gE6_DH4758Bvws5KR95u61AfXRfcEQ2unGQdX4f982NKHMc_D4lNCw8gesnBvAcLVoZ-kW2uwStkfyfiNjQ"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-I0vi1ArAfAYZNBiB4POuiOY7frjgc1qQDuE9PELuVF2grkxBN71TnILLyO84gkdC9dL26IrcLQZ2EoefuzgcdJ7cel6VcKHAhREJNAUgB0m5JtXfWHif8ZJKt_tN_K5BBfc38A3gR7hv0fvsYocQgO2jQkIldYxPq79kgdRhtG563wng_K5UWWHbEyvB9VclxSBwdNeulI1_ansEw9p4B3Y66f4fAHKj37wMLfPTHbmYG6WPpXcb2w"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmbB76TzxAhdH_mVVCKMMR2cRked5mMxln6_llQqPFjWOOF7Vqs0hhzkIpYNc61utaRHhWkUiSH7523PU7ZI3KH3H5qqCrgnC8Xv02dEjiRG6J0sseqaKjC1x6W_LtuHRn5bWs_yBXCpRuInuOl_Ce07kPplQY4mHpOLu4mqqLCfYBle2AG91x04r9fOtbABDPPDBV2ZAVF7N62aAgU_wAcK660el0J8bbLGvhqKwRoh9AXbHS3whdrg"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0H5rxuYHEkAFt7guq9i7t_Y6Vud2ylquIKakbG4JAYzZGdt_dp4D6R-12n8gIEPvA3FhCugG7j3fyOcSbAUAR3HgKQ4PNh2TTp9j5LG6Ur7AXUIZf-Wg1_vqPsbQ517ke1_Ai5qywGJ_kIJuvykMIyaV68I2RczejemsjsI3CO1oMvLf5kBfdICsXPuwCMMBWpVc3GIG10-PcFevwKw9fc_eGcVFf0JJRUiJ4FyYYbIKmfAHZ4KOWHA"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBa_SVTAjvL3qS-X7-VD9T63cxYWUu_QNKzlREDLA5y00SjfBUMSyjfPB45MOXJ-aSqrg7hZNFBGb6mW-T4yw0-UF36eZyJ7X-1FCqjqhIfFfCCfm8aVZwNcWDVluObK-7hcq9rXIIdptJloNMHPLPXrqTWbEbOceD7EWyddlJP5JuGjvAdLfKkoAp0FKTqpieSvHyyD3VwNjorXgoioRg4Btgko3gaPwrFutrkkp-qzfo5kBXEa-VWpA"/></div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center p-2"><img class="w-full h-full object-contain" data-alt="A simple, 3D claymorphic style yellow rubber duck toy. Soft studio lighting, bright pastel yellow color, smooth texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7GquC9FS2k803yIFprkPQbriJA5QMA_kJLsV8tXv7LsWmdS3eF24vmnu56XsCKRfeCqvSPPsOgGPWliZuxqtEz1H_B0YZ3J0-qRseOQzqe_yopxLWb8bgo6dFl9VNhb-OrBgy5DMpSPLzrBfWxTZu8IputxqMMUpPHDv2nhw3e4LfsNw9gV9K5zv9j20oTUnT0wHF3HnzYQAGFeo4nqs-ePKtHxOffUm1M792jR2sALwm0xdlhpLZ6w"/></div>
+</div>
+</div>
+</section>
+<!-- Action Button -->
+<div class="mt-8 flex justify-center">
+<button class="bg-primary-container text-on-primary font-headline-lg-mobile text-headline-lg-mobile py-4 px-12 rounded-full shadow-lg btn-pressable flex items-center gap-2">
+<span>Tiếp tục</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<!-- Displaying Exercises as active since this is a learning/practice screen -->
+<nav class="bg-surface-container dark:bg-surface-container-highest font-label-caps text-label-caps fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container-high border-t-4 border-surface-container-highest shadow-[0_-4px_20px_rgba(255,140,66,0.05)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-4 pb-4 pt-2 md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim rounded-xl Active: scale-95 duration-100 transition-all group">
+<span class="material-symbols-outlined mb-1 group-hover:opacity-90">home</span>
+<span>Home</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 translate-y-[-4px] border-b-4 border-primary hover:bg-primary-fixed-dim Active: scale-95 duration-100 transition-all group">
+<span class="material-symbols-outlined mb-1 group-hover:opacity-90" data-weight="fill">edit_square</span>
+<span>Exercises</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim rounded-xl Active: scale-95 duration-100 transition-all group">
+<span class="material-symbols-outlined mb-1 group-hover:opacity-90">military_tech</span>
+<span>Rewards</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim rounded-xl Active: scale-95 duration-100 transition-all group">
+<span class="material-symbols-outlined mb-1 group-hover:opacity-90">family_restroom</span>
+<span>Parents</span>
+</button>
+</nav>
+</body></html>

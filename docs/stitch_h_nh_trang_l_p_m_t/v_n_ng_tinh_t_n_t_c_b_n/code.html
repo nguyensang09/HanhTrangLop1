@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tô Nét Cơ Bản</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#007152",
+                    "surface-variant": "#e4e3db",
+                    "on-primary-container": "#6a2d00",
+                    "secondary-container": "#51fac1",
+                    "primary-fixed": "#ffdbc9",
+                    "inverse-on-surface": "#f3f1e9",
+                    "outline-variant": "#ddc1b3",
+                    "surface-dim": "#dcdad2",
+                    "secondary-fixed": "#54fdc4",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f5f4ec",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#331200",
+                    "inverse-surface": "#30312c",
+                    "surface-container-highest": "#e4e3db",
+                    "surface-container": "#f0eee6",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#763300",
+                    "tertiary-container": "#53b5df",
+                    "inverse-primary": "#ffb68d",
+                    "on-surface-variant": "#564338",
+                    "on-tertiary-fixed": "#001f2a",
+                    "tertiary-fixed": "#bfe8ff",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed": "#002116",
+                    "primary": "#9b4500",
+                    "on-background": "#1b1c17",
+                    "on-surface": "#1b1c17",
+                    "primary-container": "#ff8c42",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "primary-fixed-dim": "#ffb68d",
+                    "surface-bright": "#fbf9f1",
+                    "background": "#fbf9f1",
+                    "surface-tint": "#9b4500",
+                    "outline": "#897266",
+                    "surface-container-high": "#eae8e0",
+                    "on-tertiary-container": "#00445a",
+                    "secondary": "#006c4f",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "tertiary": "#006686",
+                    "on-secondary": "#ffffff",
+                    "surface": "#fbf9f1",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target-min": "48px",
+                    "container-margin": "24px",
+                    "gutter": "16px",
+                    "card-gap": "20px",
+                    "unit": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-md": [
+                            "22px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-caps": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-hero": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .pressable {
+            border-bottom-width: 4px;
+            transition: all 0.15s ease;
+        }
+        .pressable:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+        .clay-card {
+            box-shadow: 0 20px 20px rgba(255,140,66,0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md pt-16 pb-20 md:pb-0 flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full h-16 flex items-center justify-between px-container-margin fixed top-0 w-full z-50 bg-surface dark:bg-surface-container-high bg-surface dark:bg-surface shadow-[0_4px_0_0_rgba(228,227,219,1)]">
+<button class="flex items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant hover:bg-primary-container/20 active:translate-y-0.5 transition-transform rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim">Vẽ theo nét</h1>
+<div class="flex items-center gap-1 text-on-surface-variant font-title-md text-title-md hover:bg-primary-container/20 active:translate-y-0.5 transition-transform px-2 py-1 rounded-full cursor-pointer">
+<span>⭐</span>
+<span>125</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow p-container-margin flex flex-col items-center max-w-4xl mx-auto w-full gap-card-gap mt-4">
+<!-- Sóc Nâu Dialogue -->
+<div class="w-full bg-[#fdf5d3] rounded-2xl p-4 flex items-center gap-4 clay-card relative">
+<div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border-2 border-outline-variant bg-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="A cute 3D rendered illustration of a friendly brown squirrel wearing a tiny explorer hat. Warm, soft lighting, pastel background, Pixar style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_TSVdXaQJj9GENdAmRgyKhg4ibWzfH1cZbkWlVaIllmcW5FJsq1hNk2zwGR8dWnIzeC_8V52dHcWpdWFs0mFarbfXkbPIYQoU95pwZX_owNYWMfAaHt6X_idCXL5dbU4j6G-6AeI-RHFxSlpaRJE_QjHPXSyT9ppNAk_8LuamaWMJoyaN13hhpZirMWMRaVT4ZengUXNXKPJOSKi4T8TIvg0wo1BT7RBkxqGkrx6rTn-d-BxibPXPSA"/>
+</div>
+<div class="flex-grow">
+<p class="font-title-md text-title-md text-on-surface">Bé hãy tô theo đường nét đứt để hoàn thành bức tranh nhé!</p>
+</div>
+<button class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center pressable border-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+<div class="absolute -bottom-3 left-10 w-6 h-6 bg-[#fdf5d3] rotate-45"></div>
+</div>
+<!-- Drawing Canvas Area -->
+<div class="w-full bg-surface-container-lowest rounded-3xl p-6 border-2 border-tertiary-fixed-dim relative clay-card aspect-video flex items-center justify-center">
+<!-- Tracing Line Pattern -->
+<svg class="w-full h-full max-h-[300px]" preserveaspectratio="xMidYMid meet" viewbox="0 0 500 200">
+<!-- Start Point -->
+<circle cx="50" cy="100" fill="#51fac1" r="12" stroke="#007152" stroke-width="4"></circle>
+<!-- Dashed Line -->
+<path d="M 50 100 Q 250 100 450 100" fill="none" stroke="#e4e3db" stroke-linecap="round" stroke-width="24"></path>
+<path d="M 50 100 Q 250 100 450 100" fill="none" stroke="#897266" stroke-dasharray="20, 20" stroke-linecap="round" stroke-width="12"></path>
+<!-- Direction Arrow -->
+<polygon fill="#007152" points="120,90 140,100 120,110"></polygon>
+<polygon fill="#007152" points="250,90 270,100 250,110"></polygon>
+<polygon fill="#007152" points="380,90 400,100 380,110"></polygon>
+<!-- End Point -->
+<circle cx="450" cy="100" fill="#fdf5d3" r="16" stroke="#ff8c42" stroke-width="4"></circle>
+<path d="M 445 95 L 455 105 M 455 95 L 445 105" stroke="#ff8c42" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<!-- Example decorative elements -->
+<div class="absolute top-4 left-4">
+<img class="w-16 h-16 object-contain opacity-50" data-alt="A simple, colorful 2D illustration of a cartoon cloud with a smiling face. Soft pastels, thick outlines, flat design suitable for children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb0kOSlt3-MXFp7_1PO_Iw6URs7P0dItZKE82o0PCEXc2MzwuQr2O1dyK_t3tsf8gUtVgWy6xoIdDCDO_Mwj26wRNNqlkwSB8dc-UlzNc8hLGKbOfydxh0O7j0cDHNOivJ5GOGHowO0CG4bEhlTsSZSx3bOF4If7PGAQnxtF-46R3esiVsH-LpJXGyhJ4YR58BcdU4aQABe04FQJ2LbJoCauMb3ERGocNKDxX9LXg88NNQHOAmGZ2dVw"/>
+</div>
+<div class="absolute bottom-4 right-4">
+<img class="w-16 h-16 object-contain opacity-50" data-alt="A simple, colorful 2D illustration of a cartoon flower with round petals. Soft pastels, thick outlines, flat design suitable for children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDx-Q1CWKAgiJDsZl1j1o-M0F5mUvqNKwqKOt84eC5zqRtbHOMTL4WNDhvPUdH9BmS2hf7RV_hu6HddiZnnSajt5izbB166RdHUkS2-RHYKe2AVXSWtLxsj6r1rSlVoqVEHnPJ7MgazjTFsROY4gqg2SYl27QX0oycQrEflZEXtub28gqsADatt8T1IwRWeq1w7N8LXe--l3k6Mnm6PkLqdoemtxIw_eeW_1uOmfT6rwe8CsaKLl8-Kag"/>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex gap-4 w-full justify-center flex-wrap">
+<button class="flex items-center gap-2 bg-surface-container-high text-on-surface-variant font-title-md text-title-md px-6 py-4 rounded-full pressable border-surface-dim hover:bg-surface-variant">
+<span class="material-symbols-outlined">visibility</span>
+                Xem mẫu
+            </button>
+<button class="flex items-center gap-2 bg-error-container text-on-error-container font-title-md text-title-md px-6 py-4 rounded-full pressable border-[#ffb4ab] hover:bg-[#ffb4ab]">
+<span class="material-symbols-outlined">delete</span>
+                Xóa nét
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 h-20 bg-surface dark:bg-surface-container shadow-[0_-4px_0_0_rgba(228,227,219,1)] docked full-width bottom-0 rounded-t-xl bg-surface dark:bg-surface-container shadow-[0_-4px_20px_rgba(255,140,66,0.05)]">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:bg-primary-fixed/30 active:translate-y-0 transition-all duration-150 cursor-pointer">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps mt-1">Trang chủ</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-1 translate-y-[-2px] shadow-[0_4px_0_0_rgba(155,69,0,1)] hover:bg-primary-fixed/30 active:translate-y-0 transition-all duration-150 cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+<span class="font-label-caps text-label-caps mt-1">Bài tập</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:bg-primary-fixed/30 active:translate-y-0 transition-all duration-150 cursor-pointer">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-caps text-label-caps mt-1">Phần thưởng</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:bg-primary-fixed/30 active:translate-y-0 transition-all duration-150 cursor-pointer">
+<span class="material-symbols-outlined">family_restroom</span>
+<span class="font-label-caps text-label-caps mt-1">Phụ huynh</span>
+</div>
+</nav>
+</body></html>

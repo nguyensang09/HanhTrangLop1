@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Báo cáo Chữ số và Toán học - Sóc Nâu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#00445a",
+                        "surface-dim": "#dcdad2",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-low": "#f6f4ec",
+                        "tertiary-container": "#53b5df",
+                        "inverse-primary": "#ffb68d",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#6a2d00",
+                        "error-container": "#ffdad6",
+                        "background": "#fbf9f1",
+                        "tertiary": "#006686",
+                        "on-surface-variant": "#564338",
+                        "faded-path": "rgba(0, 0, 0, 0.1)",
+                        "outline-variant": "#ddc1b3",
+                        "warm-yellow": "#ffd54f",
+                        "secondary-container": "#51fac1",
+                        "inverse-surface": "#30312c",
+                        "squirrel-brown": "#897266",
+                        "tertiary-fixed": "#bfe8ff",
+                        "primary": "#9b4500",
+                        "surface-tint": "#9b4500",
+                        "on-secondary-container": "#007152",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "inverse-on-surface": "#f3f1e9",
+                        "surface-container-high": "#eae8e0",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-tertiary-fixed": "#001f2b",
+                        "surface-variant": "#e4e3db",
+                        "success-glow": "#27e0a9",
+                        "on-surface": "#1b1c17",
+                        "primary-fixed": "#ffdbc9",
+                        "outline": "#897266",
+                        "surface": "#fbf9f1",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-background": "#1b1c17",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#fbf9f1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#331200",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container": "#f0eee6",
+                        "on-secondary-fixed": "#002116",
+                        "secondary-fixed": "#55fdc4",
+                        "secondary": "#006c4f",
+                        "secondary-fixed-dim": "#29e0a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "safe-margin": "32px",
+                        "tolerance-zone": "40px",
+                        "touch-target": "64px",
+                        "gutter": "24px",
+                        "container-margin": "16px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "path-number": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "instruction-md": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["80px", { "lineHeight": "96px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "path-number": ["16px", { "lineHeight": "16px", "fontWeight": "800" }],
+                        "label-caps": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "instruction-md": ["24px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "500", "letterSpacing": "0.15px" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-btn {
+            box-shadow: 0 4px 0 0 rgba(137, 114, 102, 0.2);
+            transition: all 0.1s ease-in-out;
+        }
+        .clay-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 0 rgba(137, 114, 102, 0.2);
+        }
+        .clay-card {
+            box-shadow: 0 6px 0 0 rgba(137, 114, 102, 0.1);
+        }
+        .progress-bar-fill {
+            transition: width 1s ease-out;
+        }
+        .adult-zone {
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-sans antialiased pb-32">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 bg-surface dark:bg-surface-dim bg-surface-container-low dark:bg-surface-container-high shadow-sm shadow-sm flex justify-between items-center w-full px-container-margin h-touch-target-min fixed z-50">
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-primary-container/20 transition-colors rounded-full active:translate-y-0.5 duration-100 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed-dim text-center flex-1 mx-4 truncate">
+            Sóc Nâu Đồng Hành
+        </div>
+<div class="w-touch-target-min h-touch-target-min flex items-center justify-center rounded-full overflow-hidden hover:bg-primary-container/20 transition-colors active:translate-y-0.5 duration-100 transition-transform">
+<img alt="Parent profile picture" class="w-10 h-10 object-cover" data-alt="A smiling adult's profile picture, suggesting a parent or guardian, set against a warm, soft background. The lighting is bright and cheerful, matching the light-mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5CBrcxczG5PPtEWPGthjR3cFYhJhhJB0lsxP-xFZUDdA12n0F5w5o5YCo3NCm5fCKCO8BrgHI7HR9K6MNya0-kpgKxhFw3LtJ8E1jU06w-ohRBGGlwKne8uqLZtRRWtk5N9vP6DTfPKsP4ciahE75tLRTZiWFLKzvdX9Zp8VY5jy898jVA24gZqNUV3L0BsJNpEssgFizYQo6LKpf9OBCGo7TRxgPynOm_lQb00KkgwsTSNt6QRxr3g"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-[80px] px-safe-margin max-w-4xl mx-auto space-y-8">
+<!-- Header Section -->
+<section class="text-center space-y-2 mt-4">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Báo Cáo Toán Học</h1>
+<p class="font-title-md text-title-md text-on-surface-variant">Phạm vi số 0-10 | Tháng này</p>
+</section>
+<!-- Overall Progress Ring (Bento Grid Style) -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Mastery Score -->
+<div class="bg-surface-container-lowest rounded-xl p-6 clay-card flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-secondary-container via-transparent to-transparent pointer-events-none"></div>
+<h2 class="font-instruction-md text-instruction-md text-on-surface mb-4">Độ Thành Thạo</h2>
+<div class="relative w-40 h-40 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle class="text-surface-variant" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-width="10"></circle>
+<circle class="text-secondary" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="282.7" stroke-dashoffset="70" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="font-display-hero text-headline-lg text-secondary">75%</span>
+</div>
+</div>
+<p class="mt-4 font-title-md text-title-md text-on-surface-variant text-center">Bé đang làm rất tốt việc nhận biết các số cơ bản!</p>
+</div>
+<!-- Skill Breakdown Progress Bars -->
+<div class="bg-surface-container-lowest rounded-xl p-6 clay-card space-y-6">
+<h2 class="font-instruction-md text-instruction-md text-on-surface">Chi Tiết Kỹ Năng</h2>
+<!-- Skill 1 -->
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Nhận biết chữ số</span>
+<span class="font-title-md text-title-md text-secondary">90%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-4 overflow-hidden relative clay-card">
+<div class="bg-secondary h-4 rounded-full progress-bar-fill" style="width: 90%"></div>
+</div>
+</div>
+<!-- Skill 2 -->
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Đếm số lượng (0-10)</span>
+<span class="font-title-md text-title-md text-secondary">85%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-4 overflow-hidden relative clay-card">
+<div class="bg-secondary h-4 rounded-full progress-bar-fill" style="width: 85%"></div>
+</div>
+</div>
+<!-- Skill 3 -->
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">So sánh (nhiều-ít)</span>
+<span class="font-title-md text-title-md text-primary">60%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-4 overflow-hidden relative clay-card">
+<div class="bg-primary h-4 rounded-full progress-bar-fill" style="width: 60%"></div>
+</div>
+</div>
+<!-- Skill 4 -->
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Tách - Gộp nhóm</span>
+<span class="font-title-md text-title-md text-primary">45%</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-4 overflow-hidden relative clay-card">
+<div class="bg-primary-container h-4 rounded-full progress-bar-fill" style="width: 45%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Attention Areas & Suggestions -->
+<section class="bg-surface-container-low border-2 border-outline-variant rounded-xl p-6 clay-card">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-warm-yellow flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-on-surface" data-icon="lightbulb">lightbulb</span>
+</div>
+<h2 class="font-instruction-md text-instruction-md text-on-surface">Cần Lưu Ý &amp; Gợi Ý Luyện Tập</h2>
+</div>
+<div class="space-y-4">
+<!-- Confusion 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-start gap-4">
+<div class="flex-shrink-0 flex gap-2 font-display-hero text-headline-lg-mobile text-error">
+<span>6</span>
+<span class="material-symbols-outlined text-surface-variant">sync_alt</span>
+<span>9</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">Nhầm lẫn 6 và 9</h3>
+<p class="font-title-md text-title-md text-on-surface-variant mt-1">Bé thường nhầm hướng của vòng tròn. Hãy cùng bé chơi trò nặn đất sét thành số 6 và số 9 để bé cảm nhận vật lý tốt hơn.</p>
+</div>
+</div>
+<!-- Confusion 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-start gap-4">
+<div class="flex-shrink-0 w-16 h-16 bg-primary-container/20 rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="splitscreen">splitscreen</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">Tách gộp số lượng 5</h3>
+<p class="font-title-md text-title-md text-on-surface-variant mt-1">Sử dụng kẹo hoặc đồ chơi nhỏ, yêu cầu bé chia 5 viên kẹo ra 2 đĩa bằng nhiều cách khác nhau (1-4, 2-3).</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container dark:bg-surface-container-highest bg-surface-container dark:bg-surface-container-highest shadow-lg shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe md:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:scale-105 transition-transform active:scale-95 translate-y-1 duration-150 transition-all group">
+<span class="material-symbols-outlined mb-1 group-hover:text-secondary transition-colors" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-[10px] uppercase group-hover:text-secondary transition-colors">Tổng quan</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-6 py-2 border-b-4 border-secondary/20 hover:scale-105 transition-transform active:scale-95 translate-y-1 duration-150 transition-all group">
+<span class="material-symbols-outlined mb-1" data-icon="auto_stories" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label-caps text-[10px] uppercase">Kỹ năng</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:scale-105 transition-transform active:scale-95 translate-y-1 duration-150 transition-all group">
+<span class="material-symbols-outlined mb-1 group-hover:text-secondary transition-colors" data-icon="settings">settings</span>
+<span class="font-label-caps text-[10px] uppercase group-hover:text-secondary transition-colors">Cài đặt</span>
+</button>
+</nav>
+<script>
+        // Simple animation to ensure progress bars fill on load
+        document.addEventListener("DOMContentLoaded", () => {
+            const bars = document.querySelectorAll('.progress-bar-fill');
+            bars.forEach(bar => {
+                const w = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = w;
+                }, 100);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>So Sánh Nhiều Ít - Học Cùng Sóc Nâu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fbf9f1",
+                        "primary": "#9b4500",
+                        "on-tertiary-container": "#00445a",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container-high": "#eae8e0",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#6a2d00",
+                        "primary-fixed": "#ffdbc9",
+                        "on-secondary-fixed": "#002116",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "surface-tint": "#9b4500",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container": "#f0eee6",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-background": "#1b1c17",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-surface-variant": "#564338",
+                        "secondary": "#006c4f",
+                        "secondary-fixed": "#54fdc4",
+                        "secondary-container": "#51fac1",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#ffb68d",
+                        "primary-container": "#ff8c42",
+                        "inverse-surface": "#30312c",
+                        "on-surface": "#1b1c17",
+                        "on-secondary-container": "#007152",
+                        "surface-container-low": "#f5f4ec",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#bfe8ff",
+                        "error-container": "#ffdad6",
+                        "outline": "#897266",
+                        "surface": "#fbf9f1",
+                        "on-primary-fixed": "#331200",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-dim": "#dcdad2",
+                        "background": "#fbf9f1",
+                        "surface-variant": "#e4e3db",
+                        "tertiary": "#006686",
+                        "tertiary-container": "#53b5df"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "16px",
+                        "container-margin": "24px",
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "card-gap": "20px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "body-md": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "label-caps": ["16px", { lineHeight: "20px", fontWeight: "700" }],
+                        "body-lg": ["20px", { lineHeight: "32px", fontWeight: "500" }],
+                        "display-hero": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "title-md": ["22px", { lineHeight: "30px", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-card {
+            box-shadow: 0 8px 20px rgba(255,140,66,0.05), inset 0 2px 4px rgba(255,255,255,0.8);
+        }
+        .clay-btn {
+            border-bottom: 4px solid var(--tw-colors-primary-container);
+            transition: all 0.15s ease;
+        }
+        .clay-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+        .group-select:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md pt-20 pb-32 overflow-x-hidden flex flex-col md:items-center">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin py-unit bg-surface dark:bg-surface-dim shadow-[0_4px_0_0_rgba(255,140,66,0.1)]">
+<button class="h-touch-target-min w-touch-target-min flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-variant rounded-full transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary dark:text-primary-fixed-dim tracking-tight">Sóc Nâu Đồng Hành</h1>
+<div class="h-touch-target-min px-4 flex items-center justify-center bg-surface-variant rounded-full font-label-caps text-label-caps text-on-surface-variant">
+            50 ⭐
+        </div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-4xl px-container-margin mx-auto flex flex-col gap-card-gap mt-8">
+<!-- Instruction Section (Sóc Nâu & Speech Bubble) -->
+<section class="flex flex-col md:flex-row items-center gap-4 bg-tertiary-container/20 p-6 rounded-3xl border-2 border-tertiary-container/30 relative">
+<div class="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 bg-white border-4 border-primary-container shadow-md">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, cartoon-style illustration of a friendly brown squirrel character (Sóc Nâu) wearing a tiny backpack. The squirrel is looking directly forward with a wide, encouraging smile and big, expressive eyes. The background of the circle is a solid bright yellow. 3d claymorphic style, soft lighting, vibrant colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfBWKzXIjtByV_9RLQnFUROMbeLulEb7wv_nGc_NFR5kRAdDXYmr8E7X4jWWcgX2eqw0kDLAdoMMNFteuJ6ixNHCvypYORKLMkWkdPG1zsKH3-bPO0x_3VAnFZstjD0_EcR-MuxvVa1fe-0MpP0Bb1OfFMTaqiz3XGKN2IeoVEMCWuFG8d1xC174INZAPP-Gl5Z4QPpPtgv0PMs9X7pdMtrLLgwOfCeIsv_O9pp70cwBk8vcrmmoaSWw"/>
+</div>
+<div class="relative bg-surface rounded-2xl p-6 shadow-md border-2 border-tertiary-container/20 flex-grow md:ml-4 clay-card w-full text-center md:text-left">
+<!-- Tail for speech bubble on desktop -->
+<div class="hidden md:block absolute w-4 h-4 bg-surface border-t-2 border-l-2 border-tertiary-container/20 transform -rotate-45 -left-[9px] top-1/2 -translate-y-1/2"></div>
+<!-- Tail for speech bubble on mobile -->
+<div class="block md:hidden absolute w-4 h-4 bg-surface border-t-2 border-l-2 border-tertiary-container/20 transform rotate-45 -top-[9px] left-1/2 -translate-x-1/2"></div>
+<p class="font-title-md text-title-md text-on-surface mb-2">Nhóm nào có nhiều hạt dẻ hơn nhỉ?</p>
+<button class="inline-flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full font-label-caps text-label-caps hover:bg-secondary-fixed transition-colors mt-2 mx-auto md:mx-0">
+<span class="material-symbols-outlined">volume_up</span>
+                    Nghe lại
+                </button>
+</div>
+</section>
+<!-- Comparison Area -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+<!-- Group A -->
+<button class="group-select bg-surface border-4 border-outline-variant hover:border-primary-container rounded-[2rem] p-8 flex flex-col items-center gap-6 transition-all duration-200 clay-card focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-transparent">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface-variant bg-surface-container-high px-6 py-2 rounded-full">Nhóm A</h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Acorn 1 -->
+<div class="w-20 h-20 bg-primary-fixed/40 rounded-full flex items-center justify-center shadow-inner">
+<img alt="Hạt dẻ" class="w-14 h-14 object-contain" data-alt="A cute, stylized 3D illustration of a single brown acorn with its cap on, set against a transparent background. Soft clay-like texture, warm lighting, vibrant colors. Learning material aesthetic for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuM6J_MTxh96372dycErR5CKsLEIYQCmUJ0-ewpeWm9AaBoLm2J_kwvdcllyR5ftkaoBYz_331Ng5Dfyko3DI_Jhowwrld_g8clmGJXtUrcdR31GUGZ0pfL1TJUfvxrSZEoU1rF9MvIx-82snrIxGv6990dMspTJ_Bc2D8vGsLiA4vUw7T7q6_6ouL08wUDIIvnFlgPx_vpxJ56EyvfI9VlQTV3kZY4_gBVeZUb7DyxDhunLJ-gi-lmw"/>
+</div>
+<!-- Acorn 2 -->
+<div class="w-20 h-20 bg-primary-fixed/40 rounded-full flex items-center justify-center shadow-inner">
+<img alt="Hạt dẻ" class="w-14 h-14 object-contain" data-alt="A cute, stylized 3D illustration of a single brown acorn with its cap on, set against a transparent background. Soft clay-like texture, warm lighting, vibrant colors. Learning material aesthetic for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-HVsXJRSv65GtMJqNjZI2ZSj6Z6Dtxjr54OGSg39hFAIEmUu-PVvtRlbcTmWTvM-UNIii4kFIdGxbJCVLYfGs3NSF1qr4ORTvvxLkoCX_Laz9SfKTv7DA0su3Kqg4aSGuX59kr4eSG3fyBjgD1_upFBwjHr8ypSLX1LfTv9d1ANo7f6lhiVh4fm5oiEXVIYqwdRcnSvSTjlHYQEg9CIxDMxStUOWJHtzp7iLcffBdD31MeYf-Xs5wPA"/>
+</div>
+<!-- Acorn 3 -->
+<div class="w-20 h-20 bg-primary-fixed/40 rounded-full flex items-center justify-center shadow-inner">
+<img alt="Hạt dẻ" class="w-14 h-14 object-contain" data-alt="A cute, stylized 3D illustration of a single brown acorn with its cap on, set against a transparent background. Soft clay-like texture, warm lighting, vibrant colors. Learning material aesthetic for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBykjhpOt5dPylVgZ4P6S1ZFxbB6l6g6KTx4TNWbbeqqODNTlw0Jtsi0NGEw1N2l_rv10LStV_nWqNHHZ2QkiAQh3er2crgLYbuoQRWVyyhZZ0SI19n1k0ou8-af230fNFnVXJ05Qllr9rnIBfqWKlf9CBhriUI-RSg0rLI-A7sL90V8fppr21LXcooGZ9QiIzqO-NHZ-DtmfD56YT3DODLbJluu384ScraMM8J9sbqGuqxT-pr3AES7A"/>
+</div>
+<!-- Acorn 4 -->
+<div class="w-20 h-20 bg-primary-fixed/40 rounded-full flex items-center justify-center shadow-inner">
+<img alt="Hạt dẻ" class="w-14 h-14 object-contain" data-alt="A cute, stylized 3D illustration of a single brown acorn with its cap on, set against a transparent background. Soft clay-like texture, warm lighting, vibrant colors. Learning material aesthetic for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdk1_Bfn2Kju4XRS-SUg9M_brfA26HdysrWyGy2lMQGNBcuZNK9kCmNbYEf6xx-1i-2l-56vQvsoBJNF3-VqjGxV_ZfvRHCgvx2kTf6So2Ug4KTGhNOygH645C_sQYx8LuCmw1fI3E_q6e3dReXzPFYhHBNGEeaq7IdrsWEuj-M9r2h_duUDE9FFJRiG4PPC1lw6kvJp0UNHMWtxBzS8Qt4ss6_GJqDjhAX323XW9BjvQYZC_8PejDwg"/>
+</div>
+</div>
+</button>
+<!-- Group B -->
+<button class="group-select bg-surface border-4 border-outline-variant hover:border-primary-container rounded-[2rem] p-8 flex flex-col items-center gap-6 transition-all duration-200 clay-card focus:outline-none focus:ring-4 focus:ring-primary-container focus:border-transparent">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface-variant bg-surface-container-high px-6 py-2 rounded-full">Nhóm B</h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Acorn 1 -->
+<div class="w-20 h-20 bg-primary-fixed/40 rounded-full flex items-center justify-center shadow-inner">
+<img alt="Hạt dẻ" class="w-14 h-14 object-contain" data-alt="A cute, stylized 3D illustration of a single brown acorn with its cap on, set against a transparent background. Soft clay-like texture, warm lighting, vibrant colors. Learning material aesthetic for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfY_cj6JKTUylLFKsnEv8fxqThADL5bdEoQTVyMlGzcJ-y0TgsjruNvSVLAnc3U8d6s5JAXdAoCktIAu5h9lIqHPwM6mF7rbMoc9lne91nUb0HvT18CO2Xb0lHoaoEv0sOxRB9Bl06FDFNy9FdYtDzKVhsLRgck6Vuwa5QqLBTqpYi9br1gB8b7wy8lkn315P7VEzgM9RClQCcokiJhEztZsHqDy9i4Vr8Qg9vS7NfvgTZgyd-2_uXSg"/>
+</div>
+<!-- Acorn 2 -->
+<div class="w-20 h-20 bg-primary-fixed/40 rounded-full flex items-center justify-center shadow-inner">
+<img alt="Hạt dẻ" class="w-14 h-14 object-contain" data-alt="A cute, stylized 3D illustration of a single brown acorn with its cap on, set against a transparent background. Soft clay-like texture, warm lighting, vibrant colors. Learning material aesthetic for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPnIAjSHkBzYnTLQvU1NQYT7VN1oH_lV4uJ9971YMvdTLneocTtHLZUtJJbb2qQuqmgwNQ0pKwMWQUNFZOzYIsZwcWVtAazwuzM_S2tK94irqWJjb76nrDKmss_OwFcgR99n3vq9Yf8Uws9n2pGwQj2LxnDwQ3qUP1bMoUzUCLQHH_H6SpuzR6vPf-Rk8yxojgQQG9HFGnvoKS6uZ5wwB2qk5j5waImNj0JDhZfgfh2RaIQAnfDcPJMw"/>
+</div>
+<!-- Empty spots for visual balance if needed, or just let grid handle it. Leaving grid as 2x2 for consistent size but only 2 items -->
+<div class="w-20 h-20 rounded-full opacity-0 pointer-events-none"></div>
+<div class="w-20 h-20 rounded-full opacity-0 pointer-events-none"></div>
+</div>
+</button>
+</section>
+<div class="flex justify-center mt-8">
+<button class="clay-btn bg-primary text-on-primary font-headline-lg-mobile text-headline-lg-mobile rounded-full px-8 py-4 w-full md:w-auto min-w-[200px] shadow-lg">
+                Kiểm tra
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Active: Bài tập) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container dark:bg-surface-container-highest rounded-t-xl md:hidden shadow-[0_-4px_10px_0_rgba(255,140,66,0.05)]">
+<!-- Trang chủ -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl transition-all w-16" href="#">
+<span class="material-symbols-outlined text-[28px] mb-1">home</span>
+<span class="font-label-caps text-[10px] text-center leading-tight">Trang chủ</span>
+</a>
+<!-- Bài tập (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-2 border-b-4 border-primary dark:border-on-primary-fixed-variant translate-y-[2px] transition-all w-16" href="#">
+<span class="material-symbols-outlined text-[28px] mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-[10px] text-center leading-tight">Bài tập</span>
+</a>
+<!-- Phần thưởng -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl transition-all w-16" href="#">
+<span class="material-symbols-outlined text-[28px] mb-1">military_tech</span>
+<span class="font-label-caps text-[10px] text-center leading-tight">Phần thưởng</span>
+</a>
+<!-- Phụ huynh -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-xl transition-all w-16" href="#">
+<span class="material-symbols-outlined text-[28px] mb-1">family_history</span>
+<span class="font-label-caps text-[10px] text-center leading-tight">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        // Simple interaction script
+        const groupBtns = document.querySelectorAll('.group-select');
+        groupBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Reset all
+                groupBtns.forEach(b => {
+                    b.classList.remove('border-primary', 'bg-primary-fixed/20');
+                    b.classList.add('border-outline-variant', 'bg-surface');
+                });
+                // Set active
+                this.classList.remove('border-outline-variant', 'bg-surface');
+                this.classList.add('border-primary', 'bg-primary-fixed/20');
+            });
+        });
+    </script>
+</body></html>

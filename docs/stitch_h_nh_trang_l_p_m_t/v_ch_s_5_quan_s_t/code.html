@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vẽ chữ số 5 - Quan sát</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed": "#331200",
+                        "primary-fixed": "#ffdbc9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "background": "#fbf9f1",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-variant": "#e4e3db",
+                        "on-tertiary-container": "#00445a",
+                        "surface-dim": "#dcdad2",
+                        "secondary-container": "#51fac1",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#6a2d00",
+                        "primary": "#9b4500",
+                        "on-error-container": "#93000a",
+                        "surface": "#fbf9f1",
+                        "surface-container-highest": "#e4e3db",
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#007152",
+                        "on-surface-variant": "#564338",
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-container": "#f0eee6",
+                        "primary-container": "#ff8c42",
+                        "inverse-primary": "#ffb68d",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "secondary-fixed": "#54fdc4",
+                        "on-background": "#1b1c17",
+                        "surface-container-high": "#eae8e0",
+                        "inverse-on-surface": "#f3f1e9",
+                        "tertiary-container": "#53b5df",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "outline": "#897266",
+                        "surface-bright": "#fbf9f1",
+                        "surface-container-low": "#f5f4ec",
+                        "inverse-surface": "#30312c",
+                        "tertiary": "#006686",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#9b4500",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#006c4f",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "outline-variant": "#ddc1b3",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#001f2a"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    spacing: {
+                        "container-margin": "24px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "gutter": "16px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"]
+                    },
+                    fontSize: {
+                        "label-caps": ["16px", { lineHeight: "20px", fontWeight: "700" }],
+                        "display-hero": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "title-md": ["22px", { lineHeight: "30px", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "body-md": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "body-lg": ["20px", { lineHeight: "32px", fontWeight: "500" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .pressable {
+            border-bottom-width: 4px;
+            transition: all 0.15s ease;
+        }
+        .pressable:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-bottom: 2px;
+        }
+        .floating-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        .stroke-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 2s ease forwards;
+        }
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        .pulse-anim {
+            animation: pulse-soft 2s infinite;
+        }
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-background font-body-md pt-16 pb-24 md:pb-0 overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-container-high shadow-[0_4px_0_0_rgba(228,227,219,1)]">
+<div class="w-full h-16 flex items-center justify-between px-container-margin">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-primary-container/20 active:translate-y-0.5 transition-transform text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-surface-container-lowest">Vẽ chữ số 5</h1>
+<div class="flex items-center gap-1 font-label-caps text-label-caps text-primary dark:text-primary-fixed-dim bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>125</span>
+</div>
+</div>
+</header>
+<main class="max-w-md mx-auto px-container-margin py-6 flex flex-col gap-6">
+<!-- Sóc Nâu Dialogue -->
+<section class="bg-tertiary-fixed rounded-3xl p-5 flex items-start gap-4 floating-card border-2 border-surface-container-lowest relative">
+<div class="w-16 h-16 rounded-full overflow-hidden shrink-0 bg-surface-container-lowest flex items-center justify-center pulse-anim shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A cute, 3D style illustration of a friendly brown squirrel mascot (Sóc Nâu) with big expressive eyes, wearing a small orange scarf, smiling warmly. The illustration has soft edges, claymorphic style, bright studio lighting, against a pure white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhxN98uvEMSm46PF7jPoveHiGTX0WSQiyPawOuEgsBZxx9FJB400dYKej8T1RYg3HVTjGq3Y-QmAbiFFd1m0sATx_-jmCenJuRJQfG-baxohKxlGUBBIj-ThvGBwJHKTSeBAKg89F4DaLjkUlzvCu5QT5Vr9OSfPPCDJsLSxrkePogM4zmxo5YWkRLqNBLcF0d7nrM71xoO22FN-U0VnEHnrzQ-JLdxe5e9NyYYiAr8a8tsEz-Cg4A7g"/>
+</div>
+<div class="flex-1 flex flex-col justify-center min-h-[64px]">
+<p class="font-body-lg text-body-lg text-on-tertiary-container">
+                    Bé hãy quan sát cách viết số 5 nhé!
+                </p>
+</div>
+<button aria-label="Play instruction audio" class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center text-tertiary pressable border-tertiary-container absolute bottom-[-16px] right-6 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</section>
+<!-- Canvas Area -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 aspect-square relative flex items-center justify-center floating-card border-2 border-surface-container">
+<!-- Grid Background -->
+<div class="absolute inset-0 rounded-3xl overflow-hidden opacity-10 pointer-events-none flex flex-wrap" style="background-image: linear-gradient(#e4e3db 2px, transparent 2px), linear-gradient(90deg, #e4e3db 2px, transparent 2px); background-size: 32px 32px;">
+</div>
+<!-- Number 5 SVG -->
+<div class="relative w-full h-full max-w-[240px] max-h-[300px]">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 100 150">
+<!-- Guidelines / Outline -->
+<path d="M 30,20 L 70,20 M 30,20 L 25,60 C 40,50 65,55 70,80 C 75,105 55,130 30,120" fill="none" stroke="#e4e3db" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path>
+<!-- Stroke 1: Top horizontal line -->
+<g class="stroke-group">
+<path class="stroke-path" d="M 30,20 L 70,20" fill="none" stroke="#ff8c42" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" style="animation-delay: 0.5s;"></path>
+<circle cx="30" cy="20" fill="#9b4500" r="10"></circle>
+<text fill="white" font-family="Plus Jakarta Sans" font-size="12" font-weight="bold" text-anchor="middle" x="30" y="24">1</text>
+<path d="M 60,12 L 70,20 L 60,28" fill="none" stroke="#9b4500" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+</g>
+<!-- Stroke 2: Vertical line -->
+<g class="stroke-group">
+<path class="stroke-path" d="M 30,20 L 25,60" fill="none" stroke="#53b5df" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" style="animation-delay: 2.5s;"></path>
+<circle cx="30" cy="20" fill="#006686" r="10"></circle>
+<text fill="white" font-family="Plus Jakarta Sans" font-size="12" font-weight="bold" text-anchor="middle" x="30" y="24">2</text>
+<path d="M 17,50 L 25,60 L 33,50" fill="none" stroke="#006686" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+</g>
+<!-- Stroke 3: Curve -->
+<g class="stroke-group">
+<path class="stroke-path" d="M 25,60 C 40,50 65,55 70,80 C 75,105 55,130 30,120" fill="none" stroke="#54fdc4" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" style="animation-delay: 4.5s;"></path>
+<circle cx="25" cy="60" fill="#006c4f" r="10"></circle>
+<text fill="white" font-family="Plus Jakarta Sans" font-size="12" font-weight="bold" text-anchor="middle" x="25" y="64">3</text>
+<path d="M 40,125 L 30,120 L 35,110" fill="none" stroke="#006c4f" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+</g>
+</svg>
+</div>
+</section>
+<!-- Action Buttons -->
+<section class="flex flex-col gap-4 mt-2">
+<button class="w-full h-16 bg-primary text-on-primary rounded-2xl flex items-center justify-center gap-2 font-label-caps text-label-caps pressable border-on-primary-fixed-variant shadow-sm" onclick="replayAnimation()">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+<span>Xem mẫu</span>
+</button>
+<button class="w-full h-16 bg-surface-container-lowest text-primary rounded-2xl flex items-center justify-center gap-2 font-label-caps text-label-caps pressable border-surface-dim shadow-sm border-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">draw</span>
+<span>Tự viết thử</span>
+</button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 h-20 bg-surface dark:bg-surface-container shadow-[0_-4px_0_0_rgba(228,227,219,1)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 font-label-caps text-[12px] leading-tight font-bold" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">home</span>
+            Trang chủ
+        </a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-1 translate-y-[-2px] shadow-[0_4px_0_0_rgba(155,69,0,1)] font-label-caps text-[12px] leading-tight font-bold active:translate-y-0 transition-all duration-150" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+            Bài tập
+        </a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 font-label-caps text-[12px] leading-tight font-bold hover:bg-primary-fixed/30 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">auto_awesome</span>
+            Phần thưởng
+        </a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 font-label-caps text-[12px] leading-tight font-bold hover:bg-primary-fixed/30 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">family_restroom</span>
+            Phụ huynh
+        </a>
+</nav>
+<script>
+        function replayAnimation() {
+            const paths = document.querySelectorAll('.stroke-path');
+            paths.forEach(path => {
+                path.style.animation = 'none';
+                path.offsetHeight; /* trigger reflow */
+                path.style.animation = null; 
+            });
+        }
+    </script>
+</body></html>

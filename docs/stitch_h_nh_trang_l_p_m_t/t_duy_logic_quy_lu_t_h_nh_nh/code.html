@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bài tập - Quy luật hình ảnh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae8e0",
+                        "surface-dim": "#dcdad2",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "surface-container-low": "#f5f4ec",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-primary-container": "#6a2d00",
+                        "outline-variant": "#ddc1b3",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-container-highest": "#e4e3db",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-tint": "#9b4500",
+                        "surface-bright": "#fbf9f1",
+                        "on-secondary-container": "#007152",
+                        "tertiary-container": "#53b5df",
+                        "inverse-primary": "#ffb68d",
+                        "on-surface": "#1b1c17",
+                        "secondary-container": "#51fac1",
+                        "on-primary-fixed-variant": "#763300",
+                        "secondary": "#006c4f",
+                        "on-error": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "on-secondary-fixed": "#002116",
+                        "inverse-on-surface": "#f3f1e9",
+                        "outline": "#897266",
+                        "surface-container": "#f0eee6",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#ffdbc9",
+                        "surface": "#fbf9f1",
+                        "on-surface-variant": "#564338",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-background": "#1b1c17",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "surface-variant": "#e4e3db",
+                        "on-primary-fixed": "#331200",
+                        "tertiary": "#006686",
+                        "tertiary-fixed": "#bfe8ff",
+                        "background": "#fbf9f1",
+                        "secondary-fixed": "#54fdc4",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#30312c",
+                        "on-tertiary-container": "#00445a",
+                        "error-container": "#ffdad6",
+                        "primary": "#9b4500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid var(--tw-colors-on-primary-fixed-variant);
+            transition: all 0.15s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+        .floating-card {
+            box-shadow: 0 10px 20px -5px rgba(255, 140, 66, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim font-title-md text-title-md docked full-width top-0 bg-surface dark:bg-surface-dim flat no shadows flex justify-between items-center w-full px-container-margin py-unit h-touch-target-min">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border-2 border-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="A cute, simple illustration of a brown squirrel head, flat design, warm colors, preschool educational style, light cream background, high contrast for easy reading, thick lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAilU0XQoTUjGGCMeX4nuH81mBKmWrBM7s8aRoGMIJR74T8MfbTeIiemZ2jd2sPP454n1qzOoqJrScxxtatfELrDu1vuqmKuE_QrQXA6yzw4YvQI8T2KOM6xc_pSOPgNmCgEflvOhRP0xZ8IQbQKfN4F49OEr4s-N-dtdIq4Y1PvYOjcWHCg1vZHddC8rbTlhG5zzlEw4b3vPUPfGYAEyWSEHN4libTlNVuNbiWgdOd6ILUMeqRkVxjTw"/>
+</div>
+<span class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed hidden md:block">Hành Trang Lớp Một</span>
+<span class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed md:hidden">Bé tập sự</span>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-label-caps text-on-surface">125</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col px-container-margin py-6 pb-32 max-w-4xl mx-auto w-full">
+<!-- Instructional Sóc Nâu Dialogue -->
+<div class="bg-primary-fixed rounded-2xl p-4 flex items-center gap-4 mb-6 shadow-sm relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-20 w-32 h-32">
+<img class="w-full h-full object-cover" data-alt="Abstract geometric shapes, soft rounded edges, warm orange and yellow tones, floating in space, educational claymorphic style, playful and gentle for children's learning." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi23FCeVaP-PvV4aEy0qjcKfDBW6rDkX_pVCbCwoPO2DbK9ZuiRQp-Zex345bE9S9ZyklDx4ynZifdvr_8mIg3lRP0tVJhF_4V5H1c_53Mz0n9Wx1a8fWDwvhdMdZSQnjZ9eHPCHZgB11kgJlJHWayty402eUgS6Cxsei_K3wfdrkNHD2o3GBtEX4QQHwwmloHjV2sCaOjoyV0WRNs5Nb_QH8rrwPaOYyvH3YawZ8d-SLAYd_emleY0g"/>
+</div>
+<div class="w-16 h-16 rounded-full bg-surface shrink-0 flex items-center justify-center relative z-10 border-2 border-primary-container">
+<img class="w-full h-full object-cover" data-alt="A friendly brown squirrel character pointing with a smile, looking helpful, preschool educational illustration style, warm lighting, cream background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8nFyKK77SEOozvI19gHlDyLqbhXVX65s_GeqCBUHA3y1FYJpd-GvEd8dIzgV4jRLWMoXL2trtS-nGosHAm-2YckUj8Meq3extM5EbXemLNjvsFeFLGiuryAjUD6u4keTKSG_0dcDToSrDgx_1JNg50w2bUeYAhvX_9WBAEkxGvtHGDOWPR0WynEHv1x5Eyyle5eiFZQpJuwtJzT2bS15C70FGEuBpDT3NDjjkhRgBvfwM5T8AwE2B2g"/>
+</div>
+<div class="relative z-10">
+<h2 class="font-title-md text-title-md text-on-primary-fixed mb-1">Sóc Nâu nói:</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Bé hãy tìm hình tiếp theo để hoàn thành dãy này nhé!</p>
+</div>
+<button aria-label="Phát âm thanh" class="ml-auto w-12 h-12 rounded-full bg-surface text-primary flex items-center justify-center shadow-sm shrink-0 z-10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Progress Bar -->
+<div class="mb-8 flex items-center gap-4">
+<div class="h-4 flex-grow bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/5 rounded-full relative">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-surface rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Câu 3/5</span>
+</div>
+<!-- The Pattern Area -->
+<div class="bg-surface-container-lowest border-2 border-tertiary-fixed rounded-3xl p-6 mb-8 floating-card flex flex-col items-center">
+<h3 class="font-label-caps text-label-caps text-tertiary mb-6 uppercase tracking-wider">Quy luật hình ảnh</h3>
+<div class="flex flex-wrap justify-center gap-4 md:gap-6 w-full items-center">
+<!-- Apple -->
+<div class="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-surface-container flex items-center justify-center p-3 shadow-sm border border-surface-variant">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A bright red apple with a green leaf, cartoon style, thick outlines, highly saturated colors, preschool educational illustration, light background, clear and simple." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4GmhFb8hPGg_eijkp3uAZvyk56TbJUytGFHlI5JelBeYj9huzIM5EYigVqlnTsGQ4H51sdSg3r1Wh2MOli_7TdwOrrzpDbhxpGJWXMe0cUwk7v5KiOihrPBkhYsLIvZPaZPCaXcH7OXRgeCWtDPpp9j1aexYNvaxsqq7AMd8_lS2JkTCNV3J55ohfycl-eCURFj0eTgC71QiFiyA4hfB0gkSmfAd6FRaiJDTJOiWXqXLmLBvdjSpEsQ"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">arrow_right_alt</span>
+<!-- Orange -->
+<div class="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-surface-container flex items-center justify-center p-3 shadow-sm border border-surface-variant">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A bright orange with dimpled skin and a small green leaf, cartoon style, thick outlines, highly saturated colors, preschool educational illustration, light background, clear and simple." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBANwsbPrp4rvN9VIfTWGuJhhOqmdm26cXGh4p6vtunol88hxwNI_4O6Icd-v1CyiRFU7nhv0LFGggwB5eSSmm15ACpTfwIm1MaEnjKVHB_KiB7JwJJyqu8cPifJaqG-QyxbPnryoq_ZrQUi6Xauhm2L5vI0MfNjc8KYoTh5mAAgdpea3wTqUOBxl-I5Rui8ZDUBtLlHynlDewWJRNwKZP_k1uuTDCO4OCUbxlegj1A7NPsef5YoFnt1A"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">arrow_right_alt</span>
+<!-- Apple -->
+<div class="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-surface-container flex items-center justify-center p-3 shadow-sm border border-surface-variant">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A bright red apple with a green leaf, cartoon style, thick outlines, highly saturated colors, preschool educational illustration, light background, clear and simple." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5IyyYUEDjwF-JHUGcEinMHPUGCGXVg26MIoG7UwRqPRjhU6damYQdlii_IdT8qpRLzlTDnXM7AJUMKTWZILhr3yN68HURgmBp3tAV-pXX5BaH-d0jdoptCX9RuZdmKvccOZk4Ieay6ZqjTl-7_VHfiGiSeAuqvXnHdB9Gf4VclKZxEXjuCgexLfkONS46RzSmWHLBMs6YrYKR1LbkapapopDpuldymeN5vDaWm33c5PKV1wM3-LfAHA"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">arrow_right_alt</span>
+<!-- Orange -->
+<div class="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-surface-container flex items-center justify-center p-3 shadow-sm border border-surface-variant">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A bright orange with dimpled skin and a small green leaf, cartoon style, thick outlines, highly saturated colors, preschool educational illustration, light background, clear and simple." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqeBo583bbJrfVFDy-hNujpKRctaNQcD7Jd-E9S4jowz1unl-0IesZ-vON58Gbioc2LnsRCaIcYr1dsnmS8TsVVaWfIstrhzUdIupuW8R1pcTVbKOlyi1G96BNc7aL09XjQbI9TbTtH-JUFHoBIW99ztYvwVyF2jP4Bf_0E07sEpgWFYRFSMvTIz2oQ3d98Ba0QhQpOweopS3Heu_Upw0-ysU9ymWbYOUqT9pbaheL20fQF7t4xK7NVw"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">arrow_right_alt</span>
+<!-- The Question Mark / Drop Zone -->
+<div class="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-surface-variant border-4 border-dashed border-outline-variant flex items-center justify-center transition-colors duration-200" id="drop-zone">
+<span class="font-display-hero text-display-hero text-outline-variant text-5xl">?</span>
+</div>
+</div>
+</div>
+<!-- Selection Options (Bento Grid Style) -->
+<div class="grid grid-cols-2 gap-6 w-full max-w-lg mx-auto">
+<!-- Option 1: Orange (Incorrect) -->
+<button class="group aspect-square rounded-3xl bg-surface border-2 border-surface-container-highest shadow-sm p-4 flex flex-col items-center justify-center gap-3 clay-button hover:bg-surface-bright transition-all" onclick="handleSelect(this, false)">
+<div class="w-24 h-24 p-2 rounded-2xl bg-surface-container-lowest flex items-center justify-center group-focus:ring-4 ring-tertiary-container">
+<img class="w-full h-full object-contain" data-alt="A bright orange with dimpled skin and a small green leaf, cartoon style, thick outlines, highly saturated colors, preschool educational illustration, light background, clear and simple." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4bgGFKWkfyEqxwdnCcxsdy7s-n5FXMnBZsdrDrzNjrTTyV7EUq-BRlB9GRcZlPFQ6WD11oNgyEeY8JYJy-rfR-C-F18J-F-bIrKZw_3bPzbxIXuFUmeEX_e1sPORID0B4dx160HSoW2dImoUT6s4uIjcJxRrmfeO9hJpimlsi1HNMOm4NKTB6JPvwmfMH1XSIKGGaA4i9QkRZ-JCH2bl-dgoQjZ8_iga8ZVgEmIm-DL548QDovOHgdQ"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Quả Cam</span>
+</button>
+<!-- Option 2: Apple (Correct) -->
+<button class="group aspect-square rounded-3xl bg-surface border-2 border-surface-container-highest shadow-sm p-4 flex flex-col items-center justify-center gap-3 clay-button hover:bg-surface-bright transition-all" onclick="handleSelect(this, true)">
+<div class="w-24 h-24 p-2 rounded-2xl bg-surface-container-lowest flex items-center justify-center group-focus:ring-4 ring-tertiary-container">
+<img class="w-full h-full object-contain" data-alt="A bright red apple with a green leaf, cartoon style, thick outlines, highly saturated colors, preschool educational illustration, light background, clear and simple." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvmyY_RBryLOVDTpkzmNaA-dguYFasOSsq6tXvTAKVTEIhEaLbRTAXw-9Ro4ue_pVQFFWtdujODTmmISVHP1KElVbrYWbJVobrPOPdoaK7C007CnWqn85OnO03eDTUb5PAzcIufyvKXifWhhybHDw4cKk8Shi33-TdD3SpCyQ2-_KxAdbyShsVuZJ4gxZq-oX-4PNnB7bf2T1ZpTtM6fb4_j4HmkGKuhdcJrWV0yBxy1zErc_y5XOc5w"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Quả Táo</span>
+</button>
+</div>
+<!-- Action Button (Hidden until selection) -->
+<div class="mt-10 flex justify-center opacity-50 pointer-events-none transition-opacity duration-300" id="submit-action">
+<button class="bg-primary text-on-primary font-title-md text-title-md px-10 py-4 rounded-full min-w-[200px] flex items-center justify-center gap-2 clay-button">
+<span>Tiếp tục</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-highest font-label-caps text-label-caps font-title-md text-title-md text-primary docked full-width bottom-0 rounded-t-xl border-t-4 border-surface-container-highest dark:border-surface-dim shadow-sm fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 md:hidden">
+<!-- Inactive: Trang chủ -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span>Trang chủ</span>
+</a>
+<!-- Active: Bài tập -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-container text-on-primary-container dark:text-primary-fixed-dim rounded-xl px-4 py-2 translate-y-[-2px] border-b-4 border-on-primary-fixed-variant hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant transition-all duration-100 Active: translate-y-[2px] border-b-0" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span>Bài tập</span>
+</a>
+<!-- Inactive: Phần thưởng -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined mb-1">military_tech</span>
+<span>Phần thưởng</span>
+</a>
+<!-- Inactive: Bố mẹ -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined mb-1">family_restroom</span>
+<span>Bố mẹ</span>
+</a>
+</nav>
+<!-- Desktop Navigation (Hidden on Mobile) - Representing Top Nav Links -->
+<div class="hidden md:flex fixed top-0 right-container-margin h-touch-target-min items-center gap-4 z-50">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-primary-container/20 px-4 py-2 rounded-full transition-colors" href="#">Trang chủ</a>
+<a class="font-label-caps text-label-caps text-primary font-bold bg-primary-container/20 px-4 py-2 rounded-full transition-colors" href="#">Bài tập</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-primary-container/20 px-4 py-2 rounded-full transition-colors" href="#">Phần thưởng</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:bg-primary-container/20 px-4 py-2 rounded-full transition-colors" href="#">Bố mẹ</a>
+</div>
+<!-- Interaction Script -->
+<script>
+        function handleSelect(element, isCorrect) {
+            // Reset all options
+            const allOptions = document.querySelectorAll('.grid > button');
+            allOptions.forEach(opt => {
+                opt.classList.remove('ring-4', 'ring-tertiary-container', 'bg-tertiary-fixed');
+                opt.classList.add('bg-surface');
+            });
+
+            // Highlight selected
+            element.classList.remove('bg-surface');
+            element.classList.add('ring-4', 'ring-tertiary-container', 'bg-tertiary-fixed');
+
+            // Update drop zone visually
+            const dropZone = document.getElementById('drop-zone');
+            dropZone.classList.remove('bg-surface-variant', 'border-dashed');
+            dropZone.classList.add('bg-tertiary-fixed', 'border-tertiary-container', 'border-solid');
+            
+            // Get image from selected
+            const imgHtml = element.querySelector('.w-24.h-24').innerHTML;
+            dropZone.innerHTML = imgHtml;
+
+            // Enable submit button
+            const submitContainer = document.getElementById('submit-action');
+            submitContainer.classList.remove('opacity-50', 'pointer-events-none');
+            
+            // Optional: Play a tiny sound or show simple feedback immediately based on isCorrect
+            // For a real app, validation might wait for the 'Tiếp tục' click.
+        }
+    </script>
+</body></html>

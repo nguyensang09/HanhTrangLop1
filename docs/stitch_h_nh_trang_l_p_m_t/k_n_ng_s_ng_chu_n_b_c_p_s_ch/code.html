@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chuẩn bị cặp sách - Kỹ năng sống</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#331200",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-variant": "#e4e3db",
+                    "surface-container": "#f0eee6",
+                    "on-surface-variant": "#564338",
+                    "on-tertiary-fixed": "#001f2a",
+                    "on-background": "#1b1c17",
+                    "inverse-on-surface": "#f3f1e9",
+                    "on-error-container": "#93000a",
+                    "secondary-container": "#51fac1",
+                    "surface-tint": "#9b4500",
+                    "on-primary-fixed-variant": "#763300",
+                    "surface-dim": "#dcdad2",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e4e3db",
+                    "on-primary": "#ffffff",
+                    "outline": "#897266",
+                    "surface": "#fbf9f1",
+                    "on-surface": "#1b1c17",
+                    "secondary": "#006c4f",
+                    "tertiary-container": "#53b5df",
+                    "on-secondary-fixed": "#002116",
+                    "tertiary": "#006686",
+                    "inverse-primary": "#ffb68d",
+                    "tertiary-fixed": "#bfe8ff",
+                    "inverse-surface": "#30312c",
+                    "primary": "#9b4500",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "on-tertiary-container": "#00445a",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#ff8c42",
+                    "surface-container-low": "#f5f4ec",
+                    "secondary-fixed": "#54fdc4",
+                    "background": "#fbf9f1",
+                    "surface-bright": "#fbf9f1",
+                    "primary-fixed-dim": "#ffb68d",
+                    "surface-container-high": "#eae8e0",
+                    "outline-variant": "#ddc1b3",
+                    "on-secondary-container": "#007152",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "on-primary-container": "#6a2d00",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "24px",
+                    "touch-target-min": "48px",
+                    "gutter": "16px",
+                    "unit": "8px",
+                    "card-gap": "20px"
+            },
+            "fontFamily": {
+                    "title-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ],
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "title-md": [
+                            "22px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "display-hero": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "label-caps": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        .clay-button {
+            border-bottom-width: 4px;
+            border-bottom-color: rgba(0,0,0,0.2);
+            transition: all 0.15s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .soft-shadow {
+            box-shadow: 0 4px 20px 0 rgba(255,140,66,0.05);
+        }
+        .draggable-item {
+            cursor: grab;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-container-margin h-touch-target-min z-40 transition-transform active:scale-95 duration-200">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-primary-container/20 dark:hover:bg-primary-fixed/10 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md-mobile text-primary dark:text-primary-fixed-dim">Bài Tập Kỹ Năng</h1>
+<div class="font-title-md text-title-md-mobile text-primary dark:text-primary-fixed-dim flex items-center">
+<span>128</span>
+<span class="material-symbols-outlined ml-1 text-primary-container">star</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow flex flex-col items-center px-container-margin pt-6 pb-24 relative">
+<!-- Sóc Nâu Dialogue -->
+<div class="bg-[#FFE5B4] rounded-xl p-4 mb-6 w-full max-w-2xl flex items-center soft-shadow relative border-2 border-transparent">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white flex-shrink-0 mr-4">
+<img class="w-full h-full object-cover" data-alt="A friendly 3D cartoon squirrel character with soft brown fur, big expressive eyes, smiling warmly. The style is soft, tactile claymorphism with bright, cheerful lighting suitable for a preschool educational app. Warm colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcePSFuOkUgRfgfJyWmCojekQEUye8l9isy992ZFkGpKx7eIotrU38H1_Ov1eaXD-8fIdCA_zWNuoUasek8kZlB8cF2_abC7G64alYmuLYo0dXdv0jRmPbSEHdInyarVKadNm-VNFi0oWdLwZG7R1Fuhh-R28IEe031MVW0KdniWVGAftGTXU_ObK5Jo5bLtZy52BsGzgs1g-ZryrY-74ZDCoKvMGCmjhhF81kbajK1SdNClAD8mg1ug"/>
+</div>
+<p class="font-body-lg text-on-surface flex-grow">
+                Bé hãy giúp tớ xếp đồ vào cặp để đi học nhé! Kéo những món đồ cần thiết vào balo nào.
+            </p>
+<button class="w-12 h-12 bg-white rounded-full flex items-center justify-center clay-button flex-shrink-0 text-primary hover:bg-surface-variant">
+<span class="material-symbols-outlined text-3xl">volume_up</span>
+</button>
+<!-- Tail pointing to character -->
+<div class="absolute -left-2 top-8 w-4 h-4 bg-[#FFE5B4] rotate-45"></div>
+</div>
+<!-- Interactive Area -->
+<div class="w-full max-w-2xl bg-white rounded-[24px] p-6 soft-shadow border-2 border-[#E1F3FA] flex flex-col items-center relative">
+<!-- Items Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-8" id="item-container">
+<!-- Sách -->
+<div class="draggable-item bg-surface-container rounded-xl p-4 flex flex-col items-center justify-center clay-button border-b-[#E5E2D9] active:border-b-2" data-type="correct" draggable="true">
+<img class="w-16 h-16 object-contain mb-2 pointer-events-none" data-alt="A 3D illustration of a stack of colorful textbooks, soft edges, claymorphic style, bright appealing colors suitable for children's learning material, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWUTIRZkR9p3b6tDvgEi8kdjdTSoCT9bigeqIhn_WlpGRWYXTJ0tBkW5aGbh73MfDscO4W0Sm38LUJQn4Q6FS7wZz5yK1A07om-azl1NoYGITdIyaJbAvVJeGvUKb8u9p8IbXMuxzXO5Vgds2QXZV3sYkYIM0p4Dl0_3esfQtbcbUMuPMAC-I7o_dq_EfO2_4qlM0ETMR_m_4njsJZq_m5vvHkhTNaGOVaml4kuTEVjYZypiLMU6Bbow"/>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Sách vở</span>
+</div>
+<!-- Bút -->
+<div class="draggable-item bg-surface-container rounded-xl p-4 flex flex-col items-center justify-center clay-button border-b-[#E5E2D9] active:border-b-2" data-type="correct" draggable="true">
+<img class="w-16 h-16 object-contain mb-2 pointer-events-none" data-alt="A 3D illustration of a yellow pencil and a blue pen, soft rounded edges, claymorphic style, bright appealing colors suitable for a preschool app, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3JGELzotxxqyvv_3eNayNxqWfBIWXLKZ9zWStqDhcJRtTobejV5iWvaEKH-5sa3Vq9sBcfR4N7wsfFU0S8MgoIpueGvmQCQuTpdYVDchAz7buLRfdks8Fc9cFXSID9xkORRAzdm-9T11YnWEM7Jvkcn4HbI_hE0ZJjeMbFQ4YvqU4vi_KZMfvsBuzarS-OwSlMyZAaOgroVgpUPEaVSJHLuvXOOOJNU-sWFoF7GxVoZqX3TDkD9MiZA"/>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Hộp bút</span>
+</div>
+<!-- Bình nước -->
+<div class="draggable-item bg-surface-container rounded-xl p-4 flex flex-col items-center justify-center clay-button border-b-[#E5E2D9] active:border-b-2" data-type="correct" draggable="true">
+<img class="w-16 h-16 object-contain mb-2 pointer-events-none" data-alt="A 3D illustration of a bright green reusable water bottle with a cute smiley face, soft tactile edges, claymorphic style, appealing for children, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzDPx0Gd_CdKzmAzZIf2DhS5xrZM-UEswaWJFdGbXgIXJUloU0kR4KEbmOjq1TMKuOAo7NN7Bx5tz-vNsoicSCXfs5fDQHtc1rOFrNMQwN1nyEgonEJTX4QxSC490BpkWs73w7sJDnGV-pngsvVT5FIOyUhLsSQk3Jq1BbOKaxChhSf42LcZkLT88gq2IDrAc1RQTqdlqvOT5afY3BscBaYTRK1UNwJWbg7fayiiPpNBnFOkiUHH1Dtg"/>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Bình nước</span>
+</div>
+<!-- Đồ chơi (Nhiễu) -->
+<div class="draggable-item bg-surface-container rounded-xl p-4 flex flex-col items-center justify-center clay-button border-b-[#E5E2D9] active:border-b-2" data-type="incorrect" draggable="true">
+<img class="w-16 h-16 object-contain mb-2 pointer-events-none" data-alt="A 3D illustration of a red toy car, soft rounded edges, claymorphic style, bright primary colors, playful aesthetic for a preschool app, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4UTPkSinivluAGY1J9aUNb8aVRkfQ-ry1XdllfJLbp_nfO6Lp_uPYXydx95KXueu-_W8945DtnFMI7kyFglAkG5tz2_OsuliBvvQMnf-rQRWPLM7k6CjVehb5o94oRtw40Uq8BUh1d1S7HNnh-Rgx4Ew0-aacPY9JTcPBjqVmicYsAkowy2IqYDC1NFl2JN_3KxDAN98Mg_oRpatoLfgjIn5DgT-BzJOlLIkZgdABasxkh701mmEErA"/>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Đồ chơi</span>
+</div>
+</div>
+<!-- Backpack Target -->
+<div class="w-48 h-48 bg-[#F0F8FF] rounded-3xl border-4 border-dashed border-[#87CEEB] flex items-center justify-center relative transition-colors duration-300" id="backpack-target">
+<img class="w-32 h-32 object-contain z-10 pointer-events-none" data-alt="A large, friendly 3D illustration of a colorful school backpack, mostly blue and orange, slightly open at the top ready to receive items, soft claymorphic style, high quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc-jf4ZI0WbXEPuCjClmacBKu6-iBgsqGY4C2hdM7yqX6_wNE-rzuU1Ew2XcEIgFC2WJGjJv2TZPjD7xI-DqGdOPAvtogyuNzQAwp8nZTNPgXH6Po7_kpBEQVIage3EWoKE0EcHPIH2G39KURr7ch5fslfjcFGVdL33B-oHXYnYj2nicDrTBONAYguJ4HuahLeEhxWptgnQ_IeKXjS_WJ_QvSU62GsaYagvUNeNfh1DpIIAoMuCQYgaQ"/>
+<div class="absolute inset-0 bg-blue-100 opacity-0 rounded-3xl transition-opacity duration-300 pointer-events-none" id="drop-highlight"></div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop, shown on mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-surface-container dark:bg-surface-container-low rounded-t-xl shadow-[0_-4px_20px_0_rgba(255,140,66,0.05)] bg-surface-container-high border-t-4 border-primary/10 flex justify-around items-center px-4 pb-4 pt-2">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:bg-secondary-container/30 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 translate-y-[-2px] border-b-4 border-primary active:translate-y-0 active:border-b-0 transition-all duration-150" href="#">
+<span class="material-symbols-outlined mb-1">fitness_center</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:bg-secondary-container/30 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">military_tech</span>
+<span class="font-label-caps text-label-caps">Thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:bg-secondary-container/30 rounded-lg" href="#">
+<span class="material-symbols-outlined mb-1">family_restroom</span>
+<span class="font-label-caps text-label-caps">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        // Simple drag and drop logic for visual feedback
+        const items = document.querySelectorAll('.draggable-item');
+        const target = document.getElementById('backpack-target');
+        const highlight = document.getElementById('drop-highlight');
+
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', e.target.dataset.type);
+                setTimeout(() => item.classList.add('opacity-50'), 0);
+            });
+            item.addEventListener('dragend', () => {
+                item.classList.remove('opacity-50');
+            });
+        });
+
+        target.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            highlight.classList.remove('opacity-0');
+            highlight.classList.add('opacity-50');
+        });
+
+        target.addEventListener('dragleave', () => {
+            highlight.classList.add('opacity-0');
+            highlight.classList.remove('opacity-50');
+        });
+
+        target.addEventListener('drop', (e) => {
+            e.preventDefault();
+            highlight.classList.add('opacity-0');
+            highlight.classList.remove('opacity-50');
+            const type = e.dataTransfer.getData('text/plain');
+            
+            if (type === 'correct') {
+                // Visual feedback for correct
+                target.classList.add('bg-secondary-container', 'border-secondary');
+                setTimeout(() => {
+                    target.classList.remove('bg-secondary-container', 'border-secondary');
+                }, 1000);
+            } else {
+                 // Visual feedback for incorrect
+                 target.classList.add('bg-error-container', 'border-error');
+                 setTimeout(() => {
+                    target.classList.remove('bg-error-container', 'border-error');
+                }, 1000);
+            }
+        });
+    </script>
+</body></html>

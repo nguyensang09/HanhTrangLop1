@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>An toàn trong nhà - Tránh xa ổ điện</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#331200",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#ffdbc9",
+                      "surface-variant": "#e4e3db",
+                      "surface-container": "#f0eee6",
+                      "on-surface-variant": "#564338",
+                      "on-tertiary-fixed": "#001f2a",
+                      "on-background": "#1b1c17",
+                      "inverse-on-surface": "#f3f1e9",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#51fac1",
+                      "surface-tint": "#9b4500",
+                      "on-primary-fixed-variant": "#763300",
+                      "surface-dim": "#dcdad2",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e4e3db",
+                      "on-primary": "#ffffff",
+                      "outline": "#897266",
+                      "surface": "#fbf9f1",
+                      "on-surface": "#1b1c17",
+                      "secondary": "#006c4f",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary-fixed": "#002116",
+                      "tertiary": "#006686",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-fixed": "#bfe8ff",
+                      "inverse-surface": "#30312c",
+                      "primary": "#9b4500",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "on-tertiary-container": "#00445a",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#ff8c42",
+                      "surface-container-low": "#f5f4ec",
+                      "secondary-fixed": "#54fdc4",
+                      "background": "#fbf9f1",
+                      "surface-bright": "#fbf9f1",
+                      "primary-fixed-dim": "#ffb68d",
+                      "surface-container-high": "#eae8e0",
+                      "outline-variant": "#ddc1b3",
+                      "on-secondary-container": "#007152",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-primary-container": "#6a2d00",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "24px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px",
+                      "unit": "8px",
+                      "card-gap": "20px"
+              },
+              "fontFamily": {
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .clay-button {
+            border-bottom-width: 4px;
+            transition: all 0.15s ease-out;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+
+        .ambient-shadow {
+            box-shadow: 0 4px 20px 0 rgba(255, 140, 66, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col md:hidden">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-container-margin h-touch-target-min z-40 bg-surface-container-low dark:bg-surface-container-highest">
+<button aria-label="Go back" class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary dark:text-primary-container transition-transform active:scale-95 duration-200 hover:bg-primary-container/20 dark:hover:bg-primary-fixed/10 rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back" data-weight="fill">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md-mobile text-primary dark:text-primary-fixed-dim">Bài Tập Kỹ Năng</h1>
+<div class="flex items-center text-primary dark:text-primary-container font-label-caps text-label-caps transition-transform active:scale-95 duration-200 hover:bg-primary-container/20 dark:hover:bg-primary-fixed/10 px-2 rounded-full h-touch-target-min cursor-pointer">
+            128 ⭐
+        </div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col px-container-margin py-gutter gap-card-gap overflow-y-auto">
+<!-- Sóc Nâu Dialogue -->
+<div class="bg-[#FFF4E5] rounded-xl p-4 ambient-shadow flex items-start gap-4 border-2 border-primary-container/20">
+<div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border-2 border-primary bg-white">
+<img class="w-full h-full object-cover" data-alt="A cute 2D illustration of a friendly brown squirrel wearing a yellow scout scarf, smiling encouragingly. The style is soft, vector-based, aimed at preschoolers, with vibrant but gentle colors like primary orange and soft yellow. Light cream background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASC0xgSIk59dl1TykkMQ1i0AVnOnNGcOTYhQkxfXeal1LzmIBtB-R7o52xkWM-wuPqPn4O6V3NLeKucx1cFjF1PdmD8mYdQ_UqS-Pl96NB7TXyS2kw3Fm8K5ngPFB5JJ5au4Gz4ysZI7ksgocyQJcdU6E30ZRMtGiZQ6bXhb5tIiMzjzoX_dJtDcSauAStbS5Bd76sgjp6i0uLzrb5QQYeGz4qMqsLPHPaKc7NMQESYFwKxZbEhRs00Q"/>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface">
+                    Ôi không! Bạn nhỏ đang định chạm vào ổ điện kìa! Theo bé, hành động này có an toàn không?
+                </p>
+<button class="mt-2 text-primary flex items-center gap-1 font-label-caps text-label-caps" onclick="playAudio()">
+<span class="material-symbols-outlined">volume_up</span> Nghe Sóc Nâu nói
+                </button>
+</div>
+</div>
+<!-- Illustration Area (Interactive Canvas) -->
+<div class="relative w-full aspect-square bg-white rounded-xl ambient-shadow border-2 border-tertiary-fixed-dim overflow-hidden flex items-center justify-center">
+<img class="absolute inset-0 w-full h-full object-cover z-0" data-alt="A clear, colorful 2D illustration for children showing a toddler reaching their hand towards a wall electrical outlet. The scene is brightly lit, domestic setting, soft claymorphic style, avoiding sharp edges. The outlet is clearly visible but the toddler hasn't touched it yet. Colors are warm and pastel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnTOP3NyCZ-9d5ntNLYAEnhIWME4-02XX_AILQgZd5ZZbfyXuYACcscxvN2_bbY_rNTGd51jFSyqZhSfWbk7-qdPDwOW0xzoNHxPFagwWskJFtUJ10TfrChty_3rACMzjkt0vGlgUm8tkvuV3oK-G7lTGGeAh_lQJ7ulq2r3Brc-fCMXBYK3JUNvq_VjukiXn8EZ4MsEZ-JiXT_wgHWc9ZLCgcV0qdhCJ4hCdrc1f9Bhq4C-uIaAomeQ"/>
+<!-- Warning Pulse Effect on Outlet (Simulated position) -->
+<div class="absolute bottom-[20%] right-[30%] w-12 h-12 bg-error/20 rounded-full animate-ping z-10"></div>
+<div class="absolute bottom-[20%] right-[30%] w-12 h-12 border-2 border-error rounded-full flex items-center justify-center z-10 bg-error/10">
+<span class="material-symbols-outlined text-error text-2xl">warning</span>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex flex-col gap-4 mt-auto pb-container-margin">
+<div class="grid grid-cols-2 gap-4">
+<button class="clay-button bg-surface-container-high border-outline-variant text-on-surface rounded-xl p-4 flex flex-col items-center justify-center gap-2 h-24" id="btn-safe">
+<span class="material-symbols-outlined text-error text-[40px]">sentiment_very_dissatisfied</span>
+<span class="font-label-caps text-label-caps">An toàn</span>
+</button>
+<button class="clay-button bg-primary-container border-primary text-on-primary-container rounded-xl p-4 flex flex-col items-center justify-center gap-2 h-24" id="btn-danger">
+<span class="material-symbols-outlined text-secondary text-[40px]">sentiment_very_satisfied</span>
+<span class="font-label-caps text-label-caps">Nguy hiểm</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Feedback Modal Overlay (Hidden by default) -->
+<div class="fixed inset-0 bg-on-background/40 backdrop-blur-sm z-50 hidden flex-col justify-end p-container-margin" id="feedback-modal">
+<div class="bg-surface rounded-t-[24px] rounded-b-xl p-6 flex flex-col items-center gap-4 ambient-shadow transform transition-transform translate-y-full" id="feedback-content">
+<div class="w-20 h-20 bg-secondary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[48px]">check_circle</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface text-center">Đúng rồi! Rất nguy hiểm!</h2>
+<p class="font-body-md text-body-md text-center text-on-surface-variant">
+                Ổ điện có dòng điện rất mạnh. Nếu chạm tay vào sẽ bị giật, rất đau và nguy hiểm đến tính mạng. Tuyệt đối không được chơi đùa gần ổ điện nhé!
+            </p>
+<button class="clay-button w-full bg-primary-container border-primary text-on-primary-container font-label-caps text-label-caps h-touch-target-min rounded-full mt-4" onclick="closeModal()">
+                Tiếp tục học
+            </button>
+</div>
+</div>
+<!-- BottomNavBar (Suppressed due to Task-Focused/Linear intent) -->
+<!-- Navigation shell is hidden as this is a focused learning interaction where the user should not be distracted by global navigation until the task is complete. -->
+<script>
+        // Simple Interaction Logic
+        document.getElementById('btn-danger').addEventListener('click', function() {
+            const modal = document.getElementById('feedback-modal');
+            const content = document.getElementById('feedback-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Trigger animation
+            setTimeout(() => {
+                content.classList.remove('translate-y-full');
+            }, 10);
+        });
+
+        document.getElementById('btn-safe').addEventListener('click', function() {
+            // Visual feedback for wrong answer (shake effect could be added here)
+            this.classList.add('bg-error-container', 'text-on-error-container', 'border-error');
+            setTimeout(() => {
+                this.classList.remove('bg-error-container', 'text-on-error-container', 'border-error');
+            }, 500);
+        });
+
+        function closeModal() {
+            const modal = document.getElementById('feedback-modal');
+            const content = document.getElementById('feedback-content');
+            
+            content.classList.add('translate-y-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function playAudio() {
+            console.log("Playing audio instruction...");
+            // Simulate audio playing visual feedback
+            const icon = document.querySelector('button[onclick="playAudio()"] span');
+            icon.classList.add('text-primary-container');
+            setTimeout(() => icon.classList.remove('text-primary-container'), 1000);
+        }
+    </script>
+</body></html>

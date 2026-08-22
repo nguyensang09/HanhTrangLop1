@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>An toàn giao thông - Đèn tín hiệu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#331200",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#ffdbc9",
+                      "surface-variant": "#e4e3db",
+                      "surface-container": "#f0eee6",
+                      "on-surface-variant": "#564338",
+                      "on-tertiary-fixed": "#001f2a",
+                      "on-background": "#1b1c17",
+                      "inverse-on-surface": "#f3f1e9",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#51fac1",
+                      "surface-tint": "#9b4500",
+                      "on-primary-fixed-variant": "#763300",
+                      "surface-dim": "#dcdad2",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e4e3db",
+                      "on-primary": "#ffffff",
+                      "outline": "#897266",
+                      "surface": "#fbf9f1",
+                      "on-surface": "#1b1c17",
+                      "secondary": "#006c4f",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary-fixed": "#002116",
+                      "tertiary": "#006686",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-fixed": "#bfe8ff",
+                      "inverse-surface": "#30312c",
+                      "primary": "#9b4500",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "on-tertiary-container": "#00445a",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#ff8c42",
+                      "surface-container-low": "#f5f4ec",
+                      "secondary-fixed": "#54fdc4",
+                      "background": "#fbf9f1",
+                      "surface-bright": "#fbf9f1",
+                      "primary-fixed-dim": "#ffb68d",
+                      "surface-container-high": "#eae8e0",
+                      "outline-variant": "#ddc1b3",
+                      "on-secondary-container": "#007152",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-primary-container": "#6a2d00",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "24px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px",
+                      "unit": "8px",
+                      "card-gap": "20px"
+              },
+              "fontFamily": {
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom-width: 4px;
+            border-bottom-color: rgba(0,0,0,0.2);
+            transition: all 0.15s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .clay-card {
+            box-shadow: 0 4px 20px 0 rgba(255, 140, 66, 0.05);
+            border: 2px solid theme('colors.tertiary-fixed-dim');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col relative pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface w-full top-0 sticky bg-surface-container-low shadow-sm flex justify-between items-center px-container-margin h-touch-target-min w-full z-40">
+<button class="flex items-center justify-center w-touch-target-min h-touch-target-min rounded-full hover:bg-primary-container/20 transition-transform active:scale-95 duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Bài Tập Kỹ Năng</h1>
+<div class="flex items-center gap-1 font-title-md text-title-md-mobile text-primary">
+<span>128</span>
+<span>⭐</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow px-container-margin pt-gutter pb-32 max-w-2xl mx-auto w-full flex flex-col gap-card-gap">
+<!-- Sóc Nâu Dialogue -->
+<div class="bg-[#FFF0D4] rounded-xl p-gutter flex items-center gap-gutter clay-card relative overflow-visible mt-8">
+<div class="absolute -top-8 -left-4 w-20 h-20 bg-surface-container-highest rounded-full flex items-center justify-center border-4 border-surface shadow-md">
+<img class="w-full h-full object-cover rounded-full" data-alt="A cute illustration of a friendly brown squirrel wearing a tiny blue backpack, designed in a soft, claymorphic 3D style suitable for preschoolers. The squirrel looks curious and welcoming." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ_fMGxGm8e3Htfqin6I_BryialT-5CoiAAJEYrfMBgc84dsFkbcDqmNMBtVu6O0cXVMPAo0MG7odHxJyjwURhCrXZbtg7qpVFVLyElNaml47dQwYitX_JZ-r65hZ3VKqGoVUyIYCOPUdKtSh3pg5ppjkiqEi9k80xM8M3H-xyIvAmPBsgqilk7a3VUCuxphW2ue8eKkKKFSudMwI4racuk8RJR5b2ZO5jBCvCtu4M1AkHziv6DN01yw"/>
+</div>
+<div class="pl-16">
+<p class="font-title-md text-title-md-mobile text-on-primary-container">Đèn đỏ thì chúng mình phải làm gì nhỉ?</p>
+</div>
+<button class="ml-auto w-touch-target-min h-touch-target-min bg-primary-container text-on-primary rounded-full flex items-center justify-center clay-button shadow-md">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+</button>
+</div>
+<!-- Illustration -->
+<div class="w-full rounded-2xl overflow-hidden clay-card bg-white relative mt-4 aspect-video">
+<img class="w-full h-full object-cover" data-alt="A soft, colorful, claymorphic 3D illustration of a city intersection with a clear view of a traffic light displaying a bright red light. There are stylized crosswalks, small green trees, and gentle blue sky, designed to appeal to preschoolers with a warm and safe feeling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBauZ0qpvc9YR7lDvSJG9NavPE_-iuBVdF3xh5hVmyABcbPNEMLylO-bhQmPuRktVNuXmMkJYfQsxOQsUgQwn6AxR-pTthyP-E9rIJ8tZ2Kizc_skVIIX6UVYlBCwbSv0zFzxpojqPsGJw6kzz8EAt32Epqi3zn3-rgLDe96CBfsa61En5qz7kE_K-tXewyCxGc5CxD6bkUpiW-EmVoPGA0KSB30N_4J3yO0Mu9Ld43z-9ssWXdHr_QNw"/>
+</div>
+<!-- Options -->
+<div class="flex flex-col gap-gutter mt-4">
+<button class="w-full bg-surface-container rounded-xl p-gutter text-center clay-button font-title-md text-title-md-mobile text-on-surface hover:bg-secondary-container/30 transition-all active:scale-95 border-2 border-transparent">
+                Dừng lại
+            </button>
+<button class="w-full bg-surface-container rounded-xl p-gutter text-center clay-button font-title-md text-title-md-mobile text-on-surface hover:bg-secondary-container/30 transition-all active:scale-95 border-2 border-transparent">
+                Đi tiếp
+            </button>
+<button class="w-full bg-surface-container rounded-xl p-gutter text-center clay-button font-title-md text-title-md-mobile text-on-surface hover:bg-secondary-container/30 transition-all active:scale-95 border-2 border-transparent">
+                Chạy nhanh
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<!-- Suppressed due to task-focused linear flow of answering a question. -->
+</body></html>

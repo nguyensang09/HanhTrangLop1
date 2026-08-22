@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phân biệt chữ gần giống</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#bfe8ff",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1b1c17",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-dim": "#dcdad2",
+                        "on-primary-fixed": "#331200",
+                        "inverse-surface": "#30312c",
+                        "surface-container-low": "#f5f4ec",
+                        "outline": "#897266",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-secondary-container": "#007152",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#564338",
+                        "surface-variant": "#e4e3db",
+                        "background": "#fbf9f1",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "surface-container": "#f0eee6",
+                        "primary-fixed": "#ffdbc9",
+                        "tertiary": "#006686",
+                        "tertiary-container": "#53b5df",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fbf9f1",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "secondary": "#006c4f",
+                        "outline-variant": "#ddc1b3",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#00445a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#54fdc4",
+                        "on-secondary-fixed": "#002116",
+                        "surface": "#fbf9f1",
+                        "on-primary-container": "#6a2d00",
+                        "inverse-primary": "#ffb68d",
+                        "surface-tint": "#9b4500",
+                        "secondary-container": "#51fac1",
+                        "on-tertiary-fixed": "#001f2a",
+                        "on-surface": "#1b1c17",
+                        "error": "#ba1a1a",
+                        "primary": "#9b4500",
+                        "surface-container-high": "#eae8e0",
+                        "primary-container": "#ff8c42",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#ffb68d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "card-gap": "20px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid var(--tw-colors-primary); /* Adjusted dynamically below via classes */
+            transition: all 0.15s ease-in-out;
+        }
+        .clay-button:active {
+            transform: translateY(4px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px; /* Maintain height */
+        }
+        .floating-card {
+            box-shadow: 0px 10px 20px -5px rgba(255, 140, 66, 0.1);
+        }
+        
+        .letter-btn {
+            border-bottom: 6px solid #dcdad2;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .letter-btn:active {
+            transform: translateY(4px) scale(0.98);
+            border-bottom-width: 2px;
+        }
+        .letter-btn.selected-correct {
+            border-bottom: 6px solid #00513b;
+            background-color: #51fac1;
+            color: #002116;
+            animation: bounce-success 0.5s ease;
+        }
+        .letter-btn.selected-incorrect {
+            border-bottom: 6px solid #93000a;
+            background-color: #ffdad6;
+            color: #331200;
+            animation: shake-error 0.4s ease;
+        }
+
+        @keyframes bounce-success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-2deg); }
+            75% { transform: translateX(5px) rotate(2deg); }
+        }
+        
+        /* Subtle glow for the 'help' character */
+        .soc-nau-glow {
+            box-shadow: 0 0 15px rgba(255, 219, 201, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden relative select-none touch-manipulation">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-surface-dim w-full top-0 sticky flex justify-between items-center px-container-margin py-unit w-full z-40 flat no shadows">
+<button aria-label="Back" class="text-primary dark:text-primary-fixed-dim hover:bg-primary-container dark:hover:bg-on-primary-fixed-variant transition-colors rounded-full p-2 flex items-center justify-center min-w-[48px] min-h-[48px]">
+<span aria-hidden="true" class="material-symbols-outlined text-3xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md text-primary dark:text-primary-fixed-dim font-bold tracking-tight text-center flex-1 mx-4">
+            Sóc Nâu Học Chữ
+        </h1>
+<div class="flex items-center gap-2 bg-surface-container-high rounded-full px-3 py-1.5 min-w-[48px] min-h-[48px] justify-center">
+<span aria-hidden="true" class="material-symbols-outlined text-primary-container" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-label-caps text-on-surface font-bold">125</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col items-center px-container-margin py-6 pb-32 max-w-3xl mx-auto w-full relative z-10">
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container-high rounded-full h-4 mb-8 relative overflow-hidden">
+<div class="bg-secondary h-full rounded-full w-3/4 flex items-center justify-end relative">
+<!-- Sóc Nâu head indicator -->
+<div class="absolute -right-2 w-8 h-8 bg-primary-container rounded-full border-2 border-background flex items-center justify-center shadow-sm z-10">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+</div>
+</div>
+<!-- Instruction Dialogue -->
+<div class="w-full flex items-start gap-4 mb-8 bg-[#FFF9E6] border-2 border-[#FFE8A1] rounded-2xl p-4 floating-card relative">
+<div class="w-16 h-16 rounded-full bg-primary-fixed shrink-0 flex items-center justify-center soc-nau-glow">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+<div class="flex-1 pt-2">
+<p class="font-body-lg text-body-lg text-on-surface-variant font-bold leading-tight">
+                     Đâu là chữ <span class="text-primary text-2xl font-black">b</span> trong từ <span class="text-primary text-2xl font-black">Bê</span>?
+                 </p>
+<button aria-label="Nghe lại" class="mt-2 text-primary flex items-center gap-1 font-label-caps text-label-caps hover:opacity-80 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">volume_up</span> Nghe lại
+                 </button>
+</div>
+<!-- Playful decorative element -->
+<div class="absolute -top-3 -right-3 text-secondary text-2xl animate-pulse">✨</div>
+</div>
+<!-- Bento Grid for Visual Context -->
+<div class="w-full grid grid-cols-2 gap-4 mb-10">
+<!-- Con Bê -->
+<div class="bg-surface-container-lowest rounded-3xl p-4 border-2 border-tertiary-fixed flex flex-col items-center justify-center gap-3 floating-card">
+<div class="w-24 h-24 rounded-2xl overflow-hidden bg-tertiary-fixed-dim relative">
+<img alt="Con Bê" class="w-full h-full object-cover" data-alt="A cute, cartoon-style illustration of a baby cow (calf) in a bright, sunny meadow. The art style is flat and colorful, suitable for preschool learning materials. Warm tones with a focus on friendly, rounded shapes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADD5FHdcusBJQ3R0D7uF51dw8ovPtrlLqt3VphuuD500Bziyqwwl8IujC7rIQp0xJxA9ICx2A2lPAKOh1E-XA3tbF_Jbr9fvgH4d_-JJnoBFXLRubI0CA2xdXxLuNqOB7jRfRCMUc564lgHYKckFBpMBesByBFdYBm6A9l6w4wf9YrZJx_Kipv-k57qPaDDz5VVC9JL4o0z5cP6cOZkZ66oOfu75h35rInnfTN4YPOh1MqWcsvmHh3Sg"/>
+</div>
+<div class="bg-tertiary-fixed text-on-tertiary-fixed-variant px-4 py-1 rounded-full font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-wider">
+<span class="text-primary">b</span>ê
+                </div>
+</div>
+<!-- Con Dê -->
+<div class="bg-surface-container-lowest rounded-3xl p-4 border-2 border-outline-variant flex flex-col items-center justify-center gap-3 floating-card opacity-80">
+<div class="w-24 h-24 rounded-2xl overflow-hidden bg-surface-variant relative">
+<img alt="Con Dê" class="w-full h-full object-cover" data-alt="A cute, cartoon-style illustration of a baby goat (kid) on a gentle green hill. The art style is flat, soft, and colorful, suitable for preschool learning materials. The color palette features warm creams and soft greens with friendly, rounded shapes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0wceeVsVGXhq7kDZH_jjJf1MD8wgv12l4dRf1EYCj_95Kv8Bb2cLhOOSldu5a1C57vTJJ-E9G1Zk4pdrh4BgOraR_b0-5tonqm-rRhsie2sZxwld6KmtfvdWSzM_A73qHpezKiAXVWpl39q4eRO3UjvpvkecIAauL84tq7HEhATr3abttsqas0XuLysrm_JF2b2lnOVj3ag-28BXyX4J-RqqZvq42cVVH4WDtoNzjkOD11_kBduM9HA"/>
+</div>
+<div class="bg-surface-variant text-on-surface-variant px-4 py-1 rounded-full font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-wider">
+<span class="text-tertiary">d</span>ê
+                </div>
+</div>
+</div>
+<!-- Interactive Selection -->
+<div class="w-full flex justify-center gap-8 mt-4">
+<!-- Option b -->
+<button aria-label="Chọn chữ b" class="letter-btn w-32 h-40 rounded-3xl bg-surface-container-lowest flex items-center justify-center text-[80px] font-black text-on-surface border-x-2 border-t-2 border-surface-dim hover:bg-surface-container transition-colors relative group" onclick="selectAnswer(this, true)">
+                b
+                <!-- Subtle indicator of the 'belly' direction to help distinguish -->
+<div class="absolute bottom-6 right-6 w-4 h-4 rounded-full bg-primary-fixed opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Option d -->
+<button aria-label="Chọn chữ d" class="letter-btn w-32 h-40 rounded-3xl bg-surface-container-lowest flex items-center justify-center text-[80px] font-black text-on-surface border-x-2 border-t-2 border-surface-dim hover:bg-surface-container transition-colors relative group" onclick="selectAnswer(this, false)">
+                d
+                <!-- Subtle indicator of the 'belly' direction to help distinguish -->
+<div class="absolute bottom-6 left-6 w-4 h-4 rounded-full bg-tertiary-fixed opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+</div>
+<!-- Success Feedback Overlay (Hidden by default) -->
+<div class="fixed inset-0 bg-secondary-fixed-dim/90 z-50 flex-col items-center justify-center hidden backdrop-blur-sm" id="success-feedback">
+<div class="bg-surface-container-lowest p-8 rounded-3xl flex flex-col items-center shadow-xl text-center transform scale-90 opacity-0 transition-all duration-300" id="success-card">
+<div class="w-24 h-24 bg-secondary-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-6xl text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-secondary font-black mb-2">Giỏi Quá!</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6">Bé đã tìm đúng chữ <b>b</b> rồi.</p>
+<button class="clay-button bg-primary text-on-primary font-headline-lg-mobile text-headline-lg-mobile px-8 py-4 rounded-full border-[#6a2d00]" onclick="nextLesson()">
+                     Tiếp Tục
+                 </button>
+</div>
+
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop, shown on mobile. Current page is 'Bài tập') -->
+<nav class="bg-surface-container dark:bg-surface-container-highest shadow-sm fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 md:hidden rounded-t-xl border-t-0">
+<!-- Trang chủ -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:scale-110 transition-transform flex-1 min-h-[48px]">
+<span aria-hidden="true" class="material-symbols-outlined text-2xl mb-1" data-icon="home">home</span>
+<span class="font-label-caps text-[12px] font-bold">Trang chủ</span>
+</button>
+<!-- Bài tập (Active) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-full px-6 py-2 border-b-4 border-on-secondary-container hover:scale-110 transition-transform translate-y-0.5 border-b-2 transition-all flex-1 min-h-[48px]">
+<span aria-hidden="true" class="material-symbols-outlined text-2xl mb-1" data-icon="menu_book" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-label-caps text-[12px] font-bold">Bài tập</span>
+</button>
+<!-- Quà tặng -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:scale-110 transition-transform flex-1 min-h-[48px]">
+<span aria-hidden="true" class="material-symbols-outlined text-2xl mb-1" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-label-caps text-[12px] font-bold">Quà tặng</span>
+</button>
+<!-- Phụ huynh -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:scale-110 transition-transform flex-1 min-h-[48px]">
+<span aria-hidden="true" class="material-symbols-outlined text-2xl mb-1" data-icon="family_history">family_history</span>
+<span class="font-label-caps text-[12px] font-bold">Phụ huynh</span>
+</button>
+</nav>
+<script>
+        function selectAnswer(btn, isCorrect) {
+            // Reset all buttons
+            document.querySelectorAll('.letter-btn').forEach(b => {
+                b.classList.remove('selected-correct', 'selected-incorrect');
+            });
+
+            if (isCorrect) {
+                btn.classList.add('selected-correct');
+                
+                // Show success overlay after brief delay for animation to play
+                setTimeout(() => {
+                    const overlay = document.getElementById('success-feedback');
+                    const card = document.getElementById('success-card');
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+                    
+                    // Simple animation
+                    setTimeout(() => {
+                        card.classList.remove('scale-90', 'opacity-0');
+                        card.classList.add('scale-100', 'opacity-100');
+                    }, 50);
+                }, 600);
+            } else {
+                btn.classList.add('selected-incorrect');
+                // Remove incorrect class after animation so user can try again
+                setTimeout(() => {
+                    btn.classList.remove('selected-incorrect');
+                }, 800);
+            }
+        }
+
+        function nextLesson() {
+            // In a real app, navigate to next screen. Here, just reset for demo.
+            const overlay = document.getElementById('success-feedback');
+            const card = document.getElementById('success-card');
+            
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-90', 'opacity-0');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                document.querySelectorAll('.letter-btn').forEach(b => {
+                    b.classList.remove('selected-correct', 'selected-incorrect');
+                });
+            }, 300);
+        }
+    </script>
+</body></html>

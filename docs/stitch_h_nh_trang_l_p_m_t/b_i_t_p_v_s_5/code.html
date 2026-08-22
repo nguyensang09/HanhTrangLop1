@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Bài Tập: Số 5 - Sóc Nâu Đồng Hành</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#55fdc4",
+                    "secondary": "#006c4f",
+                    "warm-yellow": "#ffd54f",
+                    "on-secondary-fixed": "#002116",
+                    "surface": "#fbf9f1",
+                    "surface-container-low": "#f6f4ec",
+                    "surface-tint": "#9b4500",
+                    "on-primary-fixed-variant": "#763300",
+                    "on-secondary-container": "#007152",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#fbf9f1",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "squirrel-brown": "#897266",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "on-surface-variant": "#564338",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff8c42",
+                    "on-primary-container": "#6a2d00",
+                    "secondary-fixed-dim": "#29e0a9",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#001f2b",
+                    "on-tertiary-container": "#00445a",
+                    "primary": "#9b4500",
+                    "inverse-primary": "#ffb68d",
+                    "background": "#fbf9f1",
+                    "error": "#ba1a1a",
+                    "tertiary": "#006686",
+                    "faded-path": "rgba(0, 0, 0, 0.1)",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#bfe8ff",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#331200",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "surface-container-highest": "#e4e3db",
+                    "success-glow": "#27e0a9",
+                    "primary-fixed-dim": "#ffb68d",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-dim": "#dcdad2",
+                    "inverse-surface": "#30312c",
+                    "on-surface": "#1b1c17",
+                    "outline-variant": "#ddc1b3",
+                    "tertiary-container": "#53b5df",
+                    "on-background": "#1b1c17",
+                    "outline": "#897266",
+                    "surface-container": "#f0eee6",
+                    "surface-variant": "#e4e3db",
+                    "inverse-on-surface": "#f3f1e9",
+                    "surface-container-high": "#eae8e0",
+                    "secondary-container": "#51fac1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "tolerance-zone": "40px",
+                    "safe-margin": "32px",
+                    "gutter": "24px",
+                    "touch-target": "64px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "instruction-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display-hero": ["Plus Jakarta Sans"],
+                    "label-caps": ["Plus Jakarta Sans"],
+                    "path-number": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "700" }],
+                    "instruction-md": ["24px", { "lineHeight": "36px", "fontWeight": "600" }],
+                    "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                    "display-hero": ["80px", { "lineHeight": "96px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                    "label-caps": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                    "path-number": ["16px", { "lineHeight": "16px", "fontWeight": "800" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .clay-btn {
+            box-shadow: 0px 6px 0px 0px var(--tw-shadow-color);
+            transition: all 0.15s ease;
+        }
+        .clay-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px 0px var(--tw-shadow-color);
+        }
+        .success-glow {
+            box-shadow: 0 0 20px 5px rgba(39, 224, 169, 0.4);
+        }
+        .animate-bounce-slow {
+            animation: bounce 3s infinite;
+        }
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+        .path-animated {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 2s ease forwards;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-instruction-md min-h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim w-full top-0 px-safe-margin bg-surface-container-low shadow-[0px_4px_0px_0px_rgba(137,114,102,0.2)] flex justify-between items-center h-touch-target z-50">
+<button aria-label="Quay lại" class="w-touch-target h-touch-target flex items-center justify-center rounded-full text-on-surface-variant active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary truncate flex-1 text-center">Sóc Nâu Đồng Hành</h1>
+<div class="h-touch-target flex items-center justify-center px-4 rounded-full bg-warm-yellow/20 text-on-surface-variant font-label-caps text-label-caps shadow-[0px_4px_0px_0px_#897266] scale-105 transition-all duration-300">
+            128 ⭐
+        </div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-start p-safe-margin max-w-4xl mx-auto w-full gap-8 relative z-10">
+<!-- Instruction Header -->
+<div class="flex flex-col items-center gap-4 w-full text-center mt-4">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Cùng viết số 5 nhé!</h2>
+<button aria-label="Nghe lại hướng dẫn" class="w-16 h-16 rounded-full bg-warm-yellow flex items-center justify-center clay-btn shadow-squirrel-brown text-on-surface hover:bg-yellow-400">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Visual Reinforcement (5 items) -->
+<div class="flex gap-2 items-center justify-center bg-surface-container rounded-full px-6 py-3 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)] border-2 border-outline-variant">
+<span class="material-symbols-outlined text-4xl text-red-500 animate-bounce-slow" style="font-variation-settings: 'FILL' 1; animation-delay: 0s;">nutrition</span>
+<span class="material-symbols-outlined text-4xl text-red-500 animate-bounce-slow" style="font-variation-settings: 'FILL' 1; animation-delay: 0.2s;">nutrition</span>
+<span class="material-symbols-outlined text-4xl text-red-500 animate-bounce-slow" style="font-variation-settings: 'FILL' 1; animation-delay: 0.4s;">nutrition</span>
+<span class="material-symbols-outlined text-4xl text-red-500 animate-bounce-slow" style="font-variation-settings: 'FILL' 1; animation-delay: 0.6s;">nutrition</span>
+<span class="material-symbols-outlined text-4xl text-red-500 animate-bounce-slow" style="font-variation-settings: 'FILL' 1; animation-delay: 0.8s;">nutrition</span>
+</div>
+</div>
+<!-- Tracing Canvas Area -->
+<div class="relative w-full max-w-[400px] aspect-square bg-surface-bright rounded-[40px] border-4 border-outline-variant flex items-center justify-center shadow-lg mx-auto" style="box-shadow: inset 0 8px 16px rgba(0,0,0,0.05);">
+<!-- Background Grid/Lines for context -->
+<div class="absolute inset-0 flex flex-col justify-evenly px-8 pointer-events-none opacity-20">
+<div class="w-full h-1 border-t-4 border-dashed border-squirrel-brown"></div>
+<div class="w-full h-1 border-t-4 border-dashed border-squirrel-brown"></div>
+<div class="w-full h-1 border-t-4 border-dashed border-squirrel-brown"></div>
+</div>
+<!-- SVG for the number 5 Tracing -->
+<svg class="w-[80%] h-[80%] overflow-visible z-10" viewbox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+<!-- Guide Path (Dashed) -->
+<path d="M 20 20 L 80 20" fill="none" stroke="var(--tw-colors-outline-variant)" stroke-dasharray="0 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<path d="M 20 20 L 20 60" fill="none" stroke="var(--tw-colors-outline-variant)" stroke-dasharray="0 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<path d="M 20 60 C 20 60, 40 40, 65 50 C 90 60, 90 90, 70 105 C 50 120, 20 100, 20 100" fill="none" stroke="var(--tw-colors-outline-variant)" stroke-dasharray="0 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<!-- Start Dots & Arrows for steps -->
+<!-- Step 1: Top Line (Right to left standard, but let's assume left to right or top-down for 5. Usually it's straight down, then curve, then top hat. Let's do Down, Curve, Top Hat) -->
+<!-- Let's assume standard stroke order for 5: 1. Down, 2. Curve, 3. Top Line -->
+<!-- Step 1: Down line -->
+<circle class="animate-pulse" cx="20" cy="20" fill="var(--tw-colors-primary)" r="6"></circle>
+<polygon fill="var(--tw-colors-primary)" points="16,40 24,40 20,48"></polygon>
+<text class="font-path-number text-path-number" fill="var(--tw-colors-primary)" x="5" y="45">1</text>
+<!-- Step 2: Curve -->
+<circle cx="20" cy="60" fill="var(--tw-colors-tertiary)" r="6"></circle>
+<polygon fill="var(--tw-colors-tertiary)" points="45,45 40,52 48,55" transform="rotate(-30 45 45)"></polygon>
+<text class="font-path-number text-path-number" fill="var(--tw-colors-tertiary)" x="30" y="70">2</text>
+<!-- Step 3: Top Line -->
+<circle cx="20" cy="20" fill="var(--tw-colors-secondary)" r="6"></circle>
+<polygon fill="var(--tw-colors-secondary)" points="55,16 55,24 65,20"></polygon>
+<text class="font-path-number text-path-number" fill="var(--tw-colors-secondary)" x="50" y="10">3</text>
+<!-- Active Tracing Path (Simulated user stroke, currently empty/ready) -->
+<path class="path-animated opacity-0" d="M 20 20 L 20 40" fill="none" stroke="var(--tw-colors-primary)" stroke-linecap="round" stroke-width="12"></path>
+</svg>
+<!-- Tolerance Zone hint (invisible usually, but structural) -->
+<div class="absolute inset-[-40px] pointer-events-none rounded-[60px] border border-transparent"></div>
+</div>
+<!-- HUD & Controls -->
+<div class="w-full max-w-md flex flex-col gap-6 mt-auto">
+<!-- Progress HUD -->
+<div class="flex items-center justify-between px-6 py-3 bg-surface-container rounded-2xl shadow-sm border border-outline-variant">
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit</span>
+                    Tiến độ
+                </span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Nét 1/3</span>
+</div>
+<!-- Bottom Control Buttons -->
+<div class="flex justify-between items-center gap-4">
+<button class="flex-1 h-touch-target bg-surface-variant text-on-surface-variant rounded-2xl clay-btn shadow-squirrel-brown flex items-center justify-center gap-2 font-label-caps text-label-caps">
+<span class="material-symbols-outlined">undo</span>
+                    Xóa nét
+                </button>
+<button class="flex-1 h-touch-target bg-surface-variant text-on-surface-variant rounded-2xl clay-btn shadow-squirrel-brown flex items-center justify-center gap-2 font-label-caps text-label-caps">
+<span class="material-symbols-outlined">delete</span>
+                    Làm lại
+                </button>
+<button aria-label="Trợ giúp" class="w-touch-target h-touch-target bg-tertiary-fixed text-on-tertiary-fixed rounded-2xl clay-btn shadow-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Sóc Nâu Feedback Overlay (Hidden by default, shown for guidance) -->
+<!-- Positioned absolutely to pop up when help is requested or success -->
+<div class="fixed bottom-32 left-safe-margin right-safe-margin max-w-md mx-auto bg-warm-yellow text-on-surface rounded-2xl p-4 shadow-xl border-4 border-outline-variant flex items-start gap-4 z-50 transform translate-y-32 opacity-0 transition-all duration-500 pointer-events-none">
+<div class="w-16 h-16 rounded-full bg-white flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-primary">
+<!-- Sóc Nâu Mascot Placeholder -->
+<img class="w-full h-full object-cover" data-alt="A cute, simple illustration of a friendly brown squirrel mascot smiling encouragingly, designed in a flat, vector style suitable for 5-year-old children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl_LBy6zx30zL2SzZvm3wEQw6ZXDbLGfA9cdc4vJTQI0TGaWTl5vfWvoneDUhotv1r-Kqs_jEQmcZFKP0V0blfzzYuvqvxKo_HgePyKhZ-qi8WdQxAqNH25Sqocd_h2T7BF4-gLl4LHM8ZJJcY3Sa5_ejq3t6DultPohCPiLEwhEf87sRsnhyTDj7ETIkmrXsh6yquC4nj8Om6dcWCPgl2rvJwix7pN8dPctqaqHk06TkXeUjIe65khA"/>
+</div>
+<div class="flex-1">
+<p class="font-instruction-md text-instruction-md">Bắt đầu từ dấu chấm màu cam nhé!</p>
+</div>
+<button class="text-on-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+</body></html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Tìm âm đầu giống nhau</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Interactive Card Animations */
+        .card-pressable {
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 var(--border-color, #763300);
+        }
+        .card-pressable:active, .card-pressable.selected {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--border-color, #763300);
+        }
+        
+        /* Floating Card Style */
+        .card-floating {
+            box-shadow: 0 20px 40px -15px rgba(255, 140, 66, 0.05);
+        }
+
+        /* Success Animation */
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop-in {
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fbf9f1",
+                        "primary-fixed": "#ffdbc9",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "secondary-fixed": "#54fdc4",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#51fac1",
+                        "surface-bright": "#fbf9f1",
+                        "on-surface-variant": "#564338",
+                        "tertiary": "#006686",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-tint": "#9b4500",
+                        "on-primary-fixed-variant": "#763300",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-container-high": "#eae8e0",
+                        "primary": "#9b4500",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "inverse-surface": "#30312c",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#00445a",
+                        "on-primary-fixed": "#331200",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container-highest": "#e4e3db",
+                        "inverse-primary": "#ffb68d",
+                        "on-primary-container": "#6a2d00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container": "#f0eee6",
+                        "surface-dim": "#dcdad2",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-container": "#007152",
+                        "on-background": "#1b1c17",
+                        "background": "#fbf9f1",
+                        "secondary": "#006c4f",
+                        "outline": "#897266",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e4e3db",
+                        "surface-container-low": "#f5f4ec",
+                        "inverse-on-surface": "#f3f1e9",
+                        "primary-container": "#ff8c42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "card-gap": "20px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="docked full-width top-0 bg-surface dark:bg-surface-dim shadow-sm bg-surface-container-low dark:bg-surface-container-highest z-40 hidden md:flex">
+<div class="flex justify-between items-center w-full px-container-margin py-unit h-touch-target-min">
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary dark:text-primary-fixed hover:scale-105 transition-transform active:translate-y-0.5 active:shadow-none duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold text-primary dark:text-primary-fixed">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full text-on-surface-variant font-title-md text-title-md">
+                128 <span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</header>
+<!-- Mobile Top Bar (Simplified for learning tasks) -->
+<header class="md:hidden flex justify-between items-center w-full px-container-margin py-unit h-touch-target-min bg-surface sticky top-0 z-40 shadow-sm bg-surface-container-low">
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary hover:scale-105 transition-transform active:translate-y-0.5 active:shadow-none duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full text-on-surface-variant font-title-md text-title-md">
+            128 <span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center px-container-margin pt-6 pb-24 md:pb-32 w-full max-w-4xl mx-auto">
+<!-- Sóc Nâu Dialogue / Instruction -->
+<section class="w-full mb-8 relative">
+<div class="bg-[#FFD452] (Accent Warm Yellow) rounded-3xl p-6 shadow-sm border-b-4 border-[#D9A300] flex items-center gap-4 card-floating">
+<!-- Mascot Placeholder -->
+<div class="w-16 h-16 shrink-0 bg-primary-fixed-dim rounded-full flex items-center justify-center border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cute, soft 3D claymorphic style illustration of a happy brown squirrel (Sóc Nâu) wearing a tiny red scarf. The background is a flat, warm yellow circle. Lighting is soft and inviting, suitable for a preschool learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkl8Rl9uEUU-YRPttb3NWRBSC7Uqhf3g6KIHmhHVb6YYJcHDRNTTXZbi0tw-9E4QdM1SIwuI_fxx8so00PCkCgXggKjZk1ufJCtCvPZWSiNZxA_Rrh2n-EpGydnGvKLQhUs7ro4BJTecd4I-qWbFgwod4Jj1_U9kcHyHJvQvj264oadFRjO2uV1cJDhQ4-ydZt2Fk2_R9FDE3nOP1VnBInotmqLtbWLcpr4mNSd5mwDWKtSLsf9DFYow"/>
+</div>
+<div class="flex-1">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-primary-container mb-1">Làm Quen Âm Đầu</h2>
+<p class="font-body-lg text-body-lg text-on-surface">Bé hãy tìm hai hình có âm đầu giống nhau nhé!</p>
+</div>
+<button class="w-12 h-12 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center hover:bg-primary-fixed transition-colors border-b-2 border-surface-container">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Speech bubble triangle pointer -->
+<div class="absolute -bottom-3 left-12 w-6 h-6 bg-[#FFD452] transform rotate-45 border-b-4 border-r-4 border-[#D9A300]"></div>
+</section>
+<!-- Interactive Grid Area -->
+<section class="w-full max-w-2xl mt-4">
+<div class="grid grid-cols-2 gap-4 md:gap-card-gap">
+<!-- Card 1: Bóng (Target) -->
+<div class="card-item relative group" data-initial="b" data-word="bóng">
+<button class="w-full aspect-square bg-surface-container-lowest rounded-3xl border-2 border-tertiary-fixed-dim flex flex-col items-center justify-center p-4 card-pressable card-floating" style="--border-color: #53b5df;">
+<div class="w-3/4 h-3/4 mb-2 relative">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A soft, 3D claymorphic style illustration of a brightly colored beach ball (bóng). It has thick rounded segments of red, blue, and yellow. It sits against a very soft, light cream background. No harsh outlines, gentle studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3DMmazY5BSUjcJOa1FbLaPbaLs2rzAMWGyK2k4nZrjwPn61wM78oVQBMU2hY13ZC0uNMw_nSdfWSraZDIxaD0B7jtSWS8vFEB0tewAWQoP0MHXt7I554d3NLRb-g2ckDv4vQ6tMPVHo-IOR4xpZRaJVbWFUUKuuZB8nE-2lTvNldYrxE8U8LW-ObbJBirXqClYqEfCem87U-TvPRRaWCqtrHd5yds57w46cM78eAAzruhaB8vvKCKEQ"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Bóng</span>
+</button>
+<!-- Floating Audio Button -->
+<button class="absolute top-2 right-2 w-10 h-10 bg-surface rounded-full shadow-sm flex items-center justify-center text-secondary hover:bg-secondary-fixed transition-colors z-10 border border-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Card 2: Bánh (Target) -->
+<div class="card-item relative group" data-initial="b" data-word="bánh">
+<button class="w-full aspect-square bg-surface-container-lowest rounded-3xl border-2 border-tertiary-fixed-dim flex flex-col items-center justify-center p-4 card-pressable card-floating" style="--border-color: #53b5df;">
+<div class="w-3/4 h-3/4 mb-2 relative">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A soft, 3D claymorphic style illustration of a sweet cake slice (bánh) with pink frosting and a cherry on top. It looks squishy and tactile. It sits against a very soft, light cream background. No harsh outlines, gentle lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpnA0yiHagzQn2LVHKYpcp4UUm_LejhvYMZnlTJyC6-68dG69var5z55BcqSY3f2xgbhdZ8AR7VfNJSWuuHYG2ENA1iCM5eNDPm_TjGPr3E7A9EiLMNt25K_pb5WhNiUBH3PpuViw1wJsrR0XmJgr4Hi-d7ix-nQIg2FIMti62Xnhxd0KJZsnfjLNoRsMb6a2H6oYLiicM7kvtLjDP_w8FWoHWm9UruDtfO0j1GK155uyqsdWaniDTxA"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Bánh</span>
+</button>
+<button class="absolute top-2 right-2 w-10 h-10 bg-surface rounded-full shadow-sm flex items-center justify-center text-secondary hover:bg-secondary-fixed transition-colors z-10 border border-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Card 3: Cá (Distractor) -->
+<div class="card-item relative group" data-initial="c" data-word="cá">
+<button class="w-full aspect-square bg-surface-container-lowest rounded-3xl border-2 border-tertiary-fixed-dim flex flex-col items-center justify-center p-4 card-pressable card-floating" style="--border-color: #53b5df;">
+<div class="w-3/4 h-3/4 mb-2 relative">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A soft, 3D claymorphic style illustration of a cute, chubby orange fish (cá) with big friendly eyes. It looks tactile and round. It sits against a very soft, light cream background. Gentle lighting, soft shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNijO1LMsK8X2fB1ebtnMnhXfi0ECICd0uVKLZQOT6wBTEwIboHSAbpKqGLsLFdIRSJqvclWcl8089cJ8b6URHSDSzcKyI_BtFz7dR84OVRcarWsPmSzHZhnzhpclR_r4TMMJCXNoTjxIwjTFbf_O4h_zoJEGiSTAqM5ZEAwoChFkmUjcqWY6NE1KjvpORO9RAzZhIc_1g1aVq8kb326HyhlYg14njyqgsabYt-bbi9DXUqLQw4TZZ1A"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Cá</span>
+</button>
+<button class="absolute top-2 right-2 w-10 h-10 bg-surface rounded-full shadow-sm flex items-center justify-center text-secondary hover:bg-secondary-fixed transition-colors z-10 border border-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Card 4: Dê (Distractor) -->
+<div class="card-item relative group" data-initial="d" data-word="dê">
+<button class="w-full aspect-square bg-surface-container-lowest rounded-3xl border-2 border-tertiary-fixed-dim flex flex-col items-center justify-center p-4 card-pressable card-floating" style="--border-color: #53b5df;">
+<div class="w-3/4 h-3/4 mb-2 relative">
+<img class="w-full h-full object-contain drop-shadow-md" data-alt="A soft, 3D claymorphic style illustration of a small, cute white goat (dê) with tiny horns and a happy face. It looks pillowy and soft. It sits against a very soft, light cream background. Gentle, diffused lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB50lgnl-UwBZO23jC-JDZac-6YAviPwqNUhu3lZwlOvsaZtFItpRoikqzjjcaHnEvjkiO8h3tzDKduETM_bMIJsl0NX5hiyYaeinjav5RZWV-jKS-xroPT0WCn5mt9W8PBHbMyGVbka7SpfsCNeC_j44qkuoV-59twbt_KfeFnMWZQhnWHjMAHoU_F5VciXYwbv9A8wYgSCdlYoOkUBKMLv34Gop62QmtOFgdtUjhGGsyuOgStiI4kXQ"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Dê</span>
+</button>
+<button class="absolute top-2 right-2 w-10 h-10 bg-surface rounded-full shadow-sm flex items-center justify-center text-secondary hover:bg-secondary-fixed transition-colors z-10 border border-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Feedback Area (Hidden by default, shown via JS) -->
+<div class="mt-8 text-center opacity-0 transition-opacity duration-300 h-12" id="feedback-message">
+<!-- Content injected by JS -->
+</div>
+</main>
+<!-- Bottom Fixed Action Area -->
+<div class="fixed bottom-0 w-full z-30 bg-gradient-to-t from-surface via-surface to-transparent pt-12 pb-6 px-container-margin md:pb-8 flex justify-center pointer-events-none">
+<!-- Next Button - Starts Disabled/Hidden, enabled via JS -->
+<button class="pointer-events-auto bg-primary-container text-on-primary-container font-headline-lg-mobile text-headline-lg-mobile py-4 px-12 rounded-full card-pressable opacity-50 cursor-not-allowed transform translate-y-4 transition-all duration-300" id="next-button" style="--border-color: #9b4500;">
+            Tiếp tục
+        </button>
+</div>
+<!-- Navigation suppressed per relevance logic - this is a focused task -->
+<script>
+        // Simple vanilla JS for the interactive learning logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card-item');
+            const nextButton = document.getElementById('next-button');
+            const feedbackArea = document.getElementById('feedback-message');
+            
+            let selectedCards = [];
+            let isAnimating = false;
+
+            cards.forEach(card => {
+                const mainBtn = card.querySelector('button.card-pressable');
+                
+                mainBtn.addEventListener('click', () => {
+                    if (isAnimating) return;
+                    
+                    const isSelected = card.classList.contains('selected-state');
+                    
+                    if (isSelected) {
+                        // Deselect
+                        card.classList.remove('selected-state');
+                        mainBtn.classList.remove('bg-tertiary-fixed', 'border-tertiary', 'selected');
+                        mainBtn.classList.add('bg-surface-container-lowest', 'border-tertiary-fixed-dim');
+                        selectedCards = selectedCards.filter(c => c !== card);
+                        mainBtn.style.setProperty('--border-color', '#53b5df');
+                    } else {
+                        // Select (limit to 2)
+                        if (selectedCards.length < 2) {
+                            card.classList.add('selected-state');
+                            mainBtn.classList.remove('bg-surface-container-lowest', 'border-tertiary-fixed-dim');
+                            mainBtn.classList.add('bg-tertiary-fixed', 'border-tertiary', 'selected');
+                            selectedCards.push(card);
+                            mainBtn.style.setProperty('--border-color', '#006686');
+                        }
+                    }
+
+                    // Check Match
+                    if (selectedCards.length === 2) {
+                        checkMatch();
+                    }
+                });
+            });
+
+            function checkMatch() {
+                isAnimating = true;
+                const initial1 = selectedCards[0].dataset.initial;
+                const initial2 = selectedCards[1].dataset.initial;
+
+                setTimeout(() => {
+                    if (initial1 === initial2) {
+                        // Success state
+                        selectedCards.forEach(card => {
+                            const btn = card.querySelector('button.card-pressable');
+                            btn.classList.remove('bg-tertiary-fixed', 'border-tertiary');
+                            btn.classList.add('bg-secondary-container', 'border-secondary', 'animate-pop-in');
+                            btn.style.setProperty('--border-color', '#006c4f');
+                        });
+                        
+                        // Show Feedback
+                        feedbackArea.innerHTML = '<span class="font-headline-lg-mobile text-headline-lg-mobile text-secondary flex items-center gap-2 justify-center"><span class="material-symbols-outlined text-[32px]">stars</span> Hoan hô bé!</span>';
+                        feedbackArea.classList.remove('opacity-0');
+                        
+                        // Enable Next Button
+                        nextButton.classList.remove('opacity-50', 'cursor-not-allowed', 'translate-y-4');
+                        nextButton.classList.add('hover:bg-primary-fixed-dim', 'translate-y-0');
+                        
+                    } else {
+                        // Fail state - shake and reset
+                        selectedCards.forEach(card => {
+                            const btn = card.querySelector('button.card-pressable');
+                            // Simple CSS shake could be added here, just resetting for now
+                            btn.classList.remove('bg-tertiary-fixed', 'border-tertiary', 'selected');
+                            btn.classList.add('bg-error-container', 'border-error');
+                        });
+                        
+                        setTimeout(() => {
+                            selectedCards.forEach(card => {
+                                const btn = card.querySelector('button.card-pressable');
+                                card.classList.remove('selected-state');
+                                btn.classList.remove('bg-error-container', 'border-error');
+                                btn.classList.add('bg-surface-container-lowest', 'border-tertiary-fixed-dim');
+                                btn.style.setProperty('--border-color', '#53b5df');
+                            });
+                            selectedCards = [];
+                            isAnimating = false;
+                        }, 800);
+                    }
+                }, 300);
+            }
+        });
+    </script>
+</body></html>

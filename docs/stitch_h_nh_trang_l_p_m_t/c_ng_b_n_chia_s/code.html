@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu - Cùng Bạn Chia Sẻ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-variant": "#e4e3db",
+                        "primary": "#9b4500",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-bright": "#fbf9f1",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e4e3db",
+                        "primary-fixed": "#ffdbc9",
+                        "surface-container-low": "#f5f4ec",
+                        "background": "#fbf9f1",
+                        "inverse-primary": "#ffb68d",
+                        "inverse-on-surface": "#f3f1e9",
+                        "inverse-surface": "#30312c",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#00445a",
+                        "surface-container-high": "#eae8e0",
+                        "on-primary-container": "#6a2d00",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-surface-variant": "#564338",
+                        "surface": "#fbf9f1",
+                        "surface-tint": "#9b4500",
+                        "outline-variant": "#ddc1b3",
+                        "on-secondary-container": "#007152",
+                        "on-background": "#1b1c17",
+                        "primary-fixed-dim": "#ffb68d",
+                        "outline": "#897266",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#f0eee6",
+                        "tertiary": "#006686",
+                        "on-tertiary-fixed": "#001f2a",
+                        "secondary-fixed": "#54fdc4",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#dcdad2",
+                        "on-primary-fixed-variant": "#763300",
+                        "secondary": "#006c4f",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#002116",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#51fac1",
+                        "tertiary-container": "#53b5df",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-surface": "#1b1c17",
+                        "on-primary-fixed": "#331200"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "safe": "env(safe-area-inset-bottom)"
+                    },
+                    fontFamily: {
+                        "title-md": ["Be Vietnam Pro", "sans-serif"],
+                        "label-caps": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-md": ["Be Vietnam Pro", "sans-serif"],
+                        "display-hero": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-lg": ["Be Vietnam Pro", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-button {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .clay-button:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 0 transparent !important;
+        }
+        .clay-button.selected-correct {
+            background-color: #51fac1; /* secondary-container */
+            border-color: #006c4f; /* secondary */
+            box-shadow: 0 0 0 0 transparent !important;
+            transform: translateY(4px);
+            color: #007152; /* on-secondary-container */
+        }
+        .clay-button.selected-wrong {
+            background-color: #ffdad6; /* error-container */
+            border-color: #ba1a1a; /* error */
+            box-shadow: 0 0 0 0 transparent !important;
+            transform: translateY(4px);
+            color: #93000a; /* on-error-container */
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 4px, 0); }
+            20%, 80% { transform: translate3d(2px, 4px, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 4px, 0); }
+            40%, 60% { transform: translate3d(4px, 4px, 0); }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .feedback-pop {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col overflow-x-hidden selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-surface-container-low shadow-[0_4px_0_0_rgba(155,69,0,0.1)] flex justify-between items-center px-container-margin h-[64px]">
+<button aria-label="Go back" class="w-touch-target-min h-touch-target-min flex items-center justify-center text-on-surface-variant hover:opacity-90 active:translate-y-[2px] transition-all rounded-full">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center gap-1 font-title-md text-title-md text-primary-container bg-surface-bright px-3 py-1 rounded-full shadow-sm border border-outline-variant/30">
+<span>12</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col px-container-margin py-6 pb-[100px]">
+<!-- Screen Title & Progress (Implicit) -->
+<div class="mb-4 text-center">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Cùng Bạn Chia Sẻ</h2>
+<!-- Progress Bar -->
+<div class="w-full h-4 bg-surface-container-high rounded-full overflow-hidden shadow-inner border border-surface-variant">
+<div class="w-1/3 h-full bg-secondary-fixed-dim rounded-full shadow-[inset_0_-2px_0_rgba(0,0,0,0.1)]"></div>
+</div>
+</div>
+<!-- Sóc Nâu Dialogue / Instruction -->
+<div class="bg-primary-fixed rounded-xl p-4 mb-6 shadow-[0_4px_0_0_rgba(155,69,0,0.1)] flex items-start gap-4 border-2 border-inverse-primary relative">
+<div class="w-12 h-12 bg-surface-bright rounded-full flex-shrink-0 border-2 border-primary-container shadow-sm flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+<div class="flex-1 pt-1">
+<p class="font-title-md text-title-md text-on-primary-fixed-variant leading-tight">
+                    Bé hãy giúp hai bạn cùng chơi vui nhé!
+                </p>
+</div>
+<!-- Decorative speech bubble tail -->
+<div class="absolute -left-2 top-6 w-4 h-4 bg-primary-fixed border-l-2 border-b-2 border-inverse-primary transform rotate-45"></div>
+</div>
+<!-- Interactive Scene Illustration -->
+<div class="w-full h-56 rounded-2xl bg-surface-container-high mb-8 relative overflow-hidden shadow-[0_8px_20px_rgba(255,140,66,0.08)] border-4 border-surface-bright" data-alt="A heartwarming, softly lit 3D claymorphic illustration of a cute brown squirrel character named Sóc Nâu and a friendly rabbit character looking at a single brightly colored toy wooden train. They are standing in a warm, inviting playroom with cream-colored walls and soft lighting. The style is gentle, tactile, and designed for preschoolers, featuring rounded edges, pastel accents, and no harsh outlines. The mood is curious and cooperative, encouraging learning through play." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDK6rZjozZynulWuPZSsHbn9j-VW7hv9QWSGaTW_UxeCviqtb4X5qTSC_ORkGrTXbIe3pBJS7xFMD7-g2V2Y9s1gQ6EY7Gcbp2xHhvbbCFxgPAe-6elFMJjxLTdqp9iT4w9yI6Kn8pd5xEdZpQjN56YjReDc7WRtwsNNWfUSXeTQ2-wec0xo3_Ln1CrWnPlTmQZZgWnDnm9DoDui5PaZ_hlfW9Sd6yDX18li_uA9__gn_dQlqwBr75_gA'); background-size: cover; background-position: center;">
+<!-- Feedback Overlay (Hidden by default) -->
+<div class="absolute inset-0 bg-surface-bright/80 backdrop-blur-sm hidden flex-col items-center justify-center z-10" id="feedback-overlay">
+<div class="text-center opacity-0 transform scale-50 transition-all duration-300" id="feedback-content">
+<span class="material-symbols-outlined text-[64px] text-secondary mb-2 drop-shadow-md" id="feedback-icon" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface" id="feedback-text">Giỏi quá!</h3>
+</div>
+</div>
+</div>
+<!-- Multiple Choice Options -->
+<div class="flex flex-col gap-card-gap" id="options-container">
+<!-- Option 1: Correct -->
+<button class="clay-button w-full bg-surface-bright border-2 border-outline-variant shadow-[0_4px_0_0_#ddc1b3] rounded-xl p-4 flex items-center justify-between text-left group" data-correct="true">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center border border-surface-variant group-active:bg-tertiary-fixed transition-colors">
+<span class="font-title-md text-on-surface-variant">1</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">Chờ đến lượt</span>
+</div>
+<span class="material-symbols-outlined text-outline group-active:text-tertiary">hourglass_empty</span>
+</button>
+<!-- Option 2: Correct -->
+<button class="clay-button w-full bg-surface-bright border-2 border-outline-variant shadow-[0_4px_0_0_#ddc1b3] rounded-xl p-4 flex items-center justify-between text-left group" data-correct="true">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center border border-surface-variant group-active:bg-tertiary-fixed transition-colors">
+<span class="font-title-md text-on-surface-variant">2</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">Cùng chơi chung</span>
+</div>
+<span class="material-symbols-outlined text-outline group-active:text-tertiary">diversity_3</span>
+</button>
+<!-- Option 3: Wrong -->
+<button class="clay-button w-full bg-surface-bright border-2 border-outline-variant shadow-[0_4px_0_0_#ddc1b3] rounded-xl p-4 flex items-center justify-between text-left group" data-correct="false">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center border border-surface-variant group-active:bg-tertiary-fixed transition-colors">
+<span class="font-title-md text-on-surface-variant">3</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">Giành lấy đồ chơi</span>
+</div>
+<span class="material-symbols-outlined text-outline group-active:text-tertiary">front_hand</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface dark:bg-surface-container border-t-2 border-surface-variant z-50 rounded-t-xl shadow-[0_-4px_10px_rgba(255,140,66,0.05)] md:hidden">
+<!-- Active Tab: Học Tập -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 translate-y-[-2px] shadow-[0_4px_0_0_#9b4500] min-w-[72px] h-[56px] active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Học Tập</span>
+</button>
+<!-- Inactive Tab: Vui Chơi -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high rounded-xl px-2 py-1 min-w-[72px] h-[56px] active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 0;">videogame_asset</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Vui Chơi</span>
+</button>
+<!-- Inactive Tab: Thử Thách -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high rounded-xl px-2 py-1 min-w-[72px] h-[56px] active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 0;">star</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Thử Thách</span>
+</button>
+<!-- Inactive Tab: Của Bé -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high rounded-xl px-2 py-1 min-w-[72px] h-[56px] active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Của Bé</span>
+</button>
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.clay-button');
+            const overlay = document.getElementById('feedback-overlay');
+            const feedbackContent = document.getElementById('feedback-content');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackText = document.getElementById('feedback-text');
+
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Reset all buttons
+                    buttons.forEach(btn => {
+                        btn.classList.remove('selected-correct', 'selected-wrong');
+                        btn.disabled = true; // Disable temporarily during feedback
+                    });
+
+                    const isCorrect = this.getAttribute('data-correct') === 'true';
+
+                    if (isCorrect) {
+                        this.classList.add('selected-correct');
+                        
+                        // Show success overlay
+                        overlay.classList.remove('hidden');
+                        overlay.classList.add('flex');
+                        feedbackIcon.textContent = 'star';
+                        feedbackIcon.className = 'material-symbols-outlined text-[64px] text-primary-container mb-2 drop-shadow-md';
+                        feedbackText.textContent = 'Tuyệt vời!';
+                        
+                        setTimeout(() => {
+                            feedbackContent.classList.add('feedback-pop');
+                            feedbackContent.classList.remove('opacity-0', 'scale-50');
+                        }, 50);
+
+                    } else {
+                        this.classList.add('selected-wrong');
+                        
+                        // Mild feedback for wrong answer (no harsh overlay, just button shake)
+                        setTimeout(() => {
+                            this.classList.remove('selected-wrong');
+                            buttons.forEach(btn => btn.disabled = false);
+                        }, 800);
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

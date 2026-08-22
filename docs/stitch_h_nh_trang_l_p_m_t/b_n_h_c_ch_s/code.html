@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bản đồ học Chữ số</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#00445a",
+                        "surface-dim": "#dcdad2",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-low": "#f6f4ec",
+                        "tertiary-container": "#53b5df",
+                        "inverse-primary": "#ffb68d",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#6a2d00",
+                        "error-container": "#ffdad6",
+                        "background": "#fbf9f1",
+                        "tertiary": "#006686",
+                        "on-surface-variant": "#564338",
+                        "faded-path": "rgba(0, 0, 0, 0.1)",
+                        "outline-variant": "#ddc1b3",
+                        "warm-yellow": "#ffd54f",
+                        "secondary-container": "#51fac1",
+                        "inverse-surface": "#30312c",
+                        "squirrel-brown": "#897266",
+                        "tertiary-fixed": "#bfe8ff",
+                        "primary": "#9b4500",
+                        "surface-tint": "#9b4500",
+                        "on-secondary-container": "#007152",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "inverse-on-surface": "#f3f1e9",
+                        "surface-container-high": "#eae8e0",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-tertiary-fixed": "#001f2b",
+                        "surface-variant": "#e4e3db",
+                        "success-glow": "#27e0a9",
+                        "on-surface": "#1b1c17",
+                        "primary-fixed": "#ffdbc9",
+                        "outline": "#897266",
+                        "surface": "#fbf9f1",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-background": "#1b1c17",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#fbf9f1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#331200",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container": "#f0eee6",
+                        "on-secondary-fixed": "#002116",
+                        "secondary-fixed": "#55fdc4",
+                        "secondary": "#006c4f",
+                        "secondary-fixed-dim": "#29e0a9"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "safe-margin": "32px",
+                        "tolerance-zone": "40px",
+                        "touch-target": "64px",
+                        "gutter": "24px"
+                    },
+                    fontFamily: {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "path-number": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "instruction-md": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "display-hero": ["80px", { "lineHeight": "96px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "path-number": ["16px", { "lineHeight": "16px", "fontWeight": "800" }],
+                        "label-caps": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "instruction-md": ["24px", { "lineHeight": "36px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .clay-button {
+            box-shadow: 0px 6px 0px 0px #763300;
+            transition: all 0.1s ease-in-out;
+        }
+        .clay-button:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px 0px #763300;
+        }
+        .path-line {
+            stroke-dasharray: 10;
+            animation: dash 5s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+        .float-anim {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar -->
+<header class="docked full-width top-0 bg-surface-bright dark:bg-surface-dim shadow-sm shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)] z-40 fixed">
+<div class="flex justify-between items-center w-full px-safe-margin py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container bg-surface-container flex items-center justify-center">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A friendly brown squirrel cartoon character avatar on a warm yellow background, designed with a flat, 2D vector style suitable for a children's app interface. The squirrel has large expressive eyes and a welcoming smile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKsqsKWJ99TKcjuKHNeeB6jXLLUdlgk6DtOYFy0EZ3Vph8oxigYqj1eUjpzLGkxI-7liaGkNAJ3CznbLY_WKbHqk3YkCQPggWzz83mCTF1z5JhQya12oHCn6WYDnGrJZRealhmNqFTNKQY0n7B-JHLh7RzuPpwH2KWiXA1k1TbgZGLcnDiPvQ7lMJCUR19qRmnZ7pca6Z6c9Ryu7TxaHrf4ACarMeKACkAGNXPiHkrb5lbAQoLSkUNyA"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim font-bold">Sóc Nâu Đồng Hành</h1>
+</div>
+<div class="flex items-center gap-2 bg-warm-yellow/20 px-4 py-2 rounded-full border-2 border-warm-yellow/50">
+<span class="material-symbols-outlined text-warm-yellow" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-instruction-md text-instruction-md text-on-surface font-bold">125</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-[88px] pb-[104px] relative w-full max-w-7xl mx-auto flex flex-col items-center">
+<!-- Instruction Bubble -->
+<div class="w-full max-w-3xl px-safe-margin mt-6 relative z-20">
+<div class="bg-warm-yellow rounded-2xl p-6 shadow-md border-4 border-on-surface-variant flex items-center gap-4 animate-[bounce_2s_ease-in-out_infinite]">
+<div class="bg-surface-bright rounded-full w-14 h-14 flex items-center justify-center shrink-0 shadow-sm cursor-pointer hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">volume_up</span>
+</div>
+<p class="font-instruction-md text-instruction-md text-on-surface">Cùng mình đếm các con số để đến Vương quốc Toán học nhé!</p>
+</div>
+</div>
+<!-- Map Container -->
+<div class="relative w-full max-w-4xl h-[800px] mt-8">
+<!-- Background Map Image -->
+<div class="absolute inset-0 rounded-3xl overflow-hidden border-4 border-outline-variant shadow-lg z-0">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="A whimsical, colorful, flat vector illustration map of a magical math kingdom designed for 5-year-old children. The map features a winding path, grassy hills, soft fluffy clouds, and vibrant trees in warm oranges, greens, and yellows. The style is 2D claymorphism, highly tactile and optimistic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCIG-t2vCVQEkXt5xTmM0DCu2ls3ZkyrxyHZO3LLsV6XGIUeyO9b46BlPGa0wdf76ZTnMgE3KilxprpgyT1-YQLlTMLk8QMDQzG3r0buYipVjMU3lSASA_c_Ac8XfuyHXoevmo-GXsjpcv_tVBzIwH-hsvk1E41RDzK8GL3LFl1p8dsEFDE7WwqD0sn6-72Zr4BRUWZbDOe8UldYyrBPSHDr1bsL-5iO9m4gttYy2ENfSo8-OnSA3iuwA')"></div>
+<!-- Path Overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveaspectratio="none" viewbox="0 0 1000 800">
+<path class="path-line" d="M 100 700 C 300 700, 200 500, 400 450 C 600 400, 700 600, 850 500 C 950 450, 900 200, 700 150 C 500 100, 200 300, 200 150" fill="none" stroke="#ff8c42" stroke-linecap="round" stroke-width="12"></path>
+<path d="M 100 700 C 300 700, 200 500, 400 450 C 600 400, 700 600, 850 500 C 950 450, 900 200, 700 150 C 500 100, 200 300, 200 150" fill="none" stroke="#fff" stroke-dasharray="20 20" stroke-linecap="round" stroke-width="6"></path>
+</svg>
+</div>
+<!-- Nodes (Interactive Elements) -->
+<!-- Node 1: Completed -->
+<button class="absolute bottom-[80px] left-[80px] w-touch-target h-touch-target rounded-full bg-secondary-container border-4 border-secondary flex justify-center items-center z-10 shadow-[0_6px_0_0_#006c4f] active:translate-y-[4px] active:shadow-[0_2px_0_0_#006c4f] transition-all group">
+<span class="font-display-hero text-headline-lg-mobile text-on-secondary-container">1</span>
+<div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-surface p-2 rounded-lg shadow text-sm font-bold whitespace-nowrap pointer-events-none text-on-surface">Đã đếm xong!</div>
+</button>
+<!-- Node 2: Completed -->
+<button class="absolute bottom-[280px] left-[250px] w-touch-target h-touch-target rounded-full bg-secondary-container border-4 border-secondary flex justify-center items-center z-10 shadow-[0_6px_0_0_#006c4f] active:translate-y-[4px] active:shadow-[0_2px_0_0_#006c4f] transition-all group">
+<span class="font-display-hero text-headline-lg-mobile text-on-secondary-container">2</span>
+</button>
+<!-- Node 3: Current Active Task -->
+<button class="absolute bottom-[330px] left-[420px] w-20 h-20 rounded-full bg-primary-container border-4 border-primary flex justify-center items-center z-20 shadow-[0_6px_0_0_#9b4500] active:translate-y-[4px] active:shadow-[0_2px_0_0_#9b4500] transition-all float-anim ring-8 ring-success-glow/50 group">
+<span class="font-display-hero text-headline-lg text-on-primary-container">3</span>
+<div class="absolute -top-14 bg-white px-4 py-2 rounded-xl shadow-lg border-2 border-primary-container text-primary font-bold animate-pulse whitespace-nowrap before:content-[''] before:absolute before:-bottom-2 before:left-1/2 before:-translate-x-1/2 before:border-8 before:border-transparent before:border-t-white">Chơi ngay!</div>
+</button>
+<!-- Node 4: Locked -->
+<button class="absolute top-[280px] right-[120px] w-touch-target h-touch-target rounded-full bg-surface-variant border-4 border-outline flex justify-center items-center z-10 shadow-[0_6px_0_0_#897266] opacity-70 cursor-not-allowed group">
+<span class="material-symbols-outlined text-outline text-3xl">lock</span>
+<span class="absolute -bottom-8 font-headline-lg-mobile text-path-number text-on-surface-variant">4</span>
+</button>
+<!-- Node 5: Locked -->
+<button class="absolute top-[120px] right-[250px] w-touch-target h-touch-target rounded-full bg-surface-variant border-4 border-outline flex justify-center items-center z-10 shadow-[0_6px_0_0_#897266] opacity-70 cursor-not-allowed group">
+<span class="material-symbols-outlined text-outline text-3xl">lock</span>
+<span class="absolute -bottom-8 font-headline-lg-mobile text-path-number text-on-surface-variant">5</span>
+</button>
+<!-- Destination Castle -->
+<div class="absolute top-[80px] left-[150px] z-10 flex flex-col items-center">
+<div class="w-32 h-32 relative float-anim">
+<img class="w-full h-full object-contain drop-shadow-xl" data-alt="A brightly colored, stylized 2D cartoon castle representing the 'Math Kingdom'. The castle has soft rounded edges, vibrant orange and yellow towers, and a large friendly gateway. It looks tactile and welcoming, designed for young children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8TKhWq63pTkQpCUr-FcMmrksMC9UHz9PvnzCaaWeYFNOKTAo-6U6Y_SwI40x6svE-NRCgp3bH9F_-5gyif2GFVY6kRe81IbMWv-PbFgrY43YkBGbrcwI5TV7VOf_FzdaaYVKPOJpBEGAkHzg5sJl9qrLTosKiSUTOunJ_9Ze0kl-Zb_y4Xc_lScF4DRXYfzU6Vv6lr8fTCqi6vi9_fCu-HwkO14Ylx3HFySZYNgSOjOZaDK_YrB0kCQ"/>
+</div>
+<span class="bg-surface-bright/90 px-4 py-1 rounded-full border-2 border-primary-container text-primary font-bold shadow-sm mt-2">Vương Quốc</span>
+</div>
+<!-- Decorative Elements (Apples, Stars) -->
+<div class="absolute top-[400px] left-[150px] w-12 h-12 hover:scale-110 transition-transform cursor-pointer">
+<img class="w-full h-full object-contain" data-alt="A small, cute, red cartoon apple with a happy face, designed as an interactive background element for a children's math game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxzwI3cxFz_2kIjF39UhJdL2im3sGzz58s3wVXTkty6rp8nvjQmjPFcQrnrq_2vh5y256B7z_dTW2AgbCF3mfuxqiYbJw6Iz8FLMEdu1tavPP055J7tnB_sm5N_stADDhjwUP2wvoW8m_qAQC_QXwUV-zGlJRgopiNa88wQKivOliqXTShazO0xI04JBXuGFIxiBRq1nn2xLWJ3PQIpj8sGnrNq7SqShE74XubInaza70emCbZd_ic_Q"/>
+</div>
+<div class="absolute bottom-[200px] right-[250px] w-16 h-16 hover:scale-110 transition-transform cursor-pointer">
+<img class="w-full h-full object-contain" data-alt="A bright yellow cartoon star with a smiling face, rendered in a soft, flat vector style suitable for a preschool learning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzl4bDJjQFMZrcHAUIuTDJrLh7g0hAVGWE3auVLntpFurHjyN3TD3sCSyrE0agoFX14kREon8OtRfiuaUoPHvyxRxNWZUBd3t4cdbo2S5rV0w7_7wOAGKF_45ANWR5ESUwa8kbxqG99fC8mOfyAQ8P_YcYEd1Z0yS87Q-K5RhPnHIpzKJcHJDwW-hPCK75b0lGnI6kE1cTmG4PXlbKYKdFn4DXH7ujpUUJD7s-Y92jwbOw1tm3Ke8Vsw"/>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="docked full-width bottom-0 rounded-t-xl bg-surface-container dark:bg-surface-container-highest border-t-4 border-surface-container-high dark:border-outline-variant shadow-[0px_-4px_20px_0px_rgba(255,140,66,0.05)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 md:hidden">
+<!-- Item 1: Trang chủ -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant group" href="#">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<!-- Item 2: Bài tập (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-6 py-2 border-b-4 border-primary dark:border-on-primary-fixed-variant translate-y-1 transition-all duration-100" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<!-- Item 3: Quà tặng -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant group" href="#">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">workspace_premium</span>
+<span class="font-label-caps text-label-caps">Quà tặng</span>
+</a>
+<!-- Item 4: Phụ huynh -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant group" href="#">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">family_history</span>
+<span class="font-label-caps text-label-caps">Phụ huynh</span>
+</a>
+</nav>
+<!-- Desktop Navigation Alternative (Hidden on mobile) -->
+<nav class="hidden md:flex fixed left-0 top-[88px] bottom-0 w-[240px] bg-surface-container border-r-4 border-surface-container-high flex-col px-4 py-8 z-30">
+<div class="flex flex-col gap-4 w-full">
+<a class="flex items-center gap-4 px-6 py-4 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 rounded-xl bg-primary-container text-on-primary-container border-b-4 border-primary shadow-sm font-bold translate-x-2 transition-transform" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">workspace_premium</span>
+<span class="font-label-caps text-label-caps">Quà tặng</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">family_history</span>
+<span class="font-label-caps text-label-caps">Phụ huynh</span>
+</a>
+</div>
+</nav>
+</body></html>

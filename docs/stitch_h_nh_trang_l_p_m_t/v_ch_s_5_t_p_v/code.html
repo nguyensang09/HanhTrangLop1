@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tập Vẽ Số 5</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#331200",
+                        "primary-fixed": "#ffdbc9",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "background": "#fbf9f1",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-variant": "#e4e3db",
+                        "on-tertiary-container": "#00445a",
+                        "surface-dim": "#dcdad2",
+                        "secondary-container": "#51fac1",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#6a2d00",
+                        "primary": "#9b4500",
+                        "on-error-container": "#93000a",
+                        "surface": "#fbf9f1",
+                        "surface-container-highest": "#e4e3db",
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#007152",
+                        "on-surface-variant": "#564338",
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-container": "#f0eee6",
+                        "primary-container": "#ff8c42",
+                        "inverse-primary": "#ffb68d",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "secondary-fixed": "#54fdc4",
+                        "on-background": "#1b1c17",
+                        "surface-container-high": "#eae8e0",
+                        "inverse-on-surface": "#f3f1e9",
+                        "tertiary-container": "#53b5df",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "outline": "#897266",
+                        "surface-bright": "#fbf9f1",
+                        "surface-container-low": "#f5f4ec",
+                        "inverse-surface": "#30312c",
+                        "tertiary": "#006686",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#9b4500",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#006c4f",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "outline-variant": "#ddc1b3",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#001f2a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .pressable-btn {
+            border-bottom: 4px solid var(--tw-border-opacity, 1);
+            transition: all 0.15s ease-out;
+        }
+        .pressable-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .soft-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        .trace-path {
+            stroke-dasharray: 10, 10;
+            animation: dash 1s linear infinite;
+        }
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -20;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-[0_4px_0_0_rgba(228,227,219,1)]">
+<div class="w-full h-16 flex items-center justify-between px-container-margin">
+<button aria-label="Back" class="w-12 h-12 flex items-center justify-center text-primary active:translate-y-0.5 transition-transform hover:bg-primary-container/20 rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary flex-1 text-center truncate">
+                Tập vẽ số 5
+            </h1>
+<div class="flex items-center gap-1 text-primary">
+<span class="font-title-md text-title-md">⭐ 125</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 mt-16 pt-unit pb-24 px-container-margin flex flex-col gap-4 overflow-y-auto">
+<!-- Header Info -->
+<div class="flex items-center justify-between soft-card bg-surface-container-lowest rounded-xl p-3 border-2 border-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-caps text-label-caps">
+                     1/3
+                 </div>
+<span class="font-body-lg text-body-lg text-on-surface-variant">Nét thứ 1</span>
+</div>
+<!-- Star Progress -->
+<div class="flex gap-1 h-4 w-24 bg-surface-variant rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full w-1/3 bg-secondary"></div>
+</div>
+</div>
+<!-- Instruction Dialogue -->
+<div class="bg-[#FFE082] rounded-xl p-4 flex items-center gap-3 soft-card relative">
+<div class="w-12 h-12 rounded-full bg-white flex-shrink-0 flex items-center justify-center border-2 border-[#FFC107]">
+<span class="material-symbols-outlined text-[#FF9800]" data-icon="cruelty_free" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-primary-fixed-variant flex-1">
+                Bé vẽ theo đường nét đứt nhé!
+            </p>
+<button aria-label="Nghe lại" class="w-10 h-10 flex items-center justify-center bg-white rounded-full text-[#FF9800] pressable-btn border-[#FFC107]">
+<span class="material-symbols-outlined" data-icon="volume_up" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Canvas Area -->
+<div class="flex-1 min-h-[300px] bg-white rounded-2xl soft-card border-2 border-surface-variant relative flex flex-col items-center justify-center p-4">
+<!-- SVG Canvas Placeholder for Tracing -->
+<svg class="w-full h-full max-w-xs mx-auto" viewbox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+<!-- Guide Lines -->
+<line stroke="#e4e3db" stroke-dasharray="4,4" stroke-linecap="round" stroke-width="2" x1="10" x2="90" y1="30" y2="30"></line>
+<line stroke="#e4e3db" stroke-dasharray="4,4" stroke-linecap="round" stroke-width="2" x1="10" x2="90" y1="75" y2="75"></line>
+<line stroke="#e4e3db" stroke-dasharray="4,4" stroke-linecap="round" stroke-width="2" x1="10" x2="90" y1="120" y2="120"></line>
+<!-- Background Ghost 5 -->
+<path d="M 30,30 L 70,30" fill="none" stroke="#f0eee6" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<path d="M 30,30 L 30,70" fill="none" stroke="#f0eee6" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<path d="M 30,70 C 50,60 70,70 70,95 C 70,120 50,130 30,120" fill="none" stroke="#f0eee6" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<!-- Active Stroke (Stroke 1: vertical line) -->
+<path class="trace-path" d="M 30,30 L 30,70" fill="none" stroke="#ff8c42" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></path>
+<!-- Start Point Indicator -->
+<circle cx="30" cy="30" fill="#ff8c42" r="6"></circle>
+<!-- Hand Guide Icon -->
+<g transform="translate(35, 45)">
+<circle cx="0" cy="0" fill="#51fac1" fill-opacity="0.3" r="10"></circle>
+<text fill="#007152" font-family="Material Symbols Outlined" font-size="16" x="-8" y="5">touch_app</text>
+</g>
+</svg>
+<!-- Tools -->
+<div class="absolute bottom-4 right-4 flex gap-3">
+<button aria-label="Hoàn tác" class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-on-surface-variant pressable-btn border-surface-variant">
+<span class="material-symbols-outlined" data-icon="undo">undo</span>
+</button>
+<button aria-label="Xóa" class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-on-surface-variant pressable-btn border-surface-variant">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer Action -->
+<div class="fixed bottom-0 w-full z-40 bg-surface p-4 shadow-[0_-4px_20px_rgba(228,227,219,0.5)]">
+<button class="w-full h-14 bg-surface-variant text-on-surface-variant font-label-caps text-label-caps rounded-full flex items-center justify-center opacity-50 cursor-not-allowed" disabled="">
+            Tiếp tục
+        </button>
+</div>
+</body></html>

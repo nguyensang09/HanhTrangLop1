@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Học Chữ - Ghép chữ hoa với chữ thường</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#bfe8ff",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1b1c17",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-dim": "#dcdad2",
+                        "on-primary-fixed": "#331200",
+                        "inverse-surface": "#30312c",
+                        "surface-container-low": "#f5f4ec",
+                        "outline": "#897266",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-secondary-container": "#007152",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#564338",
+                        "surface-variant": "#e4e3db",
+                        "background": "#fbf9f1",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "surface-container": "#f0eee6",
+                        "primary-fixed": "#ffdbc9",
+                        "tertiary": "#006686",
+                        "tertiary-container": "#53b5df",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fbf9f1",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "secondary": "#006c4f",
+                        "outline-variant": "#ddc1b3",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#00445a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#54fdc4",
+                        "on-secondary-fixed": "#002116",
+                        "surface": "#fbf9f1",
+                        "on-primary-container": "#6a2d00",
+                        "inverse-primary": "#ffb68d",
+                        "surface-tint": "#9b4500",
+                        "secondary-container": "#51fac1",
+                        "on-tertiary-fixed": "#001f2a",
+                        "on-surface": "#1b1c17",
+                        "error": "#ba1a1a",
+                        "primary": "#9b4500",
+                        "surface-container-high": "#eae8e0",
+                        "primary-container": "#ff8c42",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#ffb68d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "cloud": "40% 60% 70% 30% / 40% 50% 60% 50%"
+                    },
+                    "spacing": {
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "card-gap": "20px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid var(--tw-colors-primary);
+            transition: all 0.2s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .clay-card {
+            box-shadow: 0 10px 20px -5px rgba(255, 140, 66, 0.1);
+        }
+        .draggable-item {
+            cursor: grab;
+            touch-action: none;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone.hovered {
+            background-color: var(--tw-colors-tertiary-fixed);
+            border-color: var(--tw-colors-tertiary);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-background flex justify-between items-center px-container-margin py-unit z-40 flat no shadows">
+<button class="flex items-center justify-center w-touch-target-min h-touch-target-min rounded-full hover:bg-primary-container transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary text-center flex-1">
+            Sóc Nâu Học Chữ
+        </h1>
+<div class="flex items-center justify-center h-touch-target-min px-4 rounded-full bg-surface-container-high text-primary-container font-title-md text-title-md">
+            ⭐ 125
+        </div>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-container-margin py-unit flex flex-col gap-card-gap max-w-4xl mx-auto w-full">
+<!-- Sóc Nâu Dialogue -->
+<div class="bg-[#FFE066] rounded-2xl p-4 flex items-start gap-4 clay-card relative overflow-hidden">
+<div class="w-16 h-16 rounded-full bg-white shrink-0 overflow-hidden border-2 border-primary-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A cute, highly detailed digital illustration of a friendly brown squirrel character named Sóc Nâu, rendered in a soft 3D claymorphic style. The squirrel has large expressive eyes, a bushy tail, and is smiling encouragingly. The background is a clean, bright white to isolate the character, perfectly fitting a preschool learning app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxIlOA0hVB-T20SJJVwE0P0g3I8SNQE6QDtU2dweZKlbIID-Ov0sW492C_gVihVgkp-c9TbSGFOJkWR7yuOwnne63ccJ4JYgLoG1auLLLm7FnM1SUbSFezsTjYYv50PRlF9RQAK1_zPzVsZrZKXT2jC0LjxfcXPN4mKkxxqI74wVZglKYF5bF5bC2Xo6kjx7pVmnBToUit3iSwzBjbPJGVGCQOifDobjWVvxw5dKQFWntQJEdpNhmmXA"/>
+</div>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-primary-fixed mb-1">Bé hãy giúp Sóc Nâu nhé!</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Kéo chữ in hoa vào hình đám mây chứa chữ in thường tương ứng.</p>
+</div>
+<button class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Game Area -->
+<div class="bg-surface-container-low rounded-3xl p-6 min-h-[400px] flex flex-col md:flex-row gap-8 items-center justify-center clay-card relative">
+<!-- Draggable Uppercase Letters (Acorns/Leaves) -->
+<div class="flex flex-row md:flex-col gap-6 justify-center w-full md:w-1/3">
+<div class="draggable-item w-24 h-24 bg-primary-container text-on-primary rounded-full flex items-center justify-center font-display-hero text-display-hero clay-button select-none shadow-sm" draggable="true" id="letter-A">
+                    A
+                </div>
+<div class="draggable-item w-24 h-24 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center font-display-hero text-display-hero clay-button select-none shadow-sm" draggable="true" id="letter-B">
+                    B
+                </div>
+<div class="draggable-item w-24 h-24 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center font-display-hero text-display-hero clay-button select-none shadow-sm" draggable="true" id="letter-C">
+                    C
+                </div>
+</div>
+<!-- Decorative Connector Area -->
+<div class="hidden md:flex flex-col justify-center items-center h-full w-24 opacity-30">
+<svg fill="none" height="200" viewbox="0 0 40 200" width="40" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 0V200" stroke="#897266" stroke-dasharray="8 8" stroke-width="4"></path>
+</svg>
+</div>
+<!-- Drop Zones Lowercase Letters (Clouds) -->
+<div class="flex flex-row md:flex-col gap-6 justify-center w-full md:w-1/3">
+<div class="drop-zone w-32 h-24 bg-white border-2 border-tertiary-fixed rounded-cloud flex items-center justify-center font-display-hero text-display-hero text-on-surface-variant transition-colors shadow-sm relative" id="drop-c">
+                    c
+                </div>
+<div class="drop-zone w-32 h-24 bg-white border-2 border-tertiary-fixed rounded-cloud flex items-center justify-center font-display-hero text-display-hero text-on-surface-variant transition-colors shadow-sm relative" id="drop-a">
+                    a
+                </div>
+<div class="drop-zone w-32 h-24 bg-white border-2 border-tertiary-fixed rounded-cloud flex items-center justify-center font-display-hero text-display-hero text-on-surface-variant transition-colors shadow-sm relative" id="drop-b">
+                    b
+                </div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex justify-center mt-4">
+<button class="bg-primary-container text-on-primary font-title-md text-title-md px-8 py-4 rounded-full min-w-[200px] clay-button flex items-center justify-center gap-2 shadow-sm opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                 Kiểm tra
+             </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container shadow-sm rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 border-b-4 border-on-secondary-container translate-y-0.5 hover:scale-110 transition-all" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">workspace_premium</span>
+<span class="font-label-caps text-label-caps">Quà tặng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">family_history</span>
+<span class="font-label-caps text-label-caps">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        // Simple Drag and Drop implementation for visual feedback
+        const draggables = document.querySelectorAll('.draggable-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('opacity-50');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('opacity-50');
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('hovered');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('hovered');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('hovered');
+                // Basic visual logic for dropping - in a real app this would move the element or validate
+                zone.style.backgroundColor = 'var(--tw-colors-surface-container)';
+            });
+        });
+    </script>
+</body></html>

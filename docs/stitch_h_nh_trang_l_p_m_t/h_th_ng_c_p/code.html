@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Level Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f5f4ec",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-surface": "#1b1c17",
+                        "tertiary": "#006686",
+                        "on-primary-container": "#6a2d00",
+                        "outline-variant": "#ddc1b3",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#002116",
+                        "primary": "#9b4500",
+                        "surface-container-high": "#eae8e0",
+                        "on-tertiary-container": "#00445a",
+                        "on-background": "#1b1c17",
+                        "surface-bright": "#fbf9f1",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#331200",
+                        "on-error": "#ffffff",
+                        "surface": "#fbf9f1",
+                        "secondary-fixed": "#54fdc4",
+                        "tertiary-fixed": "#bfe8ff",
+                        "secondary": "#006c4f",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "outline": "#897266",
+                        "on-surface-variant": "#564338",
+                        "primary-fixed-dim": "#ffb68d",
+                        "background": "#fbf9f1",
+                        "primary-fixed": "#ffdbc9",
+                        "surface-dim": "#dcdad2",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e4e3db",
+                        "surface-container": "#f0eee6",
+                        "inverse-on-surface": "#f3f1e9",
+                        "primary-container": "#ff8c42",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#001f2a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "inverse-surface": "#30312c",
+                        "inverse-primary": "#ffb68d",
+                        "on-secondary-container": "#007152",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "surface-tint": "#9b4500",
+                        "secondary-container": "#51fac1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid #7a3600; /* Darker primary */
+            transition: all 0.1s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .clay-card-active {
+            border-bottom: 4px solid #d96f2d; /* Darker primary-container */
+            transform: translateY(-2px);
+            box-shadow: 0px 8px 20px 0px rgba(255, 140, 66, 0.15);
+        }
+        .clay-card-inactive {
+            border-bottom: 4px solid #dcdad2; /* surface-dim */
+            transition: all 0.2s ease;
+            box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.05);
+        }
+        .clay-card-inactive:hover {
+             transform: translateY(-1px);
+             box-shadow: 0px 6px 15px 0px rgba(255, 140, 66, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col pb-32">
+<!-- TopAppBar -->
+<header class="bg-surface-bright dark:bg-surface-dim shadow-sm docked full-width top-0 sticky z-40 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)] flex justify-between items-center w-full px-container-margin py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img class="object-cover w-full h-full" data-alt="A cute, soft-edged 3D character avatar of a brown squirrel (Sóc Nâu) with large friendly eyes, rendered in a warm, inviting preschool educational style with a cream background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChLkSVragvqlaFNwh8Hlf4SUsLX33w0D9EbZc_lxsjWXZVIMAl98hcFHl2asLI9-8FcPnoZ6HxYKYB0Va1yezFs4Dpx9XxatZaXaklTgh8v-T83qP4dg4KymicWMe2GClTlGbjEGosC3_At8_PaoWSHHKeNUpB6z2ZnGohTkcojX7iCpqDmXF8i0Ef7S5nkGVMb5EnMFikk9odl2qQw85euS5TOOHBIi4fnVnSDg5PCrT2IoYuWhTX7g"/>
+</div>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed-dim">Sóc Nâu Đồng Hành</h1>
+</div>
+<div class="flex items-center text-primary dark:text-primary-fixed-dim font-label-caps text-label-caps bg-surface-container rounded-full px-3 py-1">
+<span class="material-symbols-outlined mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1; color: #FF8C42;">star</span>
+            125
+        </div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow px-container-margin py-6 max-w-2xl mx-auto w-full">
+<!-- Sóc Nâu Dialogue Box -->
+<div class="bg-[#ffefa8] rounded-xl p-4 mb-8 flex items-start gap-4 shadow-[0px_4px_15px_0px_rgba(255,182,141,0.2)] border-2 border-[#fcd53f]">
+<div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
+<img class="object-cover w-full h-full" data-alt="A friendly 3D rendered brown squirrel character (Sóc Nâu) looking directly forward with an encouraging smile, set against a soft yellow background, designed for a children's app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbT1RWRh1V3OVRoOjA6TLCooHSo3APSSBWzDWI1bTq5afYzxiTSvIafV1HAMvzMqAp6hHl3s4s2GI-7Zq7D5BJBz7DP-2VIHUcIJvG3uwz7Zv5AJ6NwO4RQKtd0iK1DNA003P7MUJP5y33_0FGEv94rydFbh8_y082DNI6vRaaKjmYkk579g6mWZ8EOcDtNwW9rXBhva5scHig98oel1_ncoItHVb67bsSlaPW9F4w7MMUC1gxp8iNjg"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface">
+                    Chào bạn! Hãy chọn mức độ khó phù hợp để chúng mình cùng nhau luyện tập nhé!
+                </p>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-6 text-center">Chọn Cấp Độ</h2>
+<!-- Level Cards -->
+<div class="flex flex-col gap-card-gap mb-10">
+<!-- Easy Level -->
+<button class="w-full text-left bg-surface-container-lowest rounded-xl p-6 clay-card-inactive flex items-center gap-4 border-2 border-transparent focus:outline-none focus:border-tertiary-container group" onclick="selectLevel(this, 'easy')">
+<div class="w-14 h-14 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed-variant flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="sentiment_very_satisfied">sentiment_very_satisfied</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface mb-1">Dễ</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">2 lựa chọn. Có hướng dẫn sinh động.</p>
+</div>
+</button>
+<!-- Medium Level (Active) -->
+<button class="w-full text-left bg-surface-container-lowest rounded-xl p-6 clay-card-active flex items-center gap-4 border-2 border-primary-container focus:outline-none" id="medium-card" onclick="selectLevel(this, 'medium')">
+<div class="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-3xl" data-icon="sentiment_satisfied">sentiment_satisfied</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-primary mb-1">Trung bình</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">3-4 lựa chọn. Giảm bớt gợi ý.</p>
+</div>
+</button>
+<!-- Advanced Level -->
+<button class="w-full text-left bg-surface-container-lowest rounded-xl p-6 clay-card-inactive flex items-center gap-4 border-2 border-transparent focus:outline-none focus:border-tertiary-container group" onclick="selectLevel(this, 'advanced')">
+<div class="w-14 h-14 rounded-full bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="local_fire_department">local_fire_department</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface mb-1">Nâng cao</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Kết hợp nhiều kỹ năng. Thử thách cao!</p>
+</div>
+</button>
+</div>
+<!-- Confirm Button -->
+<div class="flex justify-center mt-8">
+<button class="bg-primary text-on-primary font-label-caps text-label-caps py-4 px-12 rounded-full clay-button min-w-[200px] hover:bg-surface-tint active:bg-primary-fixed-variant transition-colors">
+                Bắt đầu
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-highest docked full-width bottom-0 rounded-t-xl border-t-4 border-surface-container-high dark:border-outline-variant shadow-[0px_-4px_20px_0px_rgba(255,140,66,0.05)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-[12px] mt-1">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-6 py-2 border-b-4 border-primary dark:border-on-primary-fixed-variant translate-y-1 transition-all duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book" data-weight="fill" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-label-caps text-[12px] mt-1">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-label-caps text-[12px] mt-1">Quà tặng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="family_history">family_history</span>
+<span class="font-label-caps text-[12px] mt-1">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        function selectLevel(element, level) {
+            // Remove active classes from all cards
+            const cards = document.querySelectorAll('button[onclick^="selectLevel"]');
+            cards.forEach(card => {
+                card.classList.remove('clay-card-active', 'border-primary-container');
+                card.classList.add('clay-card-inactive', 'border-transparent');
+                
+                // Reset title color
+                const title = card.querySelector('h3');
+                if(title) title.classList.replace('text-primary', 'text-on-surface');
+            });
+
+            // Add active class to clicked card
+            element.classList.remove('clay-card-inactive', 'border-transparent');
+            element.classList.add('clay-card-active', 'border-primary-container');
+            
+            // Highlight title
+            const title = element.querySelector('h3');
+            if(title) {
+                title.classList.remove('text-on-surface');
+                title.classList.add('text-primary');
+            }
+        }
+    </script>
+</body></html>

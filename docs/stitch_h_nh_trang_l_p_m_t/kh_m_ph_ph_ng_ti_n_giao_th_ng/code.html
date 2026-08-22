@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phân Loại Phương Tiện</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#ffb68d",
+                      "surface-variant": "#e4e3db",
+                      "on-secondary-fixed": "#002116",
+                      "surface": "#fbf9f1",
+                      "inverse-on-surface": "#f3f1e9",
+                      "surface-dim": "#dcdad2",
+                      "surface-container-high": "#eae8e0",
+                      "outline-variant": "#ddc1b3",
+                      "on-secondary-container": "#007152",
+                      "on-primary-container": "#6a2d00",
+                      "on-background": "#1b1c17",
+                      "primary-container": "#ff8c42",
+                      "on-tertiary-container": "#00445a",
+                      "on-primary-fixed-variant": "#763300",
+                      "surface-tint": "#9b4500",
+                      "on-surface": "#1b1c17",
+                      "background": "#fbf9f1",
+                      "on-error": "#ffffff",
+                      "secondary": "#006c4f",
+                      "primary-fixed-dim": "#ffb68d",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f5f4ec",
+                      "surface-container-highest": "#e4e3db",
+                      "tertiary-fixed": "#bfe8ff",
+                      "on-primary-fixed": "#331200",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#53b5df",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#f0eee6",
+                      "secondary-container": "#51fac1",
+                      "on-surface-variant": "#564338",
+                      "error-container": "#ffdad6",
+                      "tertiary": "#006686",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "on-tertiary-fixed": "#001f2a",
+                      "secondary-fixed": "#54fdc4",
+                      "surface-bright": "#fbf9f1",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "outline": "#897266",
+                      "inverse-surface": "#30312c",
+                      "primary": "#9b4500",
+                      "primary-fixed": "#ffdbc9"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "container-margin": "24px",
+                      "gutter": "16px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .clay-card {
+            box-shadow: 0 20px 20px -10px rgba(255, 140, 66, 0.15), inset 0 2px 0 rgba(255,255,255,0.8);
+        }
+        .clay-btn {
+            border-bottom: 4px solid var(--tw-colors-surface-tint);
+        }
+        .clay-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .drag-item {
+            cursor: grab;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen overflow-x-hidden flex flex-col md:hidden">
+<!-- TopAppBar -->
+<header class="flex items-center justify-between px-gutter w-full h-16 w-full top-0 z-50 bg-surface-bright backdrop-blur-md bg-white/80">
+<button class="w-12 h-12 flex items-center justify-center text-tertiary font-bold hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="text-tertiary font-bold font-headline-lg-mobile text-headline-lg-mobile text-center flex-1">Góc Phụ Huynh</h1>
+<div class="w-12"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-container-margin pb-32 flex flex-col gap-6">
+<!-- Instruction -->
+<div class="bg-surface-container-low rounded-xl p-6 border-2 border-tertiary-fixed text-center">
+<h2 class="font-title-md text-title-md text-on-surface mb-2">Bé hãy sắp xếp các xe nhé!</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Kéo phương tiện vào đúng nơi của nó.</p>
+</div>
+<!-- Drop Zones Container -->
+<div class="flex flex-col gap-6">
+<!-- Road Drop Zone -->
+<div class="clay-card bg-surface-container rounded-3xl p-6 min-h-[160px] border-2 border-dashed border-outline-variant relative overflow-hidden flex flex-col items-center justify-center" id="zone-road">
+<div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 10px, transparent 10px, transparent 20px);"></div>
+<div class="z-10 text-center pointer-events-none">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2">add_road</span>
+<h3 class="font-title-md text-title-md text-on-surface-variant">Đường Bộ</h3>
+</div>
+</div>
+<!-- Water Drop Zone -->
+<div class="clay-card bg-tertiary-fixed/30 rounded-3xl p-6 min-h-[160px] border-2 border-dashed border-tertiary-container relative overflow-hidden flex flex-col items-center justify-center" id="zone-water">
+<div class="absolute inset-0 opacity-20">
+<svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 50 Q 25 30, 50 50 T 100 50 T 150 50 T 200 50" fill="none" stroke="#53b5df" stroke-width="2"></path>
+<path d="M0 70 Q 25 50, 50 70 T 100 70 T 150 70 T 200 70" fill="none" stroke="#53b5df" stroke-width="2"></path>
+</svg>
+</div>
+<div class="z-10 text-center pointer-events-none">
+<span class="material-symbols-outlined text-4xl text-tertiary mb-2">sailing</span>
+<h3 class="font-title-md text-title-md text-tertiary">Đường Thủy</h3>
+</div>
+</div>
+</div>
+<!-- Draggable Items Container -->
+<div class="grid grid-cols-2 gap-4 mt-4" id="draggable-items">
+<div class="drag-item clay-card bg-surface-container-lowest rounded-2xl p-4 flex flex-col items-center justify-center gap-2 border border-outline-variant hover:scale-105 transition-transform" data-type="road" draggable="true">
+<div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-primary" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface text-center">Ô tô</span>
+</div>
+<div class="drag-item clay-card bg-surface-container-lowest rounded-2xl p-4 flex flex-col items-center justify-center gap-2 border border-outline-variant hover:scale-105 transition-transform" data-type="water" draggable="true">
+<div class="w-16 h-16 bg-tertiary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-tertiary" style="font-variation-settings: 'FILL' 1;">directions_boat</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface text-center">Tàu thủy</span>
+</div>
+<div class="drag-item clay-card bg-surface-container-lowest rounded-2xl p-4 flex flex-col items-center justify-center gap-2 border border-outline-variant hover:scale-105 transition-transform" data-type="road" draggable="true">
+<div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-primary" style="font-variation-settings: 'FILL' 1;">pedal_bike</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface text-center">Xe đạp</span>
+</div>
+<div class="drag-item clay-card bg-surface-container-lowest rounded-2xl p-4 flex flex-col items-center justify-center gap-2 border border-outline-variant hover:scale-105 transition-transform" data-type="water" draggable="true">
+<div class="w-16 h-16 bg-tertiary-fixed rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-tertiary" style="font-variation-settings: 'FILL' 1;">sailing</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface text-center">Thuyền buồm</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface pb-safe border-t-2 border-outline-variant h-24 rounded-t-xl z-50 bg-surface-container shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.05)]">
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 scale-110 duration-200 active:translate-y-1 transition-all">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 shadow-[0px_4px_0px_0px_#006c4f] scale-110 duration-200 active:translate-y-1 transition-all">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">mobile_code</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</button>
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 scale-110 duration-200 active:translate-y-1 transition-all">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="font-label-caps text-label-caps">Phần thưởng</span>
+</button>
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 scale-110 duration-200 active:translate-y-1 transition-all">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">family_restroom</span>
+<span class="font-label-caps text-label-caps">Bố mẹ</span>
+</button>
+</nav>
+<script>
+        // Simple drag and drop logic for visual interaction (no backend)
+        const draggables = document.querySelectorAll('.drag-item');
+        const zones = document.querySelectorAll('#zone-road, #zone-water');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('opacity-50');
+                draggable.setAttribute('data-dragging', 'true');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('opacity-50');
+                draggable.removeAttribute('data-dragging');
+            });
+        });
+
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('scale-105', 'bg-surface-dim');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('scale-105', 'bg-surface-dim');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('scale-105', 'bg-surface-dim');
+                const draggable = document.querySelector('[data-dragging="true"]');
+                if(draggable) {
+                    // In a real app, we'd check if data-type matches the zone before appending
+                    // For UI purposes, we'll just snap it in
+                    zone.appendChild(draggable);
+                    draggable.classList.remove('scale-105', 'hover:scale-105');
+                    draggable.classList.add('scale-75', 'm-1'); // Make smaller when in zone
+                    
+                    // Simple grid for items in zone
+                    zone.classList.remove('justify-center');
+                    zone.classList.add('justify-start', 'flex-row', 'flex-wrap', 'content-start');
+                    
+                    // Hide zone text if items exist
+                    const textContent = zone.querySelector('.pointer-events-none');
+                    if(textContent) textContent.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body></html>

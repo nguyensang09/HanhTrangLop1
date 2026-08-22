@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Admin Central Dashboard</title>
+<!-- Google Fonts & Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#1b1c17",
+                      "on-surface": "#1b1c17",
+                      "tertiary": "#006686",
+                      "secondary-fixed": "#54fdc4",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#f5f4ec",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#6a2d00",
+                      "on-secondary-container": "#007152",
+                      "surface-container": "#f0eee6",
+                      "primary": "#9b4500",
+                      "background": "#fbf9f1",
+                      "inverse-on-surface": "#f3f1e9",
+                      "on-primary-fixed-variant": "#763300",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#001f2a",
+                      "outline": "#897266",
+                      "on-primary-fixed": "#331200",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e4e3db",
+                      "secondary-container": "#51fac1",
+                      "surface-dim": "#dcdad2",
+                      "surface-bright": "#fbf9f1",
+                      "primary-fixed-dim": "#ffb68d",
+                      "surface-container-high": "#eae8e0",
+                      "surface-container-highest": "#e4e3db",
+                      "tertiary-fixed": "#bfe8ff",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "on-secondary-fixed": "#002116",
+                      "on-surface-variant": "#564338",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "outline-variant": "#ddc1b3",
+                      "inverse-primary": "#ffb68d",
+                      "secondary": "#006c4f",
+                      "primary-fixed": "#ffdbc9",
+                      "on-tertiary-container": "#00445a",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "primary-container": "#ff8c42",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "inverse-surface": "#30312c",
+                      "surface": "#fbf9f1",
+                      "surface-tint": "#9b4500"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px",
+                      "unit": "8px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          .clay-button {
+              border-bottom: 4px solid var(--tw-colors-on-primary-fixed-variant);
+              transition: transform 0.1s, border-width 0.1s, border-color 0.1s;
+          }
+          .clay-button:active {
+              transform: translateY(2px);
+              border-bottom-width: 2px;
+          }
+          .clay-card {
+              box-shadow: 0 10px 20px -5px rgba(255, 140, 66, 0.05), 0 0 40px -10px rgba(255, 140, 66, 0.05);
+          }
+      </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col border-r border-outline-variant h-screen w-72 left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest fixed left-0 top-0 bottom-0 z-40">
+<div class="p-6 flex flex-col items-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-4 bg-primary-container flex items-center justify-center">
+<img alt="Sóc Nâu Admin Logo" class="object-cover w-full h-full" data-alt="A highly detailed 3D render of a cute cartoon brown squirrel face, styled for a preschool learning app icon. Soft studio lighting on a cream background, vibrant orange and brown tones. Playful and friendly expression. High contrast edges avoided for a soft claymorphic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxz2Abb-gVcO4C1ad1ToRcIY3XHxPC7-tkfpmdk8Jv-4FQVcM9xrerHwdMDkFpe9achKn2G-g6-4XhewCBbkrZ6Snrg3BR4tHE1Mw6p_pKUznj2mF2-bG0dt38FYRB6fbQcJDgfOCutX5wgyyKbgeBgXivgrVs5rmfzyRpl5jG-RpxRU5nJNRQ38P3Qms-TXdhcucgwydnsawsVWFlulQNTU4flt88Ay_AieoTrP5AWtikJw-DuKrpcA"/>
+</div>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary text-center">Admin Central</h1>
+<p class="font-body-md text-body-md text-on-surface-variant text-center mt-1">Managing Learning Play</p>
+</div>
+<div class="px-6 mb-6">
+<button class="w-full bg-primary text-on-primary py-3 rounded-full font-label-caps text-label-caps clay-button flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="add" style="font-variation-settings: 'FILL' 1;">add</span>
+                New Lesson
+            </button>
+</div>
+<nav class="flex-1 overflow-y-auto font-label-caps text-label-caps flex flex-col gap-2">
+<a aria-current="page" class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 Active: scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+                Content Library
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+                Activity Builder
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+                Skills Mapping
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                User Stats
+            </a>
+</nav>
+<div class="mt-auto p-4 border-t border-outline-variant font-label-caps text-label-caps">
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-72 h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between w-full px-6 py-3 bg-surface dark:bg-surface-dim shadow-sm docked full-width top-0">
+<div class="flex items-center gap-4 flex-1">
+<span class="font-display-hero text-headline-lg text-primary dark:text-primary-fixed-dim md:hidden">Sóc Nâu Admin</span>
+<div class="hidden md:flex relative w-full max-w-md ml-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low rounded-full border-none focus:ring-2 focus:ring-primary-container text-on-surface placeholder:text-on-surface-variant font-body-md" placeholder="Search activities, users, or skills..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex bg-primary text-on-primary px-6 py-2 rounded-full font-label-caps text-label-caps clay-button items-center gap-2">
+<span class="material-symbols-outlined" data-icon="add" style="font-variation-settings: 'FILL' 1;">add</span>
+                    Create Activity
+                </button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary-container cursor-pointer ml-2 border-2 border-surface-container-high">
+<img alt="Administrator Avatar" class="object-cover w-full h-full" data-alt="A close-up portrait of a professional administrator avatar illustration. Stylized vector art with soft colors, warm tones, and rounded features matching a preschool learning app aesthetic. Light background, clear distinct face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBksszzmQyw_1hYjn0GKPRZRvL3_z_Bn0cZfo5JIEf-Qgp71PEOSGaXgkg7muBofuIZfQMIcAuKx0IZ74MPDt3AuZYyNHXtenfqxDkIjJLbF3ML8iujnNA7r0Xb0CGxV-vnsZAY0bW8bCUQhBKStB4Lk76KkQdmRmwKl-8G8Pp8-1rIY_K8yPd9KGkUtGq9S2fQsnoQK18Ph7UdVA8rIJ-l7KVYSFpRjBrkLKmPkX4j6_KrVG2-JZjfrQ"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="flex-1 overflow-y-auto p-6 bg-surface-container-lowest">
+<div class="max-w-7xl mx-auto flex flex-col gap-8 pb-12">
+<!-- Welcome & High-level Stats (Bento Grid Style) -->
+<section>
+<h2 class="font-title-md text-title-md text-on-background mb-4">Dashboard Overview</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Stat Card 1 -->
+<div class="bg-surface rounded-2xl p-6 border-2 border-tertiary-fixed clay-card flex flex-col relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-default">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-tertiary" data-icon="extension">extension</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-2">Total Activities</span>
+<span class="font-display-hero text-display-hero text-tertiary">125</span>
+<div class="mt-auto pt-4 flex items-center text-secondary font-body-md text-sm">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="trending_up">trending_up</span>
+                                 +12 this week
+                             </div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface rounded-2xl p-6 border-2 border-secondary-fixed clay-card flex flex-col relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-default">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-secondary" data-icon="task_alt">task_alt</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-2">Average Completion</span>
+<span class="font-display-hero text-display-hero text-secondary">88%</span>
+<div class="mt-auto pt-4 flex items-center text-secondary font-body-md text-sm">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="trending_up">trending_up</span>
+                                 +2.4% from last month
+                             </div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface rounded-2xl p-6 border-2 border-primary-fixed-dim clay-card flex flex-col relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-default">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary" data-icon="pending_actions">pending_actions</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-2">Content Under Review</span>
+<span class="font-display-hero text-display-hero text-primary">12</span>
+<div class="mt-auto pt-4 flex items-center text-primary font-body-md text-sm">
+                                 Needs attention soon
+                             </div>
+</div>
+<!-- Stat Card 4 -->
+<div class="bg-surface rounded-2xl p-6 border-2 border-error-container clay-card flex flex-col relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-default">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-error" data-icon="bug_report">bug_report</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-2">Common Errors</span>
+<span class="font-display-hero text-display-hero text-error">4</span>
+<div class="mt-auto pt-4 flex items-center text-error font-body-md text-sm">
+                                 Identified in recent plays
+                             </div>
+</div>
+</div>
+</section>
+<!-- Complex Layout: Recent Activity & Content Gaps -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Recent Activity Table (takes up 2 columns on lg) -->
+<section class="lg:col-span-2 bg-surface rounded-3xl p-1 clay-card border border-surface-container-high">
+<div class="p-5 flex justify-between items-center border-b border-surface-container-low">
+<h3 class="font-title-md text-title-md text-on-background">Recent Activity</h3>
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-caps text-sm flex items-center transition-colors">
+                                View All <span class="material-symbols-outlined ml-1 text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto p-2">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="font-label-caps text-xs text-on-surface-variant border-b-2 border-surface-container-low">
+<th class="p-3">Activity Name</th>
+<th class="p-3">Category</th>
+<th class="p-3">Status</th>
+<th class="p-3">Last Edited By</th>
+<th class="p-3">Date</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-sm">
+<tr class="border-b border-surface-container-low hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3 font-medium text-on-background flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="sort_by_alpha">sort_by_alpha</span>
+</div>
+                                            Letter 'A' Tracing
+                                        </td>
+<td class="p-3 text-on-surface-variant">Alphabet Intro</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-label-caps bg-secondary-container text-on-secondary-container">
+                                                Published
+                                            </span>
+</td>
+<td class="p-3 text-on-surface-variant">Admin Sarah</td>
+<td class="p-3 text-on-surface-variant">Today, 10:30 AM</td>
+</tr>
+<tr class="border-b border-surface-container-low hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3 font-medium text-on-background flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed-dim flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="calculate">calculate</span>
+</div>
+                                            Counting Acorns 1-10
+                                        </td>
+<td class="p-3 text-on-surface-variant">Basic Math</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-label-caps bg-surface-variant text-on-surface-variant">
+                                                Draft
+                                            </span>
+</td>
+<td class="p-3 text-on-surface-variant">You</td>
+<td class="p-3 text-on-surface-variant">Yesterday</td>
+</tr>
+<tr class="border-b border-surface-container-low hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3 font-medium text-on-background flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="record_voice_over">record_voice_over</span>
+</div>
+                                            Animal Sounds Match
+                                        </td>
+<td class="p-3 text-on-surface-variant">Logic &amp; Sound</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-label-caps bg-primary-fixed text-on-primary-fixed">
+                                                Review
+                                            </span>
+</td>
+<td class="p-3 text-on-surface-variant">Content Team</td>
+<td class="p-3 text-on-surface-variant">Oct 12, 2023</td>
+</tr>
+<tr class="border-b border-surface-container-low hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3 font-medium text-on-background flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="brush">brush</span>
+</div>
+                                            Color Mixing Basics
+                                        </td>
+<td class="p-3 text-on-surface-variant">Creative Arts</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-label-caps bg-secondary-container text-on-secondary-container">
+                                                Published
+                                            </span>
+</td>
+<td class="p-3 text-on-surface-variant">Admin Sarah</td>
+<td class="p-3 text-on-surface-variant">Oct 10, 2023</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="p-3 font-medium text-on-background flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed-dim flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="extension">extension</span>
+</div>
+                                            Shape Sorter Advanced
+                                        </td>
+<td class="p-3 text-on-surface-variant">Logic Puzzle</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-label-caps bg-surface-variant text-on-surface-variant">
+                                                Draft
+                                            </span>
+</td>
+<td class="p-3 text-on-surface-variant">You</td>
+<td class="p-3 text-on-surface-variant">Oct 08, 2023</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Content Gaps / Actionable Insights -->
+<section class="bg-[#FFF5EB] rounded-3xl p-6 clay-card border border-primary-fixed relative overflow-hidden flex flex-col">
+<!-- Sóc Nâu decorative element -->
+<div class="absolute -bottom-6 -right-6 w-32 h-32 opacity-20 pointer-events-none">
+<img alt="Decorative Squirrel" class="w-full h-full object-contain" data-alt="A stylized vector silhouette of a cute brown squirrel (Sóc Nâu) looking inquisitive, used as a subtle background watermark. Warm orange tone, soft curved edges, no sharp corners. Preschool aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2S9ZEGAO5c7AcxA3Jki45ckAbqb6OogmFcepFrnoMtx8dNgv_gLk4lhf30BLvj7O_axoCPmkFf9jHCvXAVpLBepFGu3aeYta56kgCjWHJSjDeTh-h74pStk-XSid3hNsMD7BZj94Tr6fgZb_RhMugFvlaxhMSZMIRRL_GbeKwka9kC_5p4LuSXhAOg5I8hzXw2bTqrX0FfYG_7itgNHZrN9vsKnX4GyHXdnF2Nj7djghMVVIqZzPTpA"/>
+</div>
+<div class="flex items-start gap-3 mb-6 relative z-10">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined" data-icon="lightbulb" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-background">Content Insights</h3>
+<p class="font-body-md text-sm text-on-surface-variant mt-1">Based on recent student performance</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 relative z-10 flex-1">
+<!-- Insight Item -->
+<div class="bg-surface rounded-xl p-4 shadow-sm border border-surface-container-high flex items-start gap-3">
+<span class="material-symbols-outlined text-error mt-0.5" data-icon="warning">warning</span>
+<div>
+<p class="font-body-md text-sm font-medium text-on-background">High Error Rate Detected</p>
+<p class="font-body-md text-xs text-on-surface-variant mt-1">More exercises needed for Letter b/d confusion. Average score drop 15%.</p>
+<button class="mt-2 text-xs font-label-caps text-primary hover:underline">Create b/d Activity</button>
+</div>
+</div>
+<!-- Insight Item -->
+<div class="bg-surface rounded-xl p-4 shadow-sm border border-surface-container-high flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary mt-0.5" data-icon="trending_down">trending_down</span>
+<div>
+<p class="font-body-md text-sm font-medium text-on-background">Engagement Drop</p>
+<p class="font-body-md text-xs text-on-surface-variant mt-1">'Advanced Rhyming' module sees 30% drop-off before completion.</p>
+<button class="mt-2 text-xs font-label-caps text-tertiary hover:underline">Review Module</button>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 rounded-lg border-2 border-primary text-primary font-label-caps text-sm hover:bg-primary-fixed transition-colors relative z-10">
+                            View Full Report
+                        </button>
+</section>
+</div>
+</div>
+</div>
+</main>
+</body></html>

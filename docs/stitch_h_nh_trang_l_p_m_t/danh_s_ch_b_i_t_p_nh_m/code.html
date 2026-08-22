@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Danh sách BÀI TẬP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#ff8c42",
+                      "outline-variant": "#ddc1b3",
+                      "on-error": "#ffffff",
+                      "surface-container": "#f0eee6",
+                      "on-tertiary-fixed": "#001f2a",
+                      "secondary": "#006c4f",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f5f4ec",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#763300",
+                      "secondary-fixed": "#54fdc4",
+                      "surface-tint": "#9b4500",
+                      "surface-dim": "#dcdad2",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-secondary-container": "#007152",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffdbc9",
+                      "on-background": "#1b1c17",
+                      "on-surface-variant": "#564338",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "secondary-container": "#51fac1",
+                      "on-primary-fixed": "#331200",
+                      "primary-fixed-dim": "#ffb68d",
+                      "outline": "#897266",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#6a2d00",
+                      "on-secondary-fixed": "#002116",
+                      "inverse-surface": "#30312c",
+                      "surface-variant": "#e4e3db",
+                      "surface": "#fbf9f1",
+                      "on-surface": "#1b1c17",
+                      "surface-bright": "#fbf9f1",
+                      "surface-container-high": "#eae8e0",
+                      "tertiary-container": "#53b5df",
+                      "on-tertiary-container": "#00445a",
+                      "tertiary": "#006686",
+                      "primary": "#9b4500",
+                      "background": "#fbf9f1",
+                      "surface-container-highest": "#e4e3db",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "inverse-on-surface": "#f3f1e9",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-fixed": "#bfe8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          .clay-card {
+              box-shadow: 0px 8px 24px 0px rgba(255,140,66,0.1);
+          }
+          .clay-btn {
+              border-bottom: 4px solid var(--tw-colors-on-primary-container);
+              transition: all 0.2s;
+          }
+          .clay-btn:active {
+              transform: translateY(2px);
+              border-bottom-width: 2px;
+          }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
+<!-- Top Navigation (Sub-page, so no global nav shell, but a specific back header) -->
+<header class="bg-surface-bright shadow-sm flex items-center px-container-margin py-4 sticky top-0 z-10 w-full h-16">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary ml-4 flex-1 text-center pr-12">Chữ cái</h1>
+</header>
+<main class="px-container-margin pt-6 pb-24 max-w-3xl mx-auto space-y-card-gap">
+<!-- Header / Intro Card -->
+<section class="bg-white rounded-xl p-6 border-2 border-tertiary-fixed shadow-[0px_4px_20px_0px_rgba(255,140,66,0.05)] relative overflow-hidden flex items-center mb-8">
+<div class="z-10 flex-1">
+<h2 class="font-title-md text-title-md text-primary mb-2">Bé đã sẵn sàng chưa?</h2>
+<p class="text-on-surface-variant">Cùng học các chữ cái thật vui nhé!</p>
+</div>
+<img class="w-24 h-24 object-contain z-10 relative" data-alt="A cute, soft 3d rendered brown squirrel character (Sóc Nâu) pointing excitedly at a floating 3d letter A. The background is a soft, warm pastel orange room with rounded corners. High-key lighting, bright, gentle shadows. Educational preschool aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDINAprQeeZaf0WP-EB70One14D7ZhFCVDR5MkQOoSubBvgFOUCmqEJ7qujWELS4jcq_ZKndUObYuS3f7N-_U6TpsY7UHv4xLtfD6YfKfsb3qAAHHHJyQTQyvigJQhJKeectXrgyX7sd3WdhWFf39g9jB1U62U9x3C3RffW7dTbm5FYDgzKzCrAs8BMR21yqkLBhDTqzXs02JwqvTkjNxJW2cQZt5jRIRWdy9LzjevmzzDyemBj299jg"/>
+<div class="absolute inset-0 bg-primary-fixed-dim opacity-10 rounded-xl"></div>
+</section>
+<!-- Activities Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Activity 1 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 flex flex-row items-center gap-4 clay-card border-2 border-transparent hover:border-outline-variant transition-colors group cursor-pointer relative">
+<div class="w-24 h-24 rounded-lg bg-tertiary-fixed overflow-hidden flex-shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="A colorful, simple 3d illustration of a pencil drawing a large letter A on a white canvas. Soft pastel colors, claymorphic style, bright and inviting lighting. Preschool education app asset." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfc-zURzOPgJep_3tujRjW4jwxrRIlct2XcoIiQ7B_EKqj7SDncpjt_29oYpnCnIiYhLSRRHrZbR58BX8l4Ahw7CubiB_H0AOiol8Brq0EUOJie_U8AKfsAcl-kWqBbxoR6zEQkZ0ugCWRAa_QSN8wP9IwYAc4vq3lKG6kWCwvfXY1mzF78D2Dp-nqDjkVVq7NLSrlKfqqBxeM_L21D8PEFGPrKM2d2oGRR2LZn8DeAY-HT0EcsREwkw"/>
+<!-- Star Overlay -->
+<div class="absolute bottom-1 right-1 bg-white/90 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<h3 class="font-title-md text-title-md text-on-surface mb-1 group-hover:text-primary transition-colors">Luyện vẽ chữ A</h3>
+<p class="text-sm text-on-surface-variant line-clamp-2">Cùng tô màu và viết chữ A nhé!</p>
+</div>
+<button aria-label="Start Luyện vẽ chữ A" class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center clay-btn flex-shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</article>
+<!-- Activity 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 flex flex-row items-center gap-4 clay-card border-2 border-transparent hover:border-outline-variant transition-colors group cursor-pointer relative">
+<div class="w-24 h-24 rounded-lg bg-error-container overflow-hidden flex-shrink-0 relative">
+<img class="w-full h-full object-cover" data-alt="A simple, cute 3d illustration of blocks with the letters b and d. They are playfully arranged on a soft pink surface. Bright, cheerful lighting. Claymorphic educational aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXtUoRHt8DW5lcB5ZxrvQY47bylUSUIwf7xiKqhTFciGjUetAb8kxTd4eP_8FZxIT46ket_7C2Hv9avmLXBZnwiD26eZFr5l4jvwRdoAHHv1K7GCIvU-yE11UmbAuVbJnmgSrRItgyeeX_19q6ulcTx26GOFPay-E1Ur6jstIiRIKpbfYD8b3-wl3FdBVXIw3bUtaOIruFCPYdpzgcb5IR_YtgYj3hwjVMXL7lJsEgZjluEqBu1HWkiA"/>
+<!-- Star Overlay (Partial) -->
+<div class="absolute bottom-1 right-1 bg-white/90 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-surface-variant text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<h3 class="font-title-md text-title-md text-on-surface mb-1 group-hover:text-primary transition-colors">Tìm chữ b - d</h3>
+<p class="text-sm text-on-surface-variant line-clamp-2">Phân biệt chữ b và d thật giỏi!</p>
+</div>
+<button aria-label="Start Tìm chữ b - d" class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center clay-btn flex-shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</article>
+<!-- Activity 3 (Locked) -->
+<article class="bg-surface-container rounded-xl p-4 flex flex-row items-center gap-4 clay-card border-2 border-transparent opacity-80 cursor-not-allowed">
+<div class="w-24 h-24 rounded-lg bg-surface-variant overflow-hidden flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-4xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<h3 class="font-title-md text-title-md text-on-surface-variant mb-1">Ghép từ có chữ A</h3>
+<p class="text-sm text-outline line-clamp-2">Hoàn thành bài trước để mở khóa.</p>
+</div>
+</article>
+</div>
+</main>
+</body></html>

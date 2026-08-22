@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Màn Hình Tạm Nghỉ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#007152",
+                      "inverse-surface": "#30312c",
+                      "secondary": "#006c4f",
+                      "surface-variant": "#e4e3db",
+                      "secondary-container": "#51fac1",
+                      "inverse-primary": "#ffb68d",
+                      "surface-container-highest": "#e4e3db",
+                      "on-surface": "#1b1c17",
+                      "primary": "#9b4500",
+                      "on-tertiary-container": "#00445a",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "surface-container-high": "#eae8e0",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary-fixed": "#002116",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#763300",
+                      "on-primary-fixed": "#331200",
+                      "secondary-fixed": "#54fdc4",
+                      "background": "#fbf9f1",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "tertiary-fixed": "#bfe8ff",
+                      "surface-container": "#f0eee6",
+                      "surface-tint": "#9b4500",
+                      "primary-fixed": "#ffdbc9",
+                      "on-tertiary-fixed": "#001f2a",
+                      "surface-bright": "#fbf9f1",
+                      "primary-fixed-dim": "#ffb68d",
+                      "primary-container": "#ff8c42",
+                      "surface": "#fbf9f1",
+                      "on-surface-variant": "#564338",
+                      "surface-container-low": "#f5f4ec",
+                      "tertiary": "#006686",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#f3f1e9",
+                      "outline-variant": "#ddc1b3",
+                      "on-tertiary": "#ffffff",
+                      "surface-dim": "#dcdad2",
+                      "on-background": "#1b1c17",
+                      "outline": "#897266",
+                      "on-primary-container": "#6a2d00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "16px",
+                      "card-gap": "20px",
+                      "container-margin": "24px",
+                      "unit": "8px",
+                      "touch-target-min": "48px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid #6a2d00;
+            transition: all 0.1s ease-in-out;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .clay-card {
+            box-shadow: 0 0 20px rgba(255,140,66,0.05);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col justify-center items-center px-container-margin overflow-hidden relative">
+<!-- Decorative background elements -->
+<div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+<div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-primary-container rounded-full opacity-20 blur-3xl"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-80 h-80 bg-secondary-container rounded-full opacity-20 blur-3xl"></div>
+</div>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-md mx-auto flex flex-col items-center">
+<!-- Character / Image Container -->
+<div class="w-64 h-64 mb-8 relative">
+<!-- Animated decorative ring -->
+<div class="absolute inset-0 border-4 border-secondary-fixed-dim border-dashed rounded-full animate-[spin_20s_linear_infinite] opacity-50"></div>
+<div class="w-full h-full bg-surface-container rounded-full overflow-hidden shadow-[0_0_20px_rgba(255,140,66,0.15)] flex items-center justify-center relative p-4 z-10 clay-card">
+<img alt="Sóc Nâu vươn vai" class="object-contain w-full h-full rounded-full" data-alt="A cheerful, cute cartoon brown squirrel character (Sóc Nâu) doing light stretching exercises, reaching up with a happy expression. The style is soft, tactile claymorphic vector art with warm orange tones, set against a cream background. The mood is encouraging and gentle, suitable for a children's learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMLIBmrvQms-gK7o1YmONWrdNAzrW28-uwpj6PwKm-2egKppgstn_D0JYREHDQ0RzA6xw6erKj-miBGWBiylKM0lqUMFKjATTcNplY6OArT8yWXZRzdRw1GwyVxTcV1Ysb5ACD12Jkqnr6EqBlSHpcQekqpeIG1hZpM2YSHg1OezjN4uNXM9mnwkkXytEXoIcYFKP-0UMvjFC5dpY_UQe3uwr5T1GyE31Pac-CnGlQWFKY-qgu45c-xQ"/>
+</div>
+</div>
+<!-- Messaging -->
+<div class="text-center mb-10 z-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-4">
+                Bé ơi, mình nghỉ tay một chút cho mắt khỏe nhé!
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto">
+                Cùng Sóc Nâu vươn vai và nhắm mắt lại thư giãn nào.
+            </p>
+</div>
+<!-- Countdown / Action Area -->
+<div class="w-full max-w-xs z-10">
+<!-- Countdown Circle -->
+<div class="flex flex-col items-center justify-center mb-6" id="countdown-container">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<!-- SVG Circular Progress -->
+<svg class="w-full h-full -rotate-90 transform" viewbox="0 0 100 100">
+<circle class="text-surface-container-low" cx="50" cy="50" fill="none" r="45" stroke="#f5f4ec" stroke-width="8"></circle>
+<circle class="text-secondary transition-all duration-1000 ease-linear stroke-round" cx="50" cy="50" fill="none" id="progress-ring" r="45" stroke="#006c4f" stroke-dasharray="283" stroke-dashoffset="0" stroke-width="8"></circle>
+</svg>
+<!-- Time Display -->
+<div class="absolute flex flex-col items-center">
+<span class="font-display-hero text-display-hero text-secondary" id="time-display">30</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">giây</span>
+</div>
+</div>
+</div>
+<!-- Action Button (Initially Hidden/Disabled, then shown) -->
+<button class="w-full bg-primary-container text-on-primary font-headline-lg-mobile text-headline-lg-mobile py-4 rounded-full flex items-center justify-center gap-2 clay-button opacity-50 cursor-not-allowed touch-target-min mt-4" disabled="" id="resume-btn">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                Quay lại học
+            </button>
+</div>
+</main>
+<!-- Top Navigation Structure (Hidden as per intent logic, but structure maintained for consistency if needed later) -->
+<!-- Not rendering TopAppBar or BottomNavBar as this is a transactional/temporary pause screen -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let timeLeft = 30;
+            const totalTime = 30;
+            const timeDisplay = document.getElementById('time-display');
+            const progressRing = document.getElementById('progress-ring');
+            const resumeBtn = document.getElementById('resume-btn');
+            
+            // Circumference for stroke-dashoffset calculation (2 * pi * r) where r = 45
+            const circumference = 2 * Math.PI * 45;
+            progressRing.style.strokeDasharray = circumference;
+
+            const timer = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+
+                const offset = circumference - (timeLeft / totalTime) * circumference;
+                progressRing.style.strokeDashoffset = offset;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    // Hide countdown, enable button
+                    document.getElementById('countdown-container').classList.add('opacity-50');
+                    progressRing.style.strokeDashoffset = circumference;
+                    
+                    resumeBtn.disabled = false;
+                    resumeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    resumeBtn.classList.add('hover:bg-primary-fixed-dim');
+                    resumeBtn.innerHTML = `
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                        Bắt đầu học tiếp!
+                    `;
+                    
+                    // Simple pop animation for button
+                    resumeBtn.animate([
+                        { transform: 'scale(1)' },
+                        { transform: 'scale(1.05)' },
+                        { transform: 'scale(1)' }
+                    ], {
+                        duration: 300,
+                        easing: 'ease-out'
+                    });
+                }
+            }, 1000);
+
+            // Optional: Click handler for resume (would typically navigate back)
+            resumeBtn.addEventListener('click', () => {
+                if(!resumeBtn.disabled) {
+                    // Visual feedback
+                    resumeBtn.style.transform = 'translateY(2px)';
+                    setTimeout(() => {
+                        console.log('Resume learning action triggered');
+                        // window.history.back(); or similar
+                    }, 150);
+                }
+            });
+        });
+    </script>
+</body></html>

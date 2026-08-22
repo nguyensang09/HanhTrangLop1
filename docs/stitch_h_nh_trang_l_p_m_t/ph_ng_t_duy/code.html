@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phòng Tư Duy</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#f0eee6",
+                    "warm-yellow": "#ffd54f",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#fbf9f1",
+                    "on-tertiary-fixed": "#001f2b",
+                    "surface-container-low": "#f6f4ec",
+                    "on-primary-fixed": "#331200",
+                    "on-surface-variant": "#564338",
+                    "surface-container-high": "#eae8e0",
+                    "surface-tint": "#9b4500",
+                    "secondary": "#006c4f",
+                    "surface-variant": "#e4e3db",
+                    "on-background": "#1b1c17",
+                    "faded-path": "rgba(0, 0, 0, 0.1)",
+                    "success-glow": "#27e0a9",
+                    "tertiary-container": "#53b5df",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "primary-container": "#ff8c42",
+                    "inverse-on-surface": "#f3f1e9",
+                    "squirrel-brown": "#897266",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#ffb68d",
+                    "on-primary-fixed-variant": "#763300",
+                    "on-tertiary-container": "#00445a",
+                    "secondary-fixed-dim": "#29e0a9",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "primary": "#9b4500",
+                    "outline-variant": "#ddc1b3",
+                    "inverse-primary": "#ffb68d",
+                    "outline": "#897266",
+                    "tertiary-fixed": "#bfe8ff",
+                    "inverse-surface": "#30312c",
+                    "on-secondary-fixed": "#002116",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#6a2d00",
+                    "background": "#fbf9f1",
+                    "surface": "#fbf9f1",
+                    "on-secondary-container": "#007152",
+                    "secondary-container": "#51fac1",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-container-highest": "#e4e3db",
+                    "on-error": "#ffffff",
+                    "tertiary": "#006686",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#55fdc4",
+                    "on-surface": "#1b1c17",
+                    "surface-dim": "#dcdad2",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "touch-target": "64px",
+                    "safe-margin": "32px",
+                    "tolerance-zone": "40px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "path-number": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "instruction-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "path-number": [
+                            "16px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "label-caps": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-hero": [
+                            "80px",
+                            {
+                                    "lineHeight": "96px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "instruction-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+          }
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fbf9f1;
+            /* Starry background effect for space theme */
+            background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                              radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                              radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
+                              radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px);
+            background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px; 
+            background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+            /* Override to a deeper blue for space, keeping it friendly */
+            background-color: #001f2b; 
+        }
+        .clay-button {
+            box-shadow: 0 6px 0 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .clay-button:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 0 rgba(0,0,0,0.2);
+        }
+        .success-glow-active {
+            box-shadow: 0 0 20px 5px #27e0a9;
+        }
+        .bounce-anim {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-surface-bright flex flex-col items-center overflow-x-hidden relative">
+<!-- TopAppBar (Web) / Header -->
+<header class="w-full bg-surface/10 backdrop-blur-md sticky top-0 z-50 flex justify-between items-center px-gutter py-4 h-touch-target-min border-b border-white/20">
+<div class="flex items-center gap-4">
+<button class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white clay-button">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<img class="w-12 h-12 rounded-full border-2 border-primary-container object-cover" data-alt="A cartoon avatar of a cute brown squirrel wearing a scientist's white coat and small round glasses, looking friendly and encouraging, set against a solid bright orange background. Friendly, tactile, minimalist style for kids." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhsNGw7EpyKHgVJ3XAaZ9yyj6pjnm3kJkbovP5SI4d1iHleJvQZpxCZ8xtwRLzcuvoEihvS6awOjNQkdCUX54USCPrgaDXep9LH94ANCO3Y6998RPgvX2mHPNDqR-PmAkOpqLBg6DvcfESmbKST6vkx_PZkzG4SESeKezwnSTZG93ItBLeF5V_G76ty_oG0D2lIYlY5ol48UsLf-fkK1la5XUSIY3VeT1yc-woMbHHn_rb1r2yxcOoqQ"/>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-white">Bé tập sự</span>
+</div>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-warm-yellow hidden md:block drop-shadow-md">Phòng Tư Duy</h1>
+<div class="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full clay-button">
+<span class="material-symbols-outlined text-warm-yellow" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-white">125</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="w-full flex-grow flex flex-col items-center p-safe-margin pb-32">
+<!-- Progress Bar -->
+<div class="w-full max-w-2xl bg-surface-container-highest/30 rounded-full h-6 mb-12 border-2 border-white/20 relative overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-2/3 flex items-center justify-end px-2" style="box-shadow: inset 0 -3px 0 0 rgba(0,0,0,0.2);">
+<span class="material-symbols-outlined text-white text-sm" data-icon="rocket_launch" data-weight="fill" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+</div>
+<!-- Space Map Layout -->
+<div class="relative w-full max-w-4xl h-[600px] flex items-center justify-center">
+<!-- Path connecting nodes (SVG would be better, but simulating with divs for layout) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 0;">
+<path d="M 20% 30% C 40% 10%, 60% 50%, 80% 30%" fill="none" stroke="rgba(255,255,255,0.3)" stroke-dasharray="12 12" stroke-width="8"></path>
+<path d="M 80% 30% C 90% 60%, 70% 80%, 50% 80%" fill="none" stroke="rgba(255,255,255,0.3)" stroke-dasharray="12 12" stroke-width="8"></path>
+</svg>
+<!-- Node 1: Tìm hình khác biệt (Completed) -->
+<button class="absolute top-[25%] left-[15%] flex flex-col items-center gap-3 z-10 group" style="transform: translate(-50%, -50%);">
+<div class="w-24 h-24 rounded-full bg-secondary-container flex items-center justify-center clay-button border-4 border-white relative">
+<span class="material-symbols-outlined text-on-secondary-container text-4xl" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="bg-white text-on-tertiary-fixed font-label-caps text-label-caps px-4 py-2 rounded-lg shadow-lg">Tìm hình khác biệt</div>
+</button>
+<!-- Node 2: Mê cung hạt dẻ (Current) -->
+<button class="absolute top-[40%] left-[55%] flex flex-col items-center gap-3 z-10 group bounce-anim" style="transform: translate(-50%, -50%);">
+<div class="w-32 h-32 rounded-full bg-primary-container flex items-center justify-center clay-button border-4 border-warm-yellow relative success-glow-active">
+<img class="w-16 h-16 object-contain z-10" data-alt="A brightly colored, stylized chestnut floating in space inside a glowing orange bubble. 3D claymorphic style, friendly and inviting, set against a dark blue background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbML5vkzX63Mke9jf4fvzpPfgqVXU9sdLXiYGLDPSbDwYl3T0DzslOb_ejAp_wdfqqmJs7GsiPAc76CH2g71bNKBw3kEShNViwMKtUXUq5SOfvQuJmDVlf5Q-fOwKKTzuDVCKI7EcbJT_IfAqq21_BD_mFaxuvZYCLTfXuj1YwwJfXm240ui0ULDyqXacVkeLKlY5t14Pn52Ca7BlePruN-FCS1ztAy3edEgHfYEXFgD1rCjo0PxWKlA"/>
+<!-- Sóc Nâu feedback popup attached to current node -->
+<div class="absolute -top-16 -right-32 bg-warm-yellow text-on-primary-fixed p-3 rounded-2xl rounded-bl-none shadow-lg flex items-center gap-2 min-w-[200px] z-20">
+<span class="material-symbols-outlined cursor-pointer hover:scale-110 transition-transform" data-icon="volume_up">volume_up</span>
+<p class="font-instruction-md text-instruction-md text-sm leading-tight">Giúp tớ qua mê cung nhé!</p>
+</div>
+</div>
+<div class="bg-warm-yellow text-on-primary-fixed font-label-caps text-label-caps px-4 py-2 rounded-lg shadow-lg border-2 border-white">Mê cung hạt dẻ</div>
+</button>
+<!-- Node 3: Quy luật màu sắc (Locked) -->
+<button class="absolute top-[80%] left-[50%] flex flex-col items-center gap-3 z-10 opacity-70 group" style="transform: translate(-50%, -50%);">
+<div class="w-24 h-24 rounded-full bg-surface-variant flex items-center justify-center clay-button border-4 border-white/50 relative">
+<span class="material-symbols-outlined text-outline text-4xl" data-icon="lock" data-weight="fill" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="bg-white/80 text-on-surface-variant font-label-caps text-label-caps px-4 py-2 rounded-lg shadow-lg">Quy luật màu sắc</div>
+</button>
+<!-- Sóc Nâu Mascot on Screen -->
+<div class="absolute bottom-0 right-10 z-0">
+<img class="w-64 h-auto object-contain" data-alt="A full body illustration of Sóc Nâu, a cute brown squirrel character wearing a white lab coat and holding a glowing magical wand. Rendered in a tactile, 3D clay style. Standing on a floating space rock." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkKHYtDV3EGPt077Dc43-W5KVf0UdjkrngaTf5V9-kBTTpAccGN-wxKr12mnbXLcj8QYg1ubCQOQ7aCux7G5CPrrzPxYlv59wbsW9bzO3Lg_ZJZc3NOPP94s3Bk9bBXZUY3VCklFReSaWiVEyzJ6J1fhjzDFZoSKE16C21T9M5YFzuybN_vCZvH9--gXFmoiHOO9PgoFNbVgUScdhi59wIjyNXSpn4aSOa1Mck_H8niBatVnzYnwfBnw"/>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container dark:bg-surface-container-highest rounded-t-xl shadow-sm border-t-4 border-surface-container-highest dark:border-surface-dim">
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps text-xs mt-1">Trang chủ</span>
+</a>
+<!-- Bài tập is active -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-container text-on-primary-container dark:text-primary-fixed-dim rounded-xl px-4 py-2 translate-y-[-2px] border-b-4 border-on-primary-fixed-variant transition-all duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="edit_square" data-weight="fill" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-label-caps text-xs mt-1">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-label-caps text-label-caps text-xs mt-1">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="family_restroom">family_restroom</span>
+<span class="font-label-caps text-label-caps text-xs mt-1">Bố mẹ</span>
+</a>
+</nav>
+</body></html>

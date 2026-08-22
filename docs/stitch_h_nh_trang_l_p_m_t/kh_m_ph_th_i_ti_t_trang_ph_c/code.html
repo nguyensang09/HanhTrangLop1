@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Thời Tiết &amp; Trang Phục - Sóc Nâu Đồng Hành</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#ffb68d",
+                        "surface-variant": "#e4e3db",
+                        "on-secondary-fixed": "#002116",
+                        "surface": "#fbf9f1",
+                        "inverse-on-surface": "#f3f1e9",
+                        "surface-dim": "#dcdad2",
+                        "surface-container-high": "#eae8e0",
+                        "outline-variant": "#ddc1b3",
+                        "on-secondary-container": "#007152",
+                        "on-primary-container": "#6a2d00",
+                        "on-background": "#1b1c17",
+                        "primary-container": "#ff8c42",
+                        "on-tertiary-container": "#00445a",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-tint": "#9b4500",
+                        "on-surface": "#1b1c17",
+                        "background": "#fbf9f1",
+                        "on-error": "#ffffff",
+                        "secondary": "#006c4f",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f5f4ec",
+                        "surface-container-highest": "#e4e3db",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-primary-fixed": "#331200",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f0eee6",
+                        "secondary-container": "#51fac1",
+                        "on-surface-variant": "#564338",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006686",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-tertiary-fixed": "#001f2a",
+                        "secondary-fixed": "#54fdc4",
+                        "surface-bright": "#fbf9f1",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "outline": "#897266",
+                        "inverse-surface": "#30312c",
+                        "primary": "#9b4500",
+                        "primary-fixed": "#ffdbc9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "safe-margin": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .rain {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .drop {
+            position: absolute;
+            bottom: 100%;
+            width: 2px;
+            height: 15px;
+            pointer-events: none;
+            animation: fall linear infinite;
+            background: linear-gradient(to bottom, rgba(83, 181, 223, 0), rgba(83, 181, 223, 0.5));
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        .draggable {
+            cursor: grab;
+            touch-action: none;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .droppable-area {
+            transition: all 0.3s ease;
+        }
+        
+        .droppable-area.drag-over {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 10px rgba(255, 140, 66, 0.5));
+        }
+
+        .clay-card {
+            box-shadow: inset 0 -4px 0 0 rgba(0,0,0,0.1), 0 8px 16px -8px rgba(0,0,0,0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .clay-card:active {
+            transform: translateY(2px);
+            box-shadow: inset 0 -2px 0 0 rgba(0,0,0,0.1), 0 4px 8px -4px rgba(0,0,0,0.1);
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(255, 140, 66, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col overflow-hidden select-none">
+<!-- Background Image with Rain Effect -->
+<div class="fixed inset-0 z-[-1] bg-surface-container-low" data-alt="A gentle, soft-focus illustration of a cozy backyard on a lightly rainy day. The scene uses warm cream tones for the house walls, offset by soft muted greens for garden plants and bushes. The style is 2D vector art, suitable for preschoolers, with rounded friendly shapes and no harsh outlines. The lighting suggests daytime despite the rain, maintaining a cheerful, safe atmosphere. Puddles on the ground reflect the soft light." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5S42YT28u7YizURl8AP3xzlTo8zUGaeUDbbemprXH7i11OI-kLyazdaBjaSOIAZkejMs5WeQeLDZ-CWu_t4Hser01j4GbgCXMAunhfwSWO30Rs4jM7B3owIme7HLbD_XJrlad5b5MZkXyxPsMlrv9Kipu3WwTyhMDAcA_8k9pCqIlql6bdPNf3Ljsey1Q6Y-rq0VYgjik8AqptWF1ofBmj2c7_uzwADNpKl0-IP3qi4NUdxK8PWxydg'); background-size: cover; background-position: center;">
+<div class="rain" id="rainContainer"></div>
+<!-- Light overlay to ensure contrast for UI -->
+<div class="absolute inset-0 bg-surface/40 backdrop-blur-[2px]"></div>
+</div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-[0px_4px_0px_0px_#897266] flex justify-between items-center h-[64px] px-4 md:hidden">
+<div class="flex items-center">
+<button aria-label="Quay lại" class="w-[48px] h-[48px] flex items-center justify-center text-primary active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back" style="font-variation-settings: 'FILL' 1; font-size: 28px;">arrow_back</span>
+</button>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary text-center absolute left-1/2 -translate-x-1/2 whitespace-nowrap">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center">
+<button class="h-[48px] px-3 flex items-center justify-center text-primary font-title-md bg-primary-container/20 rounded-full active:scale-95 transition-transform">
+                128 <span class="ml-1 text-xl">⭐</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col pt-[80px] pb-[100px] px-container-margin relative max-w-4xl mx-auto w-full md:pt-[40px] md:pb-[40px]">
+<!-- Sóc Nâu Dialogue / Instruction -->
+<div class="bg-primary-container text-on-primary-container p-4 rounded-xl flex items-center gap-4 glow-effect clay-card z-10 mb-6">
+<div class="w-16 h-16 shrink-0 bg-white rounded-full flex items-center justify-center border-4 border-primary-container">
+<img alt="Sóc Nâu Avatar" class="w-12 h-12 object-contain" data-alt="A cute, friendly vector illustration of a brown squirrel head, smiling encouragingly. It has large, expressive eyes and soft, rounded shapes, adhering to a claymorphic, preschool-friendly aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtjCoCUzczy83cHfoHRSF16BrfusGHMFvvKYnoT9OA6dZKTzOWKly_8NvI3jx99ASQXgJZwyZd8OL0nXxMu1vMCHlzltCngQYFTqpq45-t8liAbBVbDV4Ahki8lpW87bI0yqAQyJaHWlwHpZu503V4niXWKeC_okY8MM1emp3yS82PzMCczIOvzfx97HspzS0Or20Fhu2Jqq1cO4umIW_9HHqfnoQsqnwB9Pg3ltFhryZrYb69YvzxHg"/>
+</div>
+<div>
+<h2 class="font-title-md text-title-md mb-1">Trời Mưa Rồi!</h2>
+<p class="font-body-md text-body-md">Bé hãy giúp Sóc Nâu mặc đồ đi mưa nhé!</p>
+</div>
+<button class="w-[48px] h-[48px] shrink-0 bg-white/20 rounded-full flex items-center justify-center ml-auto active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="volume_up" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Interactive Area -->
+<div class="flex-1 flex flex-col md:flex-row gap-8 items-center justify-center">
+<!-- Sóc Nâu Character (Droppable Area) -->
+<div class="relative w-[250px] h-[350px] flex items-end justify-center droppable-area" id="socNauDropZone">
+<img alt="Sóc Nâu Character" class="w-full h-auto z-10" data-alt="A full-body vector illustration of a friendly brown squirrel standing upright, waiting to be dressed. It has soft, rounded features, big expressive eyes, and a neutral, welcoming pose. The style is flat color with slight 3D shading (claymorphism), set against a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB76lArmcIQZZyyHB3saEPQkYh2h6rLHjGLvPP9D-cz5KoUbZqyACRJVFDY-jGC78dskaLeGVyP-PjJNG9lpucPqZtM0UJ0z9caOGzViU3oweNhMlvG-mxwo-TD9wJsHql3e57u8jeBnXKUMRgMPouKiVO7YMA-GhsQF1vkVg2RYOc-SL3mUMh_lF4ooRsQsnSfH95V-rpepdVRxroizlIiX1yQnDH4GkpYc5BGZm3MURKu7q-muBxERQ"/>
+<!-- Overlay layers for dressed items (hidden by default) -->
+<img class="absolute inset-0 w-full h-full object-cover z-20 opacity-0 transition-opacity duration-300 pointer-events-none" data-alt="A bright yellow children's raincoat, drawn in a soft, rounded vector style matching the squirrel character. Transparent background." id="dressed-raincoat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzTB67YJaKuTsbE21CuuzYRTDZJCgaaAgnIj-kr1XdV_mdZhSnAjM_6io3vUIvfY4hz-_EcXRg-SKZoVMzosoFzAHMYx0a1ncSrvXPuSdapltKJAzdbSmcDbP4U8QPBxegzFOCA7Rurco9Jxu17F5Mjcn7UyvNB45awhtm1oXtQK-USbRcZbjIAaVhYCtHE99VLnMhHmSjglLlzfEPF7rleKCTcwUZlBGJdAYKMIOao8dL3TeejAur8g"/>
+<img class="absolute inset-0 w-full h-full object-cover z-20 opacity-0 transition-opacity duration-300 pointer-events-none" data-alt="A pair of bright red rain boots, drawn in a soft, rounded vector style fitting a small character. Transparent background." id="dressed-boots" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKVIXuFXx0YIQ0SNle3m__GlBt_kYsUmcaqv_psqKjhxe1aJwfARkBXs6H_AS1LvrCVIkggYyOSIqBYccywB-waMz8rs-WPEjCyBRFm8QbAqgcyP8C0ZXVR4DmlA5fF9YCHSGRSpdetBOCAsyzM13Bsl4ZbpMiysXB7PQIMIQ8rl5D_T1ryoDbI5uzULsdts8orbHF8arw0131GiucgL7amJ30wtoeZ_qEU4-JG7VMYme53yhAAHDNAw"/>
+<img class="absolute inset-0 w-full h-full object-cover z-30 opacity-0 transition-opacity duration-300 pointer-events-none" data-alt="A colorful, open umbrella (blue and green stripes), drawn in a soft, rounded vector style. Transparent background." id="dressed-umbrella" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlSkHUf4Ma6ENjzbLyNBa0hrpP_HiQWKjBCUL_ZiuSPHzlcIPp0vH4VY-EMqqmgvgGzyk_ccpKNqsbVMxF35nndFbNuqCBvIXvmm4xroUiVxIbeo6p5I08ps--4Kd4C2rtlmfO46eRDa1ozGuzF_oxn39O4ByhDkrt7BVSgAnZBSuW_nbGCTO_rIi0aQFqR3YjgRoR10NHww6iQYdj1eoxeaGpF1XWIS8vCopY-ctv71SCSfDMjgystA"/>
+</div>
+<!-- Wardrobe / Draggable Items -->
+<div class="grid grid-cols-3 md:grid-cols-2 gap-4 w-full md:w-auto p-6 bg-surface-container/80 backdrop-blur-md rounded-2xl border-2 border-outline-variant/30 glow-effect z-10">
+<!-- Correct Item: Áo Mưa -->
+<div class="draggable w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-white rounded-xl flex items-center justify-center clay-card border-2 border-tertiary-fixed-dim/50" data-item="raincoat" draggable="true">
+<img class="w-3/4 h-3/4 object-contain pointer-events-none" data-alt="A small icon of a yellow raincoat. Soft rounded vector style, bright colors, light mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC1wZaRztmCrcZJUwu2slXN8gQVEh87nOk_Eu60We0U-A9rSRAajJy0tD7gmo8rcAxc8wFhUV_UmPknp_UvCnrOX6q0IEeRHBc4EazBeA8hUjyZCDVFLO8NSMfr5JBWbRnatkYJa_fa9zlZ5nprcT4Kw1pXTogn-yVtoT5q1zb6fku5LPf8wC2Fpxn_pRHH94_ttjRyZ3KiJcFrDBSDwi4i16mt7glrlg5SEvem1Rk2vSErYwZrE7kVA"/>
+</div>
+<!-- Distractor Item: Kính Râm -->
+<div class="draggable w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-white rounded-xl flex items-center justify-center clay-card border-2 border-surface-dim" data-item="sunglasses" draggable="true">
+<img class="w-3/4 h-3/4 object-contain pointer-events-none" data-alt="A small icon of black sunglasses. Soft rounded vector style, simple design, light mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqVKjv_F6qTz6VcZwuaBt7pyAD9CQ-g-gamSuk94GubhsIepgXAwxE1vWWtJQNZBBZ9ldTV1jEXmnx31LmlP0B7cSm_ShEmoKcI2SZ4L-04CtbtXCbM3idg5J1F251Z9uuF211N5bsJb6NtSi09iz_HX3rKfH_Cfh5-UL2anuZ1-3MKqoY2oeM3RZCCmlD8hVafYjCoRTSs7VVaWVBBx2gJcP1AfwuEWiRRTJE8FnXSEmqetgsKuQtPg"/>
+</div>
+<!-- Correct Item: Ủng -->
+<div class="draggable w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-white rounded-xl flex items-center justify-center clay-card border-2 border-tertiary-fixed-dim/50" data-item="boots" draggable="true">
+<img class="w-3/4 h-3/4 object-contain pointer-events-none" data-alt="A small icon of red rain boots. Soft rounded vector style, bright colors, light mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdafqqrH9Er-61zROweFfq93eJyHJA9tLd1WLtes3fNKv2BTZVNpdwFKK5cIflSlj309G0djsn8WxoBXp940nbuQMmd0EZV4HWAw5iLBt04zD7VMoudnIzvV_T4xelvIjaiA4dEHmEb0U_x4lOK0p6UBvSIlN9iBgpFj3pgnsIM49kdB4-spijUs9tArCuLPmcd4fEFq1N6NZ5P84KQ5tf2mBEAaEMh5OTS4fy1HSUWUwLVfcnukx68Q"/>
+</div>
+<!-- Distractor Item: Mũ Nan -->
+<div class="draggable w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-white rounded-xl flex items-center justify-center clay-card border-2 border-surface-dim" data-item="strawhat" draggable="true">
+<img class="w-3/4 h-3/4 object-contain pointer-events-none" data-alt="A small icon of a straw sun hat. Soft rounded vector style, earthy tones, light mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPyUTkqVS0k605ihnl2wrwiNGlobliVozuYBBpYI_xY9e3Hv1WUdizoijXA-lwY92yaOqqRFw87cH5grJb-0kznHT9I4fDWyb9tHVKLuBksnYRrGWiIe1zR15gH6IfQvZt2kIvf9vw9o70Fkbe8fdkJe_Do_eQ290_zIXNVaFnInGN_WYjHsQEAIkMPyr8ePHZeToEOFlyelTA2vXTXmaspogl1edykU7xY6817l_2IQ-uCabPrZg5sQ"/>
+</div>
+<!-- Correct Item: Ô -->
+<div class="draggable w-[80px] h-[80px] md:w-[100px] md:h-[100px] bg-white rounded-xl flex items-center justify-center clay-card border-2 border-tertiary-fixed-dim/50 col-span-3 md:col-span-2 mx-auto" data-item="umbrella" draggable="true">
+<img class="w-3/4 h-3/4 object-contain pointer-events-none" data-alt="A small icon of a closed colorful umbrella. Soft rounded vector style, bright colors, light mode UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWIpivwlyITIryN4DGqOerJ6zQBDJuwNgn7VC1oZooZI6Kuv_8nYbefEWt7wd9rRHdTcxcjX1wyRJHXybqZyBallvjGoy5xplpkBQYN3BjH5oUKoH8irVAgHpkhCQDwNwMKakzjg9Gl0PN2CE7uPxYoTRugjEV3MuQVVzFxGOWdo2XAq3e0Zruov8FxeD3b2mxT7iLVlvjvCZn-N3ZBoVXDjiy2S66bP6iXoHDoc6SUh7x0PZ0FJtpLA"/>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on Desktop, Visible on Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface pb-safe h-24 rounded-t-xl z-50 border-t-2 border-outline-variant shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.05)] md:hidden">
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="home" style="font-variation-settings: 'FILL' 0; font-size: 28px;">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</button>
+<!-- Active State for BÀI TẬP since this is an activity -->
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 shadow-[0px_4px_0px_0px_#006c4f] active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="edit_pencil" style="font-variation-settings: 'FILL' 1; font-size: 28px;">mobile_code</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</button>
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="military_tech" style="font-variation-settings: 'FILL' 0; font-size: 28px;">military_tech</span>
+<span class="font-label-caps text-label-caps">Phần thưởng</span>
+</button>
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="family_restroom" style="font-variation-settings: 'FILL' 0; font-size: 28px;">family_restroom</span>
+<span class="font-label-caps text-label-caps">Bố mẹ</span>
+</button>
+</nav>
+<script>
+        // Rain effect generation
+        const rainContainer = document.getElementById('rainContainer');
+        const numDrops = 30; // Light rain
+        for (let i = 0; i < numDrops; i++) {
+            const drop = document.createElement('div');
+            drop.classList.add('drop');
+            drop.style.left = `${Math.random() * 100}%`;
+            drop.style.animationDuration = `${Math.random() * 1 + 0.5}s`;
+            drop.style.animationDelay = `${Math.random() * 2}s`;
+            rainContainer.appendChild(drop);
+        }
+
+        // Simple Drag and Drop Logic (Mockup)
+        const draggables = document.querySelectorAll('.draggable');
+        const dropZone = document.getElementById('socNauDropZone');
+        
+        let draggedItem = null;
+
+        draggables.forEach(draggable => {
+            // Desktop Drag Events
+            draggable.addEventListener('dragstart', (e) => {
+                draggedItem = draggable;
+                setTimeout(() => draggable.classList.add('opacity-50'), 0);
+            });
+            draggable.addEventListener('dragend', () => {
+                setTimeout(() => draggable.classList.remove('opacity-50'), 0);
+                draggedItem = null;
+                dropZone.classList.remove('drag-over');
+            });
+
+            // Mobile Touch Events (Basic mockup for visual feedback)
+            draggable.addEventListener('touchstart', (e) => {
+                draggable.style.transform = 'scale(0.9)';
+            }, {passive: true});
+            
+            draggable.addEventListener('touchend', (e) => {
+                draggable.style.transform = 'scale(1)';
+                // In a real app, calculate touch end position relative to dropZone
+                // Here we just simulate success if it's a correct item
+                checkItem(draggable);
+            });
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (draggedItem) {
+                checkItem(draggedItem);
+            }
+        });
+
+        function checkItem(item) {
+            const itemType = item.getAttribute('data-item');
+            const validItems = ['raincoat', 'boots', 'umbrella'];
+            
+            if (validItems.includes(itemType)) {
+                // Correct
+                item.style.opacity = '0';
+                item.style.pointerEvents = 'none';
+                
+                // Show dressed layer
+                const layer = document.getElementById(`dressed-${itemType}`);
+                if(layer) layer.style.opacity = '1';
+                
+                // Add celebration effect (pulse)
+                dropZone.classList.add('scale-105');
+                setTimeout(() => dropZone.classList.remove('scale-105'), 300);
+            } else {
+                // Incorrect (shake animation)
+                item.animate([
+                    { transform: 'translateX(0)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(0)' }
+                ], { duration: 300, iterations: 2 });
+            }
+        }
+    </script>
+</body></html>

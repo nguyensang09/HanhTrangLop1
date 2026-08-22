@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#ff8c42",
+                      "outline-variant": "#ddc1b3",
+                      "on-error": "#ffffff",
+                      "surface-container": "#f0eee6",
+                      "on-tertiary-fixed": "#001f2a",
+                      "secondary": "#006c4f",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f5f4ec",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#763300",
+                      "secondary-fixed": "#54fdc4",
+                      "surface-tint": "#9b4500",
+                      "surface-dim": "#dcdad2",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-secondary-container": "#007152",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffdbc9",
+                      "on-background": "#1b1c17",
+                      "on-surface-variant": "#564338",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "secondary-container": "#51fac1",
+                      "on-primary-fixed": "#331200",
+                      "primary-fixed-dim": "#ffb68d",
+                      "outline": "#897266",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#6a2d00",
+                      "on-secondary-fixed": "#002116",
+                      "inverse-surface": "#30312c",
+                      "surface-variant": "#e4e3db",
+                      "surface": "#fbf9f1",
+                      "on-surface": "#1b1c17",
+                      "surface-bright": "#fbf9f1",
+                      "surface-container-high": "#eae8e0",
+                      "tertiary-container": "#53b5df",
+                      "on-tertiary-container": "#00445a",
+                      "tertiary": "#006686",
+                      "primary": "#9b4500",
+                      "background": "#fbf9f1",
+                      "surface-container-highest": "#e4e3db",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "inverse-on-surface": "#f3f1e9",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-fixed": "#bfe8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        /* Custom styles for claymorphic button press effect */
+        .clay-btn {
+            position: relative;
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .clay-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 0px !important;
+            margin-bottom: 4px; /* Compensate for lost border to prevent layout shift */
+        }
+        
+        /* Soft, floating animation for the main character */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Subtle glowing backdrop */
+        .soft-glow-bg {
+            background: radial-gradient(circle at 50% 50%, rgba(255, 140, 66, 0.15) 0%, rgba(251, 249, 241, 0) 70%);
+        }
+    </style>
+</head>
+<body class="bg-surface-bright font-body-md text-on-surface min-h-screen flex flex-col relative overflow-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Background Decorative Elements -->
+<div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute top-10 left-10 w-32 h-32 bg-secondary-fixed opacity-30 rounded-full mix-blend-multiply blur-2xl"></div>
+<div class="absolute bottom-20 right-10 w-48 h-48 bg-primary-fixed opacity-40 rounded-full mix-blend-multiply blur-3xl"></div>
+<div class="absolute top-1/4 right-1/4 w-24 h-24 bg-tertiary-fixed opacity-40 rounded-full mix-blend-multiply blur-xl"></div>
+<!-- Small playful shapes -->
+<span class="material-symbols-outlined absolute top-20 right-8 text-primary-container opacity-50 rotate-12 text-4xl" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined absolute bottom-40 left-8 text-tertiary-container opacity-50 -rotate-12 text-3xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center p-container-margin z-10 w-full max-w-md mx-auto relative h-screen">
+<!-- Welcome Text Header -->
+<div class="text-center w-full mb-8 mt-auto pt-8">
+<h1 class="font-display-hero text-display-hero text-primary mb-2 drop-shadow-sm">
+                Xin chào bé!
+            </h1>
+<p class="font-title-md text-title-md text-on-surface-variant">
+                Cùng Sóc Nâu khám phá nhé
+            </p>
+</div>
+<!-- Character Illustration -->
+<div class="w-full max-w-[280px] aspect-square relative mb-12 animate-float soft-glow-bg rounded-full flex items-center justify-center">
+<img alt="Sóc Nâu vẫy tay chào" class="w-full h-full object-contain relative z-10 drop-shadow-[0_20px_20px_rgba(255,140,66,0.15)]" data-alt="A high-quality, 3D claymorphic illustration of a friendly brown squirrel named Sóc Nâu, waving enthusiastically. The squirrel has soft, rounded features, big expressive eyes, and a warm smile, appealing to 5-year-old children. The style is tactile and soft, resembling smooth modeling clay with gentle inner glows and no harsh shadows. The color palette features warm browns, soft oranges, and a clean, bright background, perfect for a modern, light-mode educational app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6OXdEJDTsTT0Xx-udioY2hnpu0JzCHeqnUW0tyh1SmXm9lQ-aP2UaEQHnNLBNcG4dtrvWFb-0zdHjCE30m9XDTISF27Sfq6cG_enHkrYXGQjNek9KVPU1S9KviWZWnnWFFUXbIqR1IARKoQP6rSflJnX95b0USyGlgIJiaojvG3VNcHs4MdB53VaPwW8kDvwahpqRBGfjq6oElUy1VCZ1RRaPxEoUWhYm2oOEInZ4MxSKkgahqp85xQ"/>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-4 mt-auto pb-8">
+<!-- Primary Action: Start -->
+<button class="clay-btn w-full min-h-[64px] bg-primary-container text-white font-headline-lg-mobile text-headline-lg-mobile rounded-full border-b-[6px] border-surface-tint flex items-center justify-center gap-2 shadow-[0_8px_16px_rgba(255,140,66,0.2)]">
+                Bắt đầu ngay
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</button>
+<!-- Secondary Action: Profile Selection -->
+<button class="clay-btn w-full min-h-[56px] bg-surface-container text-on-surface-variant font-title-md text-title-md rounded-full border-b-[4px] border-surface-variant flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">face</span>
+                Chọn hồ sơ
+            </button>
+</div>
+</main>
+</body></html>

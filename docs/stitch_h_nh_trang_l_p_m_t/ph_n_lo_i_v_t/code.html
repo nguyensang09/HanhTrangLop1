@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phân Loại Đồ Vật</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#ffb68d",
+                    "background": "#fbf9f1",
+                    "outline": "#897266",
+                    "primary-container": "#ff8c42",
+                    "surface-container-highest": "#e4e3db",
+                    "on-secondary-fixed": "#002116",
+                    "tertiary": "#006686",
+                    "on-secondary-container": "#007152",
+                    "secondary-container": "#51fac1",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#eae8e0",
+                    "primary": "#9b4500",
+                    "tertiary-fixed": "#bfe8ff",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "secondary-fixed": "#54fdc4",
+                    "secondary": "#006c4f",
+                    "on-primary-fixed-variant": "#763300",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#564338",
+                    "surface-tint": "#9b4500",
+                    "on-background": "#1b1c17",
+                    "on-primary": "#ffffff",
+                    "surface-container-low": "#f5f4ec",
+                    "on-primary-container": "#6a2d00",
+                    "tertiary-container": "#53b5df",
+                    "outline-variant": "#ddc1b3",
+                    "surface-container": "#f0eee6",
+                    "inverse-surface": "#30312c",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "on-primary-fixed": "#331200",
+                    "inverse-on-surface": "#f3f1e9",
+                    "on-tertiary-container": "#00445a",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "surface-variant": "#e4e3db",
+                    "on-surface": "#1b1c17",
+                    "inverse-primary": "#ffb68d",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-bright": "#fbf9f1",
+                    "on-tertiary-fixed": "#001f2a",
+                    "error": "#ba1a1a",
+                    "surface": "#fbf9f1",
+                    "surface-dim": "#dcdad2",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "24px",
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "touch-target-min": "48px",
+                    "card-gap": "20px"
+            },
+            "fontFamily": {
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "title-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ]
+            },
+            "fontSize": {
+                    "display-hero": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "title-md": [
+                            "22px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-caps": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .clay-btn {
+            border-bottom-width: 4px;
+            border-bottom-color: rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+        .clay-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .soft-shadow {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        
+        .draggable {
+            touch-action: none;
+            user-select: none;
+            cursor: grab;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        
+        .dropzone.active-zone {
+            background-color: var(--tw-colors-surface-container-high);
+            transform: scale(1.02);
+            border-color: var(--tw-colors-primary-container);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim font-headline-lg-mobile text-headline-lg-mobile w-full top-0 rounded-b-xl border-b-4 border-surface-container-highest dark:border-surface-container shadow-sm flex justify-between items-center px-container-margin py-unit w-full sticky top-0 z-50">
+<button aria-label="Quay lại" class="text-primary dark:text-primary-fixed-dim hover:scale-105 transition-transform active:translate-y-0.5 active:border-b-2 transition-all p-2 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed-dim text-center flex-1">Phân Loại Đồ Vật</h1>
+<div class="text-primary dark:text-primary-fixed-dim font-label-caps text-label-caps flex items-center gap-1 bg-surface-container-high px-3 py-1 rounded-full">
+            125 <span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col px-container-margin py-container-margin gap-card-gap overflow-y-auto pb-32">
+<!-- Sóc Nâu Dialogue -->
+<div class="bg-tertiary-fixed rounded-xl p-4 flex items-center gap-4 soft-shadow border-2 border-tertiary-fixed-dim">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center shrink-0 border-2 border-primary-container">
+<img alt="Sóc Nâu" class="w-full h-full object-cover rounded-full" data-alt="A cute, stylized 2D illustration of a brown squirrel character (Sóc Nâu) smiling, designed for preschool children learning apps. The squirrel has big friendly eyes and is presented on a warm cream background. Soft claymorphic art style with no harsh outlines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTEJTKAgsRqe-97KodqFTzkwnpOmwTLr5hhwCCEb5ZYGn-E0ATyQhK9Yu4qSchSjZ4IeYUfisP1NIzgroW01WSXC5W3QZ0cTflm6PDcVr9b9ET84apG4Ueq7mF8jYmgLQyP-yhIAEERbQofgMtuDprtDJUgBKShxlKlh2R7yBQ7Tm1Texp2AlMvin4gYbiEcArUvZiak4wVy3fYAdyd_ABUSzC8un0uA35_AffK0GtriZBoLYRsGqCDg"/>
+</div>
+<p class="font-title-md text-title-md text-on-tertiary-container">
+                 Bé hãy giúp Sóc Nâu xếp các khối hình vào đúng hộp nhé!
+             </p>
+<button aria-label="Nghe lại" class="shrink-0 w-12 h-12 rounded-full bg-primary-container text-on-primary flex items-center justify-center clay-btn ml-auto">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Sorting Area -->
+<div class="flex-1 flex flex-col gap-8 mt-4">
+<!-- Dropzones (Boxes) -->
+<div class="flex justify-around items-end gap-4 h-48">
+<!-- Square Box -->
+<div class="dropzone w-32 h-40 bg-surface-container rounded-lg border-4 border-dashed border-outline-variant flex flex-col items-center justify-end pb-4 relative transition-all duration-300" data-type="square">
+<div class="absolute -top-6 bg-surface-container-highest px-4 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant shadow-sm border-2 border-outline-variant">
+                        Hình Vuông
+                    </div>
+<div class="w-16 h-16 border-4 border-primary-container rounded flex items-center justify-center mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant" id="count-square">Đã có: 0/2</span>
+</div>
+</div>
+<!-- Circle Box -->
+<div class="dropzone w-32 h-40 bg-surface-container rounded-lg border-4 border-dashed border-outline-variant flex flex-col items-center justify-end pb-4 relative transition-all duration-300" data-type="circle">
+<div class="absolute -top-6 bg-surface-container-highest px-4 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant shadow-sm border-2 border-outline-variant">
+                        Hình Tròn
+                    </div>
+<div class="w-16 h-16 border-4 border-secondary-container rounded-full flex items-center justify-center mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant" id="count-circle">Đã có: 0/2</span>
+</div>
+</div>
+</div>
+<!-- Draggable Objects -->
+<div class="bg-surface-container-low rounded-xl p-6 min-h-[160px] relative border-2 border-surface-container-highest soft-shadow flex flex-wrap justify-center gap-6 items-center" id="objects-container">
+<!-- Square 1 -->
+<div class="draggable w-16 h-16 bg-primary-container rounded border-b-4 border-primary shadow-sm flex items-center justify-center cursor-grab active:cursor-grabbing" data-type="square" id="obj-1">
+<div class="w-8 h-8 bg-on-primary opacity-20 rounded-sm"></div>
+</div>
+<!-- Circle 1 -->
+<div class="draggable w-16 h-16 bg-secondary-container rounded-full border-b-4 border-secondary shadow-sm flex items-center justify-center cursor-grab active:cursor-grabbing" data-type="circle" id="obj-2">
+<div class="w-8 h-8 bg-on-secondary-fixed opacity-20 rounded-full"></div>
+</div>
+<!-- Square 2 -->
+<div class="draggable w-16 h-16 bg-primary-container rounded border-b-4 border-primary shadow-sm flex items-center justify-center cursor-grab active:cursor-grabbing" data-type="square" id="obj-3">
+<div class="w-8 h-8 bg-on-primary opacity-20 rounded-sm"></div>
+</div>
+<!-- Circle 2 -->
+<div class="draggable w-16 h-16 bg-secondary-container rounded-full border-b-4 border-secondary shadow-sm flex items-center justify-center cursor-grab active:cursor-grabbing" data-type="circle" id="obj-4">
+<div class="w-8 h-8 bg-on-secondary-fixed opacity-20 rounded-full"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container-low dark:bg-surface-container-lowest font-label-caps text-label-caps fixed bottom-0 w-full rounded-t-xl border-t-4 border-surface-container-highest dark:border-surface-container shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-container-margin pb-4 pt-2 md:hidden">
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant p-2 hover:bg-surface-container-high transition-colors active:translate-y-0 active:border-b-0 transition-all duration-100 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="text-[12px]">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-2 translate-y-[-4px] border-b-4 border-primary hover:bg-surface-container-high transition-colors active:translate-y-0 active:border-b-0 transition-all duration-100" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="text-[12px]">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant p-2 hover:bg-surface-container-high transition-colors active:translate-y-0 active:border-b-0 transition-all duration-100 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">military_tech</span>
+<span class="text-[12px]">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant p-2 hover:bg-surface-container-high transition-colors active:translate-y-0 active:border-b-0 transition-all duration-100 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">family_restroom</span>
+<span class="text-[12px]">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        // Very basic drag and drop simulation for demonstration
+        const draggables = document.querySelectorAll('.draggable');
+        const dropzones = document.querySelectorAll('.dropzone');
+        
+        let counts = {
+            square: 0,
+            circle: 0
+        };
+
+        draggables.forEach(draggable => {
+            // Simulated interaction: clicking an item moves it to the correct box
+            draggable.addEventListener('click', () => {
+                const type = draggable.dataset.type;
+                const targetZone = document.querySelector(`.dropzone[data-type="${type}"]`);
+                
+                if (targetZone && !draggable.classList.contains('placed')) {
+                    draggable.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    
+                    // visual feedback on zone
+                    targetZone.classList.add('active-zone');
+                    setTimeout(() => targetZone.classList.remove('active-zone'), 300);
+
+                    // move and scale
+                    draggable.style.transform = 'scale(0.5)';
+                    draggable.style.opacity = '0';
+                    draggable.classList.add('placed');
+                    
+                    // update count
+                    counts[type]++;
+                    document.getElementById(`count-${type}`).textContent = `Đã có: ${counts[type]}/2`;
+                    
+                    // Simple success check
+                    if(counts.square === 2 && counts.circle === 2) {
+                        setTimeout(() => {
+                            alert('Chúc mừng bé đã hoàn thành!');
+                        }, 500);
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

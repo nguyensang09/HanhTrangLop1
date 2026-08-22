@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ghép Bóng Đồ Vật</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae8e0",
+                        "surface-dim": "#dcdad2",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "surface-container-low": "#f5f4ec",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-primary-container": "#6a2d00",
+                        "outline-variant": "#ddc1b3",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-container-highest": "#e4e3db",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-tint": "#9b4500",
+                        "surface-bright": "#fbf9f1",
+                        "on-secondary-container": "#007152",
+                        "tertiary-container": "#53b5df",
+                        "inverse-primary": "#ffb68d",
+                        "on-surface": "#1b1c17",
+                        "secondary-container": "#51fac1",
+                        "on-primary-fixed-variant": "#763300",
+                        "secondary": "#006c4f",
+                        "on-error": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "on-secondary-fixed": "#002116",
+                        "inverse-on-surface": "#f3f1e9",
+                        "outline": "#897266",
+                        "surface-container": "#f0eee6",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#ffdbc9",
+                        "surface": "#fbf9f1",
+                        "on-surface-variant": "#564338",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-background": "#1b1c17",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "surface-variant": "#e4e3db",
+                        "on-primary-fixed": "#331200",
+                        "tertiary": "#006686",
+                        "tertiary-fixed": "#bfe8ff",
+                        "background": "#fbf9f1",
+                        "secondary-fixed": "#54fdc4",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#30312c",
+                        "on-tertiary-container": "#00445a",
+                        "error-container": "#ffdad6",
+                        "primary": "#9b4500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; }
+        .clay-shadow {
+            box-shadow: 0 8px 0 var(--tw-colors-primary-container), 0 15px 20px rgba(0,0,0,0.1);
+        }
+        .clay-shadow:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 var(--tw-colors-primary-container), 0 5px 10px rgba(0,0,0,0.1);
+        }
+        .floating-card {
+            box-shadow: 0 10px 30px -10px rgba(255, 140, 66, 0.2);
+            transition: transform 0.2s ease-in-out;
+        }
+        .floating-card:hover {
+            transform: translateY(-4px);
+        }
+        .silhouette {
+            filter: brightness(0) invert(0);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen flex flex-col overflow-hidden">
+<!-- Top App Bar -->
+<header class="bg-surface flex justify-between items-center w-full px-container-margin py-unit h-touch-target-min">
+<div class="flex items-center gap-gutter">
+<button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">Ghép Bóng Đồ Vật</h1>
+</div>
+<div class="flex items-center gap-2 bg-surface-container rounded-full px-4 py-2">
+<span class="material-symbols-outlined text-tertiary" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-title-md text-title-md text-on-surface">125</span>
+</div>
+</header>
+<!-- Main Game Area -->
+<main class="flex-1 overflow-y-auto px-container-margin py-6 pb-32 md:pb-6">
+<!-- Instruction -->
+<div class="bg-primary-fixed rounded-2xl p-6 mb-8 flex items-center gap-4 floating-card">
+<div class="w-16 h-16 rounded-full bg-white flex flex-shrink-0 items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="volume_up" data-weight="fill" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-primary-fixed mb-1">Cùng Sóc Nâu tìm bóng nhé!</h2>
+<p class="font-body-md text-body-md text-on-primary-fixed-variant">Bé hãy kéo hình con vật vào đúng chiếc bóng màu đen của bạn ấy.</p>
+</div>
+</div>
+<!-- Game Board (Bento Grid Style) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto h-[60vh] md:h-auto">
+<!-- Draggable Items (Left side / Top on mobile) -->
+<div class="flex flex-col justify-around gap-4 col-span-1 md:col-span-2 order-1">
+<div class="bg-white rounded-3xl p-4 border-4 border-surface-container-highest cursor-grab hover:border-primary transition-colors flex items-center justify-center shadow-sm floating-card h-24 md:h-32">
+<img alt="Mèo" class="h-full object-contain pointer-events-none" data-alt="A brightly colored cartoon illustration of a friendly orange tabby cat sitting down. The illustration is designed for children, featuring soft rounded edges, large expressive eyes, and a warm claymorphic style with no harsh black outlines. The background is completely transparent." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEHUdL20vqqIy-yJpIRBvEWI2is3wgLscscOXln_xzCJcivIWitp62WHaXD5VPLAKckg7fXlYHGwTdWGBTDdaZ_eQ83JCFqIeRGGICY6wK79FuTnmYFwFkc38Jx7RtfQO3OSaNmy1jrDrjJJlMJj4WrY_BeCqqGzT0iIQcAYU6rrhUZMrbmZ-1RtGY8srYckoxz7X8I_E0gMRMBuqoKIZazZFjgTtqVFdN5fJBtaDEk7TGYJAGmi1j7Q"/>
+</div>
+<div class="bg-white rounded-3xl p-4 border-4 border-surface-container-highest cursor-grab hover:border-primary transition-colors flex items-center justify-center shadow-sm floating-card h-24 md:h-32">
+<img alt="Vịt" class="h-full object-contain pointer-events-none" data-alt="A vibrant cartoon illustration of a cheerful yellow duck standing on its webbed feet. Designed for a preschool learning app, it features a tactile, soft claymorphic aesthetic with a slightly 3D feel. The colors are warm and inviting, set against a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm6HTdJ9p4Q9d8keLS_1g2g8h3HPqBpHLvGe6OmmF7o-ZFzhNOTJiqsTYCpGQCYwKFKeotB8U8ee4jIy-OD8fuuI93jDxBOXwGTzOfTmPs9YsKsvAPcC1a743P7As9GJ4-IDaCfjbb5mgIXz2j0rKI_U9XOTSJE-uPolE54EuGsn2MQABimjmChI_B-rv494tXtL4K7M2PwjVCKv44iHfyHRkSS_nFAAG5Z6148teLFylrqkAfc1wrVw"/>
+</div>
+<div class="bg-white rounded-3xl p-4 border-4 border-surface-container-highest cursor-grab hover:border-primary transition-colors flex items-center justify-center shadow-sm floating-card h-24 md:h-32">
+<img alt="Chó" class="h-full object-contain pointer-events-none" data-alt="A cute cartoon illustration of a small brown puppy with floppy ears and a happy expression. The style is soft, tactile, and clay-like, suitable for young children. It uses gentle earthy tones and avoids sharp lines, completely isolated on a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByxpVlJyfo89ZYYxv42D1nd3hH7NFOyrqSmbzy3cGDAXX8GmYu1fnlolPfrk3e9oNEdeCbrBHGNdD1keJxvZH_FWwvaQv7_6T8BJWJjj7lhSt0AhpqtX4kpT8HdF4dbbAi7jAT9kj4ciXptS4QgyFKmOoZ41UL9CDebFHrN7f1tKalYiHtusrLWpra1kZ2ivdBOC_HhPE5-AbocSw5Tbf_cNZVI-MHZrmTYdP09KdduMuQwoaers47vA"/>
+</div>
+</div>
+<!-- Drop Targets (Silhouettes) (Right side / Bottom on mobile) -->
+<div class="flex flex-col justify-around gap-4 col-span-1 md:col-span-2 order-2">
+<div class="bg-surface-container-low rounded-3xl p-4 border-4 border-dashed border-outline-variant flex items-center justify-center h-24 md:h-32">
+<img alt="Bóng Chó" class="h-full object-contain silhouette opacity-50" data-alt="A solid black silhouette of a small dog with floppy ears, matching the pose of the colored puppy illustration. The silhouette has smooth, rounded edges, designed as a clear matching target for a children's drag-and-drop game on a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBn-hf-VeK9t5118bEF8DgWOWvRAOdNMzBn79CaQjbgi32bMG5Knc5kH1VO58_eIVfflP7YOhzPdeBCT3LplUwLw-68aKkLF3U4YUc4XUH76D2jz41fASrdBnVDCr7FpY1ekBc1792IqXSuGn1RCkxtepb_iZH8URXPJ73MPpSnv7DWzpm-r2WkhcNS9I2SQ_0Vb5TbPtkQTyllSw_e_pP04d_HK0y7pt8HPUoQc-cb-dzDUbtSWGSDbQ"/>
+</div>
+<div class="bg-surface-container-low rounded-3xl p-4 border-4 border-dashed border-outline-variant flex items-center justify-center h-24 md:h-32">
+<img alt="Bóng Mèo" class="h-full object-contain silhouette opacity-50" data-alt="A solid black silhouette of a seated cat, matching the pose of the colored tabby cat illustration. The shape is distinct and easy to recognize for a preschooler, featuring soft curves and no sharp corners, placed on a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyk3TWyrABnc6nx-uvTaVk9uovy7qp2inC5u93FihRaw7smU1dzlXg7FI9_xQcCyQFWQzEs_AIklcOjOLH_dzGK_R4xmnCvGOfvjAjS0A6UWqmtVGRv8-I6AFdECq-5Enx48m8RxGq8EPVrvz2WFwPWZNwIwJDEe2JwxQP1RQukZmkPQsLPOAqLD4vZqFFz8VpsTbbTd6MR8YnTj8ukW8M3Mf7BPVeOxnU3BGbWiWGhUkFYdL6yvwykQ"/>
+</div>
+<div class="bg-surface-container-low rounded-3xl p-4 border-4 border-dashed border-outline-variant flex items-center justify-center h-24 md:h-32">
+<img alt="Bóng Vịt" class="h-full object-contain silhouette opacity-50" data-alt="A solid black silhouette of a standing duck, corresponding exactly to the shape of the colored duck illustration. The silhouette is simple, bold, and clear, designed to guide a child's matching action in an educational app, with a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHT9XGsOlidNcyCAcH4iNXhRimWovlEFsvbbUrcFTmr0eGmajomRICB4iRO2woLTpYvtEHcpWextggrBQS8_H9IJWtZ0yQOsuQZrfCPWbxAyGnP1ZmNKj9WIlkuAznneRtnDlnoeuTR5KBz2Fa0lSP9wGyjV1xZSm6Mgfv2gHXO2WspmRR2-5TZXamt6sAQcqD48O6mTlc1ltHtE4pe-ufpw-lQUnkgAmNfnxGMlYFylnjrXzK6o-5iA"/>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only for this specific context, though normally hidden for tasks, keeping as requested by JSON for "Bài tập" context if we assume it's part of a larger hub) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container border-t-4 border-surface-container-highest md:hidden shadow-sm rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-outline px-4 py-2" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-2 translate-y-[-2px] border-b-4 border-on-primary-fixed-variant" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="edit_square" data-weight="fill" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline px-4 py-2" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="military_tech">military_tech</span>
+<span class="font-label-caps text-label-caps">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline px-4 py-2" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" data-icon="family_restroom">family_restroom</span>
+<span class="font-label-caps text-label-caps">Bố mẹ</span>
+</a>
+</nav>
+</body></html>

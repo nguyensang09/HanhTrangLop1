@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bé Tập Bình Tĩnh</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected from Style Guidance -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#bfe8ff",
+                    "surface-variant": "#e4e3db",
+                    "primary": "#9b4500",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "surface-bright": "#fbf9f1",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e4e3db",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-container-low": "#f5f4ec",
+                    "background": "#fbf9f1",
+                    "inverse-primary": "#ffb68d",
+                    "inverse-on-surface": "#f3f1e9",
+                    "inverse-surface": "#30312c",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-container": "#00445a",
+                    "surface-container-high": "#eae8e0",
+                    "on-primary-container": "#6a2d00",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "on-surface-variant": "#564338",
+                    "surface": "#fbf9f1",
+                    "surface-tint": "#9b4500",
+                    "outline-variant": "#ddc1b3",
+                    "on-secondary-container": "#007152",
+                    "on-background": "#1b1c17",
+                    "primary-fixed-dim": "#ffb68d",
+                    "outline": "#897266",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#ff8c42",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#f0eee6",
+                    "tertiary": "#006686",
+                    "on-tertiary-fixed": "#001f2a",
+                    "secondary-fixed": "#54fdc4",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-dim": "#dcdad2",
+                    "on-primary-fixed-variant": "#763300",
+                    "secondary": "#006c4f",
+                    "on-error-container": "#93000a",
+                    "on-secondary-fixed": "#002116",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#51fac1",
+                    "tertiary-container": "#53b5df",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "on-surface": "#1b1c17",
+                    "on-primary-fixed": "#331200"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "card-gap": "20px",
+                    "touch-target-min": "48px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "title-md": ["Be Vietnam Pro", "sans-serif"],
+                    "label-caps": ["Plus Jakarta Sans", "sans-serif"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+                    "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+                    "body-md": ["Be Vietnam Pro", "sans-serif"],
+                    "display-hero": ["Plus Jakarta Sans", "sans-serif"],
+                    "body-lg": ["Be Vietnam Pro", "sans-serif"]
+            },
+            "fontSize": {
+                    "title-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}],
+                    "label-caps": ["16px", {"lineHeight": "20px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-hero": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-lg": ["20px", {"lineHeight": "32px", "fontWeight": "500"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+        
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Breathing Animation Sequence */
+        @keyframes breathe {
+            0%   { transform: scale(1); background-color: #53b5df; } /* tertiary-container */
+            40%  { transform: scale(1.6); background-color: #51fac1; } /* secondary-container - full inhale */
+            60%  { transform: scale(1.6); background-color: #51fac1; } /* hold */
+            100% { transform: scale(1); background-color: #53b5df; } /* exhale back */
+        }
+
+        .balloon-animate {
+            animation: breathe 8s ease-in-out infinite;
+        }
+
+        /* Inner glow for tactile feel */
+        .inner-glow {
+            box-shadow: inset 0 4px 10px rgba(255,255,255,0.6), inset 0 -4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .clay-card {
+            box-shadow: 0 20px 40px -10px rgba(83, 181, 223, 0.15), inset 0 2px 4px rgba(255,255,255,0.8);
+        }
+
+        .step-active {
+            background-color: #ff8c42 !important; /* primary-container */
+            color: #6a2d00 !important; /* on-primary-container */
+            transform: scale(1.05);
+            box-shadow: 0 4px 0 0 #9b4500;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased overflow-x-hidden min-h-screen flex flex-col pb-safe">
+<!-- TopAppBar JSON Component -->
+<header class="w-full top-0 sticky bg-surface-container-low dark:bg-surface-container-low shadow-[0_4px_0_0_rgba(155,69,0,0.1)] z-40">
+<div class="flex justify-between items-center px-container-margin h-touch-target-min">
+<button aria-label="Go back" class="h-touch-target-min w-touch-target-min flex items-center justify-center text-primary hover:opacity-90 active:translate-y-[2px] transition-all">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-inverse-primary truncate px-2">
+                Sóc Nâu Đồng Hành
+            </h1>
+<button aria-label="Stars" class="h-touch-target-min flex items-center justify-center text-primary dark:text-inverse-primary font-headline-lg-mobile text-headline-lg-mobile hover:opacity-90 active:translate-y-[2px] transition-all">
+                12 ⭐
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center px-container-margin pt-gutter pb-[100px] max-w-2xl mx-auto w-full">
+<!-- Screen Title -->
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-tertiary w-full text-center mb-6">
+            Bé Tập Bình Tĩnh
+        </h2>
+<!-- Sóc Nâu Dialogue (Instruction) -->
+<section class="w-full bg-primary-fixed rounded-xl p-4 mb-8 flex items-start gap-4 clay-card border border-outline-variant">
+<div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border-4 border-surface shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A highly detailed illustration of a cute, friendly cartoon brown squirrel named Soc Nau, smiling encouragingly. The style is soft, vector-like with pastel colors and gentle shading suitable for a preschool learning app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTD2OoGxW59-rxiRYiQ8WxHsIWZGTmCo4G1gAQrCGoU2CuVS2PgUkgd5Nq2zpsCh77AgnKwSkrQSykrsBTOru9WLXwEBf4CjbWr4vVfkw7kAQ7IOxiIDfotF_3pIomReG7ALfQfo0Vf9E915KCaPVo6AW_dBaIXzw-YIvOt9_TVkOJi0i3KJxkfNqTZA3iku70BeuPZPIxfgex58pr_pObVPsBFJIUrqM7tEValq4vBmJ57HcUwKtE8g"/>
+</div>
+<div class="flex-grow pt-1">
+<p class="font-body-md text-body-md text-on-primary-fixed-variant leading-relaxed">
+                    "Khi tức giận, bé hãy hít thở sâu như quả bóng phình to và xẹp lại nhé!"
+                </p>
+</div>
+<button aria-label="Play audio instruction" class="w-touch-target-min h-touch-target-min rounded-full bg-surface-bright flex items-center justify-center text-primary shadow-sm hover:scale-105 transition-transform shrink-0">
+<span class="material-symbols-outlined text-3xl">volume_up</span>
+</button>
+</section>
+<!-- Interactive Visual Guide (Balloon Area) -->
+<div class="w-full relative aspect-square max-w-[320px] mb-10 flex items-center justify-center bg-tertiary-fixed rounded-full shadow-[0_0_60px_rgba(191,232,255,0.5)]">
+<!-- The Balloon -->
+<div class="w-32 h-32 rounded-full inner-glow flex items-center justify-center shadow-lg z-10 transition-colors duration-1000 balloon-animate" id="breathing-balloon">
+<!-- Decorative face or icon on balloon -->
+<span class="material-symbols-outlined text-on-tertiary opacity-50" style="font-size: 48px;">sentiment_calm</span>
+</div>
+<!-- Pulsing Rings for effect -->
+<div class="absolute inset-0 rounded-full border-4 border-secondary-fixed opacity-30 animate-ping" style="animation-duration: 4s;"></div>
+<div class="absolute inset-0 rounded-full border-2 border-tertiary opacity-20 animate-ping" style="animation-duration: 8s; animation-delay: 2s;"></div>
+<!-- Floating particles could go here via JS, kept simple for now -->
+</div>
+<!-- Steps Indicators -->
+<div class="w-full grid grid-cols-3 gap-unit mb-8">
+<div class="flex flex-col items-center justify-center p-3 rounded-lg bg-surface-container text-on-surface-variant transition-all duration-300" id="step-1">
+<span class="material-symbols-outlined mb-1">air</span>
+<span class="font-label-caps text-label-caps text-center">1. Hít vào</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-lg bg-surface-container text-on-surface-variant transition-all duration-300" id="step-2">
+<span class="font-display-hero text-[24px] mb-1">1-2-3</span>
+<span class="font-label-caps text-label-caps text-center">2. Giữ</span>
+</div>
+<div class="flex flex-col items-center justify-center p-3 rounded-lg bg-surface-container text-on-surface-variant transition-all duration-300" id="step-3">
+<span class="material-symbols-outlined mb-1">waves</span>
+<span class="font-label-caps text-label-caps text-center">3. Thở ra</span>
+</div>
+</div>
+<!-- Play/Pause Control (Optional but good for tactile feel) -->
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-8 py-4 rounded-full shadow-[0_4px_0_0_#6a2d00] active:translate-y-[4px] active:shadow-none transition-all flex items-center gap-2" id="toggle-breathing">
+<span class="material-symbols-outlined">pause</span>
+            Tạm Dừng
+        </button>
+</main>
+<!-- BottomNavBar JSON Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface-container border-t-2 border-surface-variant shadow-[0_-4px_10px_rgba(255,140,66,0.05)] md:hidden">
+<div class="flex justify-around items-center px-4 py-3 pb-safe">
+<!-- Active Item: Học Tập (Index 0 match derived from context) -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 translate-y-[-2px] shadow-[0_4px_0_0_#9b4500] w-[72px]">
+<span class="material-symbols-outlined text-[28px]" data-weight="fill">school</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Học Tập</span>
+</button>
+<!-- Inactive Item: Vui Chơi -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high rounded-xl px-2 py-1 transition-transform duration-150 active:scale-95 w-[72px]">
+<span class="material-symbols-outlined text-[28px]">videogame_asset</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Vui Chơi</span>
+</button>
+<!-- Inactive Item: Thử Thách -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high rounded-xl px-2 py-1 transition-transform duration-150 active:scale-95 w-[72px]">
+<span class="material-symbols-outlined text-[28px]">star</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Thử Thách</span>
+</button>
+<!-- Inactive Item: Của Bé -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high rounded-xl px-2 py-1 transition-transform duration-150 active:scale-95 w-[72px]">
+<span class="material-symbols-outlined text-[28px]">person</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Của Bé</span>
+</button>
+</div>
+</nav>
+<!-- Interactive Logic Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+            const balloon = document.getElementById('breathing-balloon');
+            const toggleBtn = document.getElementById('toggle-breathing');
+            let isPlaying = true;
+            let cycleInterval;
+
+            // Define timing based on CSS animation (8s total)
+            // 0-40% (0-3.2s) : Inhale
+            // 40-60% (3.2s-4.8s): Hold
+            // 60-100% (4.8s-8.0s): Exhale
+            
+            function updateSteps(timeInCycle) {
+                if(!isPlaying) return;
+                
+                step1.classList.remove('step-active');
+                step2.classList.remove('step-active');
+                step3.classList.remove('step-active');
+
+                if (timeInCycle < 3200) {
+                    step1.classList.add('step-active');
+                } else if (timeInCycle >= 3200 && timeInCycle < 4800) {
+                    step2.classList.add('step-active');
+                } else {
+                    step3.classList.add('step-active');
+                }
+            }
+
+            let startTime = Date.now();
+            function loop() {
+                if(isPlaying) {
+                    const now = Date.now();
+                    const elapsed = (now - startTime) % 8000;
+                    updateSteps(elapsed);
+                }
+                requestAnimationFrame(loop);
+            }
+            
+            // Start the loop
+            requestAnimationFrame(loop);
+
+            toggleBtn.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                if(isPlaying) {
+                    balloon.style.animationPlayState = 'running';
+                    toggleBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> Tạm Dừng';
+                    // Reset visual steps instantly based on animation state would be complex here, 
+                    // just let loop pick it up.
+                } else {
+                    balloon.style.animationPlayState = 'paused';
+                    toggleBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Tiếp Tục';
+                    step1.classList.remove('step-active');
+                    step2.classList.remove('step-active');
+                    step3.classList.remove('step-active');
+                }
+            });
+        });
+    </script>
+</body></html>

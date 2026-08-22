@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Báo cáo Kỹ năng - Sóc Nâu Đồng Hành</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#54fdc4",
+                        "outline-variant": "#ddc1b3",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-tint": "#9b4500",
+                        "surface-container": "#f0eee6",
+                        "on-background": "#1b1c17",
+                        "on-primary": "#ffffff",
+                        "surface": "#fbf9f1",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "tertiary-container": "#53b5df",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-container": "#ff8c42",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#fbf9f1",
+                        "secondary": "#006c4f",
+                        "on-surface": "#1b1c17",
+                        "inverse-surface": "#30312c",
+                        "inverse-on-surface": "#f3f1e9",
+                        "surface-bright": "#fbf9f1",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container-high": "#eae8e0",
+                        "tertiary": "#006686",
+                        "surface-variant": "#e4e3db",
+                        "outline": "#897266",
+                        "on-secondary-container": "#007152",
+                        "tertiary-fixed": "#bfe8ff",
+                        "primary-fixed": "#ffdbc9",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#331200",
+                        "secondary-container": "#51fac1",
+                        "surface-dim": "#dcdad2",
+                        "primary": "#9b4500",
+                        "on-surface-variant": "#564338",
+                        "surface-container-low": "#f5f4ec",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#763300",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "inverse-primary": "#ffb68d",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-container-highest": "#e4e3db",
+                        "on-primary-container": "#6a2d00",
+                        "on-tertiary-container": "#00445a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "card-gap": "20px",
+                        "container-margin": "24px",
+                        "touch-target-min": "48px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-shadow { box-shadow: 0 4px 0 #8c3e00, 0 8px 16px rgba(155, 69, 0, 0.1); }
+        .clay-shadow-active { box-shadow: 0 2px 0 #8c3e00, 0 4px 8px rgba(155, 69, 0, 0.1); transform: translateY(2px); }
+        .soft-card-shadow { box-shadow: 0 0 20px rgba(255, 140, 66, 0.05); }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md pb-[80px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center w-full px-container-margin h-touch-target-min docked full-width top-0 sticky z-10">
+<div class="flex items-center gap-2">
+<button class="hover:bg-primary-container/20 transition-colors p-2 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed-dim" style="width: 48px; height: 48px;">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight">Sóc Nâu Đồng Hành</h1>
+</div>
+<div>
+<img alt="Parent profile picture" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="A small circular avatar placeholder image for a parent profile. The avatar should feature a stylized, flat-design illustration of an adult's face in warm tones, specifically using soft oranges and browns to match the 'Sóc Nâu' (Brown Squirrel) aesthetic. The background of the avatar should be a solid cream color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgD9vygRXksBCFbUw0aOva_OFeU618NvT5oHTc6gmPaFPEfWo-SLCkyzwUF5iH3Fq42-g8uGgPGZAQeAIJ3NsKFeJi4Gl5vccQ244kVsP0tsmUPL9CoQQ6Uf7vQaYXRx5mNsn5tm81wVmLLtFarO6NfOcxsMHgvTsa9c9u0Uym6yRoya-ZZb9AGQVB0vIbw3yLdj5AJAL7DWWZ5k8vwufTnvpka2OrUtH8tFjJQiK0TLNDWQ84xWU3jQ"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow p-container-margin flex flex-col gap-card-gap max-w-4xl mx-auto w-full">
+<section class="bg-surface-container-lowest rounded-xl p-6 soft-card-shadow border-2 border-tertiary-fixed-dim/30">
+<h2 class="font-title-md text-title-md text-primary mb-4">Chi tiết Kỹ năng</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-surface p-4 rounded-lg border border-outline-variant">
+<h3 class="font-body-lg text-body-lg text-tertiary mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined">sort_by_alpha</span> Chữ cái
+                    </h3>
+<div class="space-y-3">
+<div>
+<span class="text-sm font-semibold text-secondary-fixed-dim uppercase tracking-wider">Đã thành thạo</span>
+<div class="flex flex-wrap gap-2 mt-1">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">A</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">B</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">C</span>
+</div>
+</div>
+<div>
+<span class="text-sm font-semibold text-error uppercase tracking-wider">Cần luyện tập (Thường nhầm)</span>
+<div class="flex flex-col gap-2 mt-1">
+<div class="bg-error-container text-on-error-container p-2 rounded flex justify-between items-center">
+<span class="font-bold">b &amp; d</span>
+<span class="material-symbols-outlined text-sm">warning</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-outline-variant">
+<h3 class="font-body-lg text-body-lg text-tertiary mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined">numbers</span> Chữ số
+                    </h3>
+<div class="space-y-3">
+<div>
+<span class="text-sm font-semibold text-secondary-fixed-dim uppercase tracking-wider">Đã thành thạo</span>
+<div class="flex flex-wrap gap-2 mt-1">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">1</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">2</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">3</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">4</span>
+</div>
+</div>
+<div>
+<span class="text-sm font-semibold text-error uppercase tracking-wider">Cần luyện tập (Thường nhầm)</span>
+<div class="flex flex-col gap-2 mt-1">
+<div class="bg-error-container text-on-error-container p-2 rounded flex justify-between items-center">
+<span class="font-bold">6 &amp; 9</span>
+<span class="material-symbols-outlined text-sm">warning</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-highest shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe md:hidden rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:scale-105 transition-transform" href="#" style="width: 64px;">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-[12px] mt-1">Tổng quan</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-6 py-2 border-b-4 border-secondary/20 hover:scale-105 transition-transform" href="#" style="min-width: 64px;">
+<span class="material-symbols-outlined" data-icon="auto_stories" data-weight="fill" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-label-caps text-[12px] mt-1">Kỹ năng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 hover:scale-105 transition-transform" href="#" style="width: 64px;">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-[12px] mt-1">Cài đặt</span>
+</a>
+</nav>
+<script>
+        // Simple script to handle touch feedback on buttons for 'clay' effect if needed
+    </script>
+</body></html>

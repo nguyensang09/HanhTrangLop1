@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Lesson Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-primary-fixed": "#331200",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-background": "#1b1c17",
+                        "surface-container-low": "#f5f4ec",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "surface-dim": "#dcdad2",
+                        "on-secondary-container": "#007152",
+                        "background": "#fbf9f1",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "surface-variant": "#e4e3db",
+                        "primary": "#9b4500",
+                        "on-tertiary-container": "#00445a",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-primary-fixed-variant": "#763300",
+                        "tertiary": "#006686",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#51fac1",
+                        "surface-bright": "#fbf9f1",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#ffb68d",
+                        "surface-container-high": "#eae8e0",
+                        "surface-container": "#f0eee6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "surface-tint": "#9b4500",
+                        "on-primary-container": "#6a2d00",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#002116",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container-highest": "#e4e3db",
+                        "outline": "#897266",
+                        "surface": "#fbf9f1",
+                        "error": "#ba1a1a",
+                        "on-surface": "#1b1c17",
+                        "primary-fixed-dim": "#ffb68d",
+                        "primary-fixed": "#ffdbc9",
+                        "secondary-fixed": "#54fdc4",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#564338",
+                        "on-tertiary-fixed": "#001f2a",
+                        "secondary": "#006c4f",
+                        "inverse-surface": "#30312c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "card-gap": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .pressable-button {
+            border-bottom: 4px solid #cc7035; /* Darker shade of primary-container #ff8c42 */
+            transition: all 0.15s ease;
+        }
+        .pressable-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-top: 2px;
+        }
+        .soft-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        .star-burst {
+            animation: burst 1s ease-out forwards;
+        }
+        @keyframes burst {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden relative">
+<!-- Top App Bar (Suppressed due to transactional nature of a summary screen) -->
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center p-container-margin relative z-10">
+<!-- Congratulatory Header -->
+<div class="text-center mb-8 star-burst">
+<h1 class="font-display-hero text-display-hero text-primary mb-2">Tuyệt Vời!</h1>
+<p class="font-title-md text-title-md text-on-surface-variant">Cố lên bé ơi!</p>
+</div>
+<!-- Character and Badge Area -->
+<div class="relative mb-12 flex justify-center items-center">
+<!-- Background Glow -->
+<div class="absolute inset-0 bg-secondary-container rounded-full blur-3xl opacity-50 z-0"></div>
+<!-- Sóc Nâu Character Image -->
+<div class="relative z-10 w-48 h-48 md:w-64 md:h-64 bounce">
+<img alt="Sóc Nâu vui vẻ" class="object-contain w-full h-full drop-shadow-xl" data-alt="A highly detailed, 3D claymorphic illustration of a friendly brown squirrel character (Sóc Nâu) wearing a tiny backpack, jumping joyfully with arms raised. The character is rendered in soft, warm colors like orange, brown, and cream, set against a transparent or solid light cream background. The lighting is soft and inviting, emphasizing the tactile, slightly rounded forms typical of modern, high-end educational apps for children. The mood is extremely positive, energetic, and encouraging." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUl3L6-Atk6x4K3iyzLHj23VfKlHryKfM43DLXzafycDvZ0Ui6fdde2xqSBgXrvWAHKkfk6TZIyNikB9TJdf3rq9eElKhO9JchtAio456BCWMtQCm2juHIGXGuJN0NUJR5m3KAinWC0MSWfSxtAgXzTRoKlEZNNcuqMMDdRBRlBKyYv-BPZa1jDN80IctRP89SM3LK0mcSd9Nxzg_2ERu9CQHBJusQL6XvoZZgofEMZC61kO2wQL5QWQ"/>
+</div>
+<!-- Earned Badge/Star Overlay -->
+<div class="absolute -bottom-4 -right-4 z-20 star-burst" style="animation-delay: 0.3s;">
+<div class="bg-surface-container-lowest p-3 rounded-full soft-card border-2 border-tertiary-fixed-dim">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1; color: #facc15;">kid_star</span>
+</div>
+</div>
+</div>
+<!-- Progress Indicator -->
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl p-6 soft-card mb-12 flex flex-col items-center">
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-4">Hoạt động hôm nay: 3/6</p>
+<div class="w-full h-4 bg-surface-variant rounded-full relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-secondary rounded-full" style="width: 50%;"></div>
+</div>
+<!-- Step markers -->
+<div class="w-full flex justify-between mt-2 px-1">
+<span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="material-symbols-outlined text-sm text-surface-variant" style="font-variation-settings: 'FILL' 1;">circle</span>
+<span class="material-symbols-outlined text-sm text-surface-variant" style="font-variation-settings: 'FILL' 1;">circle</span>
+<span class="material-symbols-outlined text-sm text-surface-variant" style="font-variation-settings: 'FILL' 1;">circle</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="bg-primary-container text-on-primary font-headline-lg-mobile text-headline-lg-mobile py-4 px-12 rounded-full pressable-button flex items-center gap-3 w-full max-w-md justify-center mt-auto md:mt-0">
+            Bài tiếp theo
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</main>
+<!-- Bottom Navigation Bar (Suppressed on this screen to maintain focus on the transition action) -->
+<!-- Ambient Decorative Elements -->
+<div class="absolute top-10 left-10 text-tertiary-fixed-dim opacity-50 animate-pulse">
+<span class="material-symbols-outlined text-5xl">auto_awesome</span>
+</div>
+<div class="absolute bottom-20 right-10 text-primary-fixed opacity-50 animate-bounce" style="animation-duration: 3s;">
+<span class="material-symbols-outlined text-4xl">favorite</span>
+</div>
+</body></html>

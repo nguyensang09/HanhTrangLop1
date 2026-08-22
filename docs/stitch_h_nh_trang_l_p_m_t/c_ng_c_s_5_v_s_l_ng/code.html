@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Củng Cố - Số 5 và Số Lượng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#331200",
+                      "primary-fixed": "#ffdbc9",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "background": "#fbf9f1",
+                      "on-primary-fixed-variant": "#763300",
+                      "surface-variant": "#e4e3db",
+                      "on-tertiary-container": "#00445a",
+                      "surface-dim": "#dcdad2",
+                      "secondary-container": "#51fac1",
+                      "on-primary": "#ffffff",
+                      "on-primary-container": "#6a2d00",
+                      "primary": "#9b4500",
+                      "on-error-container": "#93000a",
+                      "surface": "#fbf9f1",
+                      "surface-container-highest": "#e4e3db",
+                      "on-secondary-fixed": "#002116",
+                      "on-secondary-container": "#007152",
+                      "on-surface-variant": "#564338",
+                      "tertiary-fixed": "#bfe8ff",
+                      "surface-container": "#f0eee6",
+                      "primary-container": "#ff8c42",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "secondary-fixed": "#54fdc4",
+                      "on-background": "#1b1c17",
+                      "surface-container-high": "#eae8e0",
+                      "inverse-on-surface": "#f3f1e9",
+                      "tertiary-container": "#53b5df",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#1b1c17",
+                      "outline": "#897266",
+                      "surface-bright": "#fbf9f1",
+                      "surface-container-low": "#f5f4ec",
+                      "inverse-surface": "#30312c",
+                      "tertiary": "#006686",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#9b4500",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#006c4f",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "outline-variant": "#ddc1b3",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "primary-fixed-dim": "#ffb68d",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#001f2a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "24px",
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "unit": "8px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+        }
+        
+        .clay-card {
+            box-shadow: 0 20px 40px -10px rgba(255, 140, 66, 0.15), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.8),
+                        0 4px 0 0 theme('colors.surface-variant');
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .clay-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 10px 20px -10px rgba(255, 140, 66, 0.1), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.5),
+                        0 0px 0 0 theme('colors.surface-variant');
+        }
+
+        .clay-card.selected-correct {
+            border-color: theme('colors.secondary');
+            background-color: theme('colors.secondary-container');
+            box-shadow: 0 20px 40px -10px rgba(81, 250, 193, 0.2), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.8),
+                        0 4px 0 0 theme('colors.secondary');
+        }
+
+        .clay-button {
+            box-shadow: 0 8px 0 0 theme('colors.primary-container'), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            transition: all 0.15s ease;
+        }
+
+        .clay-button:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 0 theme('colors.primary-container'), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen font-body-md text-on-background flex flex-col overflow-x-hidden pt-20 pb-28 md:pt-24 md:pb-8">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-container-high h-16 flex items-center justify-between px-container-margin shadow-[0_4px_0_0_rgba(228,227,219,1)]">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-primary-container/20 rounded-full active:translate-y-0.5 transition-transform">
+<span class="material-symbols-outlined" data-icon="arrow_back" style="font-variation-settings: 'FILL' 0; font-size: 28px;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed hidden md:block">Vẽ theo nét</h1>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-highest rounded-full">
+<span class="text-primary font-bold">⭐</span>
+<span class="font-label-caps text-label-caps text-on-surface">125</span>
+</div>
+</header>
+<main class="flex-grow w-full max-w-4xl mx-auto px-container-margin flex flex-col mt-4 md:mt-8 gap-8">
+<!-- Sóc Nâu Dialogue -->
+<div class="bg-primary-fixed rounded-2xl p-6 flex items-center gap-4 relative shadow-[0_4px_20px_rgba(255,140,66,0.1)] border-2 border-primary-fixed-dim bounce-in">
+<div class="w-16 h-16 rounded-full overflow-hidden bg-white border-2 border-primary-container flex-shrink-0 flex items-center justify-center">
+<img class="w-14 h-14 object-cover" data-alt="A cute, soft 3D rendering of Sóc Nâu (a brown squirrel mascot) smiling and encouraging. The aesthetic is bright, child-friendly, claymorphic style with warm lighting on a solid white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEYetOaNZ7_9obdk3gNsH4Bz8QeelS7vs6709R8CfRfSF14Edgno3JgR5711OUZu2aPdRAy4Uz4Fvej3W43jFQBkXKNmMfeNAIeMNvtxNmDCZxKqUjsuk87fdWxoMCdfi6_2Y1UQT53QHb51VIQJaBAuUOfK4i6Ic6oafXDHkMR1VIr7qPpgKb5XRcKvljZLPTmzZTj46l_khQQIKQA7t7h4oDQKkrQWob1z08iIENBtS4uDyE6YBtfQ"/>
+</div>
+<div class="flex-grow">
+<p class="font-title-md text-title-md text-on-primary-fixed">Bé giỏi quá! Hãy chọn nhóm có 5 quả táo nhé!</p>
+</div>
+<button aria-label="Play audio instruction" class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm hover:bg-surface-container-low active:translate-y-1 transition-all">
+<span class="material-symbols-outlined" data-icon="volume_up" style="font-variation-settings: 'FILL' 1; font-size: 28px;">volume_up</span>
+</button>
+<div class="absolute -bottom-3 left-10 w-6 h-6 bg-primary-fixed border-r-2 border-b-2 border-primary-fixed-dim transform rotate-45"></div>
+</div>
+<!-- Main Area: Bento Grid of Options -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+<!-- Option 1: 3 Apples -->
+<button class="option-card clay-card bg-white rounded-3xl p-8 flex flex-col items-center justify-center gap-4 relative border-2 border-transparent w-full min-h-[200px]" onclick="selectCard(this, false)">
+<div class="flex flex-wrap justify-center gap-2 max-w-[150px]">
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeJ0i1omuYW_32ojoYJx0ErbZUYhWZ0PGevqrAY7MAyZRY3ZotjAGxXkrvxUJrZ6cpJECoVF-hb33JQAVDN-M7abUxRg7rTQB2XtlSSRY0kI6liHD-qGjtet-yI6X1giDzN2H7P9m6S_h5JwbHVgHKCg1Hu23a7Sn0dhq2D_Nll1q3PcxQFdrCqM0Nvpaz7XJaQMn8iA2R27ZMb91dBOFgqa7UAfBcD8isQwr8Xf09QgJp9SZ1b5h_6w"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnbfB84wuCcXYmoQ-GcRx6NjSVfwhyFNtOGgEqG1uyF1zp8Kt5ji_CBHeP6we1xW3ZNe83UthhUPR6JJUN8gW50ayaPK7ACrxXNrbccCWiSx5y0_MWjrqEM_jVNAmgDGrWvPnJTE1vKoMDYhtKoGyAmZRe9fsPE9Gepnz0uYKB_OWpdNdzrXbJKDX7ff90tBNo57di02sXpLnB5sx7iogx9aEP4VPEWNpiCQW1aTWKXSjLXaOoETysRQ"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHiYQbm5ROgQ-LGePDw4UOmgflYvd2iwp-ujPU6RV6ujo_aYuuqupmjFe5jtWXSqd2jM-_audZVsTyoEslE4meHgz6TZb5ikxwHouC1PMSdZyftX_10Zytmbffw1oz3LSC044JWDZjz_CHoO_y0Vw_Xzy-Lw0gyrPAaxDQbbjZi7XCXKX1Pub-m8pvRoQjqBG4zYmtzfL0XhZ35VIe7_a3PFe-UpBzZn6vG6xGNFIHQa_IY99EXZS8aw"/>
+</div>
+<div class="absolute bottom-4 right-4 feedback-icon hidden">
+<span class="material-symbols-outlined text-error" data-icon="close" style="font-variation-settings: 'FILL' 1; font-size: 32px;">close</span>
+</div>
+</button>
+<!-- Option 2: 5 Apples (Correct) -->
+<button class="option-card clay-card bg-white rounded-3xl p-8 flex flex-col items-center justify-center gap-4 relative border-2 border-transparent w-full min-h-[200px]" onclick="selectCard(this, true)">
+<div class="flex flex-wrap justify-center gap-2 max-w-[180px]">
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYdlx7O-lv9fBixDYqTgFa-EvjUwzXruwjA4ekqOqx9WpCiKwP1t8S0ZY7JLar0KayEXK5mxOnqAHjxwam9nnZp--wkO7_0CYvQ3ivs7l36_0XNIJazMMTnUvBOG8jAUc3j8qMSWzReB9HF4Vz0wZ5FLAp4x_3-RpLEyoCDPhshOKhXutmd5LXaCk4avz6evSBXD8e9jYm_baCDwQJiJ4imGnz_Szcpn5bnH7ilVMmppu5ZfDLUA6tsQ"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB0bOkfpaOlRBqGVqQnrY29iIy4YyJBG_NA_UbMqM2fqZJvbIZNj5oMh0afVsVQHtCpFXnOJ4Ayr8u5hL1xwfWUniKViCfvAJipY-oHHeDzLJLCoL8LZNyAtidfQPu0ZHFzYWgDwjpP3BGHclUlYZqJCM-3xPhMyojywwsZMdXTWBTsSqsypug7wsIStERakvhHTWhjJb-1uyf8k4o0ikl0AkHtJXisi1vnJwTo6itnyf7GnJiu5fr7A"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAU1tKx6ggPxwiIq-jjprzp5QhDPffTmUthWAmOiESY2INWa4FXcYFl_SXkaTqzULwWHDKzfI9TJ_Y_oDPZvYvaIdVu4QkD21bGiutIUkQ9QRApklCHTUc8sI2PqUmwQ4OYGN12YB9wWIsER10VePH18EDw39IM3TSTk2Dz1jXbXRv3rB0jswNBW7Sm45lSZbSZCX0DAcNFkvy8x4dzfAPSFcqLqofSn6Pq5D_Q_OCj5xMG6rnTgfJzFQ"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm9gRWNr9wG_3N_411bdC9V7-7MmB7-0MX5MHnq1TXDuLPZn4B7Ingism_tRKTv8gDlJBJ72DG9qecC19spmujFh0skzEsd-gw-FnWdRgFnzSjsI8wQ0nJBfPVZAZ1o5BsyjxzpbC21Ps27by-rkxhyfDCFnF77UrCtmojmJs2qHnqy4opIvzErNcJ1cJY_pIyuTA0nuGDwPF459uwOZRqNyJTr2fYKIj6jpiXmb4MNDTprYbm7553oA"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAptrk71s4Z9zQ9X_GYQ5GvC1rYfIAETEZnZMxIN2P-m7I0n42z4yW_d67djV14L1WdU7AxGZDvKCobpbwzyPx8ztgASd0G5-iYalrOxBYrotB_wNc7fG1II6HXuDsbVstJFTvzd0uqpGyCfWFLQFwuwT1fNvUqKf8tnTxyswjSrmTuctsLPjn7MXF7oTPr0jWneQBFLTetskMFtvziWy1tXBAAbWHK_rBF0ekyGxbKnvWADLeP0qvsGQ"/>
+</div>
+<div class="absolute bottom-4 right-4 feedback-icon hidden">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1; font-size: 36px;">check_circle</span>
+</div>
+</button>
+<!-- Option 3: 4 Apples -->
+<button class="option-card clay-card bg-white rounded-3xl p-8 flex flex-col items-center justify-center gap-4 relative border-2 border-transparent w-full min-h-[200px]" onclick="selectCard(this, false)">
+<div class="flex flex-wrap justify-center gap-2 max-w-[150px]">
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFpUVN1q3fJzziKyTYhD0ptJZDApD8vCyh-soQsfZiKLNv-0RU6W69-11VLTyUzMJYfVW7-RtQX-PvsaebV8nSsJzlhSBicTf-yHZYpjurtuwzyikiMdFkap1urx5rFB6qIeyCaFN5uHZgkjkYne3iymKPhZ8FPEAzkSGKB5TBOljHdcCgHioOTl3ubYs8X5hyBLRqMQesUF56W72K6dnEuDH6IXwq4kPMRp7Qd17ztm0HXFB7e7mfGw"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAda0irKTA7NRCMNqvj9Wrbs3ExI3GMBq2ZWX1YIOlSnwK3MeU4nIkT47PF1uFs61xShgsh2GHY4nVrtGZZGmt3TODgZx1e04w3YB0pC7YhOksm8Z7UvPei04T8TPakSdzUUD897ZhiKZT3iXCn6DKDJPZuCNLYs9J7NjHCg_A3ppBR8n82Uo_NE-1WMU7mOORDIeilElvgys54ALmYDqzGyrtB5X818EAc4DnvPy-l6Eiv1E_q5v-B-w"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2PHb314CT5UJ0okcm_KD08AY9ztvwhmlF_Cl0zj4C_y3Lkg7Brn786j7VwmHs5MLQq-iWOkEY8uA4k3r6dmu9IrB1nlrF5vMatUXg0zEMOW7uQteeWDrdvKRLbL0yowOXTKPhDVyY3OSQ9IvEa-mOiET3-vxUjYh71XzSnZ0wJs6z6e6k6G3fkqEkCnYrW7CS13CmInHxVR9Vsv952K2bMX5GGF-FT-ghN_xeUq4nbLnLETq1oFtqbw"/>
+<img class="w-12 h-12 object-contain" data-alt="A soft, 3D claymorphic illustration of a single bright red apple with a small green leaf. Gentle lighting, high contrast on a plain background, perfect for a preschool educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcneYJnzuGblvQ9gwDh3omnUzzIrph2CToNlYhmoyZF77-S6uRQipWTSJYJ_4jjLK52yX6iXfkKC3BrLFnfeQshn3fPcM5v4wKKzVNEHHqwD57sHoK5yPeOoISbqTW0j8F2H6SdhVAldq8wXL6nITurgB9YiqfIMduDf6hRiusj5DedDq9xMdKbwM1mY5xSn8TdsW7oEgcUWprUa6NLZ6CbhOM2GgcPC2OGR4ZKg6mEAbb_3ln3jiwZw"/>
+</div>
+<div class="absolute bottom-4 right-4 feedback-icon hidden">
+<span class="material-symbols-outlined text-error" data-icon="close" style="font-variation-settings: 'FILL' 1; font-size: 32px;">close</span>
+</div>
+</button>
+</div>
+</main>
+<!-- Footer Action -->
+<div class="fixed bottom-0 md:bottom-auto md:relative w-full p-6 md:px-0 md:py-8 bg-gradient-to-t from-background via-background to-transparent md:bg-none z-40 max-w-4xl mx-auto mt-auto">
+<button class="clay-button w-full h-16 rounded-full bg-primary text-on-primary font-headline-lg-mobile text-headline-lg-mobile flex items-center justify-center gap-2 opacity-50 cursor-not-allowed pointer-events-none" disabled="" id="completeBtn">
+            Hoàn thành
+            <span class="material-symbols-outlined" data-icon="arrow_forward" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</div>
+<!-- BottomNavBar (Hidden on desktop, shown on mobile if it were a top-level nav, but suppressed here as it's a task/learning screen) -->
+<!-- Navigation is intentionally omitted as this is a focused learning task -->
+<script>
+        let hasCorrectSelection = false;
+
+        function selectCard(cardElement, isCorrect) {
+            if (hasCorrectSelection) return; // Prevent changing answer after correct one is found
+            
+            // Reset all cards
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected-correct', 'border-error', 'bg-error-container', 'opacity-50');
+                card.querySelector('.feedback-icon').classList.add('hidden');
+            });
+
+            if (isCorrect) {
+                // Apply correct state
+                cardElement.classList.add('selected-correct');
+                cardElement.querySelector('.feedback-icon').classList.remove('hidden');
+                hasCorrectSelection = true;
+                
+                // Dim other cards
+                document.querySelectorAll('.option-card:not(.selected-correct)').forEach(card => {
+                    card.classList.add('opacity-50', 'pointer-events-none');
+                });
+
+                // Enable complete button
+                const btn = document.getElementById('completeBtn');
+                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                btn.classList.add('bounce-in');
+            } else {
+                // Apply wrong state briefly
+                cardElement.classList.add('border-error', 'bg-error-container');
+                cardElement.querySelector('.feedback-icon').classList.remove('hidden');
+                
+                // Shake effect (inline simple css class logic)
+                cardElement.style.transform = 'translateX(-10px)';
+                setTimeout(() => cardElement.style.transform = 'translateX(10px)', 100);
+                setTimeout(() => cardElement.style.transform = 'translateX(-10px)', 200);
+                setTimeout(() => cardElement.style.transform = 'translateX(0)', 300);
+                
+                setTimeout(() => {
+                    if(!hasCorrectSelection){
+                        cardElement.classList.remove('border-error', 'bg-error-container');
+                        cardElement.querySelector('.feedback-icon').classList.add('hidden');
+                    }
+                }, 800);
+            }
+        }
+    </script>
+</body></html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Khám Phá Xung Quanh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#f0eee6",
+                      "warm-yellow": "#ffd54f",
+                      "error": "#ba1a1a",
+                      "surface-bright": "#fbf9f1",
+                      "on-tertiary-fixed": "#001f2b",
+                      "surface-container-low": "#f6f4ec",
+                      "on-primary-fixed": "#331200",
+                      "on-surface-variant": "#564338",
+                      "surface-container-high": "#eae8e0",
+                      "surface-tint": "#9b4500",
+                      "secondary": "#006c4f",
+                      "surface-variant": "#e4e3db",
+                      "on-background": "#1b1c17",
+                      "faded-path": "rgba(0, 0, 0, 0.1)",
+                      "success-glow": "#27e0a9",
+                      "tertiary-container": "#53b5df",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "primary-container": "#ff8c42",
+                      "inverse-on-surface": "#f3f1e9",
+                      "squirrel-brown": "#897266",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#ffb68d",
+                      "on-primary-fixed-variant": "#763300",
+                      "on-tertiary-container": "#00445a",
+                      "secondary-fixed-dim": "#29e0a9",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "primary": "#9b4500",
+                      "outline-variant": "#ddc1b3",
+                      "inverse-primary": "#ffb68d",
+                      "outline": "#897266",
+                      "tertiary-fixed": "#bfe8ff",
+                      "inverse-surface": "#30312c",
+                      "on-secondary-fixed": "#002116",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#6a2d00",
+                      "background": "#fbf9f1",
+                      "surface": "#fbf9f1",
+                      "on-secondary-container": "#007152",
+                      "secondary-container": "#51fac1",
+                      "primary-fixed": "#ffdbc9",
+                      "surface-container-highest": "#e4e3db",
+                      "on-error": "#ffffff",
+                      "tertiary": "#006686",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#55fdc4",
+                      "on-surface": "#1b1c17",
+                      "surface-dim": "#dcdad2",
+                      "on-tertiary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target": "64px",
+                      "safe-margin": "32px",
+                      "tolerance-zone": "40px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "path-number": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "instruction-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "path-number": [
+                              "16px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-caps": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-hero": [
+                              "80px",
+                              {
+                                      "lineHeight": "96px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "instruction-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fbf9f1;
+            overflow-x: hidden;
+        }
+        .clay-btn {
+            box-shadow: 0 6px 0 0 #763300;
+            transition: all 0.1s ease-in-out;
+        }
+        .clay-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 0 #763300;
+        }
+        .clay-card {
+            box-shadow: 0 8px 0 0 #dcdad2;
+        }
+        .success-glow-active {
+            box-shadow: 0 0 20px 5px #27e0a9;
+        }
+        .bounce-anim {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col relative pb-32">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 bg-surface dark:bg-surface-dim flat no shadows flex justify-between items-center w-full px-gutter py-4 h-touch-target-min z-40 sticky">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center overflow-hidden border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="A cute, stylized 3D illustration of a brown squirrel wearing a tiny explorer hat. The style is soft, clay-like, and tactile, designed for a 5-year-old child's educational app. The squirrel has large, friendly eyes and is smiling. The background is transparent or solid bright yellow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7aSLzU_PgckHY_Z1kAcgnjibngCZEUiyaYP5OV09T1-ocYOmlsjxSxU2YrcYUo3591vGUPuB6srOoN8UV2tvbYtcE8b4CQuV6DxFz_aDIM-JXIyFCy-qcf8M-XZYRd4P-I4cF2tKSrnGSW-B5haZcvicALys9WsGkSwEw6QhskLjZreD4ab6opqZN9Q-7liePYUVRdOxt2vShaQuB0iBXqCdSbZ4xqbs7jaPaCUjmyUlTPx-IrQOaYw"/>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed">Hành Trang Lớp Một</span>
+</div>
+<div class="flex items-center gap-2 bg-warm-yellow px-4 py-2 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-label-caps text-on-primary-fixed font-bold">125</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col items-center justify-center p-safe-margin relative w-full max-w-5xl mx-auto mt-4">
+<!-- Header Text -->
+<div class="text-center mb-8 w-full">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-2">Khám Phá Sở Thú</h1>
+<p class="font-instruction-md text-instruction-md text-on-surface-variant">Cùng Sóc Nâu tìm hiểu thế giới nhé!</p>
+</div>
+<!-- Map Area -->
+<div class="relative w-full aspect-square md:aspect-video rounded-3xl overflow-hidden clay-card bg-surface-container border-4 border-surface-variant mx-auto shadow-sm">
+<img class="absolute inset-0 w-full h-full object-cover z-0" data-alt="A highly stylized, colorful cartoon map of a vibrant zoo or nature park viewed from a slight top-down isometric perspective. The style is 3D claymorphic, bright, and cheerful, suitable for a young child's game. There are winding dirt paths, lush green trees with round canopies, a small blue pond, and designated clearings for animal enclosures and flower beds. The lighting is sunny and warm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4IZZEFJoJ2CfWMYBKYowh-FTkmFmO2GvYeSCBfvg8VQ4TDap1MpS4qHJu34Wgp6s8PUy90sbwsq7lSJD2EO3QIWbkiu2kwOwbarSH1r1p4vHqCBbzWsAbohTaYICTmVpZsDpmpSef_WhXkl6Hrkiufy1wSEB8wpTbfhUBjqwfjqtY-TtTCAdOH7yI7EY4up9XYi57hHMJp9K_5drvqs7bRzVQU-5zvaKBY2BoeyO-nHlxW227As1YOQ"/>
+<!-- Map Nodes -->
+<!-- Node 1: Animals -->
+<div class="absolute top-[20%] left-[15%] flex flex-col items-center gap-2 z-10 bounce-anim" style="animation-delay: 0s;">
+<button class="w-20 h-20 rounded-full bg-primary text-on-primary flex items-center justify-center border-4 border-white clay-btn shadow-lg">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">pets</span>
+</button>
+<div class="bg-white/90 backdrop-blur px-3 py-1 rounded-full border-2 border-outline-variant shadow-sm">
+<span class="font-label-caps text-label-caps text-on-primary-fixed">Động vật</span>
+</div>
+</div>
+<!-- Node 2: Flowers -->
+<div class="absolute top-[50%] left-[45%] flex flex-col items-center gap-2 z-10 bounce-anim" style="animation-delay: 0.5s;">
+<button class="w-20 h-20 rounded-full bg-secondary text-on-secondary flex items-center justify-center border-4 border-white clay-btn shadow-lg success-glow-active">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">local_florist</span>
+</button>
+<div class="bg-white/90 backdrop-blur px-3 py-1 rounded-full border-2 border-outline-variant shadow-sm">
+<span class="font-label-caps text-label-caps text-on-secondary-fixed">Các loài hoa</span>
+</div>
+</div>
+<!-- Node 3: Weather -->
+<div class="absolute top-[30%] right-[15%] flex flex-col items-center gap-2 z-10 bounce-anim" style="animation-delay: 1s;">
+<button class="w-20 h-20 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center border-4 border-white clay-btn shadow-lg opacity-80">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">partly_cloudy_day</span>
+</button>
+<div class="bg-white/90 backdrop-blur px-3 py-1 rounded-full border-2 border-outline-variant shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Thời tiết</span>
+</div>
+</div>
+<!-- Path lines (SVG overlay) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M 15 20 Q 30 60, 45 50 T 85 30" fill="none" stroke="rgba(255,255,255,0.8)" stroke-dasharray="4, 4" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Sóc Nâu Feedback / Dialogue -->
+<div class="w-full max-w-2xl mt-8 flex items-end gap-4 bg-warm-yellow/30 p-4 rounded-2xl border-2 border-warm-yellow/50">
+<div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-white border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="A cute, stylized 3D illustration of a brown squirrel wearing a tiny explorer hat. The style is soft, clay-like, and tactile, designed for a 5-year-old child's educational app. The squirrel has large, friendly eyes and is smiling. The background is transparent or solid bright yellow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZDa7BJiDrawsy9i64p4LuonT-VKts_Z5mbcLD4Rs-TcgE5wPk_3IR0Hc-Kcx6qqaue3grwJAvwrDfJwOAcn4NZDUdi-WHNgcSI587ZIxod0es-DKKkB9Kt6TQq4tIpKkTi9-5Va6vB3tevdIZ4fOj02mLx9TzNFFXTuXcdKtoduwPVmTFnjJljiIzv26bGL1ayXPSd6dmdpheWN7PP0pQ-5vgUzeAHbiEmE2met0Sr-MfFGpcnLhpbQ"/>
+</div>
+<div class="flex-grow bg-white p-4 rounded-2xl rounded-bl-none shadow-sm relative">
+<p class="font-instruction-md text-instruction-md text-on-surface">Bé hãy chọn <strong>Các loài hoa</strong> để tiếp tục nhé!</p>
+<button class="absolute top-2 right-2 w-10 h-10 flex items-center justify-center text-primary bg-primary-container/20 rounded-full hover:bg-primary-container/40">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container dark:bg-surface-container-highest docked rounded-t-xl shadow-sm border-t-0 hidden md:hidden">
+<!-- Tab 1: Trang chủ (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-on-primary-container text-on-primary-container dark:text-primary-fixed-dim rounded-xl px-4 py-2 translate-y-[-2px] border-b-4 border-on-primary-fixed-variant transition-all duration-100 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant" href="#">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-label-caps text-sm">Trang chủ</span>
+</a>
+<!-- Tab 2: Bài tập -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all duration-100" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">edit_square</span>
+<span class="font-label-caps text-label-caps text-sm">Bài tập</span>
+</a>
+<!-- Tab 3: Phần thưởng -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all duration-100" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">military_tech</span>
+<span class="font-label-caps text-label-caps text-sm">Phần thưởng</span>
+</a>
+<!-- Tab 4: Bố mẹ -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-on-primary-fixed-variant rounded-xl transition-all duration-100" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">family_restroom</span>
+<span class="font-label-caps text-label-caps text-sm">Bố mẹ</span>
+</a>
+</nav>
+<!-- Force visible on small screens for demo -->
+<style>
+        @media (max-width: 767px) {
+            nav { display: flex !important; }
+        }
+    </style>
+</body></html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Sắp xếp tranh thành câu chuyện</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fbf9f1",
+                        "primary-fixed": "#ffdbc9",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "secondary-fixed": "#54fdc4",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#51fac1",
+                        "surface-bright": "#fbf9f1",
+                        "on-surface-variant": "#564338",
+                        "tertiary": "#006686",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-tint": "#9b4500",
+                        "on-primary-fixed-variant": "#763300",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-container-high": "#eae8e0",
+                        "primary": "#9b4500",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "inverse-surface": "#30312c",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#00445a",
+                        "on-primary-fixed": "#331200",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container-highest": "#e4e3db",
+                        "inverse-primary": "#ffb68d",
+                        "on-primary-container": "#6a2d00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container": "#f0eee6",
+                        "surface-dim": "#dcdad2",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-container": "#007152",
+                        "on-background": "#1b1c17",
+                        "background": "#fbf9f1",
+                        "secondary": "#006c4f",
+                        "outline": "#897266",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e4e3db",
+                        "surface-container-low": "#f5f4ec",
+                        "inverse-on-surface": "#f3f1e9",
+                        "primary-container": "#ff8c42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "card-gap": "20px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .clay-card {
+            box-shadow: 0 4px 0 var(--tw-shadow-color);
+            transition: all 0.1s ease;
+        }
+        .clay-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--tw-shadow-color);
+        }
+        .soft-shadow {
+            box-shadow: 0 10px 20px -5px rgba(255, 140, 66, 0.15);
+        }
+        .draggable {
+            cursor: grab;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            border: 2px dashed #ddc1b3;
+            transition: background-color 0.2s;
+        }
+        .drop-zone.drag-over {
+            background-color: #f5f4ec;
+            border-color: #ff8c42;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col pb-24 md:pb-0">
+<!-- Top App Bar -->
+<header class="docked full-width top-0 bg-surface shadow-sm bg-surface-container-low flex justify-between items-center w-full px-container-margin py-unit h-touch-target-min z-40 relative md:hidden">
+<button aria-label="Back" class="text-primary hover:scale-105 transition-transform active:translate-y-0.5 active:shadow-none duration-150 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold text-primary truncate px-2">Sóc Nâu Đồng Hành</h1>
+<button aria-label="Stars" class="text-on-surface-variant hover:scale-105 transition-transform active:translate-y-0.5 active:shadow-none duration-150 p-2 flex items-center font-label-caps text-label-caps">
+            128 ⭐
+        </button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col px-container-margin pt-container-margin md:pt-12 max-w-4xl mx-auto w-full gap-card-gap">
+<!-- Header Section -->
+<div class="text-center mb-4">
+<h2 class="font-display-hero text-display-hero text-primary mb-2">Kể Chuyện Theo Tranh</h2>
+<div class="inline-block bg-tertiary-container/20 border-2 border-tertiary-fixed rounded-xl p-4 soft-shadow">
+<p class="font-title-md text-title-md text-on-tertiary-container flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-tertiary" data-icon="auto_awesome">auto_awesome</span>
+                    Bé hãy sắp xếp các tranh theo đúng thứ tự câu chuyện nhé!
+                    <span class="material-symbols-outlined text-tertiary" data-icon="auto_awesome">auto_awesome</span>
+</p>
+<p class="mt-2 font-body-lg text-body-lg text-primary font-bold">Câu chuyện: "Gieo hạt"</p>
+</div>
+</div>
+<!-- Sóc Nâu Helper -->
+<div class="bg-[#FFF4D2] rounded-xl p-4 flex items-center gap-4 soft-shadow border-2 border-[#FFE8A1] max-w-lg mx-auto w-full mb-4">
+<div class="w-16 h-16 bg-white rounded-full flex-shrink-0 flex items-center justify-center border-2 border-primary-container overflow-hidden">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, simple illustration of a brown squirrel face (Sóc Nâu) smiling warmly. The squirrel has big friendly eyes and rounded features, suitable for a preschool learning app. The background is pure white. The style is 2D vector art, soft and inviting, using warm browns and oranges." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVfYLPrqk1QihSl26mBGZku_4ZreHmVgb-_pq6gRKzpnxeOI7YKkRKv2PIRZVrjXfGjU5-oixwBDm03-Hzde_0bMHqczhvclHGwDkvN_EM7KBOy4GZXNaZwB7NmW2jgNf7RHdeODVMWsXpiCHMkmuWzY4kqwro2IkA0T6B1-Cxj6GxmX0uSy4PLwBp9tNblcWYaHhJaTOE4u29iIDDN4EyO6FU3FnqCjMsb6wRQMcg4hnKTLHBW5PuEg"/>
+</div>
+<p class="font-body-md text-body-md text-[#564338]">Kéo các bức tranh bên dưới vào các ô trống 1, 2, 3 để kể lại câu chuyện nha bé!</p>
+<button aria-label="Play instruction audio" class="ml-auto w-10 h-10 bg-primary-container rounded-full flex items-center justify-center text-white clay-card shadow-primary-container">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+</button>
+</div>
+<!-- Draggable Images Area (Initial Shuffled State) -->
+<div class="flex flex-col md:flex-row gap-4 justify-center items-center mb-8" id="source-container">
+<!-- Card 2 -->
+<div class="draggable w-full md:w-48 bg-white rounded-xl p-2 border-2 border-outline-variant soft-shadow touch-none" draggable="true" id="card-2">
+<div class="aspect-square rounded-lg overflow-hidden mb-2 bg-surface-container">
+<img alt="Tưới nước" class="w-full h-full object-cover pointer-events-none" data-alt="A gentle, colorful illustration for young children showing a cute preschooler happily watering a small green plant sprout with a small watering can in a garden. The scene is bright and sunny, using a soft, claymorphic 2D style with warm earthy tones and soft greens. No harsh outlines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWc4fNae2VyQgQv9NXyCSza3JKVRmAR0oeySgHtpxaQ7NSUZRRak2HU_EKl-L7sCkJUr7NCfER3G3XZdxq4kUK5eLFbMy5TZ2Z6Fb0_MT6gSCLHqMVLpPhgTajwco7XpSksVJY0zlnnxbVoyw0VIsF3eFB_CXC7pxmbTrM4ElBZsN7gCHb2TSyhMW7OG4uKc7lk792cDsPV79RQqw5dtVEBsgne1VAhidta23awmCIio72OGeCIg8mcw"/>
+</div>
+<p class="text-center font-body-md text-body-md text-on-surface font-semibold pointer-events-none">Bé tưới nước cho cây.</p>
+</div>
+<!-- Card 1 -->
+<div class="draggable w-full md:w-48 bg-white rounded-xl p-2 border-2 border-outline-variant soft-shadow touch-none" draggable="true" id="card-1">
+<div class="aspect-square rounded-lg overflow-hidden mb-2 bg-surface-container">
+<img alt="Gieo hạt" class="w-full h-full object-cover pointer-events-none" data-alt="A gentle, colorful illustration for young children showing a cute preschooler kneeling in a garden, carefully placing a small brown seed into a small hole in the dark soil. The scene is bright and sunny, using a soft, claymorphic 2D style with warm earthy tones. No harsh outlines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKe_hyC6waZHhfeIUzRiLVLAyWyjA5kMb4qOBtra9k4IpRURUyOeTUgwlnNW7QiiQlI2cKo3Gjk2ymxlR4znSQdQF9nZNFTw7-popcRM-cdnFSIX5w-4LgfzY53nCekxV3QgRthgYzZOh4hP3550pm6HTieNnPfyD9yS-LimV4s9T0OJPhqKb5LPOeVET43Z-y9YndydIcKv8f8XrM-A3dz6HvBZN6L7CbcRm9qdwRy8CcShCB-qFQeA"/>
+</div>
+<p class="text-center font-body-md text-body-md text-on-surface font-semibold pointer-events-none">Bé gieo hạt xuống đất.</p>
+</div>
+<!-- Card 3 -->
+<div class="draggable w-full md:w-48 bg-white rounded-xl p-2 border-2 border-outline-variant soft-shadow touch-none" draggable="true" id="card-3">
+<div class="aspect-square rounded-lg overflow-hidden mb-2 bg-surface-container">
+<img alt="Nở hoa" class="w-full h-full object-cover pointer-events-none" data-alt="A gentle, colorful illustration for young children showing a healthy green plant that has sprouted from the soil and bloomed a bright, cheerful flower. A cute preschooler looks on happily. The scene is bright and sunny, using a soft, claymorphic 2D style with vibrant greens and sunny yellows. No harsh outlines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVL8pW-iYjy64e9LwM-0byf9o1NGZZDtdKY1YlXTDOAzcgDXR_r1adFZmfDmSRvCjG3QoNuyPcURqXFk-axQ7DvZQq0-dkEw-d3seIG0pfz0be5pLa9ZeYhjcvtumvjy94fzOzHxjF_vy56s1fZTXU1BARgOKwsp136Gb3n36JIZum72xtOiFxGju9p1LwJ2nfJjEluz3iLW3tbI6X7qR1PE8XkWc-hqR00rdqGeqweBKQiQYHMFZijA"/>
+</div>
+<p class="text-center font-body-md text-body-md text-on-surface font-semibold pointer-events-none">Cây nảy mầm và nở hoa.</p>
+</div>
+</div>
+<!-- Drop Zones -->
+<div class="flex flex-col md:flex-row gap-6 justify-center items-center mb-12">
+<!-- Zone 1 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-lg text-headline-lg shadow-sm">1</div>
+<div class="drop-zone w-full md:w-52 h-64 rounded-xl flex items-center justify-center bg-surface-container-low" data-slot="1">
+<span class="material-symbols-outlined text-outline-variant text-4xl" data-icon="add_photo_alternate">add_photo_alternate</span>
+</div>
+</div>
+<!-- Arrow -->
+<span class="material-symbols-outlined text-primary text-3xl hidden md:block" data-icon="arrow_forward">arrow_forward</span>
+<span class="material-symbols-outlined text-primary text-3xl md:hidden" data-icon="arrow_downward">arrow_downward</span>
+<!-- Zone 2 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-lg text-headline-lg shadow-sm">2</div>
+<div class="drop-zone w-full md:w-52 h-64 rounded-xl flex items-center justify-center bg-surface-container-low" data-slot="2">
+<span class="material-symbols-outlined text-outline-variant text-4xl" data-icon="add_photo_alternate">add_photo_alternate</span>
+</div>
+</div>
+<!-- Arrow -->
+<span class="material-symbols-outlined text-primary text-3xl hidden md:block" data-icon="arrow_forward">arrow_forward</span>
+<span class="material-symbols-outlined text-primary text-3xl md:hidden" data-icon="arrow_downward">arrow_downward</span>
+<!-- Zone 3 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-lg text-headline-lg shadow-sm">3</div>
+<div class="drop-zone w-full md:w-52 h-64 rounded-xl flex items-center justify-center bg-surface-container-low" data-slot="3">
+<span class="material-symbols-outlined text-outline-variant text-4xl" data-icon="add_photo_alternate">add_photo_alternate</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="flex justify-center mb-8">
+<button class="bg-primary text-on-primary font-headline-lg-mobile text-headline-lg-mobile px-12 py-4 rounded-full clay-card shadow-on-primary-fixed-variant opacity-50 cursor-not-allowed" disabled="" id="complete-btn">
+                Hoàn thành
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface shadow-lg border-t-4 border-primary-container rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:bg-primary-fixed-dim/20 transition-all duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 border-b-4 border-primary active:translate-y-1 transition-all duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note" data-weight="fill" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+<span class="font-label-caps text-label-caps mt-1">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:bg-primary-fixed-dim/20 transition-all duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-caps text-label-caps mt-1">Quà tặng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:bg-primary-fixed-dim/20 transition-all duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="family_restroom">family_restroom</span>
+<span class="font-label-caps text-label-caps mt-1">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        // Simple drag and drop implementation for demonstration
+        const draggables = document.querySelectorAll('.draggable');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        const completeBtn = document.getElementById('complete-btn');
+        let filledSlots = 0;
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('opacity-50');
+                draggable.dataset.dragging = 'true';
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('opacity-50');
+                delete draggable.dataset.dragging;
+                checkCompletion();
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const draggedElement = document.querySelector('[data-dragging="true"]');
+                
+                if (draggedElement && !zone.hasChildNodes() || (zone.childNodes.length === 1 && zone.childNodes[0].nodeType === 3) || (zone.querySelector('span'))) {
+                    // clear placeholder icon if present
+                    if(zone.querySelector('span')) {
+                        zone.innerHTML = '';
+                    }
+                    
+                    // remove from old zone if it was in one
+                    if(draggedElement.parentElement.classList.contains('drop-zone')) {
+                        // create placeholder back in old zone if needed, complex for simple demo, skipped
+                    }
+                    
+                    draggedElement.classList.remove('w-full', 'md:w-48');
+                    draggedElement.classList.add('w-full', 'h-full', 'border-0', 'shadow-none');
+                    zone.appendChild(draggedElement);
+                    zone.classList.remove('border-dashed', 'border-2');
+                }
+            });
+        });
+
+        function checkCompletion() {
+            let filledCount = 0;
+            dropZones.forEach(zone => {
+                if(zone.querySelector('.draggable')) {
+                    filledCount++;
+                }
+            });
+            
+            if (filledCount === 3) {
+                completeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                completeBtn.removeAttribute('disabled');
+                completeBtn.classList.add('hover:bg-primary-container', 'hover:text-on-primary-container');
+            } else {
+                completeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                completeBtn.setAttribute('disabled', 'true');
+            }
+        }
+    </script>
+</body></html>

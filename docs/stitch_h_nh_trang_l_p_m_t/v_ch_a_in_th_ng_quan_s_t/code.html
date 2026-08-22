@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Học Chữ a In Thường</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#007152",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#763300",
+                        "tertiary": "#006686",
+                        "outline": "#897266",
+                        "on-tertiary-fixed": "#001f2a",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#51fac1",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-variant": "#e4e3db",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-container-highest": "#e4e3db",
+                        "secondary": "#006c4f",
+                        "surface": "#fbf9f1",
+                        "surface-bright": "#fbf9f1",
+                        "inverse-surface": "#30312c",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f5f4ec",
+                        "background": "#fbf9f1",
+                        "on-primary-container": "#6a2d00",
+                        "surface-container": "#f0eee6",
+                        "on-primary-fixed": "#331200",
+                        "outline-variant": "#ddc1b3",
+                        "secondary-fixed": "#54fdc4",
+                        "on-surface": "#1b1c17",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "inverse-on-surface": "#f3f1e9",
+                        "surface-tint": "#9b4500",
+                        "on-background": "#1b1c17",
+                        "on-tertiary-container": "#00445a",
+                        "primary": "#9b4500",
+                        "surface-container-high": "#eae8e0",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#ffb68d",
+                        "primary-fixed": "#ffdbc9",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dcdad2",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-surface-variant": "#564338",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#ff8c42",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .oly-line {
+            background-image: linear-gradient(#ddc1b3 1px, transparent 1px);
+            background-size: 100% 25%;
+        }
+        .clay-btn {
+            box-shadow: 0 4px 0 0 #763300;
+        }
+        .clay-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 #763300;
+        }
+        .clay-btn-secondary {
+            box-shadow: 0 4px 0 0 #00513b;
+        }
+        .clay-btn-secondary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 0 #00513b;
+        }
+        .ambient-shadow {
+            box-shadow: 0 0 20px 0 rgba(255, 140, 66, 0.05);
+        }
+        
+        /* Path Animation for letter 'a' */
+        .path-a {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: drawPath 3s ease-in-out forwards infinite;
+        }
+        @keyframes drawPath {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-safe">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed-dim font-headline-lg-mobile text-headline-lg-mobile w-full top-0 px-safe-margin bg-surface-container-low shadow-[0px_4px_0px_0px_#897266] flex justify-between items-center h-[72px] px-4 fixed z-50">
+<button class="w-[48px] h-[48px] flex items-center justify-center active:scale-95 transition-transform text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-bold text-primary">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center gap-1 font-body-md text-body-md bg-surface-container-high px-3 py-1 rounded-full text-on-surface-variant">
+<span>128</span>
+<span>⭐</span>
+</div>
+</header>
+<main class="pt-[96px] px-container-margin pb-[120px] max-w-md mx-auto h-full flex flex-col items-center">
+<!-- Instruction Card -->
+<div class="w-full bg-surface-container-lowest border-2 border-tertiary-fixed-dim rounded-2xl p-4 mb-6 ambient-shadow text-center">
+<h2 class="font-title-md text-title-md text-tertiary mb-2">Quan sát chữ a in thường</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Cùng xem bạn Sóc Nâu viết chữ a như thế nào nhé!</p>
+</div>
+<!-- Oly Grid & Letter Canvas -->
+<div class="relative w-full aspect-square bg-surface-container-lowest rounded-3xl border-4 border-outline-variant mb-8 overflow-hidden ambient-shadow flex items-center justify-center">
+<!-- 4 Oly lines background -->
+<div class="absolute inset-0 oly-line mx-4 my-8 opacity-50"></div>
+<!-- Animated SVG Letter 'a' -->
+<svg class="relative z-10 w-[200px] h-[200px]" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<!-- Guide dots / starting points -->
+<circle class="animate-pulse" cx="50" cy="20" fill="#006686" r="2"></circle>
+<circle class="animate-pulse" cx="80" cy="80" fill="#006686" r="2"></circle>
+<!-- Main letter stroke -->
+<path class="path-a" d="M 80 80 C 80 50 70 30 50 30 C 30 30 20 40 20 60 C 20 80 30 90 50 90 C 65 90 75 80 80 70 V 90" fill="none" stroke="#9b4500" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></path>
+</svg>
+</div>
+<!-- Action Area -->
+<div class="w-full flex justify-between items-end">
+<!-- Character Illustration (Sóc Nâu) -->
+<div class="w-32 h-32 relative">
+<img class="w-full h-full object-contain absolute bottom-0 left-0" data-alt="A cute, friendly 3D cartoon style brown squirrel character wearing a tiny explorer hat. The squirrel is standing on its hind legs, pointing enthusiastically towards the center. Warm lighting, claymorphic style, soft shadows, set against a transparent or solid cream background. The mood is encouraging and playful, suitable for a preschool educational app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5bAMzIEJn4DVb25HHLfq2GhAv57BKtjBWc-LC7tkVS-vhxyYRNSsLc1G8sc6kt5hY-ZJECEiySGwUN-LZkhVoVC8f7fUBegFpsmJZlE4PjMTSvomaDsORAFU33NfcvTSQVb4P4-lG11R6qmxhK2b7HVZm6WsLy7XUUbLYUFChbdsjC_Fdbx4UlfX3UA1vQCBx-4hqbSeIKEht6qQjYktGU-fRrsuE6BbSoeqGosjbA-yg_XDZp8_Lig"/>
+</div>
+<!-- Audio Button -->
+<button class="bg-primary-container text-on-primary clay-btn rounded-full px-6 py-4 flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[32px]" data-icon="volume_up" data-weight="fill" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+<span class="font-title-md text-title-md font-bold">Nghe âm (a)</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container dark:bg-surface-container-lowest font-label-caps text-label-caps fixed bottom-0 w-full h-24 rounded-t-xl z-50 border-t-2 border-outline-variant shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.05)] fixed bottom-0 left-0 flex justify-around items-center pb-safe">
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:translate-y-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="mt-1">Trang chủ</span>
+</a>
+<!-- Active -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 shadow-[0px_4px_0px_0px_#006c4f] hover:translate-y-1 transition-all scale-110" href="#">
+<span class="material-symbols-outlined" data-icon="edit_pencil" data-weight="fill" style="font-variation-settings: 'FILL' 1;">mobile_code</span>
+<span class="mt-1">Bài tập</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:translate-y-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="mt-1">Phần thưởng</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 hover:translate-y-1 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="family_restroom">family_restroom</span>
+<span class="mt-1">Bố mẹ</span>
+</a>
+</nav>
+<!-- SoC Nau Dialogue (Help Overlay) - Hidden by default, shown for context -->
+<div class="fixed top-24 right-4 left-4 z-40 bg-[#FFD54F] rounded-xl p-4 shadow-lg hidden">
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 bg-white rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-primary">
+<img class="w-10 h-10 object-cover" data-alt="Close up face of a cute 3D cartoon brown squirrel character. Warm, claymorphic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr8eF275W7VMHitT0DDK_tEfDqUJjUQHyq5ihP15za1O3SOUZUDd_1ZuJS78AleV3wPkwq_IZcZqWrJ1vmeeiqXz9ZAirlCAEzr6dL306pulzIokzTeGJl7Gfz5Wjt2uCMB0wtIUj2po6EHxgp-VdF77CWZfgeqXHXs52Zn7NaN1w6TfIFRIQaPhhHWbHx7j70AYGPGkprET_-XSLXzdPCBxVRyiSE5UIdYAaxqGlZIN5FOx7D28ccyg"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-medium text-on-background">Nhìn kỹ nét cong tròn khép kín và nét móc ngược nha!</p>
+</div>
+</div>
+</div>
+</body></html>

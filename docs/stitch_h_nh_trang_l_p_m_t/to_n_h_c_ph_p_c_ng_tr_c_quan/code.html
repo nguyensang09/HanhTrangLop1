@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cộng bằng hình ảnh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fbf9f1",
+                        "primary": "#9b4500",
+                        "on-tertiary-container": "#00445a",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container-high": "#eae8e0",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#6a2d00",
+                        "primary-fixed": "#ffdbc9",
+                        "on-secondary-fixed": "#002116",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "surface-tint": "#9b4500",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container": "#f0eee6",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-background": "#1b1c17",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-surface-variant": "#564338",
+                        "secondary": "#006c4f",
+                        "secondary-fixed": "#54fdc4",
+                        "secondary-container": "#51fac1",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#ffb68d",
+                        "primary-container": "#ff8c42",
+                        "inverse-surface": "#30312c",
+                        "on-surface": "#1b1c17",
+                        "on-secondary-container": "#007152",
+                        "surface-container-low": "#f5f4ec",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#bfe8ff",
+                        "error-container": "#ffdad6",
+                        "outline": "#897266",
+                        "surface": "#fbf9f1",
+                        "on-primary-fixed": "#331200",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-dim": "#dcdad2",
+                        "background": "#fbf9f1",
+                        "surface-variant": "#e4e3db",
+                        "tertiary": "#006686",
+                        "tertiary-container": "#53b5df"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "container-margin": "24px",
+                        "touch-target-min": "48px",
+                        "unit": "8px",
+                        "card-gap": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; }
+        .clay-card {
+            box-shadow: 0 4px 20px rgba(255,140,66,0.05);
+        }
+        .clay-btn {
+            box-shadow: 0 4px 0 #763300;
+            transition: all 0.1s ease;
+        }
+        .clay-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #763300;
+        }
+        .clay-chip {
+            box-shadow: 0 4px 0 #ddc1b3;
+            transition: all 0.15s ease;
+        }
+        .clay-chip:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #ddc1b3;
+        }
+        .clay-chip.selected {
+            background-color: #bfe8ff; /* tertiary-fixed */
+            border-color: #53b5df;
+            box-shadow: 0 4px 0 #53b5df;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-container-margin py-unit w-full bg-surface shadow-[0_4px_0_0_rgba(255,140,66,0.1)] fixed top-0 z-10 md:hidden">
+<button aria-label="Go back" class="flex items-center justify-center min-h-[48px] min-w-[48px] text-primary transition-all active:translate-y-0.5 active:shadow-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center min-h-[48px] px-3 bg-surface-container-high rounded-full text-primary font-bold">
+            50 ⭐
+        </div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-[80px] pb-[100px] px-container-margin flex flex-col items-center max-w-2xl mx-auto w-full">
+<!-- Sóc Nâu Dialogue / Instruction -->
+<div class="w-full bg-primary-fixed-dim rounded-2xl p-4 mb-card-gap flex items-center gap-4 clay-card relative shadow-[0_4px_20px_rgba(255,140,66,0.15)] border-2 border-primary-container">
+<div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border-4 border-surface bg-surface">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A friendly 3D cartoon style brown squirrel character (Sóc Nâu) with large expressive eyes, smiling warmly, designed for a preschool learning app. Soft, clay-like rendering, warm inviting lighting, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYJadAdyATuDZNLeyYuALCK_gwwTIpl7X6CT6S4-Q2AvyOTZmWFpj8A4xdAYs1BPgqk3mlu-lPVkotvu5qTBe0Jq2St23K2-GoGKUWzThOtwT0XsxTnHIBaDrLnnIdJPR66loIgiNM8ZfU2IXaqzNwi0ovlAydYwjbd50FrNzsW2wKgjLlx7TwkRL1ES67iXVZPXpmtRIqlPx0welPq3xi7KybRbmY6FCjOKzvmtOkkyH83-7hZ31vkw"/>
+</div>
+<div class="flex-grow">
+<p class="font-title-md text-title-md text-on-primary-container">
+                    Có 2 quả táo, thêm 1 quả. Có tất cả bao nhiêu quả?
+                </p>
+</div>
+<button aria-label="Nghe lại" class="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center clay-btn shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Visual Math Area (Bento Grid Style) -->
+<div class="w-full bg-surface-container-low rounded-3xl p-6 border-2 border-tertiary-fixed flex flex-col items-center justify-center mb-card-gap clay-card min-h-[250px]">
+<div class="flex items-center justify-center gap-4 w-full">
+<!-- Group 1 -->
+<div class="flex gap-2 bg-surface rounded-2xl p-4 border-2 border-outline-variant items-center justify-center">
+<img alt="1 quả táo" class="w-14 h-14 object-contain" data-alt="A glossy 3D stylized red apple with a small green leaf on top, claymorphic design, soft lighting, suitable for a children's educational interface. Clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpEcSuSSZMTLf4BsLH1Trl5rubw6DTbufq7KraOAdt4DqGxY_v70ZvfnZEFG4LJxO1d9-ydX2dlzBL0ruFrdPVoRKa-jDCc4mHzDIvBQOaVdg5WOZqJseB2VCwbIgrd1qSPHM9Ud_aFCcYd2mhDbZaZlACxhPNc3naiDIu5W6kUqji8ZfwlNZd_-pPyfs-Ezdpi7dwEg-l0tpNG2bPeX66yYA641zkRvMc0NAmNkQbCuOUo2n7o4Y2mA"/>
+<img alt="1 quả táo" class="w-14 h-14 object-contain" data-alt="A glossy 3D stylized red apple with a small green leaf on top, claymorphic design, soft lighting, suitable for a children's educational interface. Clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7nbAD8dkcPwu1Ap0DfWMKmBT6n5EtvpsEVv7UwQtf9fbYENenyfkDvOdoI2sgQmzzWWpRJk7SHsdVQPrDtbi5ePavqMT5EShy5EFMPPQbZBkNdV9j0IARIdvQXKplsviCZ0me1LD6wRsfO4wFywVfjuD-0-Ca1QrRrhsXJEJmwbrivS5ICczgEJYxkFXdSHxDo6T9YNKlvc_sDgrlV1d45Zw-SUeOFzohv5Ti2hhVgM3MKL38e3ZM7g"/>
+</div>
+<!-- Operator -->
+<div class="font-display-hero text-display-hero text-tertiary-container flex items-center justify-center w-12 h-12">
+                    +
+                </div>
+<!-- Group 2 -->
+<div class="flex gap-2 bg-surface rounded-2xl p-4 border-2 border-outline-variant items-center justify-center">
+<img alt="1 quả táo" class="w-14 h-14 object-contain" data-alt="A glossy 3D stylized red apple with a small green leaf on top, claymorphic design, soft lighting, suitable for a children's educational interface. Clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwq32Ek0801UNo5QUkxmLbysj9Ho4nYCQGB9J2VB5-lqVyzNrEmbGhrEY9wxqwC3_v_EdKPjWc8Utg312XyXcMpuM__I0V6I2rqujv5ceHc4irXiPEUAXRbk_Vd1LJ-bRi6LuazE5JOZcrwf-iHsT3R-aaX1OYHFGGPbROsTA6xNqKZPAFyiDdsPyymFBRmMho7N8e0dF-x6h3Jfgd9RhnQBz__-tclrERiy0wEBNyZsD2v6tvmk94JQ"/>
+</div>
+</div>
+<!-- Equals & Result Area -->
+<div class="flex items-center justify-center mt-6 gap-4">
+<div class="font-display-hero text-display-hero text-tertiary-container">
+                    =
+                </div>
+<div class="w-20 h-20 bg-surface rounded-2xl border-4 border-dashed border-outline-variant flex items-center justify-center font-display-hero text-display-hero text-outline transition-all duration-300" id="result-box">
+                    ?
+                </div>
+</div>
+</div>
+<!-- Answer Options -->
+<div class="grid grid-cols-3 gap-4 w-full mt-4">
+<button class="clay-chip bg-surface h-24 rounded-2xl border-2 border-outline-variant font-display-hero text-display-hero text-on-surface-variant flex items-center justify-center hover:bg-surface-container-high transition-colors" onclick="selectAnswer(this, 1)">
+                1
+            </button>
+<button class="clay-chip bg-surface h-24 rounded-2xl border-2 border-outline-variant font-display-hero text-display-hero text-on-surface-variant flex items-center justify-center hover:bg-surface-container-high transition-colors" onclick="selectAnswer(this, 2)">
+                2
+            </button>
+<button class="clay-chip bg-surface h-24 rounded-2xl border-2 border-outline-variant font-display-hero text-display-hero text-on-surface-variant flex items-center justify-center hover:bg-surface-container-high transition-colors" onclick="selectAnswer(this, 3)">
+                3
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container border-t-2 border-outline-variant shadow-[0_-4px_10px_0_rgba(255,140,66,0.05)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-size: 24px;">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-2 border-b-4 border-primary translate-y-[2px] hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined mb-1" style="font-size: 24px; font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-label-caps font-bold">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-size: 24px;">military_tech</span>
+<span class="font-label-caps text-label-caps">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-size: 24px;">family_history</span>
+<span class="font-label-caps text-label-caps">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        function selectAnswer(button, value) {
+            // Reset all chips
+            document.querySelectorAll('.clay-chip').forEach(chip => {
+                chip.classList.remove('selected');
+                chip.classList.add('border-outline-variant', 'text-on-surface-variant', 'bg-surface');
+                chip.classList.remove('border-tertiary', 'text-on-tertiary-container', 'bg-tertiary-fixed');
+            });
+            
+            // Select clicked chip
+            button.classList.add('selected');
+            button.classList.remove('border-outline-variant', 'text-on-surface-variant', 'bg-surface');
+            button.classList.add('border-tertiary', 'text-on-tertiary-container', 'bg-tertiary-fixed');
+
+            // Update result box
+            const resultBox = document.getElementById('result-box');
+            resultBox.textContent = value;
+            resultBox.classList.remove('border-dashed', 'text-outline');
+            
+            if (value === 3) {
+                // Correct
+                resultBox.classList.add('border-secondary', 'text-secondary', 'bg-secondary-container', 'border-solid');
+                resultBox.classList.remove('border-error', 'text-error', 'bg-error-container');
+            } else {
+                // Incorrect
+                resultBox.classList.add('border-error', 'text-error', 'bg-error-container', 'border-solid');
+                resultBox.classList.remove('border-secondary', 'text-secondary', 'bg-secondary-container');
+            }
+        }
+    </script>
+</body></html>

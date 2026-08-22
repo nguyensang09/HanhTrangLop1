@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trò chơi Lật thẻ - Sóc Nâu Học Tập</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-container": "#f0eee6",
+                        "surface-bright": "#fbf9f1",
+                        "on-background": "#1b1c17",
+                        "primary": "#9b4500",
+                        "on-surface-variant": "#564338",
+                        "inverse-surface": "#30312c",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#54fdc4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#00445a",
+                        "inverse-on-surface": "#f3f1e9",
+                        "background": "#fbf9f1",
+                        "surface-container-high": "#eae8e0",
+                        "surface-variant": "#e4e3db",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-dim": "#dcdad2",
+                        "outline": "#897266",
+                        "on-secondary-container": "#007152",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006686",
+                        "surface-tint": "#9b4500",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface": "#fbf9f1",
+                        "tertiary-fixed": "#bfe8ff",
+                        "primary-fixed": "#ffdbc9",
+                        "inverse-primary": "#ffb68d",
+                        "tertiary-container": "#53b5df",
+                        "surface-container-low": "#f5f4ec",
+                        "on-primary-fixed": "#331200",
+                        "on-secondary-fixed": "#002116",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#51fac1",
+                        "outline-variant": "#ddc1b3",
+                        "primary-container": "#ff8c42",
+                        "on-primary-container": "#6a2d00",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "secondary": "#006c4f"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    spacing: {
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "unit": "8px"
+                    },
+                    fontFamily: {
+                        "display-hero": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-lg": ["Be Vietnam Pro", "sans-serif"],
+                        "body-md": ["Be Vietnam Pro", "sans-serif"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+                        "title-md": ["Be Vietnam Pro", "sans-serif"],
+                        "label-caps": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    fontSize: {
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .clay-card {
+            box-shadow: 0 8px 0 0 var(--tw-shadow-color);
+            transition: all 0.1s ease-in-out;
+        }
+        
+        .clay-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 0 var(--tw-shadow-color);
+        }
+
+        .ambient-shadow {
+            box-shadow: 0 -4px 20px rgba(255, 140, 66, 0.05);
+        }
+
+        /* Perspective for 3D flip effect */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        /* Transform style to preserve 3D for children */
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+
+        /* Backface visibility hidden for flip cards */
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+
+        /* Rotate Y axis for flipped state */
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface-container dark:bg-surface-container-high docked full-width top-0 bg-surface-container-high border-b-4 border-surface-dim shadow-sm flex justify-between items-center w-full px-container-margin py-unit z-10 shrink-0">
+<button aria-label="Go back" class="flex items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant dark:text-surface-variant hover:scale-105 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed">Trò chơi Trí nhớ</h1>
+<div class="flex items-center justify-center h-touch-target-min px-4 bg-primary-container text-on-primary-container rounded-full font-label-caps text-label-caps font-bold">
+            125 <span class="ml-1">⭐</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto px-container-margin py-6 pb-32 flex flex-col items-center">
+<!-- Sóc Nâu Dialogue (Instruction) -->
+<div class="w-full max-w-md bg-secondary-container text-on-secondary-container rounded-2xl p-4 mb-8 flex items-start space-x-4 shadow-[0_4px_20px_rgba(81,250,193,0.2)] border-b-4 border-[#27e0a9]">
+<div class="w-16 h-16 shrink-0 bg-white rounded-full flex items-center justify-center border-4 border-secondary-fixed">
+<img alt="Sóc Nâu" class="w-12 h-12 object-contain rounded-full" data-alt="A cute, stylized 2D illustration of a friendly brown squirrel character (Sóc Nâu) smiling enthusiastically, designed for a preschool learning app. The style is flat, colorful, and engaging with soft rounded shapes. Light cream background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAurL34otuxWwdZqwSBqpZps0Hw29FN5imzy_KFFvH-G8DxrNXqf1uSMMhlZLmhFHX_jq6OiDGBQOR5mh7zXw4FtYkAnU8E7_F0OGGaMQl-YuAdEQ-om6UsUzAWG5u9xkP2TrCYhYfVDsI-Cz_9vVoyHNI9aSflaRM15F8KXEXOXxm6VzmbOeShU5KYhz8imTrFzst9djplEfAgnjnc0xFauux0y_L4UL2we1meHMZHGe64aSPL5ecgKw"/>
+</div>
+<div class="flex-1 pt-2 relative">
+<!-- Speech bubble pointer -->
+<div class="absolute -left-6 top-4 w-4 h-4 bg-secondary-container transform rotate-45 border-b border-l border-transparent"></div>
+<p class="font-title-md text-title-md text-on-secondary-container leading-tight relative z-10">
+                    Bé hãy lật thẻ để tìm các cặp hình giống nhau nhé!
+                </p>
+<button class="mt-2 text-secondary flex items-center space-x-2 font-label-caps text-label-caps hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-weight="fill">volume_up</span>
+<span>Nghe lại</span>
+</button>
+</div>
+</div>
+<!-- Memory Match Grid (2x3) -->
+<div class="grid grid-cols-2 gap-4 w-full max-w-[320px] mx-auto mt-4">
+<!-- Card 1 (Face down) -->
+<div class="group h-40 perspective-1000 cursor-pointer" onclick="this.querySelector('.inner').classList.toggle('rotate-y-180')">
+<div class="inner relative w-full h-full transition-transform duration-500 transform-style-3d">
+<!-- Front (Sóc Nâu Logo) -->
+<div class="absolute w-full h-full backface-hidden bg-primary-container rounded-xl flex items-center justify-center border-b-[6px] border-on-primary-fixed-variant shadow-md">
+<img alt="Thẻ úp" class="w-20 h-20 object-contain" data-alt="A stylized 2D icon of a cute brown squirrel face, flat design, white outline, simple and friendly for kids. Warm orange background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoYuZlqUxp3gLYcJXEz2I8MqmuLzFJVZY04dLhX8ilBKTuCJW2PTuNMCdUhyGeP8zY7InhqEkO_sZAOQu_gtuBrUrxpD3_FIy8fVA14ZYd1m3jvGIHJaSJVzTyZfWd238ONpuWi5OXmAxtQGcz8PK2a49OsN4VddqwMH_eN6wjBWrzXJzwUkkEMKfqxW-v_ku-2fjdppzfRAhbINj7w3g9aJu8MeokTUNkbxfJ9MkqKSMaMhyivmwghw"/>
+</div>
+<!-- Back (Apple) -->
+<div class="absolute w-full h-full backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center border-b-[6px] border-surface-dim shadow-md border-2 border-surface-variant">
+<img alt="Quả táo" class="w-24 h-24 object-contain" data-alt="A brightly colored 2D illustration of a red apple with a green leaf, flat vector style, bold and clear for a children's memory game. Soft white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkYqMqXg-_Ls3BX1C6xP-H-m-3-qv5Mgswaf_0gIeZmLLD9TbGAuem9-TRnlTXxAIVAz-RuhYu5GK2hlc3cgMyeJ0YeiLgWDxNignvuTaaEUSN1WrMH1fAWd4h0X7OozPMfqbVbhcP7qNd1sOyDFsFd9vL0VRGF9yi5uRl0G3G1aOutccKwnxFXSUs2qmGQ-glvVmhwVJjqDOI2v66IVGrSwXfaQGdbeI56Qj2oALQILiVmsjjeWx-Ig"/>
+</div>
+</div>
+</div>
+<!-- Card 2 (Face down) -->
+<div class="group h-40 perspective-1000 cursor-pointer" onclick="this.querySelector('.inner').classList.toggle('rotate-y-180')">
+<div class="inner relative w-full h-full transition-transform duration-500 transform-style-3d">
+<div class="absolute w-full h-full backface-hidden bg-primary-container rounded-xl flex items-center justify-center border-b-[6px] border-on-primary-fixed-variant shadow-md">
+<img alt="Thẻ úp" class="w-20 h-20 object-contain" data-alt="A stylized 2D icon of a cute brown squirrel face, flat design, white outline, simple and friendly for kids. Warm orange background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9RYrM-zcL0V_MfIN0pEaHuPjbc6NHtGcNMhyhd31s2gWIaX19ydyBfRvPOiiduRGaK0LQfLx0WgXwv_Q36zarpnUf70feJZ9NfMxD_Y2NJ7y5xBPh-TdxkvpvcTcaGVCMJ4lcCbp-wPMeDuF2Lu7EQZj3iYNtc6PS1kduww-iGGAMweKakl7stviD7Qfe1VAN9nxpgHRmxmdlDLR8wjHbdfkVVWPZtQkaVLg5nfB_2h-kvM6sw8rKuQ"/>
+</div>
+<div class="absolute w-full h-full backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center border-b-[6px] border-surface-dim shadow-md border-2 border-surface-variant">
+<img alt="Chú thỏ" class="w-24 h-24 object-contain" data-alt="A brightly colored 2D illustration of a cute white rabbit with pink ears, flat vector style, bold and clear for a children's memory game. Soft white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcZ9lYmBnUlovZxOUPMHZO86Gkumu2uJAYhBxno74HSWG77a4FzFrIUPvk1QieugY0GCxyANyibOebD7-F2aeZudRtKh58RmHjSw8JN-f-CHPcxs0ttx3yMOf9OIIxHhsbyxjAVLNi6GOld1faLoOJCemd-PiE-QKkh7fuBkjzlqfqqeDft0aS6WlUFIpJdp_V_us5L_RoOOm4Jqh88vF5u_L5jBLS7JO9aTNj5XXyZbCJhUyxHKa45g"/>
+</div>
+</div>
+</div>
+<!-- Card 3 (Face down) -->
+<div class="group h-40 perspective-1000 cursor-pointer" onclick="this.querySelector('.inner').classList.toggle('rotate-y-180')">
+<div class="inner relative w-full h-full transition-transform duration-500 transform-style-3d">
+<div class="absolute w-full h-full backface-hidden bg-primary-container rounded-xl flex items-center justify-center border-b-[6px] border-on-primary-fixed-variant shadow-md">
+<img alt="Thẻ úp" class="w-20 h-20 object-contain" data-alt="A stylized 2D icon of a cute brown squirrel face, flat design, white outline, simple and friendly for kids. Warm orange background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy9djWfAtsJ_1s27FXgbWqkasmGXjrEyX3hNVggCVUPnT7grainuY501tCqYnN-hfIcgosEbyw1lSbjCAjYf0kKCoI_tTsbTrevnn7dT-gny7nIvTWVVJyPHwfMr90ZjAeweQYQfiLP8WXN5BmZ-fbvcCBeBhld4VINQkTkY5tNQfMnj6MQXmkZj2joS6pT5bvhOcXXP3YRNPD4rzGyndUMpKCmQ0V3hQonRcex9HJKQm1SPD83Z8Lzg"/>
+</div>
+<div class="absolute w-full h-full backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center border-b-[6px] border-surface-dim shadow-md border-2 border-surface-variant">
+<img alt="Bút chì" class="w-24 h-24 object-contain" data-alt="A brightly colored 2D illustration of a yellow pencil with a pink eraser, flat vector style, bold and clear for a children's memory game. Soft white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAubfYD5Xdr4QHuYU8NFhtQcfRGfQtIFyg93hNcFcRZUl_g6hwaRwQcYXOxKwPKO6fWU49-qtun1pij1caFOYJ8XBTyJadAfOqGmqz9trMnwxoUENM8DD3-pQGycT1KmZslv8Ua9Caoqq95Qrin7p6SYuuMJaMcpZhTwp9pBUs-umIvAEfIiUpXQ166fr_o9lk_1dr2pCOf97BNBLrpmgEMAC6y3I5XblrGu2wDivjrHefZb8sq73rmjg"/>
+</div>
+</div>
+</div>
+<!-- Card 4 (Face down) -->
+<div class="group h-40 perspective-1000 cursor-pointer" onclick="this.querySelector('.inner').classList.toggle('rotate-y-180')">
+<div class="inner relative w-full h-full transition-transform duration-500 transform-style-3d">
+<div class="absolute w-full h-full backface-hidden bg-primary-container rounded-xl flex items-center justify-center border-b-[6px] border-on-primary-fixed-variant shadow-md">
+<img alt="Thẻ úp" class="w-20 h-20 object-contain" data-alt="A stylized 2D icon of a cute brown squirrel face, flat design, white outline, simple and friendly for kids. Warm orange background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF4pRsLOxTVacokEZ7x_WfCRQ1ErH8rh5kpjX5fR9avwJdBMgtCJEF_KRlxUNXHadvce4xaFouy9HfuFx610eNq-pMjqqvMOSiro0a5WnzgGY1-x8Joxhi5cOt9AHbAzJequJgvTEmFVmG_lmVad2FQSJsVokmjG1w3dhM4gzpLiy-98r36PlIcjM_e-lGB4fBSb43L8DEUO1dX-6E82d7y57TrZphCDc7LymYX3DoYQD-6oYF443org"/>
+</div>
+<div class="absolute w-full h-full backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center border-b-[6px] border-surface-dim shadow-md border-2 border-surface-variant">
+<img alt="Quả táo" class="w-24 h-24 object-contain" data-alt="A brightly colored 2D illustration of a red apple with a green leaf, flat vector style, bold and clear for a children's memory game. Soft white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACBO0WFhVLqDif17KHYg3JLKmDAnEdHzXE7F6vq79QqMJ-aZBt09mC7QMexR-2wQSTVSt-iapZDQDJbKutAr8edCt_xbiS_f432kM2ktHztU2rSw3Iwh8gUA80iq1UCLiZc9uUNnQeVjZH0burrxfd6L8BrtIAgRicMM763Qk2L7s0e_Gx9aGQ2_RNxPF_-vXdRUqSuULc1p65r2ErNb43_da7hQQuKK8qySNzCxkMaFFZ3JHtTdkd1w"/>
+</div>
+</div>
+</div>
+<!-- Card 5 (Face down) -->
+<div class="group h-40 perspective-1000 cursor-pointer" onclick="this.querySelector('.inner').classList.toggle('rotate-y-180')">
+<div class="inner relative w-full h-full transition-transform duration-500 transform-style-3d">
+<div class="absolute w-full h-full backface-hidden bg-primary-container rounded-xl flex items-center justify-center border-b-[6px] border-on-primary-fixed-variant shadow-md">
+<img alt="Thẻ úp" class="w-20 h-20 object-contain" data-alt="A stylized 2D icon of a cute brown squirrel face, flat design, white outline, simple and friendly for kids. Warm orange background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMjglK4DuIg1gpgGhiRtVuzAAO11n15_fD4epTBlJd5RpskTKIOeAUZIkCzOilILtfvhk4BQCxoa8yWSIkKUGd-CMaAqWDmrvknsO_hTqXDor8RjxKmPLc00NmcALoghJpkYT_J7kh-gUJmuK0R-fP_yHm5-_XGNSkPXuoS1AOlQ8JCZqgRxRbZJ6Nfbg8cpnyLG4zaoFBzBOgnlZjlCRI_fyMNwuysuNkhSNrnKg353D5oE7ocWdUIA"/>
+</div>
+<div class="absolute w-full h-full backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center border-b-[6px] border-surface-dim shadow-md border-2 border-surface-variant">
+<img alt="Bút chì" class="w-24 h-24 object-contain" data-alt="A brightly colored 2D illustration of a yellow pencil with a pink eraser, flat vector style, bold and clear for a children's memory game. Soft white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVG5aBTi7THSFmNtQ52tLjVnZZuGiAM28C4vQzbREAYN4CJ8ihRUdz0fIjK4eX1T79vN27MJhU4TUbIIpp28AtHCTeAtbhG-asKJqSLII3mV2ikjQybxVMtj_gLigbomydpn2SogJA3BhiSnD6QMvJrxTjgCxvvcAq22mGRCa2n_LJhMiRR7_ltILl8wmAa9trKyMwTUyj3WMNp2KwhDhTuuqNFCy95TyrYsW-GigsTxoiPsg0uERB4w"/>
+</div>
+</div>
+</div>
+<!-- Card 6 (Face down) -->
+<div class="group h-40 perspective-1000 cursor-pointer" onclick="this.querySelector('.inner').classList.toggle('rotate-y-180')">
+<div class="inner relative w-full h-full transition-transform duration-500 transform-style-3d">
+<div class="absolute w-full h-full backface-hidden bg-primary-container rounded-xl flex items-center justify-center border-b-[6px] border-on-primary-fixed-variant shadow-md">
+<img alt="Thẻ úp" class="w-20 h-20 object-contain" data-alt="A stylized 2D icon of a cute brown squirrel face, flat design, white outline, simple and friendly for kids. Warm orange background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnVZtx9PnkAuqstY2OwpwAkP_9KdL3bGAh6iUola76l7IQIphPolTZPNq6iG7TId5iZPaRbZUz66RrlsIpwxvRejOREVTzSZc_Yt0sE4X3wc5JOogWF2_oZqfHmjZ-k26qr6ZaCvwaj29gwUxH--70-KEgdm27E66AyhbLTaGoIQjAej57IEguy3Jd-ZOti8Xr3tyVTPr0AD4GN9inLgGhZS_XqS758xR92ToWqadExGOoQH0vl4pSjw"/>
+</div>
+<div class="absolute w-full h-full backface-hidden rotate-y-180 bg-white rounded-xl flex items-center justify-center border-b-[6px] border-surface-dim shadow-md border-2 border-surface-variant">
+<img alt="Chú thỏ" class="w-24 h-24 object-contain" data-alt="A brightly colored 2D illustration of a cute white rabbit with pink ears, flat vector style, bold and clear for a children's memory game. Soft white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5su7Qc3kU0FfAE8J2LuQrtr2UoCw5ByL_J9mVqgLGDeEqynBFIThTbxXARam35SIBpzoKDDPZ_XdJnXpm89_TmASD49MW76uBKWWtuAkbsagHtFUI_BvxITmZPLRndTjtoMLL5LnRnClz2fKqkx-4z-L97optpxxr4A5gTtvwBnsVVTQ3xfml1K6Mk1fKBFJMahDRK_K1qWN3IqUgWVygahoyRnSABSReWio9QelfB5PHi4K0G0jjdQ"/>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Semantic Match: Bài tập) -->
+<nav class="bg-surface dark:bg-surface-container-lowest fixed bottom-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface-container-lowest border-t-2 border-surface-variant shadow-[0_-4px_20px_rgba(255,140,66,0.05)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 md:hidden">
+<!-- Trang chủ (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-colors rounded-xl min-w-[touch-target-min]" href="#">
+<span class="material-symbols-outlined text-3xl mb-1">home</span>
+<span class="font-label-caps text-label-caps text-[12px]">Trang chủ</span>
+</a>
+<!-- Bài tập (Active - Game is an exercise/activity) -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-2 border-b-4 border-on-primary-fixed-variant translate-y-0.5 transition-all duration-100 min-w-[touch-target-min]" href="#">
+<span class="material-symbols-outlined text-3xl mb-1" data-weight="fill">menu_book</span>
+<span class="font-label-caps text-label-caps text-[12px]">Bài tập</span>
+</a>
+<!-- Phần thưởng (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-colors rounded-xl min-w-[touch-target-min]" href="#">
+<span class="material-symbols-outlined text-3xl mb-1">workspace_premium</span>
+<span class="font-label-caps text-label-caps text-[12px]">Phần thưởng</span>
+</a>
+<!-- Bố mẹ (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-colors rounded-xl min-w-[touch-target-min]" href="#">
+<span class="material-symbols-outlined text-3xl mb-1">family_history</span>
+<span class="font-label-caps text-label-caps text-[12px]">Bố mẹ</span>
+</a>
+</nav>
+</body></html>

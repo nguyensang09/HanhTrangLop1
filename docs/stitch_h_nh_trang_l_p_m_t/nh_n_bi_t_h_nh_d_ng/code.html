@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nhận Biết Hình Dạng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#ffb68d",
+                    "background": "#fbf9f1",
+                    "outline": "#897266",
+                    "primary-container": "#ff8c42",
+                    "surface-container-highest": "#e4e3db",
+                    "on-secondary-fixed": "#002116",
+                    "tertiary": "#006686",
+                    "on-secondary-container": "#007152",
+                    "secondary-container": "#51fac1",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#eae8e0",
+                    "primary": "#9b4500",
+                    "tertiary-fixed": "#bfe8ff",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "secondary-fixed": "#54fdc4",
+                    "secondary": "#006c4f",
+                    "on-primary-fixed-variant": "#763300",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#564338",
+                    "surface-tint": "#9b4500",
+                    "on-background": "#1b1c17",
+                    "on-primary": "#ffffff",
+                    "surface-container-low": "#f5f4ec",
+                    "on-primary-container": "#6a2d00",
+                    "tertiary-container": "#53b5df",
+                    "outline-variant": "#ddc1b3",
+                    "surface-container": "#f0eee6",
+                    "inverse-surface": "#30312c",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "on-primary-fixed": "#331200",
+                    "inverse-on-surface": "#f3f1e9",
+                    "on-tertiary-container": "#00445a",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "surface-variant": "#e4e3db",
+                    "on-surface": "#1b1c17",
+                    "inverse-primary": "#ffb68d",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-bright": "#fbf9f1",
+                    "on-tertiary-fixed": "#001f2a",
+                    "error": "#ba1a1a",
+                    "surface": "#fbf9f1",
+                    "surface-dim": "#dcdad2",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "24px",
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "touch-target-min": "48px",
+                    "card-gap": "20px"
+            },
+            "fontFamily": {
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "title-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ]
+            },
+            "fontSize": {
+                    "display-hero": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "title-md": [
+                            "22px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-caps": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .pressable-btn {
+            border-bottom-width: 4px;
+            transition: all 0.1s ease-in-out;
+        }
+        .pressable-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-bottom: 2px;
+        }
+        .item-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+            transition: all 0.2s ease;
+        }
+        .item-card.selected {
+            border-color: theme('colors.tertiary-container');
+            background-color: theme('colors.tertiary-fixed');
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(83, 181, 223, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-container-margin py-unit w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed-dim font-headline-lg-mobile text-headline-lg-mobile w-full top-0 rounded-b-xl border-b-4 border-surface-container-highest dark:border-surface-container shadow-sm">
+<button class="w-12 h-12 flex items-center justify-center rounded-full hover:scale-105 transition-transform active:translate-y-0.5 active:border-b-2 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-primary-fixed-dim font-bold tracking-tight">Nhận Biết Hình Dạng</h1>
+<div class="flex items-center gap-1 font-label-caps text-label-caps">
+<span>125</span>
+<span>⭐</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-container-margin py-gutter max-w-4xl mx-auto w-full flex flex-col gap-8 md:pt-12">
+<!-- Sóc Nâu Dialogue -->
+<section class="bg-[#FFF4E0] border-2 border-primary-fixed rounded-2xl p-4 flex items-start gap-4 shadow-[0_4px_20px_rgba(255,140,66,0.05)] relative overflow-hidden">
+<div class="absolute -top-6 -right-6 w-24 h-24 bg-primary-fixed rounded-full opacity-50 blur-xl"></div>
+<div class="w-16 h-16 rounded-full bg-white border-2 border-primary-fixed-dim flex items-center justify-center flex-shrink-0 z-10 shadow-sm overflow-hidden">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, stylized vector illustration of a brown squirrel head (Sóc Nâu) with large friendly eyes, smiling, in a bright light mode aesthetic, soft clay-like shading, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnnOHkgL8uLfk7KiWSMuXCvPrRzB3yk6dfFHeiL6iH-WumhvwiFU6VrjY4iIminmbWXkww3PteHrTcbSsDLxUUqtuRm_Cs_UiGdJnWk7DZpPp_hzdNP2wCH0TOIbKIWSZWKodJ9K16tTNK5jJFpq8FG3bU5WwjL39HyWD4xM1w6Y2jq-NqgKcXGjfaEzru-5uJAMpgNgrQQBijwdinre_mHnyPPReeKpF1X_dFVG21Wm28Rrf78ScpVA"/>
+</div>
+<div class="flex-grow z-10">
+<p class="font-title-md text-title-md text-on-surface mb-2">Bé hãy chọn những đồ vật có hình tròn nhé!</p>
+</div>
+<button aria-label="Đọc hướng dẫn" class="w-12 h-12 rounded-full bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 pressable-btn border-primary z-10 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</section>
+<!-- Interactive Grid -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-3xl mx-auto flex-grow items-center">
+<!-- Item 1: Đồng hồ (Tròn - Đúng) -->
+<button class="item-card bg-white border-2 border-surface-container-high rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square relative cursor-pointer" onclick="this.classList.toggle('selected')">
+<div class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<img alt="Đồng hồ" class="w-full h-full object-contain p-2" data-alt="A highly detailed, colorful, claymorphic 3D illustration of a simple round wall clock. The clock has a soft, tactile appearance with thick hands, bright colors suited for a preschooler UI, light mode aesthetic, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP9gsqwDuwY2030jokklNeemI5iD-RZ9YTBhZrtfWxSN5DKglg6vitkzn97ePJKjfLmabC76MVcVn2BHfkK_71rj3QtlAPvm6a463qbR-ZuST9wwG65z7OCDeFKqOskUydcu2QbfWe3sEaWjO7WpoNLTe-zphsKIplMKSSdE-XyQzrHLnHzqfAt_NSb2j9eXkhTEQADF3fWQQOz7d_srokdEtCjjaURKcc0evkJsjPIdtJAYR0ixz0_Q"/>
+</div>
+<div class="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-surface-container-high bg-white flex items-center justify-center indicator">
+<span class="material-symbols-outlined text-transparent check-icon">check</span>
+</div>
+</button>
+<!-- Item 2: Hộp quà (Vuông - Sai) -->
+<button class="item-card bg-white border-2 border-surface-container-high rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square relative cursor-pointer" onclick="this.classList.toggle('selected')">
+<div class="w-24 h-24 md:w-32 md:h-32 bg-surface-container rounded-xl flex items-center justify-center overflow-hidden">
+<img alt="Hộp quà" class="w-full h-full object-contain p-2" data-alt="A highly detailed, colorful, claymorphic 3D illustration of a square gift box with a bright ribbon. Soft, tactile appearance, bright colors suited for a preschooler UI, light mode aesthetic, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABgBsMwk9tL5t6VvIf_GrBmo-aN10Iz_m-nGHhXSABu7li4-2of-J1SBIVKXFA0oyL5CUBKIqHbZBggf5AqfkTOy13iWw7ZFYKzctK28N-WwHdMuSlIh1Ax0scph2PZbIEhLVqxkhhRfX597XyuLoObeatpfhMls8TCi83di0f7efNXWsoGu2A3je8-nl5cSn9zqQ-iYXk70c4qJU0DR_L0e84HIBwJY_Ji02Od1H_UgXUXEvhok3pNA"/>
+</div>
+<div class="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-surface-container-high bg-white flex items-center justify-center indicator">
+<span class="material-symbols-outlined text-transparent check-icon">check</span>
+</div>
+</button>
+<!-- Item 3: Biển báo (Tam giác - Sai) -->
+<button class="item-card bg-white border-2 border-surface-container-high rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square relative cursor-pointer" onclick="this.classList.toggle('selected')">
+<div class="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center overflow-hidden" style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background-color: var(--surface-container);">
+<img alt="Biển báo" class="w-full h-full object-contain p-2" data-alt="A highly detailed, colorful, claymorphic 3D illustration of a triangular traffic yield sign. Soft, tactile appearance, bright colors suited for a preschooler UI, light mode aesthetic, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcOiBUZ2yLYBCBurt_f6IcmiPTZqhVt0-LhhO3ubGP-jmzhcp2XscfAlStNLfRA9A0xo4si1qw04jX7CfRbzBvQjH7jbHiQaPFqaD1YphFL1ORNH95ucqYZZ4I4JMmfwFCiceWTTAF2qnr4D_rIKT68UQ2KykdGrppbz_2KykjSXIDpMCJw7aWDwYBt3mKv3yVHjlaOmKxmM1eYcfM-x2uDNgAikPrssTlrpWQXfwR9hbSAJRPodV7Bg"/>
+</div>
+<div class="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-surface-container-high bg-white flex items-center justify-center indicator">
+<span class="material-symbols-outlined text-transparent check-icon">check</span>
+</div>
+</button>
+<!-- Item 4: Quả bóng (Tròn - Đúng) -->
+<button class="item-card bg-white border-2 border-surface-container-high rounded-2xl p-4 flex flex-col items-center justify-center gap-3 aspect-square relative cursor-pointer" onclick="this.classList.toggle('selected')">
+<div class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<img alt="Quả bóng" class="w-full h-full object-contain p-2" data-alt="A highly detailed, colorful, claymorphic 3D illustration of a round beach ball with bright primary color stripes. Soft, tactile appearance, bright colors suited for a preschooler UI, light mode aesthetic, white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD636e8XdEK9fy_35yfsOGnuXRA40qx7I-FomNGwb0b0zse0B0u6Zoc6jkmRXqIcNgkDBU7-3kc0L4eVKcsMHLKGNuB96mHsgL9DK5U0WMrLyKHpKQr92yk0jqiL3OtppfEPePWvkTjyostCYyZmIyznQnpsPCshqiPvEtr5MZHCUuhlkWxz2FwS42xb6AOR_zKEhvqQBFUgjHnQkCUHvWzAdn8Of2EfWcyYNV_NKBxfvnQJ40oZkcwMA"/>
+</div>
+<div class="absolute top-3 right-3 w-8 h-8 rounded-full border-2 border-surface-container-high bg-white flex items-center justify-center indicator">
+<span class="material-symbols-outlined text-transparent check-icon">check</span>
+</div>
+</button>
+</section>
+<!-- Primary Action -->
+<div class="mt-8 flex justify-center w-full max-w-md mx-auto">
+<button class="w-full h-16 bg-[#D2B48C] text-white font-headline-lg-mobile text-headline-lg-mobile rounded-full pressable-btn border-[#A0825A] flex items-center justify-center gap-2 shadow-sm">
+<span>Kiểm tra</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop, shown on mobile if it's a top-level destination, but this is a task-focused screen so it should ideally be suppressed based on rules. However, the user provided BottomNavBar JSON, so we include it but it usually goes against the "Task-Focused suppression rule" if "Kiểm tra" is the main action. We'll render it to fulfill the JSON request, but semantic rules suggest it shouldn't be here. Let's include it for compliance with JSON structure, but in a real app, it might be hidden). -->
+<!-- Assuming this is a learning module screen, we hide the BottomNavBar as per the instruction: "Automatic Suppression: You MUST exclude the navigation shell if the page intent is: Task-Focused: Any sub-page featuring a 'Close' or 'Back' action..." The top bar has a back button, thus we suppress BottomNavBar. -->
+<script>
+        // Simple logic to style the checkmarks when selected
+        document.querySelectorAll('.item-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const icon = card.querySelector('.check-icon');
+                const indicator = card.querySelector('.indicator');
+                
+                if (card.classList.contains('selected')) {
+                    icon.classList.remove('text-transparent');
+                    icon.classList.add('text-tertiary');
+                    indicator.classList.remove('border-surface-container-high');
+                    indicator.classList.add('border-tertiary');
+                    indicator.classList.add('bg-tertiary-fixed-dim');
+                } else {
+                    icon.classList.add('text-transparent');
+                    icon.classList.remove('text-tertiary');
+                    indicator.classList.add('border-surface-container-high');
+                    indicator.classList.remove('border-tertiary');
+                    indicator.classList.remove('bg-tertiary-fixed-dim');
+                }
+            });
+        });
+    </script>
+</body></html>

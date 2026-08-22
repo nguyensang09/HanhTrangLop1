@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nối Điểm Tạo Hình</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#007152",
+                        "surface-variant": "#e4e3db",
+                        "on-primary-container": "#6a2d00",
+                        "secondary-container": "#51fac1",
+                        "primary-fixed": "#ffdbc9",
+                        "inverse-on-surface": "#f3f1e9",
+                        "outline-variant": "#ddc1b3",
+                        "surface-dim": "#dcdad2",
+                        "secondary-fixed": "#54fdc4",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f5f4ec",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#331200",
+                        "inverse-surface": "#30312c",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container": "#f0eee6",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#763300",
+                        "tertiary-container": "#53b5df",
+                        "inverse-primary": "#ffb68d",
+                        "on-surface-variant": "#564338",
+                        "on-tertiary-fixed": "#001f2a",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#002116",
+                        "primary": "#9b4500",
+                        "on-background": "#1b1c17",
+                        "on-surface": "#1b1c17",
+                        "primary-container": "#ff8c42",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-bright": "#fbf9f1",
+                        "background": "#fbf9f1",
+                        "surface-tint": "#9b4500",
+                        "outline": "#897266",
+                        "surface-container-high": "#eae8e0",
+                        "on-tertiary-container": "#00445a",
+                        "secondary": "#006c4f",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "tertiary": "#006686",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fbf9f1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid #6a2d00;
+            transition: all 0.15s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-bottom: 2px;
+        }
+        .instruction-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+            border: 2px solid #bfe8ff;
+        }
+        .dot {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #ff8c42;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            position: absolute;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 #6a2d00;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+        .dot:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 0 #6a2d00;
+        }
+        .dot.connected {
+            background-color: #51fac1;
+            box-shadow: 0 4px 0 0 #00513b;
+            color: #002116;
+        }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            margin: 0 auto;
+        }
+        svg.connecting-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .line {
+            stroke: #ff8c42;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .line.active {
+            stroke: #51fac1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden md:hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-container-high w-full h-16 flex items-center justify-between px-container-margin bg-surface shadow-[0_4px_0_0_rgba(228,227,219,1)]">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center text-on-surface-variant hover:bg-primary-container/20 rounded-full active:translate-y-0.5 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary flex-1 text-center truncate px-4">Vẽ theo nét</h1>
+<div class="flex items-center gap-1 bg-surface-container-high px-3 py-1.5 rounded-full text-on-surface-variant font-label-caps text-label-caps">
+<span>⭐</span>
+<span>125</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 mt-16 mb-24 p-container-margin flex flex-col items-center">
+<!-- Sóc Nâu Dialogue / Instruction -->
+<div class="w-full bg-[#ffb68d] rounded-2xl p-4 mb-card-gap flex items-start gap-4 instruction-card relative overflow-hidden">
+<div class="w-16 h-16 rounded-full bg-surface shrink-0 flex items-center justify-center shadow-sm z-10">
+<img alt="Sóc Nâu" class="w-12 h-12 object-contain rounded-full" data-alt="A cute, friendly 3D cartoon brown squirrel character head, simple shapes, smiling, facing forward. Light cream background, soft lighting, claymorphic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSE8AWLnH21HgkHh9SyOPyMrXW_vM_mZS4objJt1jGCP_-yXqO9T7oc6DhntNSRYH8-gsGXIwq4wwLG2UDxWx01ABo5qgDJC_YLYudEBcRK5WqWbdohGJQJbHfhQmjqFkETfqvXIeqK3HoKOyr4dJXT_4BH3OYtNzbaHnYs0nWspjWLnst9iKns-kSgXMX3-KOmSzwaZuJV_zTTKNoKQCgtnCw_DR3mkBmCVbf6VYY7A5qDh4RjupyIg"/>
+</div>
+<div class="flex-1 z-10">
+<p class="font-title-md text-title-md text-on-primary-fixed mb-2">Bé hãy nối các điểm theo thứ tự từ 1 đến 5 nhé!</p>
+<button aria-label="Phát lại hướng dẫn" class="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-primary clay-button active:translate-y-0.5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Decorative background element for instruction -->
+<div class="absolute -right-8 -bottom-8 w-32 h-32 bg-[#ffdbc9] rounded-full opacity-50 blur-xl"></div>
+</div>
+<!-- Drawing Canvas Area -->
+<div class="w-full bg-surface-container-lowest rounded-[2rem] p-4 instruction-card flex-1 flex flex-col items-center justify-center relative min-h-[400px]">
+<div id="canvas-container">
+<svg class="connecting-lines" id="lines-svg">
+<!-- Lines will be drawn here -->
+</svg>
+<!-- Dots for a Star shape -->
+<!-- Coordinates are relative to a 400x400 box to keep it simple -->
+<div class="dot" data-num="1" style="top: 10%; left: 50%; transform: translateX(-50%);">1</div>
+<div class="dot" data-num="2" style="top: 80%; left: 90%; transform: translate(-50%, -50%);">2</div>
+<div class="dot" data-num="3" style="top: 35%; left: 10%; transform: translate(-50%, -50%);">3</div>
+<div class="dot" data-num="4" style="top: 35%; left: 90%; transform: translate(-50%, -50%);">4</div>
+<div class="dot" data-num="5" style="top: 80%; left: 10%; transform: translate(-50%, -50%);">5</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 h-20 bg-surface shadow-[0_-4px_0_0_rgba(228,227,219,1)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed/30 rounded-xl active:translate-y-0 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-label-caps text-[12px]">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 translate-y-[-2px] shadow-[0_4px_0_0_rgba(155,69,0,1)] hover:bg-primary-fixed/30 active:translate-y-0 transition-all duration-150" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+<span class="font-label-caps text-label-caps text-[12px]">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed/30 rounded-xl active:translate-y-0 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+<span class="font-label-caps text-label-caps text-[12px]">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed/30 rounded-xl active:translate-y-0 transition-all duration-150 group" href="#">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">family_restroom</span>
+<span class="font-label-caps text-label-caps text-[12px]">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dots = Array.from(document.querySelectorAll('.dot')).sort((a, b) => parseInt(a.dataset.num) - parseInt(b.dataset.num));
+            const svg = document.getElementById('lines-svg');
+            let currentTarget = 1;
+            let currentLine = null;
+            let isDrawing = false;
+            
+            // Helper to get center of dot relative to container
+            function getDotCenter(dot) {
+                const rect = dot.getBoundingClientRect();
+                const containerRect = document.getElementById('canvas-container').getBoundingClientRect();
+                return {
+                    x: rect.left - containerRect.left + rect.width / 2,
+                    y: rect.top - containerRect.top + rect.height / 2
+                };
+            }
+
+            function createLine(startX, startY) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', startX);
+                line.setAttribute('y1', startY);
+                line.setAttribute('x2', startX);
+                line.setAttribute('y2', startY);
+                line.classList.add('line');
+                svg.appendChild(line);
+                return line;
+            }
+
+            // Initially highlight first dot
+            if(dots.length > 0) {
+                 dots[0].style.transform = 'scale(1.1)';
+                 dots[0].style.boxShadow = '0 0 15px rgba(255, 140, 66, 0.8)';
+            }
+
+            dots.forEach(dot => {
+                dot.addEventListener('touchstart', handleStart, {passive: false});
+                dot.addEventListener('mousedown', handleStart);
+            });
+
+            document.addEventListener('touchmove', handleMove, {passive: false});
+            document.addEventListener('mousemove', handleMove);
+
+            document.addEventListener('touchend', handleEnd);
+            document.addEventListener('mouseup', handleEnd);
+
+            function handleStart(e) {
+                const dot = e.target;
+                const num = parseInt(dot.dataset.num);
+                
+                if (num === currentTarget) {
+                    e.preventDefault(); // Prevent scrolling
+                    isDrawing = true;
+                    dot.classList.add('connected');
+                    dot.style.transform = '';
+                    dot.style.boxShadow = '';
+                    
+                    const center = getDotCenter(dot);
+                    currentLine = createLine(center.x, center.y);
+                }
+            }
+
+            function handleMove(e) {
+                if (!isDrawing || !currentLine) return;
+                e.preventDefault(); // Prevent scrolling while drawing
+
+                let clientX, clientY;
+                if (e.type.includes('touch')) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                const containerRect = document.getElementById('canvas-container').getBoundingClientRect();
+                const x = clientX - containerRect.left;
+                const y = clientY - containerRect.top;
+
+                currentLine.setAttribute('x2', x);
+                currentLine.setAttribute('y2', y);
+                
+                // Check if hovering over next dot
+                const nextDot = dots[currentTarget];
+                if (nextDot) {
+                    const nextDotRect = nextDot.getBoundingClientRect();
+                    // Simple bounding box collision
+                    if (clientX >= nextDotRect.left && clientX <= nextDotRect.right &&
+                        clientY >= nextDotRect.top && clientY <= nextDotRect.bottom) {
+                        
+                        // Snap to next dot
+                        const nextCenter = getDotCenter(nextDot);
+                        currentLine.setAttribute('x2', nextCenter.x);
+                        currentLine.setAttribute('y2', nextCenter.y);
+                        
+                        currentTarget++;
+                        nextDot.classList.add('connected');
+                        
+                        // If more dots, start new line from here
+                        if (currentTarget <= dots.length) {
+                           currentLine = createLine(nextCenter.x, nextCenter.y);
+                        } else {
+                            // Finished
+                            isDrawing = false;
+                            finishDrawing();
+                        }
+                    }
+                }
+            }
+
+            function handleEnd(e) {
+                if (!isDrawing) return;
+                isDrawing = false;
+                
+                // If didn't reach next dot, remove line
+                if (currentLine && currentTarget <= dots.length) {
+                   svg.removeChild(currentLine);
+                   currentLine = null;
+                   
+                   // Remove connected state from current dot so they have to try again
+                   dots[currentTarget-1].classList.remove('connected');
+                   dots[currentTarget-1].style.transform = 'scale(1.1)';
+                   dots[currentTarget-1].style.boxShadow = '0 0 15px rgba(255, 140, 66, 0.8)';
+                }
+            }
+            
+            function finishDrawing() {
+                // Connect 5 back to 1 for the star
+                const dot5 = dots[4];
+                const dot1 = dots[0];
+                const center5 = getDotCenter(dot5);
+                const center1 = getDotCenter(dot1);
+                
+                const finalLine = createLine(center5.x, center5.y);
+                finalLine.setAttribute('x2', center1.x);
+                finalLine.setAttribute('y2', center1.y);
+                
+                // Color all lines active
+                document.querySelectorAll('.line').forEach(l => l.classList.add('active'));
+                
+                // Play sound or show success state here
+                console.log("Star completed!");
+            }
+        });
+    </script>
+</body></html>

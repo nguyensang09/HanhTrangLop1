@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Học Tập - Tìm Vật Biến Mất</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#001f2a",
+                      "surface-container": "#f0eee6",
+                      "surface-bright": "#fbf9f1",
+                      "on-background": "#1b1c17",
+                      "primary": "#9b4500",
+                      "on-surface-variant": "#564338",
+                      "inverse-surface": "#30312c",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#54fdc4",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-container": "#00445a",
+                      "inverse-on-surface": "#f3f1e9",
+                      "background": "#fbf9f1",
+                      "surface-container-high": "#eae8e0",
+                      "surface-variant": "#e4e3db",
+                      "on-primary-fixed-variant": "#763300",
+                      "surface-container-highest": "#e4e3db",
+                      "surface-dim": "#dcdad2",
+                      "outline": "#897266",
+                      "on-secondary-container": "#007152",
+                      "primary-fixed-dim": "#ffb68d",
+                      "on-tertiary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "tertiary": "#006686",
+                      "surface-tint": "#9b4500",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface": "#fbf9f1",
+                      "tertiary-fixed": "#bfe8ff",
+                      "primary-fixed": "#ffdbc9",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-container": "#53b5df",
+                      "surface-container-low": "#f5f4ec",
+                      "on-primary-fixed": "#331200",
+                      "on-secondary-fixed": "#002116",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#51fac1",
+                      "outline-variant": "#ddc1b3",
+                      "primary-container": "#ff8c42",
+                      "on-primary-container": "#6a2d00",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#1b1c17",
+                      "secondary": "#006c4f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "container-margin": "24px",
+                      "gutter": "16px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid var(--tw-colors-primary-fixed-dim);
+            transition: all 0.1s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            margin-bottom: 2px;
+        }
+        .clay-card {
+            box-shadow: 0 4px 20px rgba(255,140,66,0.05);
+            border: 2px solid var(--tw-colors-tertiary-fixed);
+        }
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+            animation-delay: 2s;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- TopAppBar (Transactional - Hidden/Modified for focus) -->
+<header class="flex justify-between items-center w-full px-container-margin py-unit bg-surface-container border-b-4 border-surface-dim shadow-sm docked full-width top-0 z-10">
+<button aria-label="Go back" class="w-touch-target-min h-touch-target-min flex items-center justify-center rounded-full bg-surface hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary text-center flex-1">Sóc Nâu Học Tập</h1>
+<div class="flex items-center gap-1 bg-surface-variant px-3 py-1 rounded-full">
+<span class="font-title-md text-title-md text-primary">125</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center justify-start p-container-margin gap-card-gap pb-32 max-w-4xl mx-auto w-full">
+<!-- Sóc Nâu Dialogue -->
+<div class="w-full bg-[#fde68a] rounded-xl p-4 flex items-center gap-4 shadow-sm border-2 border-[#fbbf24] mb-4">
+<div class="w-16 h-16 rounded-full bg-white flex-shrink-0 overflow-hidden border-2 border-primary-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A cute, soft 3D rendering of a brown squirrel face (Sóc Nâu) smiling warmly. The style is claymorphic, smooth, and friendly, perfect for a preschool educational app. Bright, cheerful lighting against a clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSEId19MN-_EMkY-5Z_8GPN8CjwfrnEBo1aZJQwEBSP-TufAjL8CKwD-iedIHmtSDFBkuLjIKrnPiCiJ3MJtzCyMYssWKn8nwxW0ep2__nrDKALWFybsROkesWi5j6EG8sGrEL-ulIvYoK34Eq9OdJTVjV_nktvK1MOvA7B94sXqpNtYbYKpu9y1wsFzBHZk2-fwedFEyhVefKYeCKfrC0cC8fNLQNkJNDqB_FevKHqD9KCxpXuBrXHw"/>
+</div>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">Cái gì vừa biến mất nhỉ? Bé hãy chọn đúng nhé!</p>
+</div>
+<button aria-label="Phát âm thanh" class="w-12 h-12 rounded-full bg-primary flex items-center justify-center clay-button text-on-primary flex-shrink-0">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Stage Area: The Boxes -->
+<div class="w-full max-w-3xl bg-surface-bright clay-card rounded-[32px] p-8 flex flex-col items-center gap-8 relative overflow-hidden">
+<div class="flex justify-around w-full gap-4 relative z-10" id="boxes-container">
+<!-- Box 1 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-24 h-24 md:w-32 md:h-32 bg-tertiary-fixed rounded-2xl flex items-center justify-center border-4 border-tertiary shadow-inner relative">
+<img class="w-20 h-20 md:w-24 md:h-24 object-contain pop-in" data-alt="A soft, colorful 3D claymorphic illustration of a cute teddy bear sitting. Bright, friendly lighting with soft shadows on a transparent or neutral background. Designed for a preschool app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDygdI7WLrhyYm4r904d27JjwoC1_IZDpEg635qVHgEWPBJSh8pvZ8Mp_0qQ2bPLBUik-48SjdlhVXbAbn7h5gcDtVg7h5LqwJIq4WrdQUaEsSYLdIrv5A0-0K4ipl-B5rqilZqjF_AbSnGj8CmTI2C7CxWACKTXu6XZ7IHnlf1ZFSjj7zV9fp2oIsOrccz-T1ECbHDvHHwJGT_jFhCNCSVmEuMa5abgNsSYUUKmoTRKaGxd7dSdJVHpQ"/>
+</div>
+</div>
+<!-- Box 2 (The one that disappears) -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-24 h-24 md:w-32 md:h-32 bg-tertiary-fixed rounded-2xl flex items-center justify-center border-4 border-tertiary shadow-inner relative">
+<img class="w-20 h-20 md:w-24 md:h-24 object-contain pop-in fade-out" data-alt="A vibrant, bouncy 3D claymorphic red and white beach ball. Soft, rounded edges, bright lighting, and cheerful colors. High contrast against a neutral background, suitable for young children." id="disappearing-item" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWlkWOmReFhOcwoj-0lOtNYczPhI6D1RN6zYC6qSB8M_scjRspf4shIi6WcWddXuxC14Ow0CCFwgyHWD1IZwajH3AdAOHvfJCBG_3O6A_k7vsfvp9tCmsi_iQD7KDUAL3ZdGgWic6RorV2FDQ-64wGBXiUy4fIUwwkS5aBB3t6QPbbfwx6P4xEYkq3p4n9O0BXVwqo_VSveJGxncwh9dsXFLQtvIjv7lxJ80AWh9LV5sW5qnW-_R8YQw"/>
+<div class="absolute inset-0 flex items-center justify-center opacity-0" id="question-mark">
+<span class="material-symbols-outlined text-tertiary text-6xl" style="font-variation-settings: 'FILL' 1;">question_mark</span>
+</div>
+</div>
+</div>
+<!-- Box 3 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-24 h-24 md:w-32 md:h-32 bg-tertiary-fixed rounded-2xl flex items-center justify-center border-4 border-tertiary shadow-inner relative">
+<img class="w-20 h-20 md:w-24 md:h-24 object-contain pop-in" data-alt="A chunky, playful 3D claymorphic toy car, painted in bright yellow and blue. Soft rounded corners, thick wheels, friendly appearance. Bright, soft lighting ideal for an educational game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFzOJe5ynHEkY3ehP2ydO_tROPvsuikV-79dTLvHhL2ir4AsYqO7x_jCVzlSG0YfUYHGdotkcmZNlGOXgTe23DjjS3KziHMIpAiSTRLwhiTBQR6hF8VFd5dUHueiZWCqs9CReS4Nsl6jkCl_IRtp1C-GY4ZhybqBEaPsvJwy2cjpwZtOXvZVD8i2Md15f2abDfNlSOOyTWjjPk3jG3Vycw_dT0tF-7huZBP2OEvOiQJ8E7omgjxWh14w"/>
+</div>
+</div>
+</div>
+<!-- Decorative background element -->
+<div class="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary-fixed opacity-20 rounded-full blur-2xl z-0"></div>
+<div class="absolute -top-10 -left-10 w-40 h-40 bg-primary-fixed opacity-20 rounded-full blur-2xl z-0"></div>
+</div>
+<!-- Selection Area -->
+<div class="w-full mt-4 flex flex-col gap-4 opacity-0 transition-opacity duration-500" id="selection-area">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-center text-on-background">Chọn đồ vật biến mất:</h2>
+<div class="grid grid-cols-3 gap-4 md:gap-8">
+<!-- Choice 1 -->
+<button class="bg-surface-container-lowest rounded-2xl p-4 border-4 border-surface-variant clay-card hover:border-primary-container transition-colors flex flex-col items-center justify-center h-32 md:h-40 group">
+<img class="w-16 h-16 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform" data-alt="A small, soft 3D claymorphic green toy dinosaur. Friendly and rounded, bright lighting, neutral background. Consistent with a preschool educational game aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcnFAlDh2g45kH2SqP1E27PbLAudUNOR12-nDUAfzTSKfZprXWLm7L56BioxCaDSDnZYA2RANqj9XZpGroUelk9rv-2W2BG9DO7pfqUg1_GUu0-sADRu1gpiOYBaWEOrUEtmPovvosqM9fxqtLs_OiIa8rDurtc-7-8-Hij6uIaju6FcofAy3mrHUkP5kHSqggfUtgbCBR7Ez_xBKAdQtrw-WZ5pDTPNecw63s4BzcBrhAUCj0B-LpOQ"/>
+</button>
+<!-- Choice 2 (Correct) -->
+<button class="bg-surface-container-lowest rounded-2xl p-4 border-4 border-surface-variant clay-card hover:border-primary-container transition-colors flex flex-col items-center justify-center h-32 md:h-40 group" onclick="this.classList.add('border-secondary', 'bg-secondary-fixed');">
+<img class="w-16 h-16 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform" data-alt="A vibrant, bouncy 3D claymorphic red and white beach ball. Soft, rounded edges, bright lighting, and cheerful colors. High contrast against a neutral background, suitable for young children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm0Gl02Mj09vGRKDntw_eIcqeYJYmJCheEOPdPDdt6Q4N8DQReunXijWxg_POLsVssgv1fogHYF3JOpHnl_FQ3GamsSQzhAxX5nnUjy52OP1Ut6d5l0wNZDlpPXFnjrPC2NB_NhHWO4sx9uz4Jf1zGlDkM0SuIujONI0Il_qECDUCRdvZN6Cd6NwgApIGORuDpDAbvMFzjkJLAX9VCQbjWEInuSPeVDF35T9BOrTARawJPkqKE_5VfxA"/>
+</button>
+<!-- Choice 3 -->
+<button class="bg-surface-container-lowest rounded-2xl p-4 border-4 border-surface-variant clay-card hover:border-primary-container transition-colors flex flex-col items-center justify-center h-32 md:h-40 group">
+<img class="w-16 h-16 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform" data-alt="A cute, chunky 3D claymorphic wooden block with the letter A on it. Soft edges, bright primary colors, engaging for a toddler learning game. Neutral background, soft lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3GmsQTmxs9a07-7q_FO5cHpHbGw3g2Y1otk2pBcgfWrXyjFPzo1nmsbMTilGxryZ2hI1H3a65MIYK6JnMRi4682WBQGfb0XdxzrdiGtooZ_yUtZPohX831HRx8uxhoKIDc7J4kYYUTR3am1d78qiaoAJVS_JB2sP4cRWVYCDAYL9YYV_vZxCMkl2k_A3wlHKASlBd4k4Vq7S0tOPuZ-mGQT74m-AmjLqni3Y7WFx2x11ALyT0gKpuhA"/>
+</button>
+</div>
+</div>
+</main>
+<script>
+        // Simple logic to show the question mark and selection area after the item fades out
+        setTimeout(() => {
+            const questionMark = document.getElementById('question-mark');
+            const selectionArea = document.getElementById('selection-area');
+            
+            if(questionMark) {
+                questionMark.style.opacity = '1';
+                questionMark.classList.add('pop-in');
+            }
+            if(selectionArea) {
+                selectionArea.style.opacity = '1';
+            }
+        }, 3000); // 1s delay + 2s animation time
+    </script>
+</body></html>

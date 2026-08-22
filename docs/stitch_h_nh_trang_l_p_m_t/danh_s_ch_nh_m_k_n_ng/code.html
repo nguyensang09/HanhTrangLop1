@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Khám Phá</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#ff8c42",
+                      "outline-variant": "#ddc1b3",
+                      "on-error": "#ffffff",
+                      "surface-container": "#f0eee6",
+                      "on-tertiary-fixed": "#001f2a",
+                      "secondary": "#006c4f",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f5f4ec",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#763300",
+                      "secondary-fixed": "#54fdc4",
+                      "surface-tint": "#9b4500",
+                      "surface-dim": "#dcdad2",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-secondary-container": "#007152",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#ffdbc9",
+                      "on-background": "#1b1c17",
+                      "on-surface-variant": "#564338",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "secondary-container": "#51fac1",
+                      "on-primary-fixed": "#331200",
+                      "primary-fixed-dim": "#ffb68d",
+                      "outline": "#897266",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#6a2d00",
+                      "on-secondary-fixed": "#002116",
+                      "inverse-surface": "#30312c",
+                      "surface-variant": "#e4e3db",
+                      "surface": "#fbf9f1",
+                      "on-surface": "#1b1c17",
+                      "surface-bright": "#fbf9f1",
+                      "surface-container-high": "#eae8e0",
+                      "tertiary-container": "#53b5df",
+                      "on-tertiary-container": "#00445a",
+                      "tertiary": "#006686",
+                      "primary": "#9b4500",
+                      "background": "#fbf9f1",
+                      "surface-container-highest": "#e4e3db",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "inverse-on-surface": "#f3f1e9",
+                      "inverse-primary": "#ffb68d",
+                      "tertiary-fixed": "#bfe8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "2xl": "1.5rem"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .clay-card {
+            box-shadow: 0px 8px 0px 0px var(--card-border-color), 0px 10px 20px 0px rgba(255, 140, 66, 0.1);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .clay-card:active {
+            transform: translateY(4px);
+            box-shadow: 0px 4px 0px 0px var(--card-border-color), 0px 5px 10px 0px rgba(255, 140, 66, 0.1);
+        }
+        .clay-button {
+            border-bottom: 4px solid #763300;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .soft-shadow {
+            box-shadow: 0px 0px 20px 0px rgba(255, 140, 66, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pt-[80px] pb-[100px]">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-40 bg-surface-bright dark:bg-surface-dim shadow-[0px_4px_0px_0px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center w-full px-container-margin py-4">
+<div class="flex items-center gap-3">
+<div class="w-[48px] h-[48px] rounded-full overflow-hidden border-2 border-outline-variant">
+<img alt="Sóc Nâu character avatar" class="w-full h-full object-cover" data-alt="A cute illustration of a brown squirrel character, Sóc Nâu, with large friendly eyes, smiling warmly. The art style is soft, round, and appealing to preschoolers, set against a gentle warm yellow background. The squirrel looks ready to learn and play." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs75YNgThBqkQJczd1KWgszulPVEv4Qplg9FWHknggPalOYkWXwO0TFB-QW2_17M7cv0Xym7bY8XgWzc0g_TbwWwbMjHMzgA4Hnr6dct-dxUZg284HiyG0m29EC2smR8ChTesvtuOn4KfqP8jJdpLy2ZaUYNUlt133pexdm3THtHz1-nfRIr1m31zdU5SyO13lFZwYJcF3obJD2oILbwt1fTEj1kMe6FIXJUm54F3Ch5S3Db-L--jbTw"/>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim">Sóc Nâu Đồng Hành</h1>
+</div>
+<button class="flex items-center gap-1 bg-surface-container-high rounded-full px-4 py-2 hover:scale-105 transition-transform active:translate-y-0.5 transition-all text-on-surface-variant font-label-caps text-label-caps">
+<span>⭐</span>
+<span>125</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow px-container-margin md:px-12 max-w-7xl mx-auto w-full">
+<!-- Sóc Nâu Dialogue / Hero Section -->
+<div class="w-full bg-[#fde68a] rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6 soft-shadow mt-6">
+<img alt="Sóc Nâu" class="w-32 h-32 md:w-48 md:h-48 object-contain drop-shadow-md" data-alt="A 3D stylized, soft claymorphic illustration of Sóc Nâu (the brown squirrel) pointing enthusiastically towards the right. The squirrel is wearing a tiny explorer's hat. Bright, soft lighting, solid warm cream background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9KyIy_b7qCbplBNntf-whR_eIVEU1lAMYN_mCHSGcvzymx2BiOx0X8uuZ3px7WVjVnbtYAsW9BxBFMdlXyRUL_rxxLijfV8kMegIsLbdVkVwdLiLSavlOH_DdaurlME7eJQUJ6AdWrW0XygjmrrR4Z8ISLklyUoFkIIgUmn9AbrOR4vfM-jo4TItIn7sQCgJofW8L5RpdWEKHrevi-jeIqL76x0nY0qZBtjc4EwcgGxaum-_lA0Kcpw"/>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Chào bé!</h2>
+<p class="font-body-lg text-body-lg text-on-surface">Hôm nay bé muốn học gì nào? Hãy chọn một thẻ bên dưới nhé!</p>
+</div>
+<button aria-label="Nghe hướng dẫn" class="md:ml-auto w-12 h-12 rounded-full bg-primary flex items-center justify-center clay-button text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Bento Grid / Category Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-card-gap">
+<!-- Card 1: Chữ cái -->
+<button class="clay-card rounded-2xl bg-white border-2 border-[#bae6fd] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden group" style="--card-border-color: #bae6fd;">
+<div class="w-20 h-20 rounded-full bg-[#e0f2fe] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[48px] text-[#0284c7]" style="font-variation-settings: 'FILL' 1;">sort_by_alpha</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-[#0369a1]">Chữ cái</h3>
+<img alt="" class="absolute -bottom-4 -right-4 w-24 h-24 opacity-50 group-hover:opacity-100 transition-opacity" data-alt="A small decorative illustration of Sóc Nâu holding a large letter 'A'. Soft claymorphic style, bright colors, tailored for a preschool learning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaLUgsbXAhfLwQpuyNH0W_IaJCiRBWcqiJ_7yiBDrSz_Rgxck0ucHhwcUXfQyFVYy6A1ABl1p637a0lIx1ui1WvFSQHTpT2-7KN-or9GWG_jU0MLm1IvSE1CSCugbcmMBH0BKDV7n7f0EPMiONhX4WaGQcdl9_s4Y_JUcQPEISq65qjNuEbiOWHUhsZOoa8sVOb_h4GBrmpKr3Zdj40i1Y1dshGscbTymLnNjI3O8jy4ZDOFclGLClVw"/>
+</button>
+<!-- Card 2: Chữ số -->
+<button class="clay-card rounded-2xl bg-white border-2 border-[#fef08a] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden group" style="--card-border-color: #fef08a;">
+<div class="w-20 h-20 rounded-full bg-[#fef9c3] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[48px] text-[#ca8a04]" style="font-variation-settings: 'FILL' 1;">123</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-[#a16207]">Chữ số</h3>
+<img alt="" class="absolute -bottom-4 -right-4 w-24 h-24 opacity-50 group-hover:opacity-100 transition-opacity" data-alt="A small decorative illustration of Sóc Nâu sitting on a large number '3'. Soft claymorphic style, bright colors, tailored for a preschool learning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFKmhQkPocJuoREvIfrrBMyGJKYL73vP-QOmZqW_wyyanrL1c2_3-_HQ0uxMYyn5K4AiTHq_k5blzJn2MdVMYGR-QusEnECIOPdSpZUR0vvAhe25W6FwRN4Wmzu6Q_KHlPpY-no8JPKQ1m9tE9L0io1qeZulIXi6hUi8VC1jdfpVTdijPlPddig1tm9iWU6smLV98ZoLyCessxY2hHTbsjhBViv-1ObfdJzI_-Hy7AfRKfmdqcXXD9lg"/>
+</button>
+<!-- Card 3: Tư duy (Span 2 cols on tablet) -->
+<button class="clay-card rounded-2xl bg-white border-2 border-[#bbf7d0] p-6 flex flex-col md:flex-row items-center justify-center text-center md:text-left gap-6 relative overflow-hidden group md:col-span-2 lg:col-span-1" style="--card-border-color: #bbf7d0;">
+<div class="w-20 h-20 rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[48px] text-[#16a34a]" style="font-variation-settings: 'FILL' 1;">extension</span>
+</div>
+<div class="z-10">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-[#15803d]">Tư duy</h3>
+<p class="font-body-md text-body-md text-on-surface-variant hidden md:block">Giải đố vui nhộn</p>
+</div>
+<img alt="" class="absolute -bottom-4 md:bottom-auto md:top-4 -right-4 md:-right-2 w-24 h-24 opacity-50 group-hover:opacity-100 transition-opacity" data-alt="A small decorative illustration of Sóc Nâu solving a colorful puzzle piece. Soft claymorphic style, bright colors, tailored for a preschool learning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBraRpfR5qoExLblagvmHcZF9KB1ZacYy5qDuBYYK3Po4SA3u94zQFttr-35BtHsj1_nVkVp20p0uYKiJ1z2wJs8_WF1TEmFTWsuhXa4qxHE-Au2oVQDroyM9PGunOcG-ly9wPx3e2FsTJIMl8gahgj7sE7_7YOIpeEzW-CKXdJRQ_pWeEP9ZgfAwVPi1_MU56uAIFDkJp8j5OGD0B7djAf4vJrrjVT8VuLTSmoYd9hyKD3dadCP5xoA"/>
+</button>
+<!-- Card 4: Khám phá -->
+<button class="clay-card rounded-2xl bg-white border-2 border-[#fbcfe8] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden group" style="--card-border-color: #fbcfe8;">
+<div class="w-20 h-20 rounded-full bg-[#fce7f3] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[48px] text-[#db2777]" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-[#be185d]">Khám phá</h3>
+<img alt="" class="absolute -bottom-4 -right-4 w-24 h-24 opacity-50 group-hover:opacity-100 transition-opacity" data-alt="A small decorative illustration of Sóc Nâu looking through a magnifying glass at a bug. Soft claymorphic style, bright colors, tailored for a preschool learning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsfdsuyfICfNXepn0PQ9OQrwiybLGjYRzJQ_WGOCmo5p_vv4b9I0c_v5DrnfxmoiShqlN41d2rV5KaJelLUXTMNLXTksIWoe-qKxBnjXef1RaoRLkfIY8con8Q3z5i-LLIGoMWeKY5u_fEiHx-sIh9IjfR6gClSDIgcYbCn_Sq78heIXfc7qxkjGcz00Fvf_3ffco8GKGoOMrPvG4RecuD5Ljz_cEmlfpRwU-vLWKpyG1nOU5UPNHFPw"/>
+</button>
+<!-- Card 5: Kỹ năng sống -->
+<button class="clay-card rounded-2xl bg-white border-2 border-[#e9d5ff] p-6 flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden group md:col-span-2 lg:col-span-2" style="--card-border-color: #e9d5ff;">
+<div class="flex flex-col md:flex-row items-center gap-6 z-10 w-full justify-center">
+<div class="w-20 h-20 rounded-full bg-[#f3e8ff] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[48px] text-[#9333ea]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<div>
+<h3 class="font-headline-lg text-headline-lg text-[#7e22ce] mb-2">Kỹ năng sống</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">Học cách tự chăm sóc bản thân và giúp đỡ mọi người</p>
+</div>
+</div>
+<img alt="" class="absolute -right-8 -bottom-8 w-40 h-40 opacity-30 group-hover:opacity-100 transition-opacity pointer-events-none" data-alt="A large decorative illustration of Sóc Nâu brushing its teeth happily. Soft claymorphic style, bright colors, tailored for a preschool learning interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYN41aVUal5g166WDEMSmJt3FHfPjaYPdB4w0BdGmlGeoHSvm3B2Mzchs9Q88lfUHX89zSmEnwwycg6rj9qkgABDBqE9aJDvD1XiZH0chQQhjo4s7Eq_t1lESvExHfBUCtxuRYD-f925hoFIswnFh31CPEha4GkA0fU8yLQ9h4PL5zKY4NykKNbN8nAmI_ke5IKMiqDNhMNU3lNv_D4LVJ5Cx1HjRTP5BDc6m25ua5jiyoc3FCPvhg8Q"/>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Visible on Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface-container dark:bg-surface-container-highest rounded-t-xl border-t-4 border-surface-container-high dark:border-outline-variant shadow-[0px_-4px_20px_0px_rgba(255,140,66,0.05)] md:hidden">
+<!-- Tab 1: Trang chủ (Active) -->
+<button class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-full px-6 py-2 border-b-4 border-primary dark:border-on-primary-fixed-variant translate-y-1 transition-all duration-100 min-w-[min-content] min-h-[48px]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-caps text-label-caps mt-1">Trang chủ</span>
+</button>
+<!-- Tab 2: Bài tập -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant transition-all rounded-xl min-w-[min-content] min-h-[48px]">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-label-caps text-label-caps mt-1 text-xs">Bài tập</span>
+</button>
+<!-- Tab 3: Quà tặng -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant transition-all rounded-xl min-w-[min-content] min-h-[48px]">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span class="font-label-caps text-label-caps mt-1 text-xs">Quà tặng</span>
+</button>
+<!-- Tab 4: Phụ huynh -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-2 hover:bg-surface-container-highest dark:hover:bg-surface-variant transition-all rounded-xl min-w-[min-content] min-h-[48px]">
+<span class="material-symbols-outlined">family_history</span>
+<span class="font-label-caps text-label-caps mt-1 text-xs">Phụ huynh</span>
+</button>
+</nav>
+</body></html>

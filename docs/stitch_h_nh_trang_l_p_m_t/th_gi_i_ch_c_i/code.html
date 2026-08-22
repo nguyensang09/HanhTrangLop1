@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thế giới chữ cái</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#f0eee6",
+                        "warm-yellow": "#ffd54f",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#fbf9f1",
+                        "on-tertiary-fixed": "#001f2b",
+                        "surface-container-low": "#f6f4ec",
+                        "on-primary-fixed": "#331200",
+                        "on-surface-variant": "#564338",
+                        "surface-container-high": "#eae8e0",
+                        "surface-tint": "#9b4500",
+                        "secondary": "#006c4f",
+                        "surface-variant": "#e4e3db",
+                        "on-background": "#1b1c17",
+                        "faded-path": "rgba(0, 0, 0, 0.1)",
+                        "success-glow": "#27e0a9",
+                        "tertiary-container": "#53b5df",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "primary-container": "#ff8c42",
+                        "inverse-on-surface": "#f3f1e9",
+                        "squirrel-brown": "#897266",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-primary-fixed-variant": "#763300",
+                        "on-tertiary-container": "#00445a",
+                        "secondary-fixed-dim": "#29e0a9",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "primary": "#9b4500",
+                        "outline-variant": "#ddc1b3",
+                        "inverse-primary": "#ffb68d",
+                        "outline": "#897266",
+                        "tertiary-fixed": "#bfe8ff",
+                        "inverse-surface": "#30312c",
+                        "on-secondary-fixed": "#002116",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#6a2d00",
+                        "background": "#fbf9f1",
+                        "surface": "#fbf9f1",
+                        "on-secondary-container": "#007152",
+                        "secondary-container": "#51fac1",
+                        "primary-fixed": "#ffdbc9",
+                        "surface-container-highest": "#e4e3db",
+                        "on-error": "#ffffff",
+                        "tertiary": "#006686",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#55fdc4",
+                        "on-surface": "#1b1c17",
+                        "surface-dim": "#dcdad2",
+                        "on-tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target": "64px",
+                        "safe-margin": "32px",
+                        "tolerance-zone": "40px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "path-number": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "instruction-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "path-number": ["16px", { "lineHeight": "16px", "fontWeight": "800" }],
+                        "label-caps": ["18px", { "lineHeight": "24px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "display-hero": ["80px", { "lineHeight": "96px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "instruction-md": ["24px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-btn {
+            box-shadow: 0 6px 0 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .clay-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+        }
+        .success-glow {
+            box-shadow: 0 0 20px 5px var(--color-success-glow, #27e0a9);
+        }
+    </style>
+</head>
+<body class="bg-surface font-headline-lg-mobile text-on-surface h-screen flex flex-col md:flex-row overflow-hidden pb-[80px] md:pb-0">
+<!-- Desktop Navigation Drawer (Hidden on Mobile) -->
+<nav class="hidden md:flex flex-col h-full w-80 rounded-r-xl bg-surface-bright shadow-lg py-gutter z-40">
+<div class="px-gutter mb-8 flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden border-4 border-primary">
+<img class="w-full h-full object-cover" data-alt="A cute, highly detailed 3D illustration of Sóc Nâu (a brown squirrel) wearing a tiny explorer hat. The squirrel is smiling brightly against a soft yellow background. Warm lighting, friendly mood, claymorphic style, 5-year-old educational app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQQQxPrus0NVR5A1Xcr89oBUTwWBzdWODRS-Sf_OlWtsWWIm9ccgq7XBmZvFwI1qFuc0FbPgyPk5SGQqHcWSePRVD88hK54EwUNm3ezy_DoDjAJNLGbQvw0yp8n54qVXjjqd3sPCIIRTIiIJJMQo9yDrSFvFDzdQPUNsHn_HqHKJpL_dcPGMAslfLCHd4Opupfw9lmqRHcAASgPG-ENUM38TElluzE3BUYerB5qzQTsZ0pCIDqBSOQQQ"/>
+</div>
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Sóc Nâu Chào Bạn!</h2>
+<p class="text-on-surface-variant text-sm">Cùng học thật vui nhé</p>
+</div>
+</div>
+<div class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant mx-2 hover:bg-surface-container-highest rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+<span class="font-label-caps text-label-caps">Hồ sơ của bé</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant mx-2 hover:bg-surface-container-highest rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-caps text-label-caps">Cài đặt</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface-variant mx-2 hover:bg-surface-container-highest rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">help_outline</span>
+<span class="font-label-caps text-label-caps">Hướng dẫn</span>
+</a>
+</div>
+<div class="px-4 mt-auto">
+<a class="flex items-center gap-4 px-4 py-3 text-error mx-2 hover:bg-error-container rounded-full transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">logout</span>
+<span class="font-label-caps text-label-caps">Đăng xuất</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 relative flex flex-col h-full w-full">
+<!-- TopAppBar (Mobile & Desktop) -->
+<header class="docked full-width top-0 bg-surface flex justify-between items-center w-full px-safe-margin py-4 h-[72px] z-30 shadow-sm md:shadow-none">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container overflow-hidden border-2 border-primary md:hidden">
+<img class="w-full h-full object-cover" data-alt="A cute, highly detailed 3D illustration of Sóc Nâu (a brown squirrel) wearing a tiny explorer hat. The squirrel is smiling brightly against a soft yellow background. Warm lighting, friendly mood, claymorphic style, 5-year-old educational app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCa8XfNpivwLqT9Z7p_cRzi8x9Vy3lk2wdBfM7teJRW0QzuPXgHA1fQP7aMPL0Zt8csSKqMcB2NGDBMCWQcisGhd-Xe7rZoMh4VLE2sw05pQjMzgjqwDBwpDO_EuyQjME2eTedCfeXwEpddifk8_-HYyaEw_RMFP50GXPywXm0zVsKmYQFTpXG_CRPQnQxeZnbcs1eCHwI1bwvRHfZgEp19cbMe1PQy7rbf_8GcCLFJ2VW3UTH59WjN6w"/>
+</div>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary">Hành Trang Lớp Một</h1>
+</div>
+<div class="flex items-center gap-2 bg-warm-yellow/20 px-4 py-2 rounded-full">
+<span class="text-xl">⭐</span>
+<span class="font-label-caps text-label-caps text-primary">125</span>
+</div>
+</header>
+<!-- Canvas Area (The Map) -->
+<div class="flex-1 relative overflow-hidden bg-tertiary-fixed/30 p-safe-margin flex items-center justify-center rounded-tl-xl md:rounded-tl-none">
+<!-- Background Map Decoration -->
+<div class="absolute inset-0 z-0 opacity-50 pointer-events-none" data-alt="A vibrant, stylized 2D map of a magical green forest designed for a children's game. Winding dirt paths connect various small clearings. Lush, cartoonish trees, glowing mushrooms, and tiny sparkling streams. The color palette is rich in greens, earth tones, and magical teal highlights. Safe, optimistic, and welcoming aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuADm2E6lqurwxk2Y4VHja9o63AYXfKU4-ZAhCfqF0etDqAKid1OX6vm2WGnj8nfi1AJpztkp95M92X88fTJwkZzQWhoI6dIktLRuvCdmBdfKe__OHvq_mOgmveihZp9lcJiL0UmxrLXN_-ke4yM3QRCz_6dreEWEJhTpiLokG6BWjLV0py4ijcwNnOvlcfYlV1KyFcZOgKfXk1-SA-nBLV82S-gHUi-ykXOVWOi4JrZtBrUxTOTbtHpcQ'); background-size: cover; background-position: center;"></div>
+<!-- Path SVG -->
+<svg class="absolute inset-0 w-full h-full z-0 pointer-events-none" preserveaspectratio="xMidYMid slice" viewbox="0 0 1000 800">
+<path d="M 150,600 C 300,500 400,650 550,550 C 700,450 800,200 850,150" fill="none" stroke="var(--color-outline-variant)" stroke-dasharray="30 20" stroke-linecap="round" stroke-width="20"></path>
+</svg>
+<!-- Map Nodes -->
+<div class="relative w-full h-full max-w-4xl max-h-[800px] mx-auto z-10">
+<!-- Node 1: Khám phá chữ A (Completed) -->
+<div class="absolute bottom-[20%] left-[10%] md:left-[15%] transform -translate-x-1/2 translate-y-1/2 flex flex-col items-center group cursor-pointer">
+<div class="w-20 h-20 bg-secondary rounded-full flex items-center justify-center clay-btn border-4 border-surface shadow-lg relative">
+<span class="material-symbols-outlined text-on-secondary text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<!-- Star Reward Badge -->
+<div class="absolute -top-3 -right-3 bg-warm-yellow rounded-full w-8 h-8 flex items-center justify-center shadow-md border-2 border-surface">
+<span class="text-sm">⭐</span>
+</div>
+</div>
+<span class="mt-4 font-label-caps text-label-caps text-on-surface-variant bg-surface/80 px-3 py-1 rounded-full backdrop-blur-sm text-center">Khám phá<br/>chữ A</span>
+</div>
+<!-- Node 2: Tìm chữ B (Active) -->
+<div class="absolute top-[40%] md:top-[45%] left-[45%] md:left-[55%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-20">
+<!-- Sóc Nâu Indicator -->
+<div class="absolute -top-20 animate-bounce">
+<div class="w-16 h-16 bg-surface rounded-full shadow-lg border-4 border-primary overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A cute, highly detailed 3D illustration of Sóc Nâu (a brown squirrel) looking curious and excited, pointing downwards. Warm lighting, friendly mood, claymorphic style, 5-year-old educational app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB7FojIlIlumASolgCLJAGr0RgDAk_v3xo_uOiQQA8xPLePziy3mTG7ycGu4U8i4YqOhq-4xS-Gg1OY-8Q5OhaWNQjJrX8SFLE0sYx6ziZVzpWB0osRWb2xbHFxqp5U-kC-F5hvONAIRSd3yykOX-S6FASMBle7EDiPcUaRxmVoYfEnm1A008nuGgL583_yfiPlCK9C2dp5h-dyLhA6jpBIfIYewMnM5O6aEBQSNCKPfC7_n5EaWHVmA"/>
+</div>
+<!-- Speech Bubble -->
+<div class="absolute -top-12 -right-24 bg-warm-yellow text-on-surface-variant font-instruction-md text-sm px-4 py-2 rounded-2xl rounded-bl-none shadow-md whitespace-nowrap">
+                             Tìm chữ B nhé!
+                             <button class="ml-2 inline-flex items-center justify-center align-middle hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+</div>
+<div class="w-24 h-24 bg-primary rounded-full flex items-center justify-center clay-btn border-4 border-surface shadow-xl success-glow relative">
+<span class="font-display-hero text-headline-lg-mobile text-on-primary">B</span>
+</div>
+<span class="mt-4 font-label-caps text-label-caps text-primary font-bold bg-surface px-4 py-2 rounded-full shadow-sm text-center">Tìm chữ B</span>
+</div>
+<!-- Node 3: Ghép chữ hoa - thường (Locked) -->
+<div class="absolute top-[15%] right-[10%] md:right-[15%] transform translate-x-1/2 -translate-y-1/2 flex flex-col items-center group opacity-60">
+<div class="w-20 h-20 bg-surface-variant rounded-full flex items-center justify-center border-4 border-surface shadow-inner relative">
+<span class="material-symbols-outlined text-outline text-4xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<span class="mt-4 font-label-caps text-label-caps text-outline bg-surface/80 px-3 py-1 rounded-full backdrop-blur-sm text-center">Ghép chữ<br/>hoa - thường</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container rounded-t-xl border-t-4 border-surface-container-highest shadow-sm md:hidden h-[80px]">
+<a class="flex flex-col items-center justify-center text-outline px-4 py-2 hover:bg-primary-fixed rounded-xl" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-[12px] mt-1">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-2 translate-y-[-2px] border-b-4 border-on-primary-fixed-variant transition-all duration-100" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-[12px] mt-1">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline px-4 py-2 hover:bg-primary-fixed rounded-xl" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">military_tech</span>
+<span class="font-label-caps text-[12px] mt-1">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline px-4 py-2 hover:bg-primary-fixed rounded-xl" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">family_restroom</span>
+<span class="font-label-caps text-[12px] mt-1">Bố mẹ</span>
+</a>
+</nav>
+</body></html>

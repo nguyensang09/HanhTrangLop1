@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Missing Number Sequence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#27e0a9",
+                      "primary-container": "#ff8c42",
+                      "on-surface-variant": "#564338",
+                      "surface-bright": "#fbf9f1",
+                      "primary-fixed-dim": "#ffb68d",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#51fac1",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "inverse-primary": "#ffb68d",
+                      "secondary-fixed": "#54fdc4",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "inverse-surface": "#30312c",
+                      "surface-container-highest": "#e4e3db",
+                      "surface-container-high": "#eae8e0",
+                      "surface": "#fbf9f1",
+                      "inverse-on-surface": "#f3f1e9",
+                      "on-tertiary-fixed": "#001f2a",
+                      "outline-variant": "#ddc1b3",
+                      "surface-dim": "#dcdad2",
+                      "outline": "#897266",
+                      "surface-container": "#f0eee6",
+                      "surface-tint": "#9b4500",
+                      "primary-fixed": "#ffdbc9",
+                      "secondary": "#006c4f",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary": "#ffffff",
+                      "tertiary": "#006686",
+                      "on-primary-fixed": "#331200",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "background": "#fbf9f1",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#f5f4ec",
+                      "on-tertiary-container": "#00445a",
+                      "on-primary-fixed-variant": "#763300",
+                      "on-surface": "#1b1c17",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#bfe8ff",
+                      "on-secondary-fixed": "#002116",
+                      "on-background": "#1b1c17",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#9b4500",
+                      "surface-variant": "#e4e3db",
+                      "on-secondary-container": "#007152",
+                      "on-primary-container": "#6a2d00",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "2xl": "1rem",
+                      "3xl": "1.5rem"
+              },
+              "spacing": {
+                      "card-gap": "20px",
+                      "unit": "8px",
+                      "container-margin": "24px",
+                      "gutter": "16px",
+                      "touch-target-min": "48px",
+                      "nav-bottom": "88px",
+                      "nav-top": "64px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              },
+              boxShadow: {
+                'soft-clay': '0 -4px 20px rgba(255, 140, 66, 0.05)',
+                'card-float': '0 8px 30px rgba(155, 69, 0, 0.08)'
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            font-family: 'Be Vietnam Pro', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .clay-btn {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-bottom-width: 4px;
+        }
+        
+        .clay-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+
+        .drop-zone {
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.active {
+            background-color: theme('colors.tertiary-fixed');
+            border-color: theme('colors.tertiary');
+            transform: scale(1.05);
+        }
+
+        .draggable {
+            touch-action: none;
+            user-select: none;
+            cursor: grab;
+        }
+        
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col pt-nav-top pb-nav-bottom md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-dim bg-surface-container-low dark:bg-surface-container-high shadow-sm flex justify-between items-center px-container-margin py-unit h-nav-top">
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:opacity-90 active:translate-y-0.5 transition-transform rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 600;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary dark:text-primary-fixed-dim font-bold truncate px-4">
+            Sóc Nâu Học Chữ
+        </h1>
+<div class="flex items-center space-x-2 bg-surface-container-highest px-3 py-1.5 rounded-full shadow-inner">
+<span class="font-title-md text-title-md text-primary font-bold">125</span>
+<span class="material-symbols-outlined text-accent-yellow" style="font-variation-settings: 'FILL' 1, 'wght' 400; color: #FDD835;">star</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-container-margin w-full max-w-4xl mx-auto py-8">
+<!-- Sóc Nâu Dialogue / Helper -->
+<div class="w-full max-w-md bg-[#FFF9C4] rounded-2xl p-6 shadow-card-float border-2 border-[#FFF176] flex items-center gap-4 mb-8 transform transition-transform hover:scale-[1.02]">
+<div class="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden border-2 border-white">
+<img class="w-full h-full object-cover" data-alt="A cute illustration of a friendly brown squirrel character named Soc Nau with big expressive eyes, wearing a tiny red scarf, set against a soft cream background. The illustration style is 2D vector, flat shading with soft highlights, suitable for a preschool educational app. Warm and inviting aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTxWmsPS6mNJKbkoKlLhAbx9HVGwlE7rspQ3pLGKxnw3jF-w8S8F5x8ZlUfsCaH_SHJoziqvBfL17OHvNcjsD72FKmYL0pl_EDtus--VXywxL1-WaOMujbTXuyLn5rFgaBd1Ka2Id_8ZyEfdmoZ5TJL3nlOIA7oEY-m6TZ2_nizy88RH0ktOpQf0JG9Q-7GJSFRWzp0yobchts-5EEketZbWkrOuVcQyNCa-7p4y7kFqkw6QNNcyzddg"/>
+</div>
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Số nào còn thiếu nhỉ?</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Bé hãy kéo số thích hợp vào ô trống nhé!</p>
+</div>
+<button class="w-10 h-10 ml-auto rounded-full bg-white shadow-sm flex items-center justify-center text-primary hover:bg-surface-bright active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Sequence Area -->
+<div class="w-full max-w-2xl bg-white rounded-3xl p-8 shadow-card-float border-2 border-surface-container-high mb-12">
+<div class="flex items-center justify-between gap-2 md:gap-4 flex-wrap sm:flex-nowrap">
+<!-- Number 1 -->
+<div class="w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-surface-container rounded-2xl flex items-center justify-center shadow-inner border-b-4 border-surface-container-high">
+<span class="font-display-hero text-display-hero text-primary font-bold">1</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant hidden sm:block">arrow_forward</span>
+<!-- Number 2 -->
+<div class="w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-surface-container rounded-2xl flex items-center justify-center shadow-inner border-b-4 border-surface-container-high">
+<span class="font-display-hero text-display-hero text-primary font-bold">2</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant hidden sm:block">arrow_forward</span>
+<!-- Missing Box (Drop Zone) -->
+<div class="drop-zone w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-surface-bright rounded-2xl flex items-center justify-center border-4 border-dashed border-tertiary-container relative overflow-hidden group" id="dropZone">
+<div class="absolute inset-0 bg-tertiary-container/10 group-hover:bg-tertiary-container/20 transition-colors"></div>
+<span class="material-symbols-outlined text-tertiary-container text-4xl font-bold animate-pulse">question_mark</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant hidden sm:block">arrow_forward</span>
+<!-- Number 4 -->
+<div class="w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-surface-container rounded-2xl flex items-center justify-center shadow-inner border-b-4 border-surface-container-high">
+<span class="font-display-hero text-display-hero text-primary font-bold">4</span>
+</div>
+<span class="material-symbols-outlined text-surface-variant hidden sm:block">arrow_forward</span>
+<!-- Number 5 -->
+<div class="w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 bg-surface-container rounded-2xl flex items-center justify-center shadow-inner border-b-4 border-surface-container-high">
+<span class="font-display-hero text-display-hero text-primary font-bold">5</span>
+</div>
+</div>
+<!-- Progress indicator -->
+<div class="mt-8 flex items-center justify-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary-container"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+<div class="w-2 h-2 rounded-full bg-surface-variant"></div>
+</div>
+</div>
+<!-- Choice Cards Area (Draggables) -->
+<div class="w-full max-w-lg flex justify-center gap-6 md:gap-8">
+<!-- Card 3 (Correct) -->
+<div class="draggable w-24 h-28 sm:w-28 sm:h-32 bg-secondary-container rounded-2xl flex items-center justify-center cursor-grab shadow-card-float border-b-8 border-secondary-fixed-dim hover:-translate-y-2 hover:shadow-xl transition-all duration-300 transform active:scale-95 z-10" draggable="true">
+<span class="font-display-hero text-display-hero text-on-secondary-container font-extrabold text-5xl">3</span>
+</div>
+<!-- Card 6 (Wrong) -->
+<div class="draggable w-24 h-28 sm:w-28 sm:h-32 bg-surface rounded-2xl flex items-center justify-center cursor-grab shadow-card-float border-b-8 border-surface-dim hover:-translate-y-2 hover:shadow-xl transition-all duration-300 transform active:scale-95 z-10" draggable="true">
+<span class="font-display-hero text-display-hero text-primary font-extrabold text-5xl">6</span>
+</div>
+<!-- Card 0 (Wrong) -->
+<div class="draggable w-24 h-28 sm:w-28 sm:h-32 bg-surface rounded-2xl flex items-center justify-center cursor-grab shadow-card-float border-b-8 border-surface-dim hover:-translate-y-2 hover:shadow-xl transition-all duration-300 transform active:scale-95 z-10" draggable="true">
+<span class="font-display-hero text-display-hero text-primary font-extrabold text-5xl">0</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface-container dark:bg-surface-container-highest bg-surface-container-high border-t-4 border-surface-container-highest shadow-soft-clay fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-4 pb-4 pt-2">
+<!-- Home (Inactive here, but let's assume we are in "Exercises") -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim hover:opacity-90 w-16 group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 transition-transform">home</span>
+<span class="font-label-caps text-label-caps text-[10px]">Home</span>
+</a>
+<!-- Exercises (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 translate-y-[-4px] border-b-4 border-primary hover:opacity-90 Active: scale-95 duration-100 transition-all w-20" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-label-caps text-[11px] font-bold">Exercises</span>
+</a>
+<!-- Rewards (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim hover:opacity-90 w-16 group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 transition-transform">military_tech</span>
+<span class="font-label-caps text-label-caps text-[10px]">Rewards</span>
+</a>
+<!-- Parents (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim hover:opacity-90 w-16 group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 transition-transform">family_restroom</span>
+<span class="font-label-caps text-label-caps text-[10px]">Parents</span>
+</a>
+</nav>
+<!-- Desktop Side/Top Nav placeholder to satisfy fluid layout on larger screens -->
+<nav class="hidden md:flex fixed top-0 right-0 h-nav-top items-center px-container-margin gap-8 z-50 mr-8">
+<a class="font-title-md text-title-md text-on-surface-variant hover:text-primary transition-colors" href="#">Home</a>
+<a class="font-title-md text-title-md text-primary font-bold border-b-2 border-primary pb-1" href="#">Exercises</a>
+<a class="font-title-md text-title-md text-on-surface-variant hover:text-primary transition-colors" href="#">Rewards</a>
+<a class="font-title-md text-title-md text-on-surface-variant hover:text-primary transition-colors" href="#">Parents</a>
+</nav>
+<script>
+        // Simple drag and drop visual feedback script (non-functional logic, just UX)
+        const draggables = document.querySelectorAll('.draggable');
+        const dropZone = document.getElementById('dropZone');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('opacity-50');
+                dropZone.classList.add('bg-tertiary-container/30', 'border-tertiary');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('opacity-50');
+                dropZone.classList.remove('bg-tertiary-container/30', 'border-tertiary');
+                dropZone.classList.remove('active');
+            });
+        });
+
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('active');
+        });
+
+        dropZone.addEventListener('drop', () => {
+            // In a real app, logic goes here to check if it's correct.
+            // For UI purposes, just visual reset
+            dropZone.classList.remove('active');
+            dropZone.innerHTML = '<span class="font-display-hero text-display-hero text-tertiary font-bold">3</span>';
+            dropZone.classList.remove('border-dashed', 'border-4');
+            dropZone.classList.add('bg-secondary-container', 'border-b-4', 'border-secondary-fixed-dim', 'shadow-inner');
+        });
+    </script>
+</body></html>

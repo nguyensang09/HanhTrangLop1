@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Activity Builder - Sóc Nâu Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#1b1c17",
+                        "on-surface": "#1b1c17",
+                        "tertiary": "#006686",
+                        "secondary-fixed": "#54fdc4",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f5f4ec",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#6a2d00",
+                        "on-secondary-container": "#007152",
+                        "surface-container": "#f0eee6",
+                        "primary": "#9b4500",
+                        "background": "#fbf9f1",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-primary-fixed-variant": "#763300",
+                        "tertiary-container": "#53b5df",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#001f2a",
+                        "outline": "#897266",
+                        "on-primary-fixed": "#331200",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e4e3db",
+                        "secondary-container": "#51fac1",
+                        "surface-dim": "#dcdad2",
+                        "surface-bright": "#fbf9f1",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-container-high": "#eae8e0",
+                        "surface-container-highest": "#e4e3db",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-secondary-fixed": "#002116",
+                        "on-surface-variant": "#564338",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "outline-variant": "#ddc1b3",
+                        "inverse-primary": "#ffb68d",
+                        "secondary": "#006c4f",
+                        "primary-fixed": "#ffdbc9",
+                        "on-tertiary-container": "#00445a",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "primary-container": "#ff8c42",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "inverse-surface": "#30312c",
+                        "surface": "#fbf9f1",
+                        "surface-tint": "#9b4500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Claymorphism button effect */
+        .btn-clay {
+            border-bottom-width: 4px;
+            transition: all 0.1s ease-in-out;
+        }
+        .btn-clay:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 bottom-0 flex flex-col border-r border-outline-variant bg-surface-container-low dark:bg-surface-container-lowest h-screen w-72 z-40">
+<div class="p-6">
+<h1 class="font-display-hero text-headline-lg-mobile text-primary flex items-center gap-2">
+<span class="material-symbols-outlined icon-filled text-primary-container text-3xl">cruelty_free</span>
+                Admin Central
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Managing Learning Play</p>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full btn-clay bg-primary text-on-primary font-title-md text-title-md py-3 rounded-full flex items-center justify-center gap-2 border-primary-fixed-dim">
+<span class="material-symbols-outlined">add</span>
+                New Lesson
+            </button>
+</div>
+<ul class="flex-1 flex flex-col gap-2 font-label-caps text-label-caps">
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">library_books</span>
+                    Content Library
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 scale-95 transition-transform font-bold" href="#">
+<span class="material-symbols-outlined icon-filled">extension</span>
+                    Activity Builder
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">psychology</span>
+                    Skills Mapping
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+                    User Stats
+                </a>
+</li>
+</ul>
+<div class="p-4 border-t border-outline-variant mt-auto">
+<ul class="flex flex-col gap-2 font-label-caps text-label-caps">
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Support
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl px-4 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Sign Out
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-72 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between w-full px-6 py-3 bg-surface dark:bg-surface-dim shadow-sm">
+<div class="flex items-center gap-4">
+<h2 class="font-title-md text-title-md text-primary dark:text-primary-fixed-dim">Sóc Nâu Admin</h2>
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 rounded-full bg-surface-container border-none focus:ring-2 focus:ring-primary w-64 font-body-md text-body-md text-on-surface" placeholder="Search components..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="text-primary font-label-caps text-label-caps hover:bg-primary-container hover:text-on-primary-container px-4 py-2 rounded-full transition-colors">
+                    Save Draft
+                </button>
+<button class="flex items-center gap-2 text-on-surface font-label-caps text-label-caps bg-surface-container-high hover:bg-surface-variant px-4 py-2 rounded-full transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-sm">smartphone</span> Preview
+                </button>
+<button class="btn-clay bg-primary text-on-primary font-label-caps text-label-caps px-6 py-2 rounded-full border-primary-fixed-dim">
+                    Submit
+                </button>
+<img alt="Administrator Avatar" class="w-10 h-10 rounded-full border-2 border-outline-variant ml-2 object-cover" data-alt="A small, circular avatar portrait of an administrator. The portrait shows a friendly, professional young adult with glasses, smiling softly against a light warm cream background. The lighting is soft and flattering, suitable for a professional yet approachable learning platform admin profile. 64x64 resolution ideal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIORqbLIb1rVbfLobXZzlTMVGg7r60EilJOV98FNQmPy8eDaKjqKa4WDObv9i4MW3s886llFh7l5GlgZzM_DbrCrQZsPx-xcdDt6DsWDA_DfGLKSa2iyY5joVJcAqu--jcvgB2yyGnCfORHiFfNorO9wjOOp_WuKIxJaNsqsYSqQDD-2zp9C4VwllSbT7JTqtwyekwAsZexaMn9FO_NSszKAJmvmD__Hoe0YvxEJ1g3GAxV84I1_MEgQ"/>
+</div>
+</header>
+<!-- Builder Workspace -->
+<div class="flex-1 flex overflow-hidden bg-surface-container">
+<!-- Left Sidebar: Components Palette -->
+<aside class="w-64 bg-surface border-r border-outline-variant flex flex-col overflow-y-auto z-10 shadow-[4px_0_10px_rgba(255,140,66,0.02)]">
+<div class="p-4 border-b border-outline-variant bg-surface-container-low sticky top-0">
+<h3 class="font-title-md text-title-md text-on-surface">Components</h3>
+<p class="font-body-md text-sm text-on-surface-variant mt-1">Drag items to stage</p>
+</div>
+<div class="p-4 flex flex-col gap-3">
+<!-- Component Items (Draggable styling) -->
+<div class="flex items-center gap-3 p-3 rounded-xl border-2 border-surface-container-high bg-surface cursor-grab hover:border-primary-fixed hover:bg-surface-container-lowest transition-all">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container text-on-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined">volume_up</span>
+</div>
+<span class="font-body-lg text-body-md font-medium">Audio Instruction</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-xl border-2 border-surface-container-high bg-surface cursor-grab hover:border-primary-fixed hover:bg-surface-container-lowest transition-all">
+<div class="w-10 h-10 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined">image</span>
+</div>
+<span class="font-body-lg text-body-md font-medium">Image Block</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-xl border-2 border-surface-container-high bg-surface cursor-grab hover:border-primary-fixed hover:bg-surface-container-lowest transition-all">
+<div class="w-10 h-10 rounded-lg bg-surface-variant text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined">text_fields</span>
+</div>
+<span class="font-body-lg text-body-md font-medium">Text Block</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-xl border-2 border-primary-fixed bg-surface-container-lowest cursor-grab shadow-sm ring-1 ring-primary-fixed-dim">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined">pan_tool</span>
+</div>
+<span class="font-body-lg text-body-md font-medium text-primary">Draggable Item</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-xl border-2 border-surface-container-high bg-surface cursor-grab hover:border-primary-fixed hover:bg-surface-container-lowest transition-all">
+<div class="w-10 h-10 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined">move_down</span>
+</div>
+<span class="font-body-lg text-body-md font-medium">Drop Zone</span>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-xl border-2 border-surface-container-high bg-surface cursor-grab hover:border-primary-fixed hover:bg-surface-container-lowest transition-all">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined">check_box</span>
+</div>
+<span class="font-body-lg text-body-md font-medium">Multiple Choice</span>
+</div>
+</div>
+</aside>
+<!-- Central Canvas / Stage -->
+<section class="flex-1 relative flex items-center justify-center overflow-auto p-8 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNjY2MiLz48L3N2Zz4=')]">
+<!-- Simulated Mobile Device -->
+<div class="w-[375px] h-[812px] bg-surface rounded-[40px] shadow-[0_20px_40px_rgba(255,140,66,0.1),0_0_0_12px_#ffffff,0_0_0_14px_#ddc1b3] overflow-hidden flex flex-col relative border border-surface-container-high">
+<!-- Simulated Status Bar -->
+<div class="h-12 w-full bg-surface flex justify-between items-center px-6 text-xs font-medium text-on-surface-variant relative z-10">
+<span>9:41</span>
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[16px]">battery_full</span>
+</div>
+</div>
+<!-- Builder Overlay Highlights (showing it's edit mode) -->
+<div class="absolute inset-0 border-2 border-dashed border-primary-fixed pointer-events-none z-20 m-4 rounded-3xl opacity-50"></div>
+<!-- App Content Preview -->
+<div class="flex-1 flex flex-col p-6 bg-background relative overflow-y-auto">
+<!-- Top Nav inside App -->
+<div class="flex justify-between items-center mb-6 relative group">
+<div class="absolute -left-2 -top-2 -right-2 -bottom-2 border-2 border-transparent group-hover:border-outline-variant border-dashed rounded-xl pointer-events-none transition-colors"></div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">close</span>
+</button>
+<div class="h-4 w-32 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary-fixed w-1/3 rounded-full"></div>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+<!-- Sóc Nâu Dialogue Block -->
+<div class="relative group mb-8">
+<div class="absolute -left-2 -top-2 -right-2 -bottom-2 border-2 border-transparent group-hover:border-tertiary-container border-dashed rounded-xl pointer-events-none transition-colors"></div>
+<div class="bg-primary-fixed-dim rounded-2xl p-4 flex gap-4 shadow-sm items-start relative">
+<div class="absolute -top-3 -right-3 w-6 h-6 bg-tertiary-container rounded-full text-on-tertiary-container flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm">edit</span>
+</div>
+<div class="w-12 h-12 bg-white rounded-full flex-shrink-0 border-2 border-primary-container overflow-hidden">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, stylized illustration of Sóc Nâu, a friendly brown squirrel mascot. The squirrel has large, expressive eyes and a soft, clay-like appearance, typical of modern 3D UI illustrations. The background is a solid, warm cream color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD78ippdNwW9jKnLJ4gi2COpbldnGbZEzU8aiOquJXtXqJHh-4KhQvLPZpdnfjxsYJaMsdmtuy1UsyL4AOHU9TGTzPqOfNYAK5e9bqE5U91tJXxMBtfHpwUpbNOrNP48LNx4kOfAe7YSAHj2l-z5FHsamAZZ6OYUTY-4uZbE5KRqgN2ngPjOOafyTqvkfPVCU21017alm4PjGTEh_HMWvcM60nLWjH63CLSeejy2u94r64AL6lZTT5dng"/>
+</div>
+<div>
+<p class="font-body-lg text-body-md text-on-primary-fixed font-medium leading-tight">Drag the red apples into the basket!</p>
+<button class="mt-2 text-primary font-label-caps text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">volume_up</span> Play Audio
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Drag Area -->
+<div class="flex-1 relative group border-2 border-dashed border-tertiary-container rounded-2xl p-4 mb-4 bg-surface-container-lowest min-h-[200px]">
+<div class="absolute top-2 left-2 bg-tertiary-container text-on-tertiary-container text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Drag Source Area</div>
+<!-- Draggable Items (Apples) -->
+<div class="flex flex-wrap gap-4 mt-6 justify-center">
+<!-- Selected Item in Builder -->
+<div class="relative cursor-pointer ring-4 ring-primary rounded-full p-1 bg-surface shadow-sm">
+<div class="absolute -top-2 -right-2 w-5 h-5 bg-primary text-on-primary rounded-full flex items-center justify-center text-xs">
+<span class="material-symbols-outlined text-[14px]">settings</span>
+</div>
+<img alt="Red Apple" class="w-16 h-16 object-contain" data-alt="A bright, stylized 3D illustration of a single red apple with a small green leaf on top. The apple has a soft, glossy texture and a claymorphic style, sitting on a transparent background. Vibrant colors suited for children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbr2TZqX-LIrgvIlurwNDApa9nGbGWujBwlTzsoBkN0yTV6MhDuKMGyjXffjGO0kAzT9bpdU7E7-E5vGQ-2PXx8siZbP-vlgGhsw29LiTG6LgQljcYBEz2n909E5SFkZ6bx9tc7uiJoRk3OXtLWio4rk1ujZ_H6Nh7lOeZZHdaLhL1QFiMiYn6z16fsZea-Jm1Z13Y9jTZmtkzFbPGK9dNHkHQgO0GuDszna2iS-eJWr31sZfBB6LmlA"/>
+</div>
+<div class="relative cursor-pointer hover:ring-2 hover:ring-outline-variant rounded-full p-1 bg-surface shadow-sm opacity-60">
+<img alt="Green Apple" class="w-16 h-16 object-contain" data-alt="A bright, stylized 3D illustration of a green apple with a small leaf. The apple has a soft, glossy texture, claymorphic style, sitting on a transparent background. Designed for a preschool learning game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACDrQkM9dgq7K3bI_HwNHur_fO3owIAnrRJwaMNXBdMEvh4x038KLGTnXIXq8duPSC_b-EMenLWL6N1s2igqy_6naPDZsX_mk8FiN5HYWl0LV8BRj0KqsIhvJWbpnwE0XjzP8ELdyhdDvBoHh_0MLJudBP4MIO5iWrj2kEQ8nyrIkjarOFM9l9EGQJbAMkc8aJ0ZEw2UsKolxTEvmn9Rn0FY4gOqyS1z6yMTquDSzi-Kp9jlmoz1v1lg"/>
+</div>
+</div>
+</div>
+<!-- Drop Zone -->
+<div class="relative group h-40 border-2 border-dashed border-secondary-container rounded-2xl p-4 bg-surface-container-low flex items-end justify-center">
+<div class="absolute top-2 left-2 bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Drop Zone (Target: Basket)</div>
+<img alt="Basket" class="w-32 h-24 object-contain" data-alt="A simple, charming 3D illustration of an empty woven wooden basket. The basket is stylized with soft, rounded edges, looking like a high-quality physical toy or clay figure. Warm brown tones against a clear background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCoRt0BD4-3fny-VqBnA3C3qtk4bZ19NvKZMjvwYKIFOzqKevPWvx7l9MdKi7DN6Rn5SRWzmsxRXHfnuRNZ483-cPIEaPEq2Ux35H8uHGeKrxJ28jTUe-tmCEoV2omM1wMjDdlvdWSE_ClAXeN7FSIBg6DmBR66_fgXXSquzD-uP6MCPwsWr9Aq6khNjoTrHQc4OUX47Hsh4pE2EQ3wIXQ6qXqgXu3xjdY-HNSED1TkzIBh0YH4W-Nmw"/>
+</div>
+</div>
+<!-- Simulated Home Indicator -->
+<div class="h-8 w-full bg-background flex justify-center items-center relative z-10 rounded-b-[40px]">
+<div class="w-1/3 h-1 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+</section>
+<!-- Right Sidebar: Properties Panel -->
+<aside class="w-80 bg-surface border-l border-outline-variant flex flex-col overflow-y-auto z-10 shadow-[-4px_0_10px_rgba(255,140,66,0.02)]">
+<div class="p-4 border-b border-outline-variant bg-surface-container-low sticky top-0 flex justify-between items-center">
+<h3 class="font-title-md text-title-md text-on-surface">Properties</h3>
+<span class="bg-primary-container text-on-primary-container text-xs font-bold px-2 py-1 rounded-full">Draggable Item</span>
+</div>
+<div class="p-6 flex flex-col gap-6">
+<!-- Image Source -->
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-sm text-on-surface-variant">Image Asset</label>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-4 flex flex-col items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container transition-colors cursor-pointer relative">
+<img alt="Selected Red Apple" class="w-20 h-20 object-contain" data-alt="A bright, stylized 3D illustration of a single red apple with a small green leaf on top. The apple has a soft, glossy texture and a claymorphic style, sitting on a transparent background. Vibrant colors suited for children." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfckCN7EbzRXFZYkJGd_2S0Kfmk6len5xo03ba560Pz6TJjgO-OfoZhAOJKPtfiOgL43m6SxSpqS1QmBa44NDbG3y9v3RQaCZsfSFOfxyf-Sr3MSK-SzFmKPtx7pqSO8mXdyrqA7lwA5t27OXKIfgFHsWybX8K6L9pfy3sRv1hvjLAUncSbFNzqR7-F9IZ8o-mNRRSgnuGGZqH_vurLsHHNbLvNXrg0vtAhdQYf_IJLLPJWBZT54QeNw"/>
+<span class="text-xs text-primary font-medium mt-2">Change Image</span>
+<button class="absolute top-2 right-2 text-on-surface-variant hover:text-error">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+<!-- Target Assignment -->
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-sm text-on-surface-variant">Target Drop Zone</label>
+<select class="w-full rounded-lg border-outline-variant bg-surface-container-lowest focus:ring-primary focus:border-primary font-body-md text-sm p-3">
+<option value="none">None (Decoy Item)</option>
+<option selected="" value="zone1">Zone 1: Basket</option>
+<option value="zone2">Zone 2: Tree</option>
+</select>
+</div>
+<!-- Validation / Rules -->
+<div class="flex flex-col gap-3 pt-4 border-t border-outline-variant">
+<h4 class="font-label-caps text-sm text-on-surface">Validation Rules</h4>
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="w-5 h-5 rounded text-primary focus:ring-primary border-outline" type="checkbox"/>
+<span class="font-body-md text-sm">Is Correct Answer?</span>
+</label>
+<div class="flex flex-col gap-1 mt-2">
+<label class="font-body-md text-xs text-on-surface-variant">Points awarded</label>
+<input class="w-24 rounded-lg border-outline-variant bg-surface-container-lowest focus:ring-primary p-2 text-center" type="number" value="10"/>
+</div>
+</div>
+<!-- Feedback Text -->
+<div class="flex flex-col gap-2 pt-4 border-t border-outline-variant">
+<label class="font-label-caps text-sm text-on-surface">On-Success Feedback</label>
+<textarea class="w-full rounded-lg border-outline-variant bg-surface-container-lowest focus:ring-primary p-3 font-body-md text-sm" placeholder="Great job! You found the red apple." rows="3">Great job! You found the red apple.</textarea>
+<button class="flex items-center justify-center gap-2 text-primary font-label-caps text-sm mt-2 p-2 border border-primary-fixed-dim rounded-lg hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-sm">mic</span> Record Audio Feedback
+                        </button>
+</div>
+<div class="mt-auto pt-6">
+<button class="w-full btn-clay bg-surface-variant text-on-surface font-label-caps py-3 rounded-full border-outline-variant flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined">delete_forever</span> Remove Component
+                        </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

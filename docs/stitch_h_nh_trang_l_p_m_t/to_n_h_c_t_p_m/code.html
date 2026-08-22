@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Đếm số lượng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#55fdc4",
+                    "secondary": "#006c4f",
+                    "warm-yellow": "#ffd54f",
+                    "on-secondary-fixed": "#002116",
+                    "surface": "#fbf9f1",
+                    "surface-container-low": "#f6f4ec",
+                    "surface-tint": "#9b4500",
+                    "on-primary-fixed-variant": "#763300",
+                    "on-secondary-container": "#007152",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#fbf9f1",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "squirrel-brown": "#897266",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "on-surface-variant": "#564338",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#ff8c42",
+                    "on-primary-container": "#6a2d00",
+                    "secondary-fixed-dim": "#29e0a9",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#001f2b",
+                    "on-tertiary-container": "#00445a",
+                    "primary": "#9b4500",
+                    "inverse-primary": "#ffb68d",
+                    "background": "#fbf9f1",
+                    "error": "#ba1a1a",
+                    "tertiary": "#006686",
+                    "faded-path": "rgba(0, 0, 0, 0.1)",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#bfe8ff",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#331200",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "surface-container-highest": "#e4e3db",
+                    "success-glow": "#27e0a9",
+                    "primary-fixed-dim": "#ffb68d",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#ffdbc9",
+                    "surface-dim": "#dcdad2",
+                    "inverse-surface": "#30312c",
+                    "on-surface": "#1b1c17",
+                    "outline-variant": "#ddc1b3",
+                    "tertiary-container": "#53b5df",
+                    "on-background": "#1b1c17",
+                    "outline": "#897266",
+                    "surface-container": "#f0eee6",
+                    "surface-variant": "#e4e3db",
+                    "inverse-on-surface": "#f3f1e9",
+                    "surface-container-high": "#eae8e0",
+                    "secondary-container": "#51fac1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "tolerance-zone": "40px",
+                    "safe-margin": "32px",
+                    "gutter": "24px",
+                    "touch-target": "64px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "instruction-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "path-number": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "instruction-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "display-hero": [
+                            "80px",
+                            {
+                                    "lineHeight": "96px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "label-caps": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "path-number": [
+                            "16px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "800"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom claymorphism utility classes */
+        .clay-btn {
+            box-shadow: 0px 6px 0px 0px #897266;
+            transition: all 0.1s ease;
+        }
+        .clay-btn:active, .clay-btn.active-state {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px 0px #897266;
+        }
+        
+        .clay-btn-primary {
+            box-shadow: 0px 6px 0px 0px #6a2d00;
+            background-color: #ff8c42;
+            color: #6a2d00;
+        }
+        .clay-btn-primary:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px 0px #6a2d00;
+        }
+        
+        .clay-btn-success {
+            box-shadow: 0px 6px 0px 0px #00513b;
+            background-color: #51fac1;
+            color: #007152;
+        }
+
+        .success-glow-effect {
+            box-shadow: 0 0 20px 5px rgba(39, 224, 169, 0.6);
+        }
+
+        /* Bounce animation for counted squirrels */
+        @keyframes popBounce {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.2); }
+            60% { transform: scale(0.9); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .anim-pop {
+            animation: popBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* Breathing animation for continue button */
+        @keyframes breath {
+            0% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.8; transform: scale(1); }
+        }
+        .anim-breath {
+            animation: breath 2s infinite ease-in-out;
+        }
+
+        /* Background overlay pattern */
+        .bg-dots {
+            background-image: radial-gradient(#ddc1b3 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex flex-col font-instruction-md text-on-background relative overflow-hidden select-none touch-pan-y">
+<!-- TopAppBar -->
+<header class="bg-surface w-full top-0 px-safe-margin bg-surface-container-low shadow-[0px_4px_0px_0px_rgba(137,114,102,0.2)] flex justify-between items-center h-touch-target z-10 sticky">
+<button aria-label="Go back" class="h-12 w-12 flex items-center justify-center rounded-full text-primary hover:bg-primary-container/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary flex-1 text-center truncate px-4">
+            Sóc Nâu Đồng Hành
+        </h1>
+<div class="flex items-center gap-2 px-4 py-2 bg-warm-yellow/20 rounded-full font-bold text-primary">
+<span>128</span>
+<span class="text-xl">⭐</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 w-full flex flex-col items-center justify-center relative p-safe-margin z-0">
+<!-- Interactive Forest Area -->
+<div class="relative w-full max-w-4xl h-[442px] min-h-[300px] md:h-[530px] bg-surface-container rounded-[2rem] overflow-hidden border-4 border-outline-variant shadow-inner mb-8 bg-dots">
+<!-- Forest Background Element (Decorative) -->
+<div class="absolute inset-0 pointer-events-none opacity-30">
+<svg height="100%" preserveaspectratio="none" viewbox="0 0 100 100" width="100%">
+<path d="M0,100 L0,70 Q25,50 50,70 T100,60 L100,100 Z" fill="#ddc1b3"></path>
+<circle cx="20" cy="40" fill="#f0eee6" r="15"></circle>
+<circle cx="80" cy="30" fill="#f0eee6" r="20"></circle>
+</svg>
+</div>
+<!-- Question Prompt inside Canvas -->
+<div class="absolute top-6 left-0 right-0 text-center pointer-events-none px-4">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface drop-shadow-md">
+                    Có bao nhiêu con sóc trong rừng?
+                </h2>
+</div>
+<!-- Squirrel 1 -->
+<button class="squirrel-target absolute top-[30%] left-[15%] w-24 h-24 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-transform" data-counted="false">
+<div class="w-20 h-20 bg-primary-container rounded-full shadow-[0px_4px_0px_0px_#897266] flex items-center justify-center border-2 border-primary relative">
+<span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="count-badge absolute -top-2 -right-2 w-8 h-8 bg-secondary-fixed text-on-secondary-fixed rounded-full font-bold flex items-center justify-center border-2 border-surface opacity-0 transition-opacity">1</span>
+</div>
+</button>
+<!-- Squirrel 2 -->
+<button class="squirrel-target absolute top-[50%] left-[40%] w-24 h-24 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-transform" data-counted="false">
+<div class="w-20 h-20 bg-primary-container rounded-full shadow-[0px_4px_0px_0px_#897266] flex items-center justify-center border-2 border-primary relative">
+<span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="count-badge absolute -top-2 -right-2 w-8 h-8 bg-secondary-fixed text-on-secondary-fixed rounded-full font-bold flex items-center justify-center border-2 border-surface opacity-0 transition-opacity">2</span>
+</div>
+</button>
+<!-- Squirrel 3 -->
+<button class="squirrel-target absolute top-[20%] left-[70%] w-24 h-24 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-transform" data-counted="false">
+<div class="w-20 h-20 bg-primary-container rounded-full shadow-[0px_4px_0px_0px_#897266] flex items-center justify-center border-2 border-primary relative">
+<span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="count-badge absolute -top-2 -right-2 w-8 h-8 bg-secondary-fixed text-on-secondary-fixed rounded-full font-bold flex items-center justify-center border-2 border-surface opacity-0 transition-opacity">3</span>
+</div>
+</button>
+<!-- Squirrel 4 -->
+<button class="squirrel-target absolute bottom-[15%] left-[80%] w-24 h-24 flex items-center justify-center rounded-full hover:scale-105 active:scale-95 transition-transform" data-counted="false">
+<div class="w-20 h-20 bg-primary-container rounded-full shadow-[0px_4px_0px_0px_#897266] flex items-center justify-center border-2 border-primary relative">
+<span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="count-badge absolute -top-2 -right-2 w-8 h-8 bg-secondary-fixed text-on-secondary-fixed rounded-full font-bold flex items-center justify-center border-2 border-surface opacity-0 transition-opacity">4</span>
+</div>
+</button>
+</div>
+<!-- Answer Selection Area -->
+<div class="w-full max-w-2xl flex justify-center gap-6 mb-8 md:mb-12">
+<button class="answer-btn w-24 h-24 md:w-32 md:h-32 bg-surface rounded-2xl border-4 border-outline-variant clay-btn flex items-center justify-center font-display-hero text-display-hero text-primary" data-value="3">
+                3
+            </button>
+<button class="answer-btn w-24 h-24 md:w-32 md:h-32 bg-surface rounded-2xl border-4 border-outline-variant clay-btn flex items-center justify-center font-display-hero text-display-hero text-primary" data-value="4">
+                4
+            </button>
+<button class="answer-btn w-24 h-24 md:w-32 md:h-32 bg-surface rounded-2xl border-4 border-outline-variant clay-btn flex items-center justify-center font-display-hero text-display-hero text-primary" data-value="5">
+                5
+            </button>
+</div>
+</main>
+<!-- Bottom Instruction & Feedback Area (Pinned above safe area) -->
+<div class="w-full px-safe-margin pb-safe-margin flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 max-w-5xl mx-auto z-10 bg-background/80 backdrop-blur-sm pt-4 rounded-t-3xl md:bg-transparent md:backdrop-blur-none">
+<!-- Sóc Nâu Companion Dialogue -->
+<div class="flex items-center gap-4 bg-warm-yellow/30 p-4 rounded-[2rem] border-2 border-warm-yellow/50 shadow-sm w-full md:w-auto flex-1">
+<div class="w-16 h-16 bg-surface rounded-full flex-shrink-0 flex items-center justify-center border-2 border-primary-container overflow-hidden">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">face</span>
+</div>
+<div class="flex-1">
+<p class="font-instruction-md text-instruction-md text-on-surface-variant leading-tight">
+                    Bé hãy chạm vào từng bạn sóc để đếm nhé!
+                </p>
+</div>
+<button class="w-12 h-12 rounded-full bg-surface shadow-[0px_4px_0px_0px_#ddc1b3] flex items-center justify-center flex-shrink-0 active:translate-y-1 active:shadow-[0px_0px_0px_0px_#ddc1b3] transition-all">
+<span class="material-symbols-outlined text-3xl text-tertiary" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Continue Action (Hidden/Dimmed initially) -->
+<button class="w-full md:w-auto h-touch-target px-12 rounded-full clay-btn-primary font-label-caps text-label-caps flex items-center justify-center gap-2 opacity-50 pointer-events-none transition-all duration-500" id="btn-continue">
+<span>TIẾP TỤC</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Hidden Bottom Nav Bar - Kept for reference but hidden as this is a task screen -->
+<nav aria-label="Main Navigation" class="hidden fixed bottom-0 w-full h-24 rounded-t-xl z-50 border-t-2 border-outline-variant shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.05)] bg-surface-container left-0 justify-around items-center bg-surface pb-safe">
+<!-- Not rendered per semantic shell mandate for transactional/task screens -->
+</nav>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const squirrels = document.querySelectorAll('.squirrel-target');
+            const answerBtns = document.querySelectorAll('.answer-btn');
+            const btnContinue = document.getElementById('btn-continue');
+            
+            let count = 0;
+            const targetCount = 4;
+            let currentNumber = 1;
+
+            // Handle squirrel counting
+            squirrels.forEach(squirrel => {
+                squirrel.addEventListener('click', function() {
+                    if (this.dataset.counted === 'true') return;
+                    
+                    this.dataset.counted = 'true';
+                    
+                    // Visual feedback
+                    const innerDiv = this.querySelector('div');
+                    innerDiv.classList.remove('bg-primary-container', 'border-primary');
+                    innerDiv.classList.add('bg-secondary-container', 'border-secondary', 'success-glow-effect', 'anim-pop');
+                    
+                    const icon = this.querySelector('.material-symbols-outlined');
+                    icon.classList.remove('text-on-primary-container');
+                    icon.classList.add('text-on-secondary-container');
+
+                    // Show badge
+                    const badge = this.querySelector('.count-badge');
+                    badge.textContent = currentNumber;
+                    badge.classList.remove('opacity-0');
+                    badge.classList.add('opacity-100');
+                    
+                    currentNumber++;
+                    count++;
+                });
+            });
+
+            // Handle answer selection
+            answerBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Reset others
+                    answerBtns.forEach(b => {
+                        b.classList.remove('clay-btn-success', 'border-secondary', 'scale-105', 'success-glow-effect');
+                        b.classList.add('bg-surface', 'border-outline-variant', 'text-primary');
+                    });
+
+                    // Check answer
+                    const selectedValue = parseInt(this.dataset.value);
+                    
+                    if (selectedValue === targetCount) {
+                        // Correct
+                        this.classList.remove('bg-surface', 'border-outline-variant', 'text-primary');
+                        this.classList.add('clay-btn-success', 'border-secondary', 'scale-105', 'success-glow-effect');
+                        
+                        // Enable continue
+                        btnContinue.classList.remove('opacity-50', 'pointer-events-none');
+                        btnContinue.classList.add('anim-breath', 'active:scale-95');
+                        
+                        // Optional: trigger success sound/animation
+                    } else {
+                        // Incorrect - gentle wobble
+                        this.style.transform = 'translateX(-5px)';
+                        setTimeout(() => this.style.transform = 'translateX(5px)', 100);
+                        setTimeout(() => this.style.transform = 'translateX(0)', 200);
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

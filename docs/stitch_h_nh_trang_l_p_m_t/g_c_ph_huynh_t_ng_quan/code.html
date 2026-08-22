@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Tổng quan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#54fdc4",
+                      "outline-variant": "#ddc1b3",
+                      "primary-fixed-dim": "#ffb68d",
+                      "surface-tint": "#9b4500",
+                      "surface-container": "#f0eee6",
+                      "on-background": "#1b1c17",
+                      "on-primary": "#ffffff",
+                      "surface": "#fbf9f1",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "tertiary-container": "#53b5df",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "primary-container": "#ff8c42",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "background": "#fbf9f1",
+                      "secondary": "#006c4f",
+                      "on-surface": "#1b1c17",
+                      "inverse-surface": "#30312c",
+                      "inverse-on-surface": "#f3f1e9",
+                      "surface-bright": "#fbf9f1",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed": "#002116",
+                      "surface-container-high": "#eae8e0",
+                      "tertiary": "#006686",
+                      "surface-variant": "#e4e3db",
+                      "outline": "#897266",
+                      "on-secondary-container": "#007152",
+                      "tertiary-fixed": "#bfe8ff",
+                      "primary-fixed": "#ffdbc9",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#331200",
+                      "secondary-container": "#51fac1",
+                      "surface-dim": "#dcdad2",
+                      "primary": "#9b4500",
+                      "on-surface-variant": "#564338",
+                      "surface-container-low": "#f5f4ec",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed-variant": "#763300",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "inverse-primary": "#ffb68d",
+                      "on-tertiary-fixed": "#001f2a",
+                      "surface-container-highest": "#e4e3db",
+                      "on-primary-container": "#6a2d00",
+                      "on-tertiary-container": "#00445a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "card-gap": "20px",
+                      "container-margin": "24px",
+                      "touch-target-min": "48px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f1;
+        }
+        .clay-card {
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 10px 20px rgba(255, 140, 66, 0.05);
+            border: 2px solid #f0eee6;
+        }
+        .clay-btn {
+            border-bottom-width: 4px;
+            border-color: #7a3600; /* Darker primary */
+            transition: all 0.15s ease;
+        }
+        .clay-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .instruction-card {
+            border: 2px solid #bfe8ff;
+            border-radius: 20px;
+        }
+        .progress-track {
+            height: 16px;
+            border-radius: 8px;
+            background-color: #e4e3db;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #54fdc4;
+            border-radius: 8px;
+            position: relative;
+        }
+        .progress-star {
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ff8c42;
+            background: white;
+            border-radius: 50%;
+            padding: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="text-on-background pb-[100px] md:pb-0 md:pt-[80px]">
+<!-- TopAppBar (Web & Mobile) -->
+<header class="bg-surface dark:bg-surface-dim font-title-md text-title-md docked full-width top-0 bg-surface-container-low dark:bg-surface-container-high shadow-sm shadow-sm flex justify-between items-center w-full px-container-margin h-[72px] fixed z-40 md:relative">
+<button class="text-primary dark:text-primary-fixed-dim hover:bg-primary-container/20 transition-colors w-12 h-12 flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile md:text-headline-lg text-primary dark:text-primary-fixed-dim">Sóc Nâu Đồng Hành</h1>
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="Parent profile picture" class="w-full h-full object-cover" data-alt="A gentle, softly lit portrait of a smiling parent in a warm, inviting setting, styled with soft colors and a claymorphic, friendly aesthetic suitable for an educational app avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjs8G5foIaY0bY-zpgU6LfnUWzUIprw2BjWSM5-U5J4wrDHlj1Wz4qKXv6sVJJRsZfCoGj_VHctBMa2neHX2cJm1JAar1IRjG-wbuxdQSB-_r2QfeDKR_FFf9t7q6IGpvb6959LAYbhyKEzw76bEXhAxX3rLUs8O-nk-rKS71FSza1oYswYYlw5VE3SoEGO_oscio2hRxGXn1Gc7Fxvb4pq9vIDeKxKaEQqPHBl7fI6YarFyrmoMDjhg"/>
+</div>
+</header>
+<!-- Main Content Container -->
+<main class="max-w-4xl mx-auto px-container-margin py-6 flex flex-col gap-6">
+<!-- Welcome & Tip -->
+<section class="clay-card p-6 flex flex-col md:flex-row gap-6 items-center">
+<div class="w-24 h-24 flex-shrink-0 bg-tertiary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[48px] text-white" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-tertiary mb-2">Mẹo của tuần</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Trẻ học tốt nhất khi được khuyến khích. Hãy dành 5 phút mỗi ngày để cùng bé ôn lại những chữ cái mới học trong không gian vui vẻ, không áp lực.</p>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="clay-card p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-4xl text-primary-container mb-2" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<span class="font-display-hero text-display-hero text-primary">2.5h</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tổng thời gian</span>
+</div>
+<div class="clay-card p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-4xl text-secondary mb-2" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<span class="font-display-hero text-display-hero text-primary">42</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Bài tập hoàn thành</span>
+</div>
+<div class="clay-card p-4 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-4xl text-tertiary mb-2" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+<span class="font-display-hero text-display-hero text-primary">15</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Huy hiệu</span>
+</div>
+<div class="clay-card p-4 flex flex-col items-center justify-center text-center bg-primary text-white border-none">
+<span class="material-symbols-outlined text-4xl text-primary-container mb-2" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="font-title-md text-title-md text-white">Xu hướng</span>
+<span class="font-body-md text-body-md text-primary-fixed-dim">Tiến bộ tốt</span>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Skills Progress -->
+<section class="clay-card p-6">
+<h2 class="font-title-md text-title-md text-primary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined">school</span>
+                    Kỹ năng cốt lõi
+                </h2>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-body-lg text-body-lg text-on-surface">Chữ cái</span>
+<span class="font-body-md text-body-md text-on-surface-variant">75%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill w-3/4">
+<span class="material-symbols-outlined progress-star" style="font-variation-settings: 'FILL' 1; font-size: 16px;">star</span>
+</div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-body-lg text-body-lg text-on-surface">Chữ số</span>
+<span class="font-body-md text-body-md text-on-surface-variant">60%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill w-3/5">
+<span class="material-symbols-outlined progress-star" style="font-variation-settings: 'FILL' 1; font-size: 16px;">star</span>
+</div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<span class="font-body-lg text-body-lg text-on-surface">Tư duy Logic</span>
+<span class="font-body-md text-body-md text-on-surface-variant">90%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill w-11/12">
+<span class="material-symbols-outlined progress-star" style="font-variation-settings: 'FILL' 1; font-size: 16px;">star</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Activity -->
+<section class="instruction-card bg-white p-6">
+<h2 class="font-title-md text-title-md text-tertiary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined">history</span>
+                    Hoạt động gần đây
+                </h2>
+<ul class="space-y-4">
+<li class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex-shrink-0 flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined">auto_stories</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface">Hoàn thành bài "Chữ A"</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Hôm nay, 14:30 - Đạt 3 sao</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex-shrink-0 flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined">calculate</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface">Luyện tập "Đếm 1 đến 5"</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Hôm qua, 16:00 - Cần ôn tập thêm</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex-shrink-0 flex items-center justify-center text-on-tertiary-fixed">
+<span class="material-symbols-outlined">extension</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface">Trò chơi "Ghép hình"</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">2 ngày trước - Hoàn thành xuất sắc</p>
+</div>
+</li>
+</ul>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only based on layout rules) -->
+<nav class="md:hidden bg-surface-container dark:bg-surface-container-highest bg-surface-container dark:bg-surface-container-highest shadow-lg shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe rounded-t-xl">
+<!-- Active Tab: Tổng quan -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-6 py-2 border-b-4 border-secondary/20 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+            Tổng quan
+        </a>
+<!-- Inactive Tab: Kỹ năng -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 font-label-caps text-label-caps hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">auto_stories</span>
+            Kỹ năng
+        </a>
+<!-- Inactive Tab: Cài đặt -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline p-2 font-label-caps text-label-caps hover:scale-105 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">settings</span>
+            Cài đặt
+        </a>
+</nav>
+</body></html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nghe từ và chọn tranh</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fbf9f1",
+                        "primary-fixed": "#ffdbc9",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "secondary-fixed": "#54fdc4",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#51fac1",
+                        "surface-bright": "#fbf9f1",
+                        "on-surface-variant": "#564338",
+                        "tertiary": "#006686",
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-tint": "#9b4500",
+                        "on-primary-fixed-variant": "#763300",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-container-high": "#eae8e0",
+                        "primary": "#9b4500",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "inverse-surface": "#30312c",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#00445a",
+                        "on-primary-fixed": "#331200",
+                        "outline-variant": "#ddc1b3",
+                        "surface-container-highest": "#e4e3db",
+                        "inverse-primary": "#ffb68d",
+                        "on-primary-container": "#6a2d00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "on-secondary-fixed": "#002116",
+                        "surface-container": "#f0eee6",
+                        "surface-dim": "#dcdad2",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "on-secondary-container": "#007152",
+                        "on-background": "#1b1c17",
+                        "background": "#fbf9f1",
+                        "secondary": "#006c4f",
+                        "outline": "#897266",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e4e3db",
+                        "surface-container-low": "#f5f4ec",
+                        "inverse-on-surface": "#f3f1e9",
+                        "primary-container": "#ff8c42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "card-gap": "20px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom styles for claymorphic effects that go slightly beyond standard tailwind */
+        .clay-card {
+            box-shadow: 0px 10px 20px rgba(255, 140, 66, 0.05), inset 0px 4px 0px rgba(255, 255, 255, 0.6);
+        }
+        .clay-button {
+            border-bottom-width: 6px;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .clay-button:active {
+            border-bottom-width: 0px;
+            transform: translateY(6px);
+        }
+        .radio-card-input:checked + .radio-card-content {
+            border-color: #ff8c42; /* primary-container */
+            background-color: #ffdbc9; /* primary-fixed */
+            transform: scale(0.98);
+        }
+        .radio-card-input:checked + .radio-card-content .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (from Shared Components JSON - exact strings and execution of style keys) -->
+<header class="bg-surface shadow-sm docked full-width top-0 flex justify-between items-center w-full px-container-margin py-unit h-touch-target-min z-40 relative">
+<button aria-label="Go back" class="flex items-center justify-center w-touch-target-min h-touch-target-min text-on-surface-variant hover:scale-105 transition-transform active:translate-y-0.5 active:shadow-none duration-150 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold text-primary text-center flex-1">
+            Sóc Nâu Đồng Hành
+        </h1>
+<div class="flex items-center justify-center h-touch-target-min px-4 bg-surface-container-low rounded-full text-primary font-bold text-label-caps font-label-caps">
+            128 ⭐
+        </div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col px-container-margin py-6 pb-24 max-w-2xl mx-auto w-full">
+<!-- Task Headline -->
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-6 text-center">
+            Mở Rộng Vốn Từ
+        </h2>
+<!-- Sóc Nâu Instruction Dialogue -->
+<div class="flex items-start gap-4 mb-8">
+<div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border-4 border-surface shadow-sm z-10 relative">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A soft, 3D claymorphic icon of a cute brown squirrel character's head, smiling friendly, on a pastel background. High quality preschool educational art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd4w89Jl2e3WV0UEo0oBPSqL_nnwD6lLHeXguhQGJkH5oxz6dPPX249caLWuWYIJArjjF2WJ_YuXywwWLqRHX5M8ToeHGoqI22sl5ZyG4gEcnJTGGzUzCm2O93erE-HwU5k9qqw28Pi95n5zlRntfqnTJJIrRXrE_0L0v7JUmN_oNQOjoc05JyCpUFYFf1bWsZiysT1qdIJ3CGp--TFmWd3fGUg4w_rxFgw88qY_hms-P4PNUOoAFIPA"/>
+</div>
+<div class="bg-primary-fixed text-on-primary-fixed p-4 rounded-2xl rounded-tl-none shadow-sm flex-1 relative mt-2 clay-card">
+<p class="font-title-md text-title-md">
+                    Bé hãy nghe tên con vật và chọn hình đúng nhé!
+                </p>
+</div>
+</div>
+<!-- Audio Play Button -->
+<div class="flex justify-center mb-10">
+<button class="clay-button w-24 h-24 rounded-full bg-primary-container text-on-primary-container border-on-primary-container flex flex-col items-center justify-center gap-1 shadow-md group outline-none focus:ring-4 focus:ring-primary-fixed-dim" id="playAudioBtn">
+<span class="material-symbols-outlined text-4xl group-active:scale-90 transition-transform" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-[10px]">Nghe</span>
+</button>
+</div>
+<!-- Picture Grid Selection -->
+<div class="grid grid-cols-2 gap-card-gap mb-8">
+<!-- Card 1 (Elephant - Correct) -->
+<label class="relative cursor-pointer group">
+<input class="radio-card-input sr-only" name="animal_selection" type="radio" value="elephant"/>
+<div class="radio-card-content bg-surface-container-lowest border-4 border-tertiary-fixed-dim rounded-2xl p-2 aspect-square flex flex-col items-center justify-center transition-all duration-200 clay-card hover:border-tertiary">
+<img alt="Elephant" class="w-full h-full object-contain rounded-xl" data-alt="A high-quality, preschool-friendly illustration of a cute elephant. The style is soft, claymorphic, and slightly 3D with gentle shadows and warm lighting. Designed for a light-mode educational app, using a pastel palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQqF0aSs3MOx2Z8NtQ8tPp5ipoz8dBl05hTSTrw4b6mURBxw8g0cFsCBE4I7szEspuQINHNJw244HRwmLd4VngBxMpa81F9uJ9YyLHAokmZTpbvhsEpB17GdsceDo60M6we8D4QKAuZlLzWmomtUge6_KttpmCWyzRZ3JjafSffEEMeLXknfEmtucSGGrILKno6ks11IQlFJme8NBENtNcBjbjUFK3Mfc13SzaCWrll9Gfz0Y50ZTGxQ"/>
+<!-- Selection Indicator (hidden by default, shown via CSS) -->
+<div class="check-icon absolute top-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-on-primary opacity-0 scale-50 transition-all duration-300 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 20px;">check</span>
+</div>
+</div>
+</label>
+<!-- Card 2 (Lion) -->
+<label class="relative cursor-pointer group">
+<input class="radio-card-input sr-only" name="animal_selection" type="radio" value="lion"/>
+<div class="radio-card-content bg-surface-container-lowest border-4 border-tertiary-fixed-dim rounded-2xl p-2 aspect-square flex flex-col items-center justify-center transition-all duration-200 clay-card hover:border-tertiary">
+<img alt="Lion" class="w-full h-full object-contain rounded-xl" data-alt="A high-quality, preschool-friendly illustration of a cute lion with a fluffy mane. The style is soft, claymorphic, and slightly 3D with gentle shadows and warm lighting. Designed for a light-mode educational app, using a pastel palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5xCDgF9fLhbTBmoJuJ0bhcu7K5C509wh_6kTpK-818JTBw399vusVRkga59af2z84qVn_iOSpZ-yaySV6bYZLY-saNw7pURaxwAOlj6uj1pU0lF2R20_WJ2QbjJx-n14d8JoynMtu0yMhhEzQYHvXz56-YR88GdlcB9xZ8dClhUBinM5KZ8cVPLBHYAe6OqXb8M6Sy7OVNvqnBza1BtpV187rIkrBvHKgyYgOT0ifXcbw3_Q-T-SkIA"/>
+<div class="check-icon absolute top-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-on-primary opacity-0 scale-50 transition-all duration-300 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 20px;">check</span>
+</div>
+</div>
+</label>
+<!-- Card 3 (Monkey) -->
+<label class="relative cursor-pointer group">
+<input class="radio-card-input sr-only" name="animal_selection" type="radio" value="monkey"/>
+<div class="radio-card-content bg-surface-container-lowest border-4 border-tertiary-fixed-dim rounded-2xl p-2 aspect-square flex flex-col items-center justify-center transition-all duration-200 clay-card hover:border-tertiary">
+<img alt="Monkey" class="w-full h-full object-contain rounded-xl" data-alt="A high-quality, preschool-friendly illustration of a cute playful monkey. The style is soft, claymorphic, and slightly 3D with gentle shadows and warm lighting. Designed for a light-mode educational app, using a pastel palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAssWmOB5THZEdsRjp2gFXgiTyqFd1zgMOQR1cVI6KhPHjhShNP0RS1EXt0PC7Mi6yoYRTAm_DsovIFFFfSzWmLGmb7Hym0XVS6FKjYij0pubpVDSPGcnvkPuaOYqFHC2ehJvH-2LAWhm-_7XsQrf-ZWYJXh6-UYXtaFkm_RX5KD7v__SNCIFNn4xeTorjOdk3ANHYDqbpGL8fTcFPy_wG44_dqRAgpcngRC7NYJYBOoDZILnHrvmDeRw"/>
+<div class="check-icon absolute top-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-on-primary opacity-0 scale-50 transition-all duration-300 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 20px;">check</span>
+</div>
+</div>
+</label>
+<!-- Card 4 (Giraffe) -->
+<label class="relative cursor-pointer group">
+<input class="radio-card-input sr-only" name="animal_selection" type="radio" value="giraffe"/>
+<div class="radio-card-content bg-surface-container-lowest border-4 border-tertiary-fixed-dim rounded-2xl p-2 aspect-square flex flex-col items-center justify-center transition-all duration-200 clay-card hover:border-tertiary">
+<img alt="Giraffe" class="w-full h-full object-contain rounded-xl" data-alt="A high-quality, preschool-friendly illustration of a cute tall giraffe. The style is soft, claymorphic, and slightly 3D with gentle shadows and warm lighting. Designed for a light-mode educational app, using a pastel palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiD8n2uL8_KSONJZh2Qf4bJEn5tBuCyx8zmQhjnl-KKwBxTYKRunCQApNhxLtkY68gclOxFsJvPxAGh1yE54g7n0JMf4AHQAocPjmy1Tg7yoJ7FJkaHZwkY4awq5D4BYcX08M0Q3qtALnC0sfGBPwaW2lTVxWj63X0TCz5MyEMgLQ-nIXgtNtEeCk5HjjYGBicWVDbSwq6_NFm2DWugVnRmPY0SuQFrOXKABibKMx9L5EVm6pUupbHCA"/>
+<div class="check-icon absolute top-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-on-primary opacity-0 scale-50 transition-all duration-300 shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 20px;">check</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Sticky Bottom Action -->
+<div class="mt-auto pt-4">
+<button class="clay-button w-full bg-primary text-on-primary border-on-primary-fixed-variant rounded-full py-4 px-8 font-title-md text-title-md flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled="" id="checkAnswerBtn">
+<span>Kiểm tra</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</div>
+</main>
+<script>
+        // Simple interactions
+        document.addEventListener('DOMContentLoaded', () => {
+            const playBtn = document.getElementById('playAudioBtn');
+            const checkBtn = document.getElementById('checkAnswerBtn');
+            const radioInputs = document.querySelectorAll('.radio-card-input');
+
+            // Simulate Audio Play
+            playBtn.addEventListener('click', () => {
+                // Add a visual pulse effect
+                playBtn.classList.add('ring-4', 'ring-primary-fixed-dim');
+                const icon = playBtn.querySelector('.material-symbols-outlined');
+                icon.style.transform = 'scale(1.2)';
+                
+                setTimeout(() => {
+                    playBtn.classList.remove('ring-4', 'ring-primary-fixed-dim');
+                    icon.style.transform = 'scale(1)';
+                }, 300);
+            });
+
+            // Enable check button when an option is selected
+            radioInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    if (document.querySelector('input[name="animal_selection"]:checked')) {
+                        checkBtn.removeAttribute('disabled');
+                        // Add a slight bounce to the check button to draw attention
+                        checkBtn.classList.add('animate-bounce');
+                        setTimeout(() => checkBtn.classList.remove('animate-bounce'), 1000);
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

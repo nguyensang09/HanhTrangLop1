@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Khám Phá Số 5 - Sóc Nâu Học Chữ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed-dim": "#27e0a9",
+                        "primary-container": "#ff8c42",
+                        "on-surface-variant": "#564338",
+                        "surface-bright": "#fbf9f1",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#51fac1",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "inverse-primary": "#ffb68d",
+                        "secondary-fixed": "#54fdc4",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "inverse-surface": "#30312c",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-container-high": "#eae8e0",
+                        "surface": "#fbf9f1",
+                        "inverse-on-surface": "#f3f1e9",
+                        "on-tertiary-fixed": "#001f2a",
+                        "outline-variant": "#ddc1b3",
+                        "surface-dim": "#dcdad2",
+                        "outline": "#897266",
+                        "surface-container": "#f0eee6",
+                        "surface-tint": "#9b4500",
+                        "primary-fixed": "#ffdbc9",
+                        "secondary": "#006c4f",
+                        "tertiary-container": "#53b5df",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#006686",
+                        "on-primary-fixed": "#331200",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "background": "#fbf9f1",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f5f4ec",
+                        "on-tertiary-container": "#00445a",
+                        "on-primary-fixed-variant": "#763300",
+                        "on-surface": "#1b1c17",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-secondary-fixed": "#002116",
+                        "on-background": "#1b1c17",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#9b4500",
+                        "surface-variant": "#e4e3db",
+                        "on-secondary-container": "#007152",
+                        "on-primary-container": "#6a2d00",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "card-gap": "20px",
+                        "unit": "8px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "touch-target-min": "48px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "label-caps": ["16px", { lineHeight: "20px", fontWeight: "700" }],
+                        "body-lg": ["20px", { lineHeight: "32px", fontWeight: "500" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }],
+                        "title-md": ["22px", { lineHeight: "30px", fontWeight: "600" }],
+                        "body-md": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "display-hero": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "700" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .clay-button {
+            border-bottom-width: 4px;
+            transition: all 0.15s ease-in-out;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+        .soft-card-shadow {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        .apple-item {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .apple-item.counted {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba(255, 140, 66, 0.5));
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface docked full-width top-0 bg-surface-container-low shadow-sm flex justify-between items-center w-full px-container-margin py-unit sticky z-40">
+<button class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary rounded-full hover:opacity-90 transition-transform hover:-translate-y-0.5 active:translate-y-0.5">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold flex-1 text-center truncate px-2">Khám Phá Số 5</h1>
+<div class="flex items-center text-primary-container font-label-caps text-label-caps bg-surface-container-highest px-3 py-1.5 rounded-full soft-card-shadow">
+            125 <span class="ml-1">⭐</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-container-margin py-6 flex flex-col items-center justify-center gap-card-gap max-w-2xl mx-auto w-full">
+<!-- Large Number Display -->
+<section class="w-full flex flex-col items-center">
+<div class="relative w-48 h-48 bg-surface-container-highest rounded-full flex items-center justify-center soft-card-shadow mb-4 border-4 border-surface-container">
+<span class="font-display-hero text-display-hero text-9xl text-primary drop-shadow-md">5</span>
+<button class="absolute -bottom-4 right-0 w-14 h-14 bg-secondary-fixed-dim rounded-full flex items-center justify-center border-b-4 border-secondary text-on-secondary clay-button">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary-container">năm</h2>
+</section>
+<!-- Sóc Nâu Dialogue -->
+<section class="w-full bg-[#fde68a] rounded-xl p-4 flex items-start gap-4 border-2 border-primary-container relative">
+<div class="w-12 h-12 flex-shrink-0 bg-surface rounded-full flex items-center justify-center border-2 border-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A cute stylized illustration of a brown squirrel head, cartoon style, warm colors, friendly expression, solid cream background, clear outlines for preschool children, UI element." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpXm2V0AtHXbdYaI0BFVwgf9Bu0IYAcHD72eVIXRD4CK3PTMWqQzu_HDBDkzSvNQl5oJG2bDT7jYOsEr57AKJ0KatpGVl0A-nHr9CYBDL8ippVErEXbP7TdBBdnAoN3qqlS2FP4Z3vy8qkIob19TMOpRjbFbq2drBstwPSA5nP_KAilEMPAge_PioGdvfedsA79TqhlKNILjzIUg85YDTTQfR0vy79FA2JMglQ6Hn6dkvYTvI2k3nASA"/>
+</div>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">Bé hãy chạm vào từng quả táo để đếm nhé!</p>
+</div>
+<div class="absolute -left-2 top-6 w-4 h-4 bg-[#fde68a] border-l-2 border-b-2 border-primary-container transform rotate-45"></div>
+</section>
+<!-- Interactive Objects (Apples) -->
+<section class="w-full grid grid-cols-5 gap-2 sm:gap-4 mt-4">
+<!-- Apple 1 -->
+<button class="apple-item aspect-square bg-surface-container-low rounded-xl border-2 border-outline-variant flex items-center justify-center p-2 relative group" onclick="this.classList.toggle('counted'); this.querySelector('.count-badge').classList.toggle('opacity-0')">
+<img class="w-full h-full object-contain" data-alt="A bright red cartoon apple with a green leaf, simple vector illustration, flat colors, no shading, white background, designed for a children's learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHglw5yEjs9q6WMsJTGJ5sN4OWyXxKo67NP0rUweOGkdzHZzF2M79YJyfg6kpuYyfepUUPayufp8l_UjNtDkyyIQz8zS7R7NQXkyPbhtFkqn_aQRcA-RaVXO2p9VGq063XHFlEQQ6qvJ4HHdDTpiyYMhOZRHzvfRWn3iUVmaYkqL8mZM0OacnwcsYg-4taBvp69BsbQmcEbyyqn4GAAK-Q9UNwPK6Ef8t5msMVBnUhQc19Bn7w__NkmA"/>
+<span class="count-badge opacity-0 absolute -top-2 -right-2 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center font-label-caps text-label-caps border-2 border-surface transition-opacity">1</span>
+</button>
+<!-- Apple 2 -->
+<button class="apple-item aspect-square bg-surface-container-low rounded-xl border-2 border-outline-variant flex items-center justify-center p-2 relative group" onclick="this.classList.toggle('counted'); this.querySelector('.count-badge').classList.toggle('opacity-0')">
+<img class="w-full h-full object-contain" data-alt="A bright red cartoon apple with a green leaf, simple vector illustration, flat colors, no shading, white background, designed for a children's learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_IIWQvDXA92i78ufwcZFzrpzLSDKgW73NjEcax4h8Sq53Zhkl-Gg2FQ5hHqTglCKkBGcVXGyYdxx8IzMMLtlxcucSmOcChgCc937zjEyn8ttCALC-kyzMVIO1mGfzQC7UmkDOuM8WTXf97vj_daZqD-blTPcD2E1c2llleCrvhg2IfkyE5Zr8TbCg_2-DF68jxLY2EQM0oGIIzf5pMZWaCL-WdrOZtOTwrVKXjPiPDbSdi1GvcJncFw"/>
+<span class="count-badge opacity-0 absolute -top-2 -right-2 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center font-label-caps text-label-caps border-2 border-surface transition-opacity">2</span>
+</button>
+<!-- Apple 3 -->
+<button class="apple-item aspect-square bg-surface-container-low rounded-xl border-2 border-outline-variant flex items-center justify-center p-2 relative group" onclick="this.classList.toggle('counted'); this.querySelector('.count-badge').classList.toggle('opacity-0')">
+<img class="w-full h-full object-contain" data-alt="A bright red cartoon apple with a green leaf, simple vector illustration, flat colors, no shading, white background, designed for a children's learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxGIGgiLfIpprq0-d2lPoKem9cxWNrXUVgt5GiTeaS1sk8xLfjpVb_koomtUgR6xU1N9ood0IUKzGawhMDlAnfc8Jg3RJk_7YqTwHwfRJf6lfKVWqRCTLPe2ilT7EseyANEfpQuHk_iJz2BiqpJw-q_ZoSKC7aXP-IsZJJry7-hgUSeDo8zgsiHfAeqjHh1zdCpTZ6OjyDt5eQj9vd0xLUJAvb_KmpeIxAapW-G3HLpP7miGA4madHNw"/>
+<span class="count-badge opacity-0 absolute -top-2 -right-2 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center font-label-caps text-label-caps border-2 border-surface transition-opacity">3</span>
+</button>
+<!-- Apple 4 -->
+<button class="apple-item aspect-square bg-surface-container-low rounded-xl border-2 border-outline-variant flex items-center justify-center p-2 relative group" onclick="this.classList.toggle('counted'); this.querySelector('.count-badge').classList.toggle('opacity-0')">
+<img class="w-full h-full object-contain" data-alt="A bright red cartoon apple with a green leaf, simple vector illustration, flat colors, no shading, white background, designed for a children's learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC_OTuC0krdyKjx9WDn7MINcUVuI_avxCekolwpcbEVeFiiPIzlQPjqlCnfRKYXX917RvuaZ13EWB2uLZkIt_lU8BNkao43HcsWnBHjzeNtRDn5cB10-5bPqiH0uw1PLv_NN4aO6D8DT3cAYlaVIh6tqUNyLsInxcKcDZ5KcolIKBD3-e8fO8poPEnywVj8R2f_nsfJ_y81_i8m6ge4oXNdX4hy7jwH9K9ycWmqrchYuNxbvrqQ-O8zQ"/>
+<span class="count-badge opacity-0 absolute -top-2 -right-2 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center font-label-caps text-label-caps border-2 border-surface transition-opacity">4</span>
+</button>
+<!-- Apple 5 -->
+<button class="apple-item aspect-square bg-surface-container-low rounded-xl border-2 border-outline-variant flex items-center justify-center p-2 relative group" onclick="this.classList.toggle('counted'); this.querySelector('.count-badge').classList.toggle('opacity-0')">
+<img class="w-full h-full object-contain" data-alt="A bright red cartoon apple with a green leaf, simple vector illustration, flat colors, no shading, white background, designed for a children's learning app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbIGjX6olKPHykXOJnYPRPn_g6Pwt0dno95eIEX1gYiYjWQAyE6Lty_akvZDzFoUt_h6Bx8Sy4p9Jv_JqrreaELGwdUfLlfjDFloidAtvG63j9U5rvT_ajNGT0fc2OJl6mHMP657WUkDzk_MWQ-5HOq3YFZUdKLsrWQd9kMqYFa2NtqAoua0f-H8EnhCKsgpTpDFNgqCaQM-MuCvou7P10BUvcxpPJQXRZrs0uyx-0j0Ng_Rq0WLUbPw"/>
+<span class="count-badge opacity-0 absolute -top-2 -right-2 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center font-label-caps text-label-caps border-2 border-surface transition-opacity">5</span>
+</button>
+</section>
+<!-- Next Action -->
+<div class="mt-8 w-full flex justify-center">
+<button class="bg-primary-container text-on-primary font-label-caps text-label-caps py-4 px-12 rounded-full border-b-[4px] border-[#d87635] hover:opacity-90 active:translate-y-[2px] active:border-b-0 active:mb-[4px] transition-all flex items-center gap-2">
+                Hoàn thành
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-4 pb-4 pt-2 bg-surface-container dark:bg-surface-container-highest bg-surface-container-high border-t-4 border-surface-container-highest shadow-[0_-4px_20px_rgba(255,140,66,0.05)] rounded-t-xl font-label-caps text-label-caps">
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim flex-1">
+<span class="material-symbols-outlined text-2xl mb-1">home</span>
+<span class="text-xs">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 translate-y-[-4px] border-b-4 border-primary hover:bg-primary-fixed-dim flex-1">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="text-xs">Exercises</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim flex-1">
+<span class="material-symbols-outlined text-2xl mb-1">military_tech</span>
+<span class="text-xs">Rewards</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-primary-fixed-dim flex-1">
+<span class="material-symbols-outlined text-2xl mb-1">family_restroom</span>
+<span class="text-xs">Parents</span>
+</button>
+</nav>
+</body></html>

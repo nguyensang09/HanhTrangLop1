@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bé Nhận Biết Cảm Xúc</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#bfe8ff",
+                      "surface-variant": "#e4e3db",
+                      "primary": "#9b4500",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface-bright": "#fbf9f1",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e4e3db",
+                      "primary-fixed": "#ffdbc9",
+                      "surface-container-low": "#f5f4ec",
+                      "background": "#fbf9f1",
+                      "inverse-primary": "#ffb68d",
+                      "inverse-on-surface": "#f3f1e9",
+                      "inverse-surface": "#30312c",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#00445a",
+                      "surface-container-high": "#eae8e0",
+                      "on-primary-container": "#6a2d00",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "on-surface-variant": "#564338",
+                      "surface": "#fbf9f1",
+                      "surface-tint": "#9b4500",
+                      "outline-variant": "#ddc1b3",
+                      "on-secondary-container": "#007152",
+                      "on-background": "#1b1c17",
+                      "primary-fixed-dim": "#ffb68d",
+                      "outline": "#897266",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#ff8c42",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#f0eee6",
+                      "tertiary": "#006686",
+                      "on-tertiary-fixed": "#001f2a",
+                      "secondary-fixed": "#54fdc4",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#dcdad2",
+                      "on-primary-fixed-variant": "#763300",
+                      "secondary": "#006c4f",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#002116",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "secondary-container": "#51fac1",
+                      "tertiary-container": "#53b5df",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "on-surface": "#1b1c17",
+                      "on-primary-fixed": "#331200"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "gutter": "16px",
+                      "card-gap": "20px",
+                      "touch-target-min": "48px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "title-md": ["Be Vietnam Pro"],
+                      "label-caps": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Be Vietnam Pro"],
+                      "display-hero": ["Plus Jakarta Sans"],
+                      "body-lg": ["Be Vietnam Pro"]
+              },
+              "fontSize": {
+                      "title-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}],
+                      "label-caps": ["16px", {"lineHeight": "20px", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "body-md": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-hero": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-lg": ["20px", {"lineHeight": "32px", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Custom styles for claymorphic effect that Tailwind utility combinations might not fully capture neatly without bloat */
+        .clay-button {
+            transition: all 0.15s ease-in-out;
+        }
+        .clay-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 0 transparent !important;
+        }
+        
+        .selected-card {
+            background-color: #bfe8ff !important; /* tertiary-fixed */
+            border-color: #006686 !important; /* tertiary */
+            color: #001f2a !important; /* on-tertiary-fixed */
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-background font-body-md select-none overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-background shadow-[0_4px_0_0_rgba(155,69,0,0.1)] z-40 bg-surface-container-low dark:bg-surface-container-low shadow-sm">
+<div class="flex justify-between items-center px-container-margin h-touch-target-min">
+<!-- Leading Icon -->
+<button class="active:translate-y-[2px] transition-all text-primary dark:text-inverse-primary hover:opacity-90 w-touch-target-min h-touch-target-min flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined text-3xl">arrow_back</span>
+</button>
+<!-- Headline -->
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-inverse-primary font-bold tracking-tight text-center">
+                Sóc Nâu Đồng Hành
+            </h1>
+<!-- Trailing Action -->
+<button class="active:translate-y-[2px] transition-all text-primary dark:text-inverse-primary hover:opacity-90 font-label-caps text-label-caps flex items-center h-touch-target-min px-4 bg-surface-container rounded-full shadow-[0_2px_0_0_rgba(155,69,0,0.1)]">
+                12 ⭐
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-container-margin pt-6 pb-32 max-w-md mx-auto relative flex flex-col gap-6">
+<!-- Screen Title -->
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary text-center">Bé Nhận Biết Cảm Xúc</h2>
+<!-- Instruction / Dialogue Area -->
+<div class="relative bg-primary-fixed rounded-3xl p-5 shadow-[0_4px_12px_rgba(255,140,66,0.1)] border-2 border-primary-fixed-dim">
+<!-- Decorative dialogue tail -->
+<div class="absolute -bottom-3 left-10 w-6 h-6 bg-primary-fixed border-b-2 border-r-2 border-primary-fixed-dim transform rotate-45 rounded-sm z-10"></div>
+<div class="flex items-center gap-4">
+<!-- Large Audio Button (Claymorphic) -->
+<button class="clay-button shrink-0 w-[64px] h-[64px] bg-primary rounded-full flex items-center justify-center shadow-[0_6px_0_0_#6a2d00] relative z-20">
+<span class="material-symbols-outlined text-on-primary text-4xl" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+<!-- Question Text -->
+<p class="font-title-md text-title-md text-on-primary-container leading-snug">
+                    Bé thấy bạn nhỏ này đang cảm thấy thế nào?
+                
+</p></div>
+</div>
+<!-- Central Illustration Card (Glass/Soft 3D style) -->
+<div class="w-full aspect-square bg-surface-container-lowest rounded-[32px] p-3 shadow-[0_20px_40px_-10px_rgba(255,140,66,0.15)] border-4 border-surface-container relative overflow-hidden mt-4">
+<img class="w-full h-full object-cover rounded-[24px]" data-alt="A high-quality 3D clay-style illustration of an adorable preschool-aged child looking exceptionally happy and joyful. The child has a bright, wide smile, expressive big eyes, and rosy cheeks, embodying a soft, tactile aesthetic. The background is a gentle, warm cream to light orange gradient that feels incredibly safe and inviting. The lighting is soft and ambient, completely avoiding harsh shadows, perfectly matching a bright, modern learning app design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7CXiy2jEIuZuU9SXWauOKlTFXMU1XbWBkTpO7wy3YXmyutt1pM6rFruCEPHOPEey-DbAXU6x92FZ3409gpOQUigzJ4xtdGLrcdwg0tJSFHLzeHUbRaOk4PzuxuRZPGBtHYT-hrxXZsTDJ47rEW5F4A4nNBrSO-SaqnQSGFrt1yHD7HXVYUpPb4T6YCA18Di00r0lahenkfR3BUiHA4p17OcyViOCtqR3vitWBjeRnTJY38A6l0pIatw"/>
+<!-- Decorative corner accent -->
+<div class="absolute top-6 right-6 w-12 h-12 bg-primary-container rounded-full opacity-20 blur-xl"></div>
+</div>
+<!-- Options Grid -->
+<div class="grid grid-cols-2 gap-4 mt-2">
+<!-- Option 1: Vui -->
+<button class="clay-button bg-surface-container-lowest border-2 border-tertiary-fixed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-[0_6px_0_0_#bfe8ff] hover:bg-surface-bright group" onclick="selectEmotion(this)">
+<div class="text-5xl group-active:scale-95 transition-transform">😄</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Vui</span>
+</button>
+<!-- Option 2: Buồn -->
+<button class="clay-button bg-surface-container-lowest border-2 border-tertiary-fixed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-[0_6px_0_0_#bfe8ff] hover:bg-surface-bright group" onclick="selectEmotion(this)">
+<div class="text-5xl group-active:scale-95 transition-transform">😢</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Buồn</span>
+</button>
+<!-- Option 3: Tức giận -->
+<button class="clay-button bg-surface-container-lowest border-2 border-tertiary-fixed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-[0_6px_0_0_#bfe8ff] hover:bg-surface-bright group" onclick="selectEmotion(this)">
+<div class="text-5xl group-active:scale-95 transition-transform">😠</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Tức giận</span>
+</button>
+<!-- Option 4: Sợ hãi -->
+<button class="clay-button bg-surface-container-lowest border-2 border-tertiary-fixed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 shadow-[0_6px_0_0_#bfe8ff] hover:bg-surface-bright group" onclick="selectEmotion(this)">
+<div class="text-5xl group-active:scale-95 transition-transform">😨</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Sợ hãi</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<!-- Applied strict styling from JSON, suppressing shell border lines and using the logic requested -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface shadow-[0_-4px_10px_rgba(255,140,66,0.05)] md:hidden">
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface border-t-0 border-transparent">
+<!-- Item 1: Học Tập (ACTIVE matching page intent) -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 translate-y-[-2px] shadow-[0_4px_0_0_#9b4500] hover:opacity-90 active:translate-y-[2px] active:shadow-none transition-all w-20">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Học Tập</span>
+</button>
+<!-- Item 2: Vui Chơi (INACTIVE) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high active:scale-95 transition-transform duration-150 px-4 py-1 rounded-xl w-20">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">videogame_asset</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Vui Chơi</span>
+</button>
+<!-- Item 3: Thử Thách (INACTIVE) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high active:scale-95 transition-transform duration-150 px-4 py-1 rounded-xl w-20">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">star</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Thử Thách</span>
+</button>
+<!-- Item 4: Của Bé (INACTIVE) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high active:scale-95 transition-transform duration-150 px-4 py-1 rounded-xl w-20">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-caps text-[12px] mt-1 whitespace-nowrap">Của Bé</span>
+</button>
+</div>
+</nav>
+<!-- Lightweight JS for Selection Interaction -->
+<script>
+        function selectEmotion(clickedElement) {
+            // Remove selected class and reset shadow from all buttons
+            const buttons = document.querySelectorAll('.grid button');
+            buttons.forEach(btn => {
+                btn.classList.remove('selected-card');
+                btn.style.boxShadow = '0 6px 0 0 #bfe8ff'; // Reset to tertiary-fixed shadow
+                btn.style.transform = 'translateY(0)';
+            });
+
+            // Add selected class to the clicked button
+            clickedElement.classList.add('selected-card');
+            
+            // Adjust visual state to look pressed and selected
+            clickedElement.style.boxShadow = '0 2px 0 0 #006686'; // Darker shadow for pressed state
+            clickedElement.style.transform = 'translateY(4px)';
+
+            // Optional: Play a soft pop sound or trigger the next logic here
+        }
+    </script>
+</body></html>

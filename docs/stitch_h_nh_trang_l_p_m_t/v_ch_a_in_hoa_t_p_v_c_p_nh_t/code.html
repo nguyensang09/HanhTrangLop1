@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Học Chữ A In Hoa - Tập Vẽ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#002116",
+                      "on-secondary-container": "#007152",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#763300",
+                      "tertiary": "#006686",
+                      "outline": "#897266",
+                      "on-tertiary-fixed": "#001f2a",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "secondary-container": "#51fac1",
+                      "on-secondary-fixed-variant": "#00513b",
+                      "surface-variant": "#e4e3db",
+                      "primary-fixed-dim": "#ffb68d",
+                      "surface-container-highest": "#e4e3db",
+                      "secondary": "#006c4f",
+                      "surface": "#fbf9f1",
+                      "surface-bright": "#fbf9f1",
+                      "inverse-surface": "#30312c",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f5f4ec",
+                      "background": "#fbf9f1",
+                      "on-primary-container": "#6a2d00",
+                      "surface-container": "#f0eee6",
+                      "on-primary-fixed": "#331200",
+                      "outline-variant": "#ddc1b3",
+                      "secondary-fixed": "#54fdc4",
+                      "on-surface": "#1b1c17",
+                      "on-tertiary-fixed-variant": "#004d65",
+                      "inverse-on-surface": "#f3f1e9",
+                      "surface-tint": "#9b4500",
+                      "on-background": "#1b1c17",
+                      "on-tertiary-container": "#00445a",
+                      "primary": "#9b4500",
+                      "surface-container-high": "#eae8e0",
+                      "on-tertiary": "#ffffff",
+                      "inverse-primary": "#ffb68d",
+                      "primary-fixed": "#ffdbc9",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#dcdad2",
+                      "tertiary-fixed-dim": "#73d2fd",
+                      "tertiary-container": "#53b5df",
+                      "tertiary-fixed": "#bfe8ff",
+                      "on-surface-variant": "#564338",
+                      "secondary-fixed-dim": "#27e0a9",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#ff8c42",
+                      "error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "24px",
+                      "unit": "8px",
+                      "gutter": "16px",
+                      "card-gap": "20px",
+                      "touch-target-min": "48px"
+              },
+              "fontFamily": {
+                      "display-hero": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label-caps": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Be Vietnam Pro"
+                      ],
+                      "title-md": [
+                              "Be Vietnam Pro"
+                      ]
+              },
+              "fontSize": {
+                      "display-hero": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "title-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+      </script>
+<style>
+        .clay-button {
+            border-bottom-width: 4px;
+            transition: all 0.1s ease-in-out;
+        }
+        .clay-button:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-bottom: 4px;
+        }
+        .clay-card {
+            box-shadow: 0px 20px 40px -10px rgba(255, 140, 66, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col items-center justify-center">
+<!-- Top Navigation (Suppressed for Focus) -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-[0_4px_0_0_rgba(228,227,219,1)]">
+<div class="w-full h-16 flex items-center justify-between px-container-margin">
+<button aria-label="Back" class="w-12 h-12 flex items-center justify-center text-primary active:translate-y-0.5 transition-transform hover:bg-primary-container/20 rounded-full pointer-events-auto">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary flex-1 text-center truncate">
+                Tập vẽ chữ A
+            </h1>
+<div class="flex items-center gap-1 text-primary">
+<span class="font-title-md text-title-md">⭐ 125</span>
+</div>
+</div>
+</header>
+<!-- Main Canvas Area -->
+<main class="flex-1 mt-16 pt-unit pb-24 px-container-margin flex flex-col gap-4 overflow-y-auto"><div class="w-full flex items-center justify-between bg-surface-container-lowest rounded-xl p-3 border-2 border-surface-variant mb-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-caps text-label-caps">
+                     1/3
+                 </div>
+<span class="font-body-lg text-body-lg text-on-surface-variant">Nét thứ 1</span>
+</div>
+<div class="flex gap-1 h-4 w-24 bg-surface-variant rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full w-1/3 bg-secondary"></div>
+</div>
+</div>
+<!-- Sóc Nâu Helper Dialogue -->
+<div class="w-full bg-[#FFE082] rounded-xl p-4 flex items-center gap-3 relative mb-4">
+<div class="w-12 h-12 rounded-full bg-white flex-shrink-0 flex items-center justify-center border-2 border-[#FFC107]">
+<span class="material-symbols-outlined text-[#FF9800]" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-primary-fixed-variant flex-1">
+                Bé vẽ theo đường nét đứt nhé!
+            </p>
+<button aria-label="Nghe lại" class="w-10 h-10 flex items-center justify-center bg-white rounded-full text-[#FF9800] clay-button border-[#FFC107]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Drawing Canvas Container -->
+<div class="relative w-full aspect-square max-w-[500px] bg-surface-container-lowest rounded-[40px] border-4 border-tertiary-container/30 clay-card flex items-center justify-center overflow-hidden touch-none" id="drawing-area">
+<!-- Tracing Guide -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveaspectratio="xMidYMid meet" viewbox="0 0 100 100">
+<!-- Guide Lines -->
+<path d="M 50 15 L 20 85 M 50 15 L 80 85 M 35 60 L 65 60" fill="none" stroke="#e4e3db" stroke-dasharray="0 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"></path>
+<!-- Active Stroke 1 (Left Diagonal) - Highlighted -->
+<path class="animate-pulse" d="M 50 15 L 20 85" fill="none" stroke="#ffb68d" stroke-dasharray="0 24" stroke-linecap="round" stroke-width="12"></path>
+<!-- Starting Dots -->
+<!-- Dot 1 -->
+<circle cx="50" cy="15" fill="#006c4f" r="5"></circle>
+<!-- Dot 2 -->
+<circle cx="50" cy="15" fill="#ddc1b3" r="5"></circle>
+<!-- Dot 3 -->
+<circle cx="35" cy="60" fill="#ddc1b3" r="5"></circle>
+<!-- Directional Arrows (Optional, simplified for this view) -->
+<path d="M 45 25 L 35 45 M 35 45 L 30 40 M 35 45 L 40 40" fill="none" stroke="#006c4f" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<!-- Interactive Canvas Element (Placeholder for actual drawing logic) -->
+<canvas class="absolute inset-0 w-full h-full z-10 touch-none" id="user-canvas"></canvas>
+<!-- Confetti/Success Animation Overlay (Hidden by default) -->
+<div class="absolute inset-0 z-20 pointer-events-none opacity-0 transition-opacity duration-500 flex items-center justify-center" id="success-overlay">
+<!-- <webgl-shader src="{{DATA:ANIMATION:ANIMATION_1}}" class="w-full h-full"></webgl-shader> -->
+</div>
+<div class="absolute bottom-4 right-4 flex gap-3 z-20">
+<button aria-label="Hoàn tác" class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-on-surface-variant clay-button border-surface-variant">
+<span class="material-symbols-outlined">undo</span>
+</button>
+<button aria-label="Xóa" class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center text-on-surface-variant clay-button border-surface-variant">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div></div>
+</main>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 w-full bg-surface/90 backdrop-blur-md pb-safe-area pt-4 px-container-margin z-50 flex items-center justify-center gap-4"><button class="w-full h-14 bg-surface-variant text-on-surface-variant font-label-caps text-label-caps rounded-full flex items-center justify-center opacity-50 cursor-not-allowed" disabled="">
+            Tiếp tục
+        </button></footer>
+<script>
+        // Simple canvas setup for demonstration
+        const canvas = document.getElementById('user-canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        ctx.lineWidth = 20;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#9b4500'; // primary color
+
+        function startPosition(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            // Handle touch or mouse events
+            let x = e.clientX || e.touches[0].clientX;
+            let y = e.clientY || e.touches[0].clientY;
+            
+            const rect = canvas.getBoundingClientRect();
+            x = x - rect.left;
+            y = y - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); });
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+    </script>
+</body></html>

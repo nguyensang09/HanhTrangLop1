@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Profile Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#ff8c42",
+                    "outline-variant": "#ddc1b3",
+                    "on-error": "#ffffff",
+                    "surface-container": "#f0eee6",
+                    "on-tertiary-fixed": "#001f2a",
+                    "secondary": "#006c4f",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f5f4ec",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#763300",
+                    "secondary-fixed": "#54fdc4",
+                    "surface-tint": "#9b4500",
+                    "surface-dim": "#dcdad2",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "on-secondary-container": "#007152",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#ffdbc9",
+                    "on-background": "#1b1c17",
+                    "on-surface-variant": "#564338",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "secondary-container": "#51fac1",
+                    "on-primary-fixed": "#331200",
+                    "primary-fixed-dim": "#ffb68d",
+                    "outline": "#897266",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#6a2d00",
+                    "on-secondary-fixed": "#002116",
+                    "inverse-surface": "#30312c",
+                    "surface-variant": "#e4e3db",
+                    "surface": "#fbf9f1",
+                    "on-surface": "#1b1c17",
+                    "surface-bright": "#fbf9f1",
+                    "surface-container-high": "#eae8e0",
+                    "tertiary-container": "#53b5df",
+                    "on-tertiary-container": "#00445a",
+                    "tertiary": "#006686",
+                    "primary": "#9b4500",
+                    "background": "#fbf9f1",
+                    "surface-container-highest": "#e4e3db",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "inverse-on-surface": "#f3f1e9",
+                    "inverse-primary": "#ffb68d",
+                    "tertiary-fixed": "#bfe8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "card-gap": "20px",
+                    "touch-target-min": "48px",
+                    "gutter": "16px",
+                    "container-margin": "24px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "display-hero": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Be Vietnam Pro"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-caps": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Be Vietnam Pro"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-hero": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "title-md": [
+                            "22px",
+                            {
+                                    "lineHeight": "30px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-caps": [
+                            "16px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .pressable-btn {
+            border-bottom-width: 4px;
+            transition: all 0.1s ease-in-out;
+        }
+        .pressable-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 0px;
+            margin-top: 4px;
+        }
+        .clay-avatar {
+            box-shadow: 0px -4px 20px 0px rgba(255,140,66,0.05), inset 0px -4px 0px 0px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        .clay-avatar:active {
+            transform: scale(0.95);
+        }
+        .bg-pattern {
+             background-color: #fbf9f1;
+             background-image: radial-gradient(#ddc1b3 1px, transparent 1px);
+             background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen text-on-surface font-body-md flex flex-col items-center justify-center relative pb-24 md:pb-0">
+<!-- Header / Parental Gate -->
+<header class="fixed top-0 left-0 w-full p-container-margin flex justify-end z-50">
+<button aria-label="Parental Gate" class="w-16 h-16 rounded-full bg-surface-container-high border-4 border-surface-container flex items-center justify-center pressable-btn border-surface-dim shadow-sm">
+<span class="material-symbols-outlined text-outline text-[32px]" style="font-variation-settings: 'FILL' 0, 'wght' 600;">
+                lock
+            </span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-2xl px-container-margin pt-24 pb-12 flex flex-col items-center text-center relative z-10">
+<h1 class="font-display-hero text-display-hero text-primary mb-2 md:mb-4">Ai đang chơi nhỉ?</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12">Chọn tên của bé để bắt đầu học nhé!</p>
+<!-- Profile Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-xl">
+<!-- Avatar 1 -->
+<button class="flex flex-col items-center group">
+<div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-tertiary-fixed border-4 border-white clay-avatar flex items-center justify-center mb-4 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A cute 3D cartoon style illustration of a strawberry with a happy face, suitable for a preschool app profile picture. The style is soft, bright, and clay-like with warm pastel colors on a light blue background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXQ93FZBWeV_DPKd0Radp1F3xRwQ1euZa82hfHTALr7WvxFDM2m2Hfda3UnlWD-LHRfQ9ErDJ3Ik4nU54JIJnLUC7K8Yd2wNzAYX1ToItTKyuE8CULb-v3-nNCVND1LTJP5rG0gp_TjOFi410OkoZq-o-gD5vgkv6BHfzuxB8gUGA1oCiPsaUTUMBpYyT04RjeFGAjjIaEY2sjJlZWEokekKGGPOGquV6nXK7-WmNZOG1GbCTIFaFNZA"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Bé Dâu Tây</span>
+</button>
+<!-- Avatar 2 -->
+<button class="flex flex-col items-center group">
+<div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-secondary-fixed border-4 border-white clay-avatar flex items-center justify-center mb-4 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A cute 3D cartoon style illustration of a green avocado with a happy face, suitable for a preschool app profile picture. The style is soft, bright, and clay-like with warm pastel colors on a light green background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDh2RF_1zoJBNBXuHC9PSA1uCEit4L2ZAGEL9YsNiEdsR6V99laVjQ_cJlZ6Z2cQB3l13Qvpl61ETkw5GsCDb9BHndniwLYUUuooAl--mPq-heMxdxmvv-TDPP9Q4VS_2z1LxhnofWrjV5-2-YsmpXVPw3xFVNM2i12lNyAoTvfShAGDC8hIax-LaB2Kns0NvtO0xkI2IeCNMXmtcsKCzN9HW_hUWg8cCb5PaqB0xWMGi2lAF1mis3fw"/>
+</div>
+<span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Bé Bơ</span>
+</button>
+<!-- Add Profile -->
+<button class="flex flex-col items-center group">
+<div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-surface-container-high border-4 border-dashed border-outline-variant clay-avatar flex items-center justify-center mb-4 relative hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-outline-variant text-[48px]" style="font-variation-settings: 'FILL' 1, 'wght' 700;">
+                        add
+                    </span>
+</div>
+<span class="font-title-md text-title-md text-on-surface-variant group-hover:text-primary transition-colors">Thêm Bé</span>
+</button>
+</div>
+</main>
+<!-- Soc Nau Helper Graphic (Decorative) -->
+<div class="fixed bottom-0 right-0 p-8 pointer-events-none opacity-50 md:opacity-100 hidden md:block">
+<div class="w-48 h-48 relative">
+<img class="w-full h-full object-contain drop-shadow-xl" data-alt="A 3D claymorphic illustration of a friendly brown squirrel character waving hello. The squirrel is stylized with soft, rounded shapes, large eyes, and wearing a tiny yellow scarf, set against a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUbr8Eg_-ggZKs1AqJ4UfM34a-G-gPcT7WbimO3xU-c8_v-s9wIfQaK1z1SuQ6I_x18Anblv7N9zB2m51Y2kfvPBTjscYvckUwVJUCfdqPEeZrBdO-hMG3EplJIcZUfPLr-ai-hyUydZuiZ9SVSQaDWtwTXtYWpZHWgScu5UhgzDlHtB3ObvO46Y431CwKk-UlIyVdhZeFvJpc2G6b6odzv-hSIYLoQLEQ27XzOnMK-hJ17cqR-XH2GQ"/>
+</div>
+</div>
+</body></html>

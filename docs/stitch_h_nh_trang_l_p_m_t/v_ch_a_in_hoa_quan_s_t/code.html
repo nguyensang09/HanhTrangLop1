@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Học Chữ A In Hoa - Quan Sát</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#002116",
+                        "on-secondary-container": "#007152",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#763300",
+                        "tertiary": "#006686",
+                        "outline": "#897266",
+                        "on-tertiary-fixed": "#001f2a",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#51fac1",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-variant": "#e4e3db",
+                        "primary-fixed-dim": "#ffb68d",
+                        "surface-container-highest": "#e4e3db",
+                        "secondary": "#006c4f",
+                        "surface": "#fbf9f1",
+                        "surface-bright": "#fbf9f1",
+                        "inverse-surface": "#30312c",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f5f4ec",
+                        "background": "#fbf9f1",
+                        "on-primary-container": "#6a2d00",
+                        "surface-container": "#f0eee6",
+                        "on-primary-fixed": "#331200",
+                        "outline-variant": "#ddc1b3",
+                        "secondary-fixed": "#54fdc4",
+                        "on-surface": "#1b1c17",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "inverse-on-surface": "#f3f1e9",
+                        "surface-tint": "#9b4500",
+                        "on-background": "#1b1c17",
+                        "on-tertiary-container": "#00445a",
+                        "primary": "#9b4500",
+                        "surface-container-high": "#eae8e0",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#ffb68d",
+                        "primary-fixed": "#ffdbc9",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dcdad2",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "tertiary-container": "#53b5df",
+                        "tertiary-fixed": "#bfe8ff",
+                        "on-surface-variant": "#564338",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#ff8c42",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "title-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .pressable {
+            border-bottom-width: 4px;
+            transition: all 0.1s ease-in-out;
+        }
+        .pressable:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .soft-shadow {
+            box-shadow: 0 10px 20px rgba(255, 140, 66, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-background flex flex-col font-body-md overflow-x-hidden">
+<!-- TopAppBar from JSON -->
+<header class="bg-surface dark:bg-surface-dim w-full top-0 px-safe-margin bg-surface-container-low shadow-[0px_4px_0px_0px_rgba(137,114,102,0.2)] shadow-[0px_4px_0px_0px_#897266] flex justify-between items-center h-touch-target px-4 z-50 fixed">
+<button aria-label="Back" class="w-touch-target-min h-touch-target-min flex items-center justify-center text-primary dark:text-primary-fixed-dim scale-105 transition-all duration-300 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim font-bold text-center flex-grow">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center gap-1 font-label-caps text-label-caps text-primary dark:text-primary-fixed-dim scale-105 transition-all duration-300">
+<span>128</span>
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow pt-24 pb-32 px-container-margin flex flex-col items-center">
+<!-- Sóc Nâu Dialogue -->
+<div class="w-full max-w-md bg-secondary-container text-on-secondary-container rounded-xl p-4 mb-6 flex items-center gap-4 soft-shadow">
+<div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center border-2 border-secondary overflow-hidden shrink-0">
+<img alt="Sóc Nâu" class="w-full h-full object-cover" data-alt="A cute, friendly brown squirrel character (Sóc Nâu) with a wide smile, designed in a soft, claymorphic 3D style suitable for preschoolers. The squirrel is set against a warm, light cream background. Bright, high-key lighting enhances the welcoming and educational mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_P_OTpZ63nO_TogZGzf_j_-HyB4dBY42awHapDCp88CGKDBJkEOuCw0YA1tK9xfw2LFoEjspkjGgfDjri1UcqixACJE3h4BDcsxM9_cLS1L9NeT8FQqdzY-Sbem5WU9nshUFUj39kaS66ZrNWTt5vxAYLiPJleaoZROgqiz2g-djQhCQRdc3ER3smX7-aNH35SH5rBPYoVuD-SOr1OVeLbkH86FQvFdXgFr98xENMO5poUnpyxUdMZA"/>
+</div>
+<p class="font-body-md text-on-secondary-container flex-grow">Bé hãy quan sát cách viết chữ A in hoa nhé!</p>
+<button aria-label="Nghe tên chữ" class="w-10 h-10 bg-primary-container text-on-primary rounded-full flex items-center justify-center pressable border-primary shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Drawing Canvas Area -->
+<div class="w-full max-w-md bg-surface-container-lowest rounded-3xl p-8 mb-8 relative border-2 border-tertiary-container/30 soft-shadow flex flex-col items-center justify-center aspect-square">
+<!-- Large Letter A -->
+<div class="relative w-full h-full flex items-center justify-center">
+<!-- SVG for Letter A with strokes -->
+<svg class="overflow-visible" height="100%" viewbox="0 0 200 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+<!-- Base Letter A (faint outline) -->
+<path d="M100 20 L40 180 M100 20 L160 180 M60 120 L140 120" fill="none" stroke="#f0eee6" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path>
+<!-- Stroke 1 (Left diagonal) -->
+<path d="M100 20 L40 180" fill="none" stroke="#53b5df" stroke-dasharray="20 10" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></path>
+<circle cx="100" cy="20" fill="#ff8c42" r="12"></circle>
+<text fill="white" font-family="Plus Jakarta Sans" font-size="14" font-weight="bold" text-anchor="middle" x="100" y="25">1</text>
+<path d="M45 170 L35 170 L40 180 Z" fill="#53b5df" transform="rotate(20 40 180)"></path>
+<!-- Stroke 2 (Right diagonal) -->
+<path d="M100 20 L160 180" fill="none" stroke="#53b5df" stroke-dasharray="20 10" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></path>
+<circle cx="105" cy="40" fill="#ff8c42" r="12"></circle>
+<text fill="white" font-family="Plus Jakarta Sans" font-size="14" font-weight="bold" text-anchor="middle" x="105" y="45">2</text>
+<path d="M155 170 L165 170 L160 180 Z" fill="#53b5df" transform="rotate(-20 160 180)"></path>
+<!-- Stroke 3 (Crossbar) -->
+<path d="M60 120 L140 120" fill="none" stroke="#53b5df" stroke-dasharray="20 10" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"></path>
+<circle cx="60" cy="120" fill="#ff8c42" r="12"></circle>
+<text fill="white" font-family="Plus Jakarta Sans" font-size="14" font-weight="bold" text-anchor="middle" x="60" y="125">3</text>
+<path d="M130 115 L130 125 L140 120 Z" fill="#53b5df"></path>
+</svg>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full max-w-md flex flex-col gap-4">
+<button class="w-full bg-primary-container text-on-primary font-headline-lg-mobile text-headline-lg-mobile py-4 rounded-full pressable border-primary flex justify-center items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+                Xem mẫu
+            </button>
+<button class="w-full bg-surface-container-high text-on-surface-variant font-label-caps text-label-caps py-4 rounded-full pressable border-outline-variant flex justify-center items-center">
+                Tự viết thử
+            </button>
+</div>
+</main>
+<!-- BottomNavBar from JSON -->
+<nav class="md:hidden bg-surface-container dark:bg-surface-container-lowest fixed bottom-0 w-full h-24 rounded-t-xl z-50 border-t-2 border-outline-variant shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.05)] fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface pb-safe">
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 text-on-surface-variant font-label-caps text-label-caps active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined">home</span>
+<span class="mt-1">Trang chủ</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2 shadow-[0px_4px_0px_0px_#006c4f] font-label-caps text-label-caps active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mobile_code</span>
+<span class="mt-1">Bài tập</span>
+</button>
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 text-on-surface-variant font-label-caps text-label-caps active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined">military_tech</span>
+<span class="mt-1">Phần thưởng</span>
+</button>
+<button class="flex flex-col items-center justify-center text-squirrel-brown px-4 py-2 text-on-surface-variant font-label-caps text-label-caps active:translate-y-1 transition-all scale-110 duration-200">
+<span class="material-symbols-outlined">family_restroom</span>
+<span class="mt-1">Bố mẹ</span>
+</button>
+</nav>
+</body></html>

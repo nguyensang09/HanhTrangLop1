@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thử Thách Tinh Mắt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#001f2a",
+                        "surface-container": "#f0eee6",
+                        "surface-bright": "#fbf9f1",
+                        "on-background": "#1b1c17",
+                        "primary": "#9b4500",
+                        "on-surface-variant": "#564338",
+                        "inverse-surface": "#30312c",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#54fdc4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#00445a",
+                        "inverse-on-surface": "#f3f1e9",
+                        "background": "#fbf9f1",
+                        "surface-container-high": "#eae8e0",
+                        "surface-variant": "#e4e3db",
+                        "on-primary-fixed-variant": "#763300",
+                        "surface-container-highest": "#e4e3db",
+                        "surface-dim": "#dcdad2",
+                        "outline": "#897266",
+                        "on-secondary-container": "#007152",
+                        "primary-fixed-dim": "#ffb68d",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#006686",
+                        "surface-tint": "#9b4500",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface": "#fbf9f1",
+                        "tertiary-fixed": "#bfe8ff",
+                        "primary-fixed": "#ffdbc9",
+                        "inverse-primary": "#ffb68d",
+                        "tertiary-container": "#53b5df",
+                        "surface-container-low": "#f5f4ec",
+                        "on-primary-fixed": "#331200",
+                        "on-secondary-fixed": "#002116",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#51fac1",
+                        "outline-variant": "#ddc1b3",
+                        "primary-container": "#ff8c42",
+                        "on-primary-container": "#6a2d00",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1c17",
+                        "secondary": "#006c4f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Plus Jakarta Sans"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "title-md": ["Be Vietnam Pro"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .clay-card {
+            box-shadow: 0 8px 32px 0 rgba(255, 140, 66, 0.1);
+            border-bottom: 4px solid theme('colors.surface-variant');
+        }
+        .clay-button {
+            border-bottom: 4px solid theme('colors.on-primary-fixed-variant');
+            transition: all 0.1s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface-container dark:bg-surface-container-high docked full-width top-0 bg-surface-container-high border-b-4 border-surface-dim shadow-sm flex justify-between items-center w-full px-container-margin py-unit sticky z-40">
+<div class="flex items-center gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-surface-variant active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed md:font-headline-lg md:text-headline-lg">Thử Thách Tinh Mắt</h1>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest rounded-full shadow-sm clay-card border-b-2 border-surface-variant">
+<span class="font-title-md text-title-md text-primary-container">125</span>
+<span class="material-symbols-outlined text-primary-container" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow px-container-margin py-6 flex flex-col items-center max-w-4xl mx-auto w-full gap-card-gap">
+<!-- Sóc Nâu Dialogue -->
+<div class="w-full bg-primary-fixed rounded-xl p-4 flex items-center gap-4 clay-card">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0 border-2 border-primary-container">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="cruelty_free">cruelty_free</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg text-on-primary-fixed">
+                    Bé hãy giúp Sóc Nâu tìm các đồ vật bị giấu trong công viên nhé! Chạm vào đồ vật khi bé thấy chúng.
+                </p>
+</div>
+<button class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center ml-auto shrink-0 clay-button">
+<span class="material-symbols-outlined" data-icon="volume_up">volume_up</span>
+</button>
+</div>
+<!-- The Big Picture Area -->
+<div class="w-full relative rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(255,140,66,0.15)] border-4 border-surface-container-high bg-surface-container-lowest" style="aspect-ratio: 4/3;">
+<img class="w-full h-full object-cover" data-alt="A highly detailed, vibrant, and colorful illustration of a busy, sunny park scene designed for a preschool hidden-object game. The style is soft, tactile, and claymorphic with friendly, rounded shapes. The scene includes green trees, a blue pond, children playing, a slide, and a picnic blanket. The lighting is bright and cheerful, evoking a sense of safety and curiosity in a light-mode aesthetic with warm primary and secondary colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlrJwCjWKQ4ksf600cqwCbLZfnVsf5jo9utEP3457HBe0RpgRvHdFlznL-JnH18VEfcpd4NLBtZBt9f4tS_s7XwZfazTcOR4yTS5Ym4zgitFqlGjEQXxScnCgr0CFdO4ckrB1C1GoyU9nY9JxEEAb2jH--lEUahu7CFqIAU7bB6C-lrAT9opDVV2hfr_fEPwHlswV4s4r0wF5tokKfGXABpcEVZb8H3PEy8lECw0Uy7_1aOGIkTlfZXg"/>
+<!-- Hidden Objects (Interactive Overlays) - Positioned absolutely -->
+<!-- Note: In a real app, these positions would be dynamic. -->
+<button class="absolute top-1/4 left-1/3 w-12 h-12 rounded-full hover:bg-surface-container-lowest/30 flex items-center justify-center transition-colors group">
+<div class="w-8 h-8 rounded-full border-2 border-dashed border-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<button class="absolute top-2/3 right-1/4 w-12 h-12 rounded-full hover:bg-surface-container-lowest/30 flex items-center justify-center transition-colors group">
+<div class="w-8 h-8 rounded-full border-2 border-dashed border-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<button class="absolute bottom-1/4 left-1/4 w-12 h-12 rounded-full hover:bg-surface-container-lowest/30 flex items-center justify-center transition-colors group">
+<div class="w-8 h-8 rounded-full border-2 border-dashed border-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+</div>
+<!-- Objects to Find List -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-6 clay-card">
+<h2 class="font-title-md text-title-md text-on-surface mb-4 text-center">Bé cần tìm:</h2>
+<div class="flex flex-row justify-center gap-6 flex-wrap">
+<!-- Item 1 -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-low p-4 rounded-xl border-2 border-surface-dim">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="styler">styler</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant font-medium">Cái nơ</span>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-low p-4 rounded-xl border-2 border-surface-dim">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="flutter_dash">flutter_dash</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant font-medium">Con bướm</span>
+</div>
+<!-- Item 3 -->
+<div class="flex flex-col items-center gap-2 bg-surface-container-low p-4 rounded-xl border-2 border-surface-dim">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="sports_soccer">sports_soccer</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant font-medium">Quả bóng</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on Desktop) -->
+<nav class="bg-surface dark:bg-surface-container-lowest fixed bottom-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface-container-lowest border-t-2 border-surface-variant shadow-[0_-4px_20px_rgba(255,140,66,0.05)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-transform active:translate-y-1 duration-100 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-2 border-b-4 border-on-primary-fixed-variant hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-transform active:translate-y-1 duration-100" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="menu_book">menu_book</span>
+<span class="font-label-caps text-label-caps">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-transform active:translate-y-1 duration-100 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="workspace_premium">workspace_premium</span>
+<span class="font-label-caps text-label-caps">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-2 hover:bg-primary-fixed dark:hover:bg-primary-fixed-variant transition-transform active:translate-y-1 duration-100 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="family_history">family_history</span>
+<span class="font-label-caps text-label-caps">Bố mẹ</span>
+</a>
+</nav>
+</body></html>

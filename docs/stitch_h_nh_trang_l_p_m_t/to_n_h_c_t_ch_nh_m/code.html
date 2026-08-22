@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sóc Nâu Đồng Hành - Tách Một Nhóm</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "surface-bright": "#fbf9f1",
+                    "primary": "#9b4500",
+                    "on-tertiary-container": "#00445a",
+                    "outline-variant": "#ddc1b3",
+                    "surface-container-high": "#eae8e0",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#6a2d00",
+                    "primary-fixed": "#ffdbc9",
+                    "on-secondary-fixed": "#002116",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#27e0a9",
+                    "surface-tint": "#9b4500",
+                    "on-primary-fixed-variant": "#763300",
+                    "surface-container-highest": "#e4e3db",
+                    "surface-container": "#f0eee6",
+                    "primary-fixed-dim": "#ffb68d",
+                    "on-background": "#1b1c17",
+                    "inverse-on-surface": "#f3f1e9",
+                    "on-surface-variant": "#564338",
+                    "secondary": "#006c4f",
+                    "secondary-fixed": "#54fdc4",
+                    "secondary-container": "#51fac1",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#73d2fd",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#ffb68d",
+                    "primary-container": "#ff8c42",
+                    "inverse-surface": "#30312c",
+                    "on-surface": "#1b1c17",
+                    "on-secondary-container": "#007152",
+                    "surface-container-low": "#f5f4ec",
+                    "on-tertiary-fixed-variant": "#004d65",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#bfe8ff",
+                    "error-container": "#ffdad6",
+                    "outline": "#897266",
+                    "surface": "#fbf9f1",
+                    "on-primary-fixed": "#331200",
+                    "on-tertiary-fixed": "#001f2a",
+                    "surface-dim": "#dcdad2",
+                    "background": "#fbf9f1",
+                    "surface-variant": "#e4e3db",
+                    "tertiary": "#006686",
+                    "tertiary-container": "#53b5df"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "container-margin": "24px",
+                    "touch-target-min": "48px",
+                    "unit": "8px",
+                    "card-gap": "20px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Be Vietnam Pro"],
+                    "label-caps": ["Plus Jakarta Sans"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "display-hero": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "title-md": ["Be Vietnam Pro"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-caps": ["16px", {"lineHeight": "20px", "fontWeight": "700"}],
+                    "body-lg": ["20px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "display-hero": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "title-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .clay-button {
+            border-bottom: 4px solid var(--tw-colors-primary-container);
+            transition: all 0.1s ease;
+        }
+        .clay-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .floating-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05);
+        }
+        .draggable {
+            cursor: grab;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .basket {
+            transition: all 0.2s ease;
+        }
+        .basket.drag-over {
+            transform: scale(1.05);
+            background-color: var(--tw-colors-surface-container);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface h-screen flex flex-col overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-container-margin py-unit w-full bg-surface shadow-[0_4px_0_0_rgba(255,140,66,0.1)] z-10 sticky top-0 md:hidden">
+<button aria-label="Quay lại" class="w-12 h-12 flex items-center justify-center text-primary active:translate-y-0.5 active:shadow-none transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 28px;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">Sóc Nâu Đồng Hành</h1>
+<div class="flex items-center text-primary font-label-caps text-label-caps">
+            50 <span class="material-symbols-outlined text-primary-container ml-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col relative px-4 md:px-container-margin py-6 overflow-hidden">
+<!-- Instruction Card -->
+<div class="floating-card bg-surface-lowest border-2 border-tertiary-fixed-dim rounded-xl p-4 mb-6 flex items-center gap-4">
+<img class="w-16 h-16 rounded-full object-cover" data-alt="A cute illustration of a brown squirrel named Sóc Nâu, wearing a small backpack, looking encouragingly. The style is soft, tactile claymorphism with warm colors, suitable for preschool education. White background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6C7KfIp4uoDYsYzPnuRRtMRlLweLZFqDZ35jTES5eyPAQVVshaoFX8S2FRHGwDK5SlTnvOPtFjklckzG2abKUl3HmH1Li6G9JPZ4rQVE0DoxtspSZJ7W8rl_8ir0uV8Ix0-nzKOFG9wxwJq80mn-Z1gCkLYAl1RIBueHWgbN36v7W-F2kIaa7NtVubyABbdelVzqHKbJrePcxzhnldOjCZUhyZBTo3xbQbgXdtV-qUPFVm5uQxbnsNQ"/>
+<p class="font-body-lg text-body-lg text-on-surface">
+                Có 5 quả bóng. Bé hãy chia bóng vào 2 giỏ khác nhau nhé!
+            </p>
+<button aria-label="Nghe hướng dẫn" class="w-12 h-12 bg-[#ffdd6b] rounded-full flex items-center justify-center ml-auto clay-button">
+<span class="material-symbols-outlined text-[#8a6a1c]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+</button>
+</div>
+<!-- Drag & Drop Area -->
+<div class="flex-1 flex flex-col md:flex-row items-center justify-between gap-8 relative pb-20">
+<!-- Red Basket (Dropzone) -->
+<div aria-label="Giỏ Đỏ" class="basket w-32 h-40 md:w-48 md:h-56 border-4 border-[#ff5e5e] rounded-b-3xl rounded-t-xl bg-[#fff0f0] flex flex-col items-center justify-end p-4 relative" id="basket-red">
+<div class="absolute top-[-20px] bg-[#ff5e5e] text-white px-4 py-1 font-label-caps text-label-caps rounded-full shadow-sm">Giỏ Đỏ</div>
+<div class="flex flex-wrap-reverse justify-center gap-2 w-full h-full content-start pt-6" id="basket-red-content"></div>
+</div>
+<!-- Pool of Balls -->
+<div class="flex-1 flex flex-wrap justify-center content-center gap-4 min-h-[150px] p-6 rounded-3xl bg-surface-container-low border-2 border-dashed border-outline-variant" id="ball-pool">
+<!-- Balls -->
+<div class="draggable w-16 h-16 rounded-full bg-gradient-to-br from-[#ffd154] to-[#ff9100] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transform transition-transform hover:scale-105" draggable="true" id="ball-1">
+<span class="material-symbols-outlined text-white/50" style="font-variation-settings: 'FILL' 1;">sports_baseball</span>
+</div>
+<div class="draggable w-16 h-16 rounded-full bg-gradient-to-br from-[#ffd154] to-[#ff9100] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transform transition-transform hover:scale-105" draggable="true" id="ball-2">
+<span class="material-symbols-outlined text-white/50" style="font-variation-settings: 'FILL' 1;">sports_baseball</span>
+</div>
+<div class="draggable w-16 h-16 rounded-full bg-gradient-to-br from-[#ffd154] to-[#ff9100] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transform transition-transform hover:scale-105" draggable="true" id="ball-3">
+<span class="material-symbols-outlined text-white/50" style="font-variation-settings: 'FILL' 1;">sports_baseball</span>
+</div>
+<div class="draggable w-16 h-16 rounded-full bg-gradient-to-br from-[#ffd154] to-[#ff9100] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transform transition-transform hover:scale-105" draggable="true" id="ball-4">
+<span class="material-symbols-outlined text-white/50" style="font-variation-settings: 'FILL' 1;">sports_baseball</span>
+</div>
+<div class="draggable w-16 h-16 rounded-full bg-gradient-to-br from-[#ffd154] to-[#ff9100] shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transform transition-transform hover:scale-105" draggable="true" id="ball-5">
+<span class="material-symbols-outlined text-white/50" style="font-variation-settings: 'FILL' 1;">sports_baseball</span>
+</div>
+</div>
+<!-- Blue Basket (Dropzone) -->
+<div aria-label="Giỏ Xanh" class="basket w-32 h-40 md:w-48 md:h-56 border-4 border-tertiary-container rounded-b-3xl rounded-t-xl bg-[#f0fbff] flex flex-col items-center justify-end p-4 relative" id="basket-blue">
+<div class="absolute top-[-20px] bg-tertiary-container text-white px-4 py-1 font-label-caps text-label-caps rounded-full shadow-sm">Giỏ Xanh</div>
+<div class="flex flex-wrap-reverse justify-center gap-2 w-full h-full content-start pt-6" id="basket-blue-content"></div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="absolute bottom-24 left-0 w-full flex justify-center px-4 md:static md:w-auto md:mt-8">
+<button class="bg-primary text-on-primary font-headline-lg-mobile text-headline-lg-mobile px-8 py-4 rounded-full w-full max-w-sm clay-button opacity-50 pointer-events-none transition-opacity" id="btn-complete" style="border-color: #6a2d00;">
+                 Hoàn thành
+             </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter pb-4 pt-2 bg-surface-container border-t-2 border-outline-variant shadow-[0_-4px_10px_0_rgba(255,140,66,0.05)] rounded-t-xl md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-caps text-label-caps text-[12px]">Trang chủ</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-2 border-b-4 border-primary translate-y-[2px] active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-caps text-label-caps text-[12px]">Bài tập</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">military_tech</span>
+<span class="font-label-caps text-label-caps text-[12px]">Phần thưởng</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-2 border-b-4 border-transparent hover:bg-surface-container-high rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">family_history</span>
+<span class="font-label-caps text-label-caps text-[12px]">Phụ huynh</span>
+</a>
+</nav>
+<script>
+        // Simple Drag and Drop Logic
+        const draggables = document.querySelectorAll('.draggable');
+        const dropzones = [
+            document.getElementById('basket-red-content'),
+            document.getElementById('basket-blue-content'),
+            document.getElementById('ball-pool')
+        ];
+        const basketZones = [document.getElementById('basket-red'), document.getElementById('basket-blue')];
+        const completeBtn = document.getElementById('btn-complete');
+
+        let draggedItem = null;
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggedItem = draggable;
+                setTimeout(() => draggable.classList.add('invisible'), 0);
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggedItem = null;
+                draggable.classList.remove('invisible');
+                checkCompletion();
+            });
+            
+            // Touch support
+            draggable.addEventListener('touchstart', (e) => {
+                draggedItem = draggable;
+            });
+        });
+
+        basketZones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                if (draggedItem) {
+                    // Find the content div inside the basket
+                    const contentDiv = zone.querySelector('div[id$="-content"]');
+                    if(contentDiv) {
+                        contentDiv.appendChild(draggedItem);
+                    }
+                }
+            });
+        });
+
+        // Allow dropping back to pool
+        const pool = document.getElementById('ball-pool');
+        pool.addEventListener('dragover', e => e.preventDefault());
+        pool.addEventListener('drop', e => {
+             e.preventDefault();
+             if(draggedItem) pool.appendChild(draggedItem);
+        });
+
+        function checkCompletion() {
+            const poolCount = document.getElementById('ball-pool').children.length;
+            if (poolCount === 0) {
+                completeBtn.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                completeBtn.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+    </script>
+</body></html>

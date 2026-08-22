@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bé Nhờ Trợ Giúp</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#bfe8ff",
+                        "surface-variant": "#e4e3db",
+                        "primary": "#9b4500",
+                        "on-secondary-fixed-variant": "#00513b",
+                        "surface-bright": "#fbf9f1",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e4e3db",
+                        "primary-fixed": "#ffdbc9",
+                        "surface-container-low": "#f5f4ec",
+                        "background": "#fbf9f1",
+                        "inverse-primary": "#ffb68d",
+                        "inverse-on-surface": "#f3f1e9",
+                        "inverse-surface": "#30312c",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#00445a",
+                        "surface-container-high": "#eae8e0",
+                        "on-primary-container": "#6a2d00",
+                        "on-tertiary-fixed-variant": "#004d65",
+                        "on-surface-variant": "#564338",
+                        "surface": "#fbf9f1",
+                        "surface-tint": "#9b4500",
+                        "outline-variant": "#ddc1b3",
+                        "on-secondary-container": "#007152",
+                        "on-background": "#1b1c17",
+                        "primary-fixed-dim": "#ffb68d",
+                        "outline": "#897266",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#ff8c42",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#f0eee6",
+                        "tertiary": "#006686",
+                        "on-tertiary-fixed": "#001f2a",
+                        "secondary-fixed": "#54fdc4",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#dcdad2",
+                        "on-primary-fixed-variant": "#763300",
+                        "secondary": "#006c4f",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#002116",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#51fac1",
+                        "tertiary-container": "#53b5df",
+                        "secondary-fixed-dim": "#27e0a9",
+                        "tertiary-fixed-dim": "#73d2fd",
+                        "on-surface": "#1b1c17",
+                        "on-primary-fixed": "#331200"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "card-gap": "20px",
+                        "touch-target-min": "48px",
+                        "container-margin": "24px"
+                    },
+                    fontFamily: {
+                        "title-md": ["Be Vietnam Pro", "sans-serif"],
+                        "label-caps": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans", "sans-serif"],
+                        "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-md": ["Be Vietnam Pro", "sans-serif"],
+                        "display-hero": ["Plus Jakarta Sans", "sans-serif"],
+                        "body-lg": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    fontSize: {
+                        "title-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "label-caps": ["16px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-hero": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .clay-card {
+            box-shadow: 0 4px 20px rgba(255, 140, 66, 0.05), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+            border-bottom: 6px solid var(--tw-colors-surface-variant);
+        }
+        .clay-card.selected {
+            border-bottom: 2px solid var(--tw-colors-tertiary-container);
+            transform: translateY(4px);
+            background-color: var(--tw-colors-surface-bright);
+            border-color: var(--tw-colors-tertiary-container);
+        }
+        .clay-button {
+            border-bottom: 6px solid #7a3600; /* Darker primary */
+        }
+        .clay-button:active {
+            border-bottom-width: 2px;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-body-md text-on-background antialiased min-h-screen pb-[100px] selection:bg-primary-fixed selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background text-primary dark:text-inverse-primary font-headline-lg-mobile text-headline-lg-mobile w-full top-0 sticky bg-surface-container-low dark:bg-surface-container-low shadow-[0_4px_0_0_rgba(155,69,0,0.1)] flex justify-between items-center px-container-margin h-touch-target-min z-50">
+<button class="hover:opacity-90 active:translate-y-[2px] transition-all flex items-center justify-center w-10 h-10 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-display-hero text-headline-lg-mobile text-primary dark:text-inverse-primary truncate flex-1 text-center">
+            Sóc Nâu Đồng Hành
+        </h1>
+<button class="hover:opacity-90 active:translate-y-[2px] transition-all flex items-center justify-center px-3 py-1 rounded-full bg-surface-container text-primary font-label-caps text-label-caps">
+            12 ⭐
+        </button>
+</header>
+<!-- Main Content -->
+<main class="px-container-margin pt-6 flex flex-col gap-card-gap max-w-md mx-auto">
+<!-- Sóc Nâu Dialogue (Audio Instruction) -->
+<section class="bg-primary-fixed rounded-2xl p-5 shadow-[0_8px_24px_rgba(255,140,66,0.15)] flex flex-col gap-4 relative border-b-[4px] border-primary-fixed-dim">
+<div class="flex items-start gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-4 border-surface-container-lowest shadow-sm bg-surface">
+<img class="w-full h-full object-cover" data-alt="A soft, round 3D claymorphic illustration of Sóc Nâu (a friendly brown squirrel mascot) smiling and holding a tiny wooden pointer. The squirrel has bright, expressive eyes and is rendered in warm pastel colors against a clean, light cream background. Educational preschool app aesthetic, highly tactile and cute." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzQWRaj3GzOyaDWPaXuxQ61sFQ4EVOjQ2Q3j0LyqVIbISARJEcFEc4drR-yQ0O8DgkZws5utj2JS4-AA9RtKd0C7ClUD1cj6gWQFzGaqXoCeDbIvIm2pMdTOzCirkMzgll8swfEHIaZIZAocTAkDJDXQ0yiL4GyGBCaXRGbn0NI17p43eGNvn895YUy687L9CJL8y2bvLAgD2fBFVXEP9FVd36iJvCmolB2zZUAiB0kL4oACx71DUpDg"/>
+</div>
+<div class="flex-1 pt-1">
+<h2 class="font-title-md text-title-md text-on-primary-container leading-tight mb-1">Bé Nhờ Trợ Giúp</h2>
+<p class="font-body-md text-body-md text-on-primary-container opacity-90 leading-snug">
+                        Bé muốn lấy đồ chơi trên kệ cao nhưng không với tới được. Bé nên làm gì nhỉ?
+                    </p>
+</div>
+</div>
+<button class="self-end bg-surface-container-lowest text-primary rounded-full px-4 py-2 flex items-center gap-2 shadow-sm border-b-2 border-surface-variant hover:bg-surface-bright active:translate-y-[2px] active:border-b-0 transition-all font-label-caps text-label-caps">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+                Nghe Hướng Dẫn
+            </button>
+</section>
+<!-- Scenario Options -->
+<section class="flex flex-col gap-4 mt-2" id="options-container">
+<!-- Option 1 -->
+<button class="option-btn clay-card w-full bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-4 border-2 border-transparent transition-all duration-200 text-left group">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container shadow-inner">
+<img class="w-full h-full object-cover" data-alt="A soft, vibrant 3D claymorphic illustration of a young child precariously trying to climb a tall, wobbly wooden bookshelf to reach a brightly colored toy block at the top. The scene feels slightly unsafe to imply danger, but remains cute, round, and safe-looking in its visual style. Light mode, educational app asset." src="https://lh3.googleusercontent.com/aida-public/AB6AXuActbsaBILVJ3jIYPIcK7Y1tDkRnes9SfEFeqa84dSBKPtb5bA6_8kV4MMhlAl7hbqHiYujAGygjElDG3RVOx8Veh2yjfLCVoeU-rnC7f_WziblLE2gT_tSAtHMPkcQznPILfb_sIYYVzB6z2L3uKTGF2vueHR1zWWwpeLLag-jy9nchPliHCexfvPk8bVJM1MXiQ6lLChWxLEpMlNRZuQsZu91BPxLKk88NHt3N17liCXDX3Pph3EsEw"/>
+</div>
+<div class="flex-1">
+<span class="font-title-md text-title-md text-on-surface block leading-snug">Cố gắng trèo lên kệ</span>
+</div>
+<div class="w-8 h-8 rounded-full border-4 border-outline-variant flex items-center justify-center flex-shrink-0 transition-colors duration-200 indicator">
+<span class="material-symbols-outlined text-transparent text-[20px] transition-colors" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+<!-- Option 2 -->
+<button class="option-btn clay-card w-full bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-4 border-2 border-transparent transition-all duration-200 text-left group">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container shadow-inner">
+<img class="w-full h-full object-cover" data-alt="A soft, colorful 3D claymorphic illustration of a child sitting on the floor crying out of frustration because they cannot reach a toy on a shelf. Expressive, oversized tear drops, soft ambient lighting, rendered in a gentle preschool educational app style. Warm pastel tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4ssPoWTkuRItPZSuYWvEaHpXdaAr5c5JRtqUxE0xLLje51QQTSVjAQEl35IdeI04-aiHkwLy5OGtow-WvhC4wR8AWIhYWzLv6kBudAYOGlpUHgjsMCyjxw6io08Ckrvplor8OAoSwolnd2mcgP6Mdau4BmaI9urqHX8xH-X3RC5HrbBax-F617NtiejxraIQI2aBnO6AK_uZLTm-ck3KW_60tpZYIDBIEIo2CKisbkKvbLH5m93mvJQ"/>
+</div>
+<div class="flex-1">
+<span class="font-title-md text-title-md text-on-surface block leading-snug">Khóc nhè</span>
+</div>
+<div class="w-8 h-8 rounded-full border-4 border-outline-variant flex items-center justify-center flex-shrink-0 transition-colors duration-200 indicator">
+<span class="material-symbols-outlined text-transparent text-[20px] transition-colors" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+<!-- Option 3 (Correct) -->
+<button class="option-btn clay-card w-full bg-surface-container-lowest rounded-2xl p-4 flex items-center gap-4 border-2 border-transparent transition-all duration-200 text-left group">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-surface-container shadow-inner">
+<img class="w-full h-full object-cover" data-alt="A soft, colorful 3D claymorphic illustration of a child politely asking a smiling adult figure for help to get a toy from a high shelf. Positive, encouraging interaction, warm lighting, tactile shapes, educational preschool app style emphasizing good behavior." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA29v99l1MMknlcxNrfeLfZ0RK4pkrMW6VYLboB_95Hy2O1xcRdXCNL-QAGLUsAP_vIh95RDrrtIZIkklZeI4GRp61rDCeptv0jFB1_yF32lx0HF7Njs6ethVhCfJbP8MniiFOLN7tam_IsBrbKQZXOu9v4jIfvXdnUNJcCJ-o-NRqZ28sz2CcvmNVIwoQBo9dLz0n7zzT4iJRPW0U8qIq-0nfe-avnZJhiRipEWR60at1omO5APj2GKQ"/>
+</div>
+<div class="flex-1">
+<span class="font-title-md text-title-md text-on-surface block leading-snug">Nhờ người lớn giúp đỡ</span>
+</div>
+<div class="w-8 h-8 rounded-full border-4 border-outline-variant flex items-center justify-center flex-shrink-0 transition-colors duration-200 indicator">
+<span class="material-symbols-outlined text-transparent text-[20px] transition-colors" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</button>
+</section>
+<!-- Submit Action -->
+<div class="mt-6 mb-8 flex justify-center">
+<button class="clay-button bg-primary-container text-on-primary-container font-headline-lg-mobile text-headline-lg-mobile px-10 py-4 rounded-full shadow-[0_4px_20px_rgba(255,140,66,0.3)] transition-all flex items-center gap-2">
+<span>Kiểm tra</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_forward_ios</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface dark:bg-surface text-primary dark:text-inverse-primary font-label-caps text-label-caps font-display-hero text-primary fixed bottom-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface-container border-t-2 border-surface-variant shadow-[0_-4px_10px_rgba(255,140,66,0.05)] fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe">
+<!-- Active Tab: Học Tập -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-6 py-2 translate-y-[-4px] shadow-[0_4px_0_0_#9b4500] hover:bg-surface-container-high active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="mt-1">Học Tập</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high active:scale-95 transition-transform duration-150 px-4 py-2">
+<span class="material-symbols-outlined">videogame_asset</span>
+<span class="mt-1">Vui Chơi</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high active:scale-95 transition-transform duration-150 px-4 py-2">
+<span class="material-symbols-outlined">star</span>
+<span class="mt-1">Thử Thách</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-70 hover:bg-surface-container-high active:scale-95 transition-transform duration-150 px-4 py-2">
+<span class="material-symbols-outlined">person</span>
+<span class="mt-1">Của Bé</span>
+</button>
+</nav>
+<script>
+        // Simple logic to handle visual selection of clay cards
+        const options = document.querySelectorAll('.option-btn');
+        options.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Reset all
+                options.forEach(b => {
+                    b.classList.remove('selected');
+                    const indicator = b.querySelector('.indicator');
+                    indicator.classList.remove('bg-tertiary-container', 'border-tertiary-container');
+                    indicator.classList.add('border-outline-variant');
+                    indicator.querySelector('span').classList.remove('text-on-tertiary-container');
+                    indicator.querySelector('span').classList.add('text-transparent');
+                });
+                
+                // Set active
+                btn.classList.add('selected');
+                const indicator = btn.querySelector('.indicator');
+                indicator.classList.add('bg-tertiary-container', 'border-tertiary-container');
+                indicator.classList.remove('border-outline-variant');
+                indicator.querySelector('span').classList.add('text-on-tertiary-container');
+                indicator.querySelector('span').classList.remove('text-transparent');
+            });
+        });
+    </script>
+</body></html>
