@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace HanhTrangLop1.Controllers;
 
@@ -27,29 +28,110 @@ public class ParentController : Controller
     public async Task<IActionResult> Dashboard()
     {
         var userId = GetCurrentUserId();
-        var children = await _db.ChildProfiles.Where(x => x.ParentUserId == userId).ToListAsync();
+        var children = await _db.ChildProfiles.Where(x => x.ParentUserId == userId).OrderBy(x => x.CreatedAt).ToListAsync();
         var childIds = children.Select(x => x.Id).ToList();
+        var attempts = await _db.LearningAttempts
+            .Include(x => x.ChildProfile)
+            .Include(x => x.LearningItem)
+            .Where(x => childIds.Contains(x.ChildProfileId))
+            .OrderByDescending(x => x.StartedAt)
+            .ToListAsync();
+        var sessions = await _db.LearningSessions
+            .Where(x => childIds.Contains(x.ChildProfileId))
+            .ToListAsync();
+        var progressItems = await _db.SkillProgress
+            .Include(x => x.SkillGroup)
+            .Where(x => childIds.Contains(x.ChildProfileId))
+            .ToListAsync();
 
         var model = new ParentDashboardViewModel
         {
             Children = children,
-            ProgressItems = await _db.SkillProgress
-                .Include(x => x.SkillGroup)
-                .Where(x => childIds.Contains(x.ChildProfileId))
-                .ToListAsync(),
-            TotalCompletedItems = await _db.LearningAttempts.CountAsync(x => childIds.Contains(x.ChildProfileId) && x.Status == "completed"),
-            TotalNeedsPracticeItems = await _db.LearningAttempts.CountAsync(x => childIds.Contains(x.ChildProfileId) && x.Status == "needs_practice"),
-            TotalLearningMinutes = await _db.LearningSessions.Where(x => childIds.Contains(x.ChildProfileId)).SumAsync(x => x.ActualSeconds) / 60,
+            ChildSummaries = BuildChildSummaries(children, attempts, sessions, progressItems),
+            ProgressItems = progressItems,
+            DailyActivities = BuildDailyActivities(attempts, sessions, days: 7),
+            TotalCompletedItems = attempts.Count(x => x.Status == "completed"),
+            TotalNeedsPracticeItems = attempts.Count(x => x.Status == "needs_practice"),
+            TotalLearningMinutes = sessions.Sum(x => x.ActualSeconds) / 60,
             TotalRewards = await _db.ChildRewards.CountAsync(x => childIds.Contains(x.ChildProfileId)),
-            RecentAttempts = await _db.LearningAttempts
-                .Include(x => x.LearningItem)
-                .Where(x => childIds.Contains(x.ChildProfileId))
-                .OrderByDescending(x => x.StartedAt)
-                .Take(5)
-                .ToListAsync()
+            RecentAttempts = attempts.Take(8).ToList()
         };
 
         return View(model);
+    }
+
+    [Authorize]
+    [HttpGet("reports/{childId:guid}")]
+    public async Task<IActionResult> Report(Guid childId)
+    {
+        var child = await FindOwnedChildProfileAsync(childId);
+        if (child is null)
+        {
+            return NotFound();
+        }
+
+        var attempts = await _db.LearningAttempts
+            .Include(x => x.LearningItem)
+            .Where(x => x.ChildProfileId == child.Id)
+            .OrderByDescending(x => x.StartedAt)
+            .ToListAsync();
+        var sessions = await _db.LearningSessions
+            .Where(x => x.ChildProfileId == child.Id)
+            .ToListAsync();
+        var progressItems = await _db.SkillProgress
+            .Include(x => x.SkillGroup)
+            .Where(x => x.ChildProfileId == child.Id)
+            .OrderBy(x => x.SkillGroup!.SortOrder)
+            .ToListAsync();
+
+        var model = new ParentReportViewModel
+        {
+            Child = child,
+            SkillReports = BuildSkillReports(progressItems),
+            DailyActivities = BuildDailyActivities(attempts, sessions, days: 14),
+            RecentAttempts = attempts.Take(12).ToList(),
+            TotalCompletedItems = attempts.Count(x => x.Status == "completed"),
+            TotalNeedsPracticeItems = attempts.Count(x => x.Status == "needs_practice"),
+            TotalLearningMinutes = sessions.Sum(x => x.ActualSeconds) / 60,
+            TotalStars = attempts.Sum(x => x.StarsEarned),
+            RecommendationText = BuildRecommendation(progressItems, attempts)
+        };
+
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpGet("reports/{childId:guid}/export")]
+    public async Task<IActionResult> ExportReport(Guid childId)
+    {
+        var child = await FindOwnedChildProfileAsync(childId);
+        if (child is null)
+        {
+            return NotFound();
+        }
+
+        var attempts = await _db.LearningAttempts
+            .Include(x => x.LearningItem)
+            .Where(x => x.ChildProfileId == child.Id)
+            .OrderByDescending(x => x.StartedAt)
+            .ToListAsync();
+
+        var builder = new StringBuilder();
+        builder.AppendLine("Ngay,BaiHoc,TrangThai,Sao,SoLoi,ThoiLuongGiay");
+        foreach (var attempt in attempts)
+        {
+            builder.AppendLine(string.Join(',',
+                EscapeCsv(attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm")),
+                EscapeCsv(attempt.LearningItem?.Title ?? string.Empty),
+                EscapeCsv(GetAttemptStatusText(attempt.Status)),
+                attempt.StarsEarned,
+                attempt.MistakeCount,
+                attempt.DurationSeconds));
+        }
+
+        var fileName = $"bao-cao-{child.Nickname}-{DateTime.Now:yyyyMMdd}.csv";
+        var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
+        return File(bytes, "text/csv; charset=utf-8", fileName);
     }
 
     [Authorize]
@@ -262,5 +344,98 @@ public class ParentController : Controller
     {
         var userId = GetCurrentUserId();
         return _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == id && x.ParentUserId == userId);
+    }
+
+    private static IReadOnlyList<ParentChildSummaryViewModel> BuildChildSummaries(
+        IReadOnlyList<ChildProfile> children,
+        IReadOnlyList<LearningAttempt> attempts,
+        IReadOnlyList<LearningSession> sessions,
+        IReadOnlyList<SkillProgress> progressItems)
+    {
+        return children.Select(child =>
+        {
+            var childAttempts = attempts.Where(x => x.ChildProfileId == child.Id).ToList();
+            var childProgress = progressItems.Where(x => x.ChildProfileId == child.Id).ToList();
+
+            return new ParentChildSummaryViewModel
+            {
+                Child = child,
+                CompletedItems = childAttempts.Count(x => x.Status == "completed"),
+                NeedsPracticeItems = childAttempts.Count(x => x.Status == "needs_practice"),
+                LearningMinutes = sessions.Where(x => x.ChildProfileId == child.Id).Sum(x => x.ActualSeconds) / 60,
+                StarsEarned = childAttempts.Sum(x => x.StarsEarned),
+                AverageMastery = childProgress.Count == 0 ? 0 : Math.Round(childProgress.Average(x => x.MasteryLevel), 1),
+                LastLearnedAt = childAttempts.OrderByDescending(x => x.StartedAt).FirstOrDefault()?.StartedAt
+            };
+        }).ToList();
+    }
+
+    private static IReadOnlyList<ParentSkillReportItemViewModel> BuildSkillReports(IReadOnlyList<SkillProgress> progressItems)
+    {
+        return progressItems.Select(progress => new ParentSkillReportItemViewModel
+        {
+            SkillName = progress.SkillGroup?.Name ?? "Kỹ năng",
+            IconKey = progress.SkillGroup?.IconKey ?? "auto_stories",
+            Color = progress.SkillGroup?.Color ?? "#ff8542",
+            MasteryLevel = progress.MasteryLevel,
+            CompletedItems = progress.CompletedItems,
+            NeedsPracticeItems = progress.NeedsPracticeItems,
+            LastPracticedAt = progress.LastPracticedAt
+        }).ToList();
+    }
+
+    private static IReadOnlyList<ParentDailyActivityViewModel> BuildDailyActivities(
+        IReadOnlyList<LearningAttempt> attempts,
+        IReadOnlyList<LearningSession> sessions,
+        int days)
+    {
+        var today = DateTime.Today;
+        return Enumerable.Range(0, days)
+            .Select(offset => today.AddDays(offset - days + 1))
+            .Select(date =>
+            {
+                var dayAttempts = attempts.Where(x => x.StartedAt.LocalDateTime.Date == date).ToList();
+                var daySessions = sessions.Where(x => x.StartedAt.LocalDateTime.Date == date).ToList();
+                return new ParentDailyActivityViewModel
+                {
+                    Date = date,
+                    DateLabel = date.ToString("dd/MM"),
+                    CompletedItems = dayAttempts.Count(x => x.Status == "completed"),
+                    NeedsPracticeItems = dayAttempts.Count(x => x.Status == "needs_practice"),
+                    LearningMinutes = daySessions.Sum(x => x.ActualSeconds) / 60
+                };
+            }).ToList();
+    }
+
+    private static string BuildRecommendation(IReadOnlyList<SkillProgress> progressItems, IReadOnlyList<LearningAttempt> attempts)
+    {
+        if (!attempts.Any())
+        {
+            return "Bé chưa có dữ liệu học tập. Phụ huynh có thể cho bé bắt đầu bằng 10-15 phút mỗi ngày.";
+        }
+
+        var weakestSkill = progressItems
+            .OrderByDescending(x => x.NeedsPracticeItems)
+            .ThenBy(x => x.MasteryLevel)
+            .FirstOrDefault();
+        if (weakestSkill is not null && weakestSkill.NeedsPracticeItems > 0)
+        {
+            return $"Bé nên luyện thêm nhóm {weakestSkill.SkillGroup?.Name?.ToLower() ?? "kỹ năng"} bằng các bài ngắn, ưu tiên nhắc lại nhẹ nhàng.";
+        }
+
+        var totalMinutes = attempts.Sum(x => x.DurationSeconds) / 60;
+        return totalMinutes < 15
+            ? "Bé đang làm tốt. Có thể tăng thêm vài phút luyện tập nếu bé còn hứng thú."
+            : "Bé duy trì tiến độ tốt. Phụ huynh nên khen ngợi và cho bé nghỉ sau mỗi phiên học.";
+    }
+
+    private static string GetAttemptStatusText(string status)
+    {
+        return status == "completed" ? "Hoàn thành" : "Cần luyện thêm";
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        return $"\"{value.Replace("\"", "\"\"")}\"";
     }
 }

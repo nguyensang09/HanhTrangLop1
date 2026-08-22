@@ -6,32 +6,71 @@
 <section class="admin-layout">
     <aside class="admin-side">
         <div class="squirrel-face small">Admin</div>
-        <h1>Admin Central</h1>
+        <h1>Quản trị MVP</h1>
         <a class="active" asp-action="Index"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
         <a asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho nội dung</a>
+        <a asp-action="CreateChoice"><span class="material-symbols-outlined">add_circle</span>Tạo bài chọn</a>
+        <a asp-action="CreateTracing"><span class="material-symbols-outlined">draw</span>Tạo bài tô nét</a>
     </aside>
     <main class="admin-main">
         <div class="dashboard-header">
-            <h1>Dashboard Overview</h1>
-            <a class="app-btn app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">add</span>Create Activity</a>
+            <div>
+                <p class="eyebrow">Admin</p>
+                <h1>Tổng quan hệ thống</h1>
+            </div>
+            <a class="app-btn app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho nội dung</a>
         </div>
+
         <div class="stat-row">
-            <div class="soft-card stat-card"><span class="material-symbols-outlined">extension</span><strong>@Model.TotalActivities</strong><span>Total Activities</span></div>
-            <div class="soft-card stat-card"><span class="material-symbols-outlined">verified</span><strong>@Model.PublishedActivities</strong><span>Published</span></div>
-            <div class="soft-card stat-card"><span class="material-symbols-outlined">draft</span><strong>@Model.DraftActivities</strong><span>Draft</span></div>
-            <div class="soft-card stat-card"><span class="material-symbols-outlined">category</span><strong>@Model.SkillGroups</strong><span>Skill Groups</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">extension</span><strong>@Model.TotalActivities</strong><span>Tổng bài học</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">verified</span><strong>@Model.PublishedActivities</strong><span>Đã xuất bản</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">draft</span><strong>@Model.DraftActivities</strong><span>Bản nháp</span></div>
         </div>
-        <div class="soft-card">
-            <h2>Recent Activity</h2>
-            <table class="app-table">
-                <thead><tr><th>Activity Name</th><th>Category</th><th>Status</th></tr></thead>
-                <tbody>
-                @foreach (var item in Model.RecentItems)
+
+        <div class="stat-row mt-4">
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">rate_review</span><strong>@Model.ReviewActivities</strong><span>Chờ duyệt</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">face</span><strong>@Model.TotalChildren</strong><span>Hồ sơ bé</span></div>
+            <div class="soft-card stat-card"><span class="material-symbols-outlined">touch_app</span><strong>@Model.TotalAttempts</strong><span>Lượt học</span></div>
+        </div>
+
+        <div class="admin-grid mt-4">
+            <div class="soft-card report-panel">
+                <div class="panel-heading">
+                    <h2>Nội dung gần đây</h2>
+                    <a class="mini-action" asp-action="LearningItems">Xem tất cả</a>
+                </div>
+                <table class="app-table">
+                    <thead><tr><th>Bài học</th><th>Nhóm</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.RecentItems)
+                    {
+                        <tr>
+                            <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
+                            <td>@item.SkillGroup?.Name</td>
+                            <td><span class="status-chip status-@item.Status">@item.Status</span></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="soft-card report-panel">
+                <h2>Lượt học gần đây</h2>
+                @if (!Model.RecentAttempts.Any())
                 {
-                    <tr><td>@item.Title</td><td>@item.SkillGroup?.Name</td><td>@item.Status</td></tr>
+                    <p>Chưa có lượt học nào.</p>
                 }
-                </tbody>
-            </table>
+                @foreach (var attempt in Model.RecentAttempts)
+                {
+                    <div class="summary-row">
+                        <span class="material-symbols-outlined">@(attempt.Status == "completed" ? "check_circle" : "refresh")</span>
+                        <div>
+                            <strong>@attempt.LearningItem?.Title</strong>
+                            <small>@attempt.ChildProfile?.Nickname - @attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </main>
 </section>

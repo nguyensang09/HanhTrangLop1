@@ -1,0 +1,77 @@
+@model EditLearningItemViewModel
+@{
+    ViewData["Title"] = "Sửa bài học";
+    var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
+    var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Biên tập nội dung</p>
+            <h1>Sửa bài học</h1>
+        </div>
+        <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItemDetail" asp-route-id="@Model.Id">Quay lại</a>
+    </div>
+
+    <form class="soft-card admin-form" asp-action="EditLearningItem" asp-route-id="@Model.Id" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="Title">Tên bài</label>
+        <input asp-for="Title" class="form-control" />
+
+        <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
+        <select asp-for="SkillGroupId" class="form-control">
+            @foreach (var group in skillGroups)
+            {
+                <option value="@group.Id">@group.Name</option>
+            }
+        </select>
+
+        <label asp-for="TopicId">Chủ đề</label>
+        <select asp-for="TopicId" class="form-control">
+            <option value="">Không chọn</option>
+            @foreach (var topic in topics)
+            {
+                <option value="@topic.Id">@topic.Name</option>
+            }
+        </select>
+
+        <div class="three-column-form">
+            <div>
+                <label asp-for="Level">Độ khó</label>
+                <select asp-for="Level" class="form-control">
+                    <option value="1">Dễ</option>
+                    <option value="2">Trung bình</option>
+                    <option value="3">Nâng cao</option>
+                </select>
+            </div>
+            <div>
+                <label asp-for="EstimatedMinutes">Thời lượng phút</label>
+                <input asp-for="EstimatedMinutes" class="form-control" type="number" min="1" max="30" />
+            </div>
+        </div>
+
+        <label asp-for="InstructionText">Lời hướng dẫn</label>
+        <input asp-for="InstructionText" class="form-control" />
+
+        <label asp-for="PromptText">Câu hỏi</label>
+        <input asp-for="PromptText" class="form-control" />
+
+        <label asp-for="HintText">Gợi ý cấp 1</label>
+        <input asp-for="HintText" class="form-control" />
+
+        <div class="three-column-form">
+            <div>
+                <label asp-for="CorrectFeedback">Phản hồi đúng</label>
+                <input asp-for="CorrectFeedback" class="form-control" />
+            </div>
+            <div>
+                <label asp-for="RetryFeedback">Phản hồi thử lại</label>
+                <input asp-for="RetryFeedback" class="form-control" />
+            </div>
+        </div>
+
+        <button class="app-btn mt-4" type="submit">Lưu thay đổi</button>
+    </form>
+</section>

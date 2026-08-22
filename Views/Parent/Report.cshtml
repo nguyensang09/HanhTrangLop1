@@ -1,0 +1,94 @@
+@model ParentReportViewModel
+@{
+    ViewData["Title"] = $"Báo cáo của {Model.Child.Nickname}";
+}
+
+<section class="dashboard-wrap container parent-report-page">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Báo cáo chi tiết</p>
+            <h1>@Model.Child.Nickname</h1>
+        </div>
+        <div class="dashboard-actions">
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="Dashboard">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Tổng quan
+            </a>
+            <a class="app-btn app-btn-small" asp-action="ExportReport" asp-route-childId="@Model.Child.Id">
+                <span class="material-symbols-outlined">download</span>
+                Xuất CSV
+            </a>
+        </div>
+    </div>
+
+    <div class="stat-row">
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">task_alt</span><strong>@Model.TotalCompletedItems</strong><span>Bài hoàn thành</span></div>
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">star</span><strong>@Model.TotalStars</strong><span>Sao đạt được</span></div>
+        <div class="soft-card stat-card"><span class="material-symbols-outlined">schedule</span><strong>@Model.TotalLearningMinutes phút</strong><span>Thời gian học</span></div>
+    </div>
+
+    <div class="soft-card report-panel mt-4 recommendation-panel">
+        <span class="material-symbols-outlined">psychology</span>
+        <div>
+            <h2>Gợi ý cho phụ huynh</h2>
+            <p>@Model.RecommendationText</p>
+        </div>
+    </div>
+
+    <div class="parent-grid mt-4">
+        <div class="soft-card report-panel">
+            <h2>Kỹ năng</h2>
+            @if (!Model.SkillReports.Any())
+            {
+                <p>Chưa có dữ liệu kỹ năng.</p>
+            }
+            @foreach (var skill in Model.SkillReports)
+            {
+                <article class="skill-report-row" style="--skill-color:@skill.Color">
+                    <span class="material-symbols-outlined">@skill.IconKey</span>
+                    <div>
+                        <strong>@skill.SkillName</strong>
+                        <small>@skill.CompletedItems hoàn thành · @skill.NeedsPracticeItems cần luyện thêm</small>
+                        <div class="progress-track"><div style="width:@skill.MasteryLevel%"></div></div>
+                    </div>
+                    <b>@skill.MasteryLevel%</b>
+                </article>
+            }
+        </div>
+
+        <div class="soft-card report-panel">
+            <h2>14 ngày gần đây</h2>
+            <div class="daily-chart tall">
+                @foreach (var day in Model.DailyActivities)
+                {
+                    var total = day.CompletedItems + day.NeedsPracticeItems;
+                    var height = Math.Max(8, Math.Min(100, total * 18));
+                    <div class="daily-bar-item">
+                        <div class="daily-bar @(day.NeedsPracticeItems > 0 ? "needs-practice" : string.Empty)" style="height:@height%">
+                            <span>@total</span>
+                        </div>
+                        <small>@day.DateLabel</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="soft-card report-panel mt-4">
+        <h2>Lịch sử hoạt động</h2>
+        @if (!Model.RecentAttempts.Any())
+        {
+            <p>Chưa có hoạt động nào được ghi nhận.</p>
+        }
+        @foreach (var attempt in Model.RecentAttempts)
+        {
+            <div class="summary-row">
+                <span class="material-symbols-outlined">@(attempt.Status == "completed" ? "check_circle" : "refresh")</span>
+                <div>
+                    <strong>@attempt.LearningItem?.Title</strong>
+                    <small>@attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm") · @(attempt.Status == "completed" ? "Hoàn thành" : "Cần luyện thêm") · @attempt.StarsEarned sao</small>
+                </div>
+            </div>
+        }
+    </div>
+</section>

@@ -53,7 +53,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (app.Configuration.GetValue("App:UseHttpsRedirection", false))
+{
+    app.UseHttpsRedirection();
+}
 app.UseRouting();
 
 app.UseSession();

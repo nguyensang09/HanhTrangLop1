@@ -1,0 +1,66 @@
+@model CreateTracingItemViewModel
+@{
+    ViewData["Title"] = "Tạo bài tô nét";
+    var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
+    var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Tracing Builder</p>
+            <h1>Tạo bài tô nét</h1>
+        </div>
+        <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Kho nội dung</a>
+    </div>
+
+    <form class="soft-card admin-form" asp-action="CreateTracing" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="Title">Tên bài</label>
+        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ B" />
+
+        <label asp-for="Symbol">Ký tự cần tô</label>
+        <input asp-for="Symbol" class="form-control" maxlength="2" placeholder="A" />
+
+        <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
+        <select asp-for="SkillGroupId" class="form-control">
+            @foreach (var group in skillGroups)
+            {
+                <option value="@group.Id">@group.Name</option>
+            }
+        </select>
+
+        <label asp-for="TopicId">Chủ đề</label>
+        <select asp-for="TopicId" class="form-control">
+            <option value="">Không chọn</option>
+            @foreach (var topic in topics)
+            {
+                <option value="@topic.Id">@topic.Name</option>
+            }
+        </select>
+
+        <label asp-for="InstructionText">Lời hướng dẫn</label>
+        <input asp-for="InstructionText" class="form-control" />
+
+        <label asp-for="PromptText">Câu hỏi</label>
+        <input asp-for="PromptText" class="form-control" />
+
+        <div class="three-column-form">
+            <div>
+                <label asp-for="MinPoints">Số điểm nét tối thiểu</label>
+                <input asp-for="MinPoints" class="form-control" type="number" min="5" max="300" />
+            </div>
+            <div>
+                <label asp-for="Level">Độ khó</label>
+                <select asp-for="Level" class="form-control">
+                    <option value="1">Dễ</option>
+                    <option value="2">Trung bình</option>
+                    <option value="3">Nâng cao</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="app-btn mt-4" type="submit">Lưu bản nháp</button>
+    </form>
+</section>

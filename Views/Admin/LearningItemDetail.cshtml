@@ -1,0 +1,72 @@
+@model LearningItem
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Chi tiết bài học</p>
+            <h1>@Model.Title</h1>
+        </div>
+        <div class="dashboard-actions">
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Kho nội dung
+            </a>
+            <a class="app-btn app-btn-small" asp-action="EditLearningItem" asp-route-id="@Model.Id">
+                <span class="material-symbols-outlined">edit</span>
+                Sửa
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-detail-grid">
+        <div class="soft-card report-panel">
+            <h2>Thông tin</h2>
+            <dl class="admin-meta-list">
+                <dt>Mã</dt><dd>@Model.Code</dd>
+                <dt>Nhóm</dt><dd>@Model.SkillGroup?.Name</dd>
+                <dt>Chủ đề</dt><dd>@(Model.Topic?.Name ?? "Không chọn")</dd>
+                <dt>Dạng bài</dt><dd>@Model.InteractionType</dd>
+                <dt>Độ khó</dt><dd>@Model.Level</dd>
+                <dt>Thời lượng</dt><dd>@Model.EstimatedMinutes phút</dd>
+                <dt>Trạng thái</dt><dd><span class="status-chip status-@Model.Status">@Model.Status</span></dd>
+            </dl>
+
+            <h2 class="mt-4">Luồng duyệt</h2>
+            <div class="status-action-row">
+                <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" name="status" value="@ContentStatus.Draft" />
+                    <button class="app-btn app-btn-muted app-btn-small" type="submit">Đưa về nháp</button>
+                </form>
+                <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" name="status" value="@ContentStatus.Review" />
+                    <button class="app-btn app-btn-muted app-btn-small" type="submit">Gửi duyệt</button>
+                </form>
+                <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" name="status" value="@ContentStatus.Published" />
+                    <button class="app-btn app-btn-small" type="submit">Xuất bản</button>
+                </form>
+                <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" name="status" value="@ContentStatus.Archived" />
+                    <button class="danger-link" type="submit">Lưu trữ</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="soft-card report-panel">
+            <h2>Lời hướng dẫn</h2>
+            <p>@Model.InstructionText</p>
+            <h2 class="mt-4">Câu hỏi</h2>
+            @foreach (var question in Model.Questions.OrderBy(x => x.SortOrder))
+            {
+                <article class="question-admin-card">
+                    <strong>@question.PromptText</strong>
+                    <small>@question.QuestionType</small>
+                    <pre>@question.PayloadJson</pre>
+                </article>
+            }
+        </div>
+    </div>
+</section>

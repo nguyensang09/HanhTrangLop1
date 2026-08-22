@@ -130,6 +130,21 @@ Khi sản phẩm cần app-like nhiều hơn, có thể chuyển dần sang Reac
 - Cột JSON cho cấu hình tương tác, đường nét chuẩn, vùng đáp án, biến thể bài tập.
 - File hình/âm thanh lưu ở storage, database chỉ lưu metadata và URL/path.
 
+#### Chiến lược quản lý schema đã chốt
+
+Hệ thống sử dụng **EF Core Code First có migration**, không sử dụng Database First. Model C# và các file trong `Data/Migrations` là nguồn chuẩn để tạo và nâng cấp schema SQL Server.
+
+Lựa chọn này giải quyết đúng nhu cầu mang hệ thống sang máy khác:
+
+- Source luôn đi kèm lịch sử migration nên không phụ thuộc file database trên máy phát triển.
+- Máy mới chạy `Update-Database` hoặc `dotnet ef database update` để tạo đúng schema.
+- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản khởi đầu và dữ liệu học tập mẫu nếu chưa có.
+- Có thể sinh script SQL idempotent từ migration để bàn giao cho DBA hoặc triển khai không cần EF CLI.
+
+Database First là quy trình ngược lại: schema SQL được thiết kế trước rồi dùng `Scaffold-DbContext` để sinh model. Không nên trộn Database First và Code First migration trong cùng một vòng đời schema vì dễ tạo hai nguồn chuẩn xung đột. Nếu sau này tổ chức yêu cầu DBA làm chủ schema, cần lập kế hoạch chuyển đổi riêng sang SQL Database Project/DACPAC và ngừng tạo migration từ model.
+
+Migration và seed chỉ tái tạo **cấu trúc cùng dữ liệu khởi đầu**. Dữ liệu phát sinh của phụ huynh, hồ sơ bé và lịch sử học phải được bảo vệ bằng quy trình backup/restore SQL Server; migration không thay thế backup.
+
 ## 5. Mô hình dữ liệu SQL đề xuất
 
 ### 5.1. Nhóm tài khoản

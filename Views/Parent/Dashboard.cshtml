@@ -3,19 +3,21 @@
     ViewData["Title"] = "Tổng quan phụ huynh";
 }
 
-<section class="dashboard-wrap container">
+<section class="dashboard-wrap container parent-report-page">
     <div class="dashboard-header">
         <div>
-            <p class="eyebrow">Sóc Nâu Đồng Hành</p>
+            <p class="eyebrow">Góc phụ huynh</p>
             <h1>Tổng quan học tập</h1>
         </div>
-        <form asp-action="Logout" method="post">
-            <button class="app-btn app-btn-muted app-btn-small" type="submit">Đăng xuất</button>
-        </form>
-        <a class="app-btn app-btn-small" asp-action="Profiles">
-            <span class="material-symbols-outlined">face</span>
-            Quản lý hồ sơ
-        </a>
+        <div class="dashboard-actions">
+            <a class="app-btn app-btn-small" asp-action="Profiles">
+                <span class="material-symbols-outlined">face</span>
+                Hồ sơ bé
+            </a>
+            <form asp-action="Logout" method="post">
+                <button class="app-btn app-btn-muted app-btn-small" type="submit">Đăng xuất</button>
+            </form>
+        </div>
     </div>
 
     <div class="stat-row">
@@ -24,21 +26,66 @@
         <div class="soft-card stat-card"><span class="material-symbols-outlined">tips_and_updates</span><strong>@Model.TotalNeedsPracticeItems</strong><span>Cần luyện thêm</span></div>
     </div>
 
-    <div class="soft-card">
-        <h2>Hồ sơ bé</h2>
-        @foreach (var child in Model.Children)
-        {
-            <p><strong>@child.Nickname</strong> - học @child.DailyLearningMinutes phút mỗi ngày</p>
-        }
+    <div class="parent-grid mt-4">
+        <div class="soft-card report-panel">
+            <div class="panel-heading">
+                <h2>Hồ sơ bé</h2>
+                <a class="mini-action" asp-action="Profiles">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Quản lý
+                </a>
+            </div>
+            @if (!Model.ChildSummaries.Any())
+            {
+                <p>Chưa có hồ sơ bé. Phụ huynh tạo hồ sơ để bắt đầu theo dõi học tập.</p>
+            }
+            @foreach (var summary in Model.ChildSummaries)
+            {
+                <article class="child-report-card">
+                    <div class="profile-avatar">@summary.Child.Nickname.FirstOrDefault()</div>
+                    <div>
+                        <h3>@summary.Child.Nickname</h3>
+                        <p>@summary.Child.DailyLearningMinutes phút mỗi ngày</p>
+                        <small>
+                            @(summary.LastLearnedAt.HasValue
+                                ? $"Học gần nhất: {summary.LastLearnedAt.Value.LocalDateTime:dd/MM/yyyy HH:mm}"
+                                : "Chưa có buổi học")
+                        </small>
+                    </div>
+                    <div class="child-report-stats">
+                        <strong>@summary.AverageMastery%</strong>
+                        <span>Mức thành thạo</span>
+                    </div>
+                    <a class="app-btn app-btn-small" asp-action="Report" asp-route-childId="@summary.Child.Id">Xem báo cáo</a>
+                </article>
+            }
+        </div>
+
+        <div class="soft-card report-panel">
+            <h2>7 ngày gần đây</h2>
+            <div class="daily-chart">
+                @foreach (var day in Model.DailyActivities)
+                {
+                    var total = day.CompletedItems + day.NeedsPracticeItems;
+                    var height = Math.Max(8, Math.Min(100, total * 18));
+                    <div class="daily-bar-item">
+                        <div class="daily-bar" style="height:@height%">
+                            <span>@total</span>
+                        </div>
+                        <small>@day.DateLabel</small>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 
-    <div class="soft-card mt-4">
+    <div class="soft-card report-panel mt-4">
         <h2>Kỹ năng cốt lõi</h2>
         @if (!Model.ProgressItems.Any())
         {
             <p>Chưa có dữ liệu tiến độ. Bé học xong buổi đầu tiên thì báo cáo sẽ xuất hiện ở đây.</p>
         }
-        @foreach (var progress in Model.ProgressItems)
+        @foreach (var progress in Model.ProgressItems.OrderBy(x => x.SkillGroup?.SortOrder).ThenBy(x => x.SkillGroup?.Name))
         {
             <div class="progress-row">
                 <span>@progress.SkillGroup?.Name</span>
@@ -48,7 +95,7 @@
         }
     </div>
 
-    <div class="soft-card mt-4">
+    <div class="soft-card report-panel mt-4">
         <h2>Hoạt động gần đây</h2>
         @if (!Model.RecentAttempts.Any())
         {
@@ -60,7 +107,7 @@
                 <span class="material-symbols-outlined">@(attempt.Status == "completed" ? "check_circle" : "refresh")</span>
                 <div>
                     <strong>@attempt.LearningItem?.Title</strong>
-                    <small>@attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm") - @(attempt.Status == "completed" ? "Hoàn thành" : "Cần luyện thêm")</small>
+                    <small>@attempt.ChildProfile?.Nickname - @attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm") - @(attempt.Status == "completed" ? "Hoàn thành" : "Cần luyện thêm")</small>
                 </div>
             </div>
         }

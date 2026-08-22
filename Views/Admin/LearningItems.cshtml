@@ -1,4 +1,4 @@
-@model IReadOnlyList<LearningItem>
+@model AdminLearningItemListViewModel
 @{
     ViewData["Title"] = "Kho nội dung";
 }
@@ -12,30 +12,67 @@
         <div class="hero-actions">
             <a class="app-btn app-btn-small" asp-action="CreateChoice">
                 <span class="material-symbols-outlined">add</span>
-                Tạo bài tương tác
+                Tạo bài chọn
+            </a>
+            <a class="app-btn app-btn-small" asp-action="CreateTracing">
+                <span class="material-symbols-outlined">draw</span>
+                Tạo bài tô nét
             </a>
             <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
         </div>
     </div>
 
-    <div class="soft-card">
-        <table class="app-table">
+    <form class="soft-card admin-filter" asp-action="LearningItems" method="get">
+        <div>
+            <label for="status">Trạng thái</label>
+            <select id="status" name="status" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option>
+                <option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option>
+                <option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option>
+                <option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option>
+            </select>
+        </div>
+        <div>
+            <label for="interactionType">Dạng bài</label>
+            <select id="interactionType" name="interactionType" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="@InteractionTypes.SingleChoice" selected="@(Model.InteractionType == InteractionTypes.SingleChoice)">Chọn đáp án</option>
+                <option value="@InteractionTypes.ListenAndChoose" selected="@(Model.InteractionType == InteractionTypes.ListenAndChoose)">Nghe - chọn</option>
+                <option value="@InteractionTypes.DragDrop" selected="@(Model.InteractionType == InteractionTypes.DragDrop)">Kéo - thả</option>
+                <option value="@InteractionTypes.Matching" selected="@(Model.InteractionType == InteractionTypes.Matching)">Nối cặp</option>
+                <option value="@InteractionTypes.Ordering" selected="@(Model.InteractionType == InteractionTypes.Ordering)">Sắp xếp</option>
+                <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô nét</option>
+            </select>
+        </div>
+        <button class="app-btn app-btn-small" type="submit">Lọc</button>
+    </form>
+
+    <div class="soft-card report-panel mt-4">
+        <table class="app-table admin-content-table">
             <thead>
             <tr>
                 <th>Tên bài</th>
                 <th>Nhóm</th>
                 <th>Dạng</th>
+                <th>Câu hỏi</th>
                 <th>Trạng thái</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.Items)
             {
                 <tr>
-                    <td>@item.Title</td>
+                    <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
                     <td>@item.SkillGroup?.Name</td>
                     <td>@item.InteractionType</td>
-                    <td>@item.Status</td>
+                    <td>@item.Questions.Count</td>
+                    <td><span class="status-chip status-@item.Status">@item.Status</span></td>
+                    <td class="table-actions">
+                        <a class="mini-action" asp-action="LearningItemDetail" asp-route-id="@item.Id">Chi tiết</a>
+                        <a class="mini-action" asp-action="EditLearningItem" asp-route-id="@item.Id">Sửa</a>
+                    </td>
                 </tr>
             }
             </tbody>

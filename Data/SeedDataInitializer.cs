@@ -6,6 +6,9 @@ namespace HanhTrangLop1.Data;
 
 public static class SeedDataInitializer
 {
+    private const string InitialMigrationId = "20260822074812_InitialCreate";
+    private const string EfProductVersion = "9.0.14";
+
     private static readonly Guid AlphabetGroupId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid NumberGroupId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid MathGroupId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -20,13 +23,38 @@ public static class SeedDataInitializer
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         // Tạo database local cho môi trường phát triển.
-        await db.Database.EnsureCreatedAsync();
+        await EnsureMigrationHistoryForLegacyDatabaseAsync(db);
+        await db.Database.MigrateAsync();
 
         await SeedRolesAsync(roleManager);
         await SeedAdminAsync(userManager, configuration, logger);
         var parentUser = await SeedParentAsync(userManager, configuration, logger);
         await SeedLearningContentAsync(db);
         await SeedChildProfileAsync(db, parentUser);
+    }
+
+    private static async Task EnsureMigrationHistoryForLegacyDatabaseAsync(ApplicationDbContext db)
+    {
+        if (!await db.Database.CanConnectAsync())
+        {
+            return;
+        }
+
+        // Ghi nhận migration nền cho DB cũ đã tạo bằng EnsureCreated.
+        await db.Database.ExecuteSqlRawAsync($"""
+            IF OBJECT_ID(N'[dbo].[AspNetUsers]', N'U') IS NOT NULL
+               AND OBJECT_ID(N'[dbo].[__EFMigrationsHistory]', N'U') IS NULL
+            BEGIN
+                CREATE TABLE [dbo].[__EFMigrationsHistory] (
+                    [MigrationId] nvarchar(150) NOT NULL,
+                    [ProductVersion] nvarchar(32) NOT NULL,
+                    CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+                );
+
+                INSERT INTO [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+                VALUES (N'{InitialMigrationId}', N'{EfProductVersion}');
+            END
+            """);
     }
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
