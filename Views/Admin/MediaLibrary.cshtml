@@ -1,0 +1,33 @@
+@model AdminMediaLibraryViewModel
+@{
+    ViewData["Title"] = "Thư viện hình và âm thanh";
+}
+
+<section class="container dashboard-wrap">
+    <div class="dashboard-header">
+        <div><p class="eyebrow">Tài nguyên nội dung</p><h1>Thư viện media</h1></div>
+        <a class="app-btn app-btn-muted app-btn-small" asp-action="Index"><span class="material-symbols-outlined">arrow_back</span>Dashboard</a>
+    </div>
+
+    <div class="media-library-section">
+        <h2>Hình ảnh</h2>
+        @if (!Model.Images.Any()) { <p class="empty-note">Chưa có hình. Tải hình khi tạo bài để thêm vào thư viện.</p> }
+        <div class="media-library-grid">
+            @foreach (var asset in Model.Images)
+            {
+                <article class="media-asset-card"><img src="@asset.StoragePath" alt="@(asset.AltText ?? asset.FileName)" /><strong>@asset.FileName</strong><small>@asset.StoragePath</small></article>
+            }
+        </div>
+    </div>
+
+    <div class="media-library-section">
+        <h2>Âm thanh</h2>
+        @if (!Model.AudioFiles.Any()) { <p class="empty-note">Chưa có âm thanh. Tải âm thanh khi tạo bài để thêm vào thư viện.</p> }
+        <div class="media-library-grid">
+            @foreach (var asset in Model.AudioFiles)
+            {
+                <article class="media-asset-card"><span class="material-symbols-outlined media-audio-icon">audio_file</span><strong>@asset.FileName</strong><audio controls preload="none" src="@asset.StoragePath"></audio></article>
+            }
+        </div>
+    </div>
+</section>

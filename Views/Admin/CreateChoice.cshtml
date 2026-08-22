@@ -3,6 +3,10 @@
     ViewData["Title"] = "Trình tạo bài học";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
     var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
+    var activityTemplates = ViewBag.ActivityTemplates as IReadOnlyList<ActivityTemplateDefinition> ?? [];
+    var mediaAssets = ViewBag.MediaAssets as IReadOnlyList<MediaAsset> ?? [];
+    var imageAssets = mediaAssets.Where(x => x.AssetType == "image").ToList();
+    var audioAssets = mediaAssets.Where(x => x.AssetType == "audio").ToList();
 }
 
 <section class="activity-builder-page">
@@ -23,24 +27,19 @@
         </div>
     </div>
 
-    <form id="activity-builder-form" class="activity-builder-layout" asp-action="CreateChoice" method="post" data-admin-learning-form data-activity-builder>
+    <form id="activity-builder-form" class="activity-builder-layout" asp-action="CreateChoice" method="post" enctype="multipart/form-data" data-admin-learning-form data-activity-builder>
         <input asp-for="Id" type="hidden" />
         <aside class="builder-template-panel">
             <h2>Mẫu hoạt động</h2>
             <div class="template-palette">
-                <button type="button" data-template-option="single_choice"><span class="material-symbols-outlined">touch_app</span><strong>Chọn một</strong></button>
-                <button type="button" data-template-option="multi_select"><span class="material-symbols-outlined">checklist</span><strong>Chọn nhiều</strong></button>
-                <button type="button" data-template-option="listen_choose"><span class="material-symbols-outlined">hearing</span><strong>Nghe và chọn</strong></button>
-                <button type="button" data-template-option="drag_drop"><span class="material-symbols-outlined">pan_tool</span><strong>Kéo vào đích</strong></button>
-                <button type="button" data-template-option="matching"><span class="material-symbols-outlined">conversion_path</span><strong>Nối cặp</strong></button>
-                <button type="button" data-template-option="ordering"><span class="material-symbols-outlined">sort</span><strong>Sắp xếp</strong></button>
-                <button type="button" data-template-option="counting"><span class="material-symbols-outlined">counter_1</span><strong>Đếm đồ vật</strong></button>
-                <button type="button" data-template-option="quantity_builder"><span class="material-symbols-outlined">shopping_basket</span><strong>Tạo số lượng</strong></button>
-                <button type="button" data-template-option="comparison"><span class="material-symbols-outlined">compare_arrows</span><strong>So sánh</strong></button>
-                <button type="button" data-template-option="classification"><span class="material-symbols-outlined">category</span><strong>Phân loại</strong></button>
-                <button type="button" data-template-option="story_choice"><span class="material-symbols-outlined">auto_stories</span><strong>Nghe truyện</strong></button>
+                @foreach (var template in activityTemplates)
+                {
+                    <button type="button" data-template-option="@template.InteractionType" title="@template.Description">
+                        <span class="material-symbols-outlined">@template.IconKey</span><strong>@template.Name</strong>
+                    </button>
+                }
             </div>
-            <a class="tracing-template-link" asp-action="CreateTracing">
+            <a class="tracing-template-link" asp-action="CreateTracing" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId" data-tracing-link>
                 <span class="material-symbols-outlined">draw</span>
                 <span><strong>Tô theo nét</strong><small>Dùng trình tạo nét riêng</small></span>
                 <span class="material-symbols-outlined">arrow_forward</span>
@@ -95,24 +94,18 @@
                 <option value="">Chọn chủ đề</option>
                 @foreach (var topic in topics)
                 {
-                    <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId">@topic.Name</option>
+                    var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
+                    <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId" data-allowed-types="@string.Join(',', rule.InteractionTypes)" data-allows-tracing="@rule.AllowsTracing.ToString().ToLowerInvariant()">@topic.Name</option>
                 }
             </select>
             <span asp-validation-for="TopicId" class="text-danger"></span>
 
             <label asp-for="InteractionType">Mẫu tương tác</label>
             <select asp-for="InteractionType" class="form-control" data-interaction-select>
-                <option value="single_choice">Chọn một đáp án</option>
-                <option value="multi_select">Chọn nhiều đáp án</option>
-                <option value="listen_choose">Nghe và chọn</option>
-                <option value="drag_drop">Kéo vào vùng đích</option>
-                <option value="matching">Nối cặp</option>
-                <option value="ordering">Sắp xếp</option>
-                <option value="counting">Đếm đồ vật</option>
-                <option value="quantity_builder">Tạo đúng số lượng</option>
-                <option value="comparison">So sánh hai nhóm</option>
-                <option value="classification">Phân loại</option>
-                <option value="story_choice">Nghe truyện và chọn</option>
+                @foreach (var template in activityTemplates)
+                {
+                    <option value="@template.InteractionType" data-default-instruction="@template.DefaultInstruction" data-default-prompt="@template.DefaultPrompt">@template.Name</option>
+                }
             </select>
 
             <label asp-for="InstructionText">Lời hướng dẫn</label>
@@ -122,7 +115,8 @@
 
             <h2>Cấu hình hoạt động</h2>
 
-            <div data-builder-fields="single_choice,multi_select,listen_choose,drag_drop,counting,story_choice">
+            <section class="builder-config-section" data-builder-fields="single_choice,multi_select,listen_choose,drag_drop,counting,story_choice">
+                <h3>Phương án trả lời</h3>
                 <div class="builder-choice-grid">
                     <div><label asp-for="ChoiceA">Lựa chọn 1</label><input asp-for="ChoiceA" class="form-control" data-choice-input /></div>
                     <div><label asp-for="ChoiceB">Lựa chọn 2</label><input asp-for="ChoiceB" class="form-control" data-choice-input /></div>
@@ -130,9 +124,9 @@
                     <div><label asp-for="ChoiceD">Lựa chọn 4</label><input asp-for="ChoiceD" class="form-control" data-choice-input /></div>
                     <div><label asp-for="ChoiceE">Lựa chọn 5</label><input asp-for="ChoiceE" class="form-control" data-choice-input /></div>
                 </div>
-            </div>
+            </section>
 
-            <div data-builder-fields="single_choice,listen_choose,drag_drop,story_choice">
+            <section class="builder-config-section" data-builder-fields="single_choice,listen_choose,drag_drop,story_choice">
                 <label asp-for="CorrectAnswer">Đáp án đúng</label>
                 <select asp-for="CorrectAnswer" class="form-control" data-correct-answer>
                     @if (!string.IsNullOrWhiteSpace(Model.CorrectAnswer))
@@ -141,57 +135,81 @@
                     }
                 </select>
                 <span asp-validation-for="CorrectAnswer" class="text-danger"></span>
-            </div>
+            </section>
 
-            <div data-builder-fields="multi_select">
+            <section class="builder-config-section" data-builder-fields="multi_select">
+                <h3>Tập đáp án đúng</h3>
                 <label asp-for="CorrectAnswersText">Các đáp án đúng</label>
                 <textarea asp-for="CorrectAnswersText" class="form-control" rows="4" placeholder="Mỗi đáp án một dòng"></textarea>
-            </div>
+            </section>
 
-            <div data-builder-fields="drag_drop,quantity_builder">
+            <section class="builder-config-section" data-builder-fields="drag_drop,quantity_builder">
+                <h3>Vùng nhận kết quả</h3>
                 <label asp-for="TargetLabel">Tên vùng đích</label>
                 <input asp-for="TargetLabel" class="form-control" />
-            </div>
+            </section>
 
-            <div data-builder-fields="matching">
+            <section class="builder-config-section" data-builder-fields="matching">
+                <h3>Danh sách cặp nối</h3>
                 <label asp-for="PairsText">Các cặp cần nối</label>
                 <textarea asp-for="PairsText" class="form-control" rows="6" placeholder="A = a&#10;B = b&#10;C = c"></textarea>
                 <span asp-validation-for="PairsText" class="text-danger"></span>
-            </div>
+            </section>
 
-            <div data-builder-fields="ordering">
+            <section class="builder-config-section" data-builder-fields="ordering">
+                <h3>Chuỗi thứ tự chuẩn</h3>
                 <label asp-for="SequenceItemsText">Thứ tự đúng</label>
                 <textarea asp-for="SequenceItemsText" class="form-control" rows="6" placeholder="Mỗi mục một dòng theo thứ tự đúng"></textarea>
                 <span asp-validation-for="SequenceItemsText" class="text-danger"></span>
-            </div>
+            </section>
 
-            <div data-builder-fields="counting,quantity_builder,comparison">
+            <section class="builder-config-section" data-builder-fields="counting,quantity_builder,comparison">
+                <h3>Đồ vật và số lượng</h3>
                 <label asp-for="ObjectSymbol">Ký hiệu đồ vật</label>
                 <input asp-for="ObjectSymbol" class="form-control" maxlength="12" />
                 <label asp-for="TargetCount">Số lượng mục tiêu / Nhóm A</label>
                 <input asp-for="TargetCount" class="form-control" type="number" min="1" max="20" />
-            </div>
+            </section>
 
-            <div data-builder-fields="comparison">
+            <section class="builder-config-section" data-builder-fields="comparison">
                 <label asp-for="SecondaryCount">Số lượng nhóm B</label>
                 <input asp-for="SecondaryCount" class="form-control" type="number" min="0" max="20" />
-            </div>
+            </section>
 
-            <div data-builder-fields="classification">
+            <section class="builder-config-section" data-builder-fields="classification">
+                <h3>Vật và nhóm đích</h3>
                 <label asp-for="ClassificationText">Vật và nhóm phân loại</label>
                 <textarea asp-for="ClassificationText" class="form-control" rows="7" placeholder="Hình vuông = Hình có góc&#10;Hình tròn = Hình không góc"></textarea>
                 <span asp-validation-for="ClassificationText" class="text-danger"></span>
-            </div>
+            </section>
 
-            <div data-builder-fields="listen_choose,story_choice">
+            <section class="builder-config-section" data-builder-fields="listen_choose,story_choice">
+                <h3>Âm thanh bắt buộc</h3>
+                <label asp-for="ExistingAudioAssetId">Chọn từ thư viện</label>
+                <select asp-for="ExistingAudioAssetId" class="form-control">
+                    <option value="">Tải tệp mới hoặc dùng đường dẫn</option>
+                    @foreach (var asset in audioAssets) { <option value="@asset.Id">@asset.FileName</option> }
+                </select>
+                <label asp-for="AudioFile">Tải âm thanh mới</label>
+                <input asp-for="AudioFile" class="form-control" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4" />
                 <label asp-for="AudioUrl">Đường dẫn âm thanh</label>
-                <input asp-for="AudioUrl" class="form-control" type="url" placeholder="/uploads/audio/ten-tep.mp3" />
-            </div>
+                <input asp-for="AudioUrl" class="form-control" type="text" placeholder="/uploads/audio/ten-tep.mp3" />
+                <span asp-validation-for="AudioUrl" class="text-danger"></span>
+            </section>
 
-            <div data-builder-fields="story_choice">
-                <label asp-for="ImageUrl">Đường dẫn hình minh họa</label>
-                <input asp-for="ImageUrl" class="form-control" type="url" placeholder="/uploads/images/ten-tep.webp" />
-            </div>
+            <section class="builder-config-section" data-builder-fields="single_choice,multi_select,drag_drop,matching,classification,story_choice">
+                <h3>Hình minh họa</h3>
+                <label asp-for="ExistingImageAssetId">Chọn từ thư viện</label>
+                <select asp-for="ExistingImageAssetId" class="form-control">
+                    <option value="">Không dùng hình thư viện</option>
+                    @foreach (var asset in imageAssets) { <option value="@asset.Id">@asset.FileName</option> }
+                </select>
+                <label asp-for="ImageFile">Tải hình mới</label>
+                <input asp-for="ImageFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+                <label asp-for="ImageUrl">Đường dẫn hình</label>
+                <input asp-for="ImageUrl" class="form-control" type="text" placeholder="/uploads/images/ten-tep.webp" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </section>
 
             <h2>Chấm điểm và phản hồi</h2>
             <div class="two-column-form">

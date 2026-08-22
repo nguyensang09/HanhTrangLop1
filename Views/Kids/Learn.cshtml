@@ -47,14 +47,23 @@
     {
         <div class="tracing-board tracing-canvas-host"
              data-tracing-min-points="@Model.TracingMinPoints"
+             data-tracing-expected-strokes="@Model.TracingExpectedStrokeCount"
+             data-tracing-audio-url="@Model.TracingAudioUrl"
              data-tracing-symbol="@Model.TracingSymbol">
-            <div class="trace-letter">@Model.TracingSymbol</div>
-            <div class="trace-start"></div>
-            <div class="trace-path path-one"></div>
-            <div class="trace-path path-two"></div>
-            <div class="trace-path path-three"></div>
+            @if (Model.TracingGuideMode == "outline")
+            {
+                <div class="trace-letter outline-guide">@Model.TracingSymbol</div>
+            }
+            @if (Model.TracingShowStartPoint)
+            {
+                <div class="trace-start"></div>
+            }
             <canvas class="tracing-canvas" width="720" height="720" aria-label="Bảng tô nét"></canvas>
             <div class="board-actions">
+                @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))
+                {
+                    <button class="tracing-audio" type="button" title="Nghe hướng dẫn"><span class="material-symbols-outlined">volume_up</span></button>
+                }
                 <button class="tracing-undo" type="button" title="Hoàn tác"><span class="material-symbols-outlined">undo</span></button>
                 <button class="tracing-clear" type="button" title="Xóa nét"><span class="material-symbols-outlined">delete</span></button>
             </div>
@@ -97,6 +106,10 @@
                 </strong>
             </div>
             <h2>@Model.CurrentQuestion.PromptText</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.QuestionImageUrl))
+            {
+                <img class="story-image" src="@Model.QuestionImageUrl" alt="Hình minh họa bài học" />
+            }
             @if (customInteractionTypes.Contains(Model.Item.InteractionType))
             {
                 <input type="hidden" name="AnswerValue" data-activity-answer />

@@ -1,6 +1,7 @@
 @model LearningItem
 @{
     ViewData["Title"] = Model.Title;
+    var isCompatible = ActivityTemplateCatalog.IsItemAllowed(Model);
 }
 
 <section class="container dashboard-wrap">
@@ -16,7 +17,7 @@
             </a>
             @if (Model.InteractionType == InteractionTypes.Tracing)
             {
-                <a class="app-btn app-btn-small" asp-action="EditLearningItem" asp-route-id="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>
+                <a class="app-btn app-btn-small" asp-action="CreateTracing" asp-route-editId="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>
             }
             else
             {
@@ -26,6 +27,14 @@
     </div>
 
     <div class="admin-detail-grid">
+        @if (TempData["AdminMessage"] is string message)
+        {
+            <div class="feedback-band retry"><span class="material-symbols-outlined">warning</span><strong>@message</strong></div>
+        }
+        @if (!isCompatible)
+        {
+            <div class="feedback-band retry"><span class="material-symbols-outlined">rule</span><strong>Dạng bài hiện tại không phù hợp với chủ đề. Bài sẽ không xuất hiện trong khu bé học cho tới khi được sửa đúng mẫu.</strong></div>
+        }
         <div class="soft-card report-panel">
             <h2>Thông tin</h2>
             <dl class="admin-meta-list">
@@ -48,10 +57,13 @@
                     <input type="hidden" name="status" value="@ContentStatus.Review" />
                     <button class="app-btn app-btn-muted app-btn-small" type="submit">Gửi duyệt</button>
                 </form>
-                <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
-                    <input type="hidden" name="status" value="@ContentStatus.Published" />
-                    <button class="app-btn app-btn-small" type="submit">Xuất bản</button>
-                </form>
+                @if (isCompatible)
+                {
+                    <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                        <input type="hidden" name="status" value="@ContentStatus.Published" />
+                        <button class="app-btn app-btn-small" type="submit">Xuất bản</button>
+                    </form>
+                }
                 <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
                     <input type="hidden" name="status" value="@ContentStatus.Archived" />
                     <button class="danger-link" type="submit">Lưu trữ</button>

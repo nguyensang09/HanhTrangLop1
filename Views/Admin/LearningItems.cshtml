@@ -83,17 +83,18 @@
             <tbody>
             @foreach (var item in Model.Items)
             {
+                var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
                 <tr>
                     <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
                     <td>@item.SkillGroup?.Name</td>
-                    <td>@item.InteractionType</td>
+                    <td>@item.InteractionType @if (!isCompatible) { <span class="status-chip status-warning">Cần chuẩn hóa</span> }</td>
                     <td>@item.Questions.Count</td>
                     <td><span class="status-chip status-@item.Status">@item.Status</span></td>
                     <td class="table-actions">
                         <a class="mini-action" asp-action="LearningItemDetail" asp-route-id="@item.Id">Chi tiết</a>
                         @if (item.InteractionType == InteractionTypes.Tracing)
                         {
-                            <a class="mini-action" asp-action="EditLearningItem" asp-route-id="@item.Id">Sửa</a>
+                            <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sửa</a>
                         }
                         else
                         {

@@ -63,6 +63,15 @@ public static class LearningJsonReader
             : fallback;
     }
 
+    public static bool ReadBoolProperty(string json, string propertyName, bool fallback)
+    {
+        using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "{}" : json);
+        return document.RootElement.TryGetProperty(propertyName, out var value) &&
+               (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
+            ? value.GetBoolean()
+            : fallback;
+    }
+
     public static string ReadFeedback(string feedbackJson, bool isCorrect)
     {
         using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(feedbackJson) ? "{}" : feedbackJson);

@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using HanhTrangLop1.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace HanhTrangLop1.Models.ViewModels;
 
@@ -55,6 +57,8 @@ public class EditLearningItemViewModel
 
 public class CreateTracingItemViewModel
 {
+    public Guid? Id { get; set; }
+
     [Required(ErrorMessage = "Vui lòng nhập tên bài."), MaxLength(200)]
     public string Title { get; set; } = string.Empty;
 
@@ -73,6 +77,20 @@ public class CreateTracingItemViewModel
 
     [Range(5, 300, ErrorMessage = "Số điểm nét phải từ 5 đến 300.")]
     public int MinPoints { get; set; } = 20;
+
+    [Required(ErrorMessage = "Vui lòng chọn kiểu hướng dẫn nét.")]
+    public string GuideMode { get; set; } = "outline";
+
+    [Range(1, 10, ErrorMessage = "Số nét dự kiến phải từ 1 đến 10.")]
+    public int ExpectedStrokeCount { get; set; } = 1;
+
+    public bool ShowStartPoint { get; set; } = true;
+
+    [MaxLength(1000)]
+    public string AudioUrl { get; set; } = string.Empty;
+
+    public Guid? ExistingAudioAssetId { get; set; }
+    public IFormFile? AudioFile { get; set; }
 
     [Range(1, 3, ErrorMessage = "Độ khó phải từ 1 đến 3.")]
     public byte Level { get; set; } = 1;
@@ -95,4 +113,12 @@ public class AdminCatalogTopicViewModel
 {
     public Topic Topic { get; set; } = new();
     public int LearningItemCount { get; set; }
+    public IReadOnlyList<ActivityTemplateDefinition> AllowedTemplates { get; set; } = [];
+    public bool AllowsTracing { get; set; }
+}
+
+public class AdminMediaLibraryViewModel
+{
+    public IReadOnlyList<MediaAsset> Images { get; set; } = [];
+    public IReadOnlyList<MediaAsset> AudioFiles { get; set; } = [];
 }

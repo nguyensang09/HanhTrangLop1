@@ -41,6 +41,14 @@
 - Mở chi tiết bài học.
 - Sửa metadata và cấu hình bằng đúng trình tạo của dạng bài; bài tô nét không được đổi sang mẫu khác trong màn sửa tô nét.
 - Chuyển trạng thái nháp, chờ duyệt, xuất bản, lưu trữ.
+- Từ `/admin/catalogs`, xác nhận mỗi chủ đề chỉ hiện các nút mẫu hoạt động hợp lệ.
+- Chọn lần lượt 11 mẫu và xác nhận chỉ các nhóm trường cấu hình liên quan được bật.
+- Với bài nghe và chọn, tải audio hoặc chọn audio trong thư viện rồi kiểm tra phát lại.
+- Với bài nghe truyện, tải/chọn đủ audio và ảnh, kiểm tra preview và runtime đều hiển thị đúng.
+- Mở `/admin/media`, kiểm tra ảnh và audio vừa tải có thể tái sử dụng.
+- Tạo bài tô nét ở chế độ đường viền và tự vẽ; chế độ tự vẽ không được hiện ký tự mờ.
+- Thử xuất bản một bài có tổ hợp chủ đề - mẫu sai và xác nhận server từ chối.
+- Xác nhận bài cũ gắn nhãn `Cần chuẩn hóa` không xuất hiện trong khu bé học.
 
 ## Dữ liệu
 

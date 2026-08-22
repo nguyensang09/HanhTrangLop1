@@ -57,8 +57,10 @@ public class TodayLessonService
 
         var items = await _db.LearningItems
             .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
             .Where(x => ids.Contains(x.Id) && x.Status == ContentStatus.Published)
             .ToListAsync();
+        items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
 
         return ids
             .Select(id => items.FirstOrDefault(x => x.Id == id))
@@ -162,16 +164,19 @@ public class TodayLessonService
 
         var items = await _db.LearningItems
             .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
             .Where(x => x.Status == ContentStatus.Published)
+            .ToListAsync();
+
+        return items
+            .Where(ActivityTemplateCatalog.IsItemAllowed)
             .OrderByDescending(x => needsPracticeSkillIds.Contains(x.SkillGroupId))
             .ThenByDescending(x => preferredSkillIds.Contains(x.SkillGroupId))
             .ThenBy(x => x.SkillGroup!.SortOrder)
             .ThenBy(x => x.Title)
             .Take(8)
             .Select(x => x.Id)
-            .ToListAsync();
-
-        return items;
+            .ToList();
     }
 
     private static List<Guid> ReadPlanIds(string sessionPlanJson)

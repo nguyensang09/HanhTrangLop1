@@ -8,6 +8,42 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     const correctAnswerSelect = form.querySelector("[data-correct-answer]");
     const builderFieldGroups = [...form.querySelectorAll("[data-builder-fields]")];
     const templateButtons = [...form.querySelectorAll("[data-template-option]")];
+    const tracingLink = form.querySelector("[data-tracing-link]");
+    const isEditing = Boolean(form.querySelector('[name="Id"]')?.value);
+
+    const selectedTopicRule = () => {
+        const option = topicSelect?.options[topicSelect.selectedIndex];
+        return {
+            allowedTypes: (option?.dataset.allowedTypes || "").split(",").filter(Boolean),
+            allowsTracing: option?.dataset.allowsTracing === "true"
+        };
+    };
+
+    const filterTemplates = () => {
+        if (!interactionSelect || !topicSelect) return;
+        const rule = selectedTopicRule();
+
+        [...interactionSelect.options].forEach((option) => {
+            const allowed = rule.allowedTypes.includes(option.value);
+            option.hidden = !allowed;
+            option.disabled = !allowed;
+        });
+        templateButtons.forEach((button) => {
+            button.hidden = !rule.allowedTypes.includes(button.dataset.templateOption);
+        });
+
+        if (!rule.allowedTypes.includes(interactionSelect.value)) {
+            interactionSelect.value = rule.allowedTypes[0] || "";
+            interactionSelect.dispatchEvent(new Event("change", {bubbles: true}));
+        }
+
+        if (tracingLink) {
+            tracingLink.hidden = !rule.allowsTracing;
+            const selectedTopicId = topicSelect.value;
+            const selectedGroupId = skillGroupSelect?.value || "";
+            tracingLink.href = `/admin/learning-items/create-tracing?skillGroupId=${encodeURIComponent(selectedGroupId)}&topicId=${encodeURIComponent(selectedTopicId)}`;
+        }
+    };
 
     const filterTopics = () => {
         if (!skillGroupSelect || !topicSelect) {
@@ -16,19 +52,24 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
 
         const selectedGroupId = skillGroupSelect.value;
         const selectedTopic = topicSelect.options[topicSelect.selectedIndex];
-        const selectedTopicIsValid = selectedTopic?.value && selectedTopic.dataset.skillGroupId === selectedGroupId;
+        const selectedTopicIsValid = selectedTopic?.value &&
+            selectedTopic.dataset.skillGroupId === selectedGroupId &&
+            (!form.matches("[data-activity-builder]") || (selectedTopic.dataset.allowedTypes || "").length > 0);
 
         [...topicSelect.options].forEach((option) => {
-            const isVisible = !option.value || option.dataset.skillGroupId === selectedGroupId;
+            const hasActivity = !form.matches("[data-activity-builder]") || !option.value || (option.dataset.allowedTypes || "").length > 0;
+            const isVisible = (!option.value || option.dataset.skillGroupId === selectedGroupId) && hasActivity;
             option.hidden = !isVisible;
             option.disabled = !isVisible;
         });
 
         if (!selectedTopicIsValid) {
             const firstTopic = [...topicSelect.options]
-                .find((option) => option.value && option.dataset.skillGroupId === selectedGroupId);
+                .find((option) => option.value && option.dataset.skillGroupId === selectedGroupId &&
+                    (!form.matches("[data-activity-builder]") || (option.dataset.allowedTypes || "").length > 0));
             topicSelect.value = firstTopic?.value || "";
         }
+        filterTemplates();
     };
 
     const syncCorrectAnswer = () => {
@@ -97,6 +138,15 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         story_choice: "Nghe truyện và chọn"
     };
 
+    const applyTemplateDefaults = () => {
+        if (!interactionSelect || isEditing) return;
+        const option = interactionSelect.options[interactionSelect.selectedIndex];
+        const instructionInput = form.querySelector('[data-preview-source="instruction"]');
+        const promptInput = form.querySelector('[data-preview-source="prompt"]');
+        if (instructionInput && option?.dataset.defaultInstruction) instructionInput.value = option.dataset.defaultInstruction;
+        if (promptInput && option?.dataset.defaultPrompt) promptInput.value = option.dataset.defaultPrompt;
+    };
+
     const updateBuilderPreview = () => {
         if (!form.matches("[data-activity-builder]")) {
             return;
@@ -114,36 +164,77 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         if (previewInstruction) previewInstruction.textContent = instruction || "Lời hướng dẫn của bài học";
         if (previewPrompt) previewPrompt.textContent = prompt || "Câu hỏi sẽ hiển thị tại đây";
         if (previewName) previewName.textContent = templateNames[type] || type;
-        if (previewMedia) previewMedia.hidden = type !== "story_choice";
+        if (previewMedia) previewMedia.hidden = !["story_choice", "single_choice", "multi_select", "drag_drop", "matching", "classification"].includes(type);
         if (!previewOptions) return;
 
         let labels = choiceInputs.map((input) => input.value.trim()).filter(Boolean);
+        if (labels.length === 0) labels = ["A", "B", "C"];
+        const makePreviewItem = (text, className = "") => {
+            const element = document.createElement("button");
+            element.type = "button";
+            element.className = className;
+            element.textContent = text;
+            return element;
+        };
+        previewOptions.className = `builder-preview-options preview-${type}`;
+        previewOptions.replaceChildren();
+
         if (type === "matching") {
-            labels = (form.querySelector('[name="PairsText"]')?.value || "A = a\nB = b")
-                .split(/\r?\n/).filter(Boolean).flatMap((line) => line.split("=").map((value) => value.trim()));
+            const pairs = (form.querySelector('[name="PairsText"]')?.value || "A = a\nB = b")
+                .split(/\r?\n/).filter(Boolean).map((line) => line.split("=").map((value) => value.trim()));
+            pairs.slice(0, 4).forEach((pair) => {
+                const row = document.createElement("div");
+                row.className = "preview-pair";
+                row.append(makePreviewItem(pair[0] || "?"), document.createTextNode("↔"), makePreviewItem(pair[1] || "?"));
+                previewOptions.append(row);
+            });
         } else if (type === "ordering") {
-            labels = (form.querySelector('[name="SequenceItemsText"]')?.value || "1\n2\n3")
+            const items = (form.querySelector('[name="SequenceItemsText"]')?.value || "1\n2\n3")
                 .split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
-        } else if (["counting", "quantity_builder", "comparison"].includes(type)) {
+            items.slice(0, 5).forEach((item, index) => previewOptions.append(makePreviewItem(`${index + 1}. ${item}`, "preview-order-item")));
+        } else if (type === "drag_drop") {
+            labels.slice(0, 4).forEach((label) => previewOptions.append(makePreviewItem(label)));
+            previewOptions.append(makePreviewItem(form.querySelector('[name="TargetLabel"]')?.value || "Vùng đích", "preview-drop-zone"));
+        } else if (type === "counting") {
             const symbol = form.querySelector('[name="ObjectSymbol"]')?.value || "●";
             const count = Math.min(8, Number(form.querySelector('[name="TargetCount"]')?.value || 4));
-            labels = Array.from({length: count}, () => symbol);
+            const objects = document.createElement("div");
+            objects.className = "preview-objects";
+            objects.textContent = Array.from({length: count}, () => symbol).join(" ");
+            previewOptions.append(objects);
+            labels.slice(0, 4).forEach((label) => previewOptions.append(makePreviewItem(label)));
+        } else if (type === "quantity_builder") {
+            const symbol = form.querySelector('[name="ObjectSymbol"]')?.value || "●";
+            const count = Number(form.querySelector('[name="TargetCount"]')?.value || 4);
+            const target = document.createElement("div");
+            target.className = "preview-quantity-target";
+            target.textContent = `${form.querySelector('[name="TargetLabel"]')?.value || "Vùng đích"}: 0/${count}`;
+            previewOptions.append(target, makePreviewItem(`Thêm ${symbol}`), makePreviewItem("Bớt một"));
+        } else if (type === "comparison") {
+            const symbol = form.querySelector('[name="ObjectSymbol"]')?.value || "●";
+            const left = Math.min(8, Number(form.querySelector('[name="TargetCount"]')?.value || 4));
+            const right = Math.min(8, Number(form.querySelector('[name="SecondaryCount"]')?.value || 2));
+            previewOptions.append(makePreviewItem(`A\n${Array.from({length:left}, () => symbol).join(" ")}`, "preview-group"));
+            previewOptions.append(makePreviewItem(`B\n${Array.from({length:right}, () => symbol).join(" ")}`, "preview-group"));
         } else if (type === "classification") {
-            labels = (form.querySelector('[name="ClassificationText"]')?.value || "Táo = Trái cây\nCà rốt = Rau củ")
-                .split(/\r?\n/).map((line) => line.split("=")[0].trim()).filter(Boolean);
+            const mappings = (form.querySelector('[name="ClassificationText"]')?.value || "Táo = Trái cây\nCà rốt = Rau củ")
+                .split(/\r?\n/).map((line) => line.split("=").map((value) => value.trim())).filter((pair) => pair[0]);
+            const sources = document.createElement("div");
+            sources.className = "preview-classification-source";
+            mappings.forEach((pair) => sources.append(makePreviewItem(pair[0])));
+            const zones = document.createElement("div");
+            zones.className = "preview-classification-zones";
+            [...new Set(mappings.map((pair) => pair[1]).filter(Boolean))].forEach((category) => zones.append(makePreviewItem(category, "preview-drop-zone")));
+            previewOptions.append(sources, zones);
+        } else {
+            labels.slice(0, 5).forEach((label) => previewOptions.append(makePreviewItem(label)));
         }
-
-        if (labels.length === 0) labels = ["A", "B", "C"];
-        previewOptions.replaceChildren(...labels.slice(0, 8).map((label) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.textContent = label;
-            return button;
-        }));
     };
 
     skillGroupSelect?.addEventListener("change", filterTopics);
+    topicSelect?.addEventListener("change", filterTemplates);
     interactionSelect?.addEventListener("change", () => {
+        applyTemplateDefaults();
         toggleInteractionFields();
         updateBuilderPreview();
     });
@@ -161,4 +252,27 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     syncCorrectAnswer();
     toggleInteractionFields();
     updateBuilderPreview();
+});
+
+document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
+    const symbolInput = form.querySelector("[data-tracing-symbol-input]");
+    const symbolPreview = form.querySelector("[data-tracing-preview-symbol]");
+    const guideMode = form.querySelector("[data-tracing-guide-mode]");
+    const startToggle = form.querySelector("[data-tracing-start-toggle]");
+    const startPoint = form.querySelector("[data-tracing-preview-start]");
+
+    const updateTracingPreview = () => {
+        if (symbolPreview) {
+            symbolPreview.textContent = symbolInput?.value.trim() || "?";
+            symbolPreview.hidden = guideMode?.value === "free";
+        }
+        if (startPoint) {
+            startPoint.hidden = !startToggle?.checked;
+        }
+    };
+
+    symbolInput?.addEventListener("input", updateTracingPreview);
+    guideMode?.addEventListener("change", updateTracingPreview);
+    startToggle?.addEventListener("change", updateTracingPreview);
+    updateTracingPreview();
 });

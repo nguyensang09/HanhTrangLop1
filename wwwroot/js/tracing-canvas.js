@@ -9,11 +9,13 @@
   const context = canvas.getContext("2d");
   const undoButton = host.querySelector(".tracing-undo");
   const clearButton = host.querySelector(".tracing-clear");
+  const audioButton = host.querySelector(".tracing-audio");
   const submitButton = form.querySelector(".tracing-submit-button");
   const strokesInput = form.querySelector(".tracing-strokes-input");
   const metricsInput = form.querySelector(".tracing-metrics-input");
   const statusText = form.querySelector(".tracing-status");
   const minPoints = Number(host.dataset.tracingMinPoints || 20);
+  const expectedStrokeCount = Number(host.dataset.tracingExpectedStrokes || 1);
 
   const state = {
     drawing: false,
@@ -77,6 +79,7 @@
     return {
       source: "tracing_canvas_v1",
       strokeCount: state.strokes.length,
+      expectedStrokeCount,
       totalPoints,
       totalLength,
       coverageScore: Math.min(100, Math.round((totalPoints / minPoints) * 100)),
@@ -143,6 +146,11 @@
     state.currentStroke = [];
     redraw();
     syncForm();
+  });
+
+  audioButton?.addEventListener("click", function () {
+    const audioUrl = host.dataset.tracingAudioUrl;
+    if (audioUrl) new Audio(audioUrl).play();
   });
 
   form.addEventListener("submit", function (event) {

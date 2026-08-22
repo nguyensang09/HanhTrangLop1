@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace HanhTrangLop1.Models.ViewModels;
 
@@ -10,6 +11,11 @@ public class LearnViewModel
     public IReadOnlyList<ChoiceOptionViewModel> Choices { get; set; } = [];
     public string TracingSymbol { get; set; } = "A";
     public int TracingMinPoints { get; set; } = 20;
+    public string TracingGuideMode { get; set; } = "outline";
+    public int TracingExpectedStrokeCount { get; set; } = 1;
+    public bool TracingShowStartPoint { get; set; } = true;
+    public string TracingAudioUrl { get; set; } = string.Empty;
+    public string QuestionImageUrl { get; set; } = string.Empty;
     public string? FeedbackMessage { get; set; }
     public bool? IsCorrect { get; set; }
     public Guid? NextItemId { get; set; }
@@ -83,6 +89,11 @@ public class CreateChoiceItemViewModel
 
     [MaxLength(1000)]
     public string AudioUrl { get; set; } = string.Empty;
+
+    public Guid? ExistingImageAssetId { get; set; }
+    public Guid? ExistingAudioAssetId { get; set; }
+    public IFormFile? ImageFile { get; set; }
+    public IFormFile? AudioFile { get; set; }
 
     [Range(1, 3, ErrorMessage = "Độ khó phải từ 1 đến 3.")]
     public byte Level { get; set; } = 1;

@@ -8,7 +8,7 @@
 
 **Sản phẩm chưa hoàn thành theo phạm vi MVP trong đặc tả gốc.**
 
-Hệ thống hiện phù hợp để tiếp tục phát triển và trình diễn kiến trúc/luồng mẫu. Chưa phù hợp phát hành cho nhiều gia đình vì còn thiếu bộ nội dung, kho media, bảo vệ dữ liệu hồ sơ trẻ, chấm tracing, phần thưởng, admin nâng cao và kiểm thử tự động.
+Hệ thống hiện phù hợp để tiếp tục phát triển và trình diễn kiến trúc/luồng mẫu. Chưa phù hợp phát hành cho nhiều gia đình vì còn thiếu bộ nội dung, bảo vệ dữ liệu hồ sơ trẻ, chấm tracing phía server, phần thưởng, admin nâng cao và kiểm thử tự động.
 
 Các phần đã vận hành gồm ASP.NET Core MVC, Identity, SQL Server, migration, danh mục chương trình cố định, hồ sơ phụ huynh, phiên học, lưu attempt, báo cáo cơ bản, trình tạo bài theo mẫu và các runtime tương tác chính.
 
@@ -42,7 +42,7 @@ Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catal
 | Kéo-thả | Đạt mức cơ bản | Có kéo vào đích và thao tác chạm dự phòng |
 | Nối cặp | Đạt mức cơ bản | Ghép từng cặp và chấm toàn bộ mapping |
 | Sắp xếp | Đạt mức cơ bản | Đổi thứ tự bằng nút lên/xuống và chấm chuỗi kết quả |
-| Nghe và chọn | Một phần | Phát audio từ URL và chọn đáp án; chưa có upload/thu âm/fallback |
+| Nghe và chọn | Đạt mức cơ bản | Phát audio từ URL, file tải lên hoặc tài nguyên thư viện; chưa có thu âm trực tiếp/fallback |
 | Đếm, tạo số lượng, so sánh, phân loại, nghe truyện | Đạt mức cơ bản | Có cấu hình riêng trong admin, runtime riêng và đáp án chuẩn hóa |
 | Vẽ theo nét đa bước | Một phần | Có canvas và lưu điểm vẽ; chưa có xem mẫu/nét đậm/nét mờ/tự vẽ |
 
@@ -54,11 +54,11 @@ Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catal
 | Bài học hôm nay | Một phần | Có session/timeline; thuật toán chưa tính đúng thời lượng và đa dạng tương tác |
 | Danh mục chữ cái và chữ số riêng | Một phần | Mỗi nhóm kỹ năng đã có danh sách bài riêng; chưa có bản đồ học theo từng chữ và từng số |
 | Lưu tiến độ và tiếp tục bài đang học | Một phần | Lưu attempt và timeline; chưa khôi phục câu đang làm/dữ liệu chưa submit khi reload |
-| Giọng đọc hướng dẫn | Một phần | Bài nghe phát được URL âm thanh; chưa có kho media và audio cho mọi hướng dẫn |
+| Giọng đọc hướng dẫn | Một phần | Bài nghe phát được URL, file tải lên hoặc audio thư viện; chưa có audio cho mọi hướng dẫn và chưa thu âm trực tiếp |
 | Chấm kết quả và gợi ý | Một phần | Chọn đáp án có chấm; gợi ý chưa có luồng sử dụng nhiều mức |
 | Sao, huy hiệu và phần thưởng | Một phần | Có model/giao diện nền; không seed định nghĩa và chưa có nghiệp vụ cấp thưởng đầy đủ |
 | Báo cáo phụ huynh | Một phần | Có tổng quan/lịch sử; chưa có phân tích chi tiết theo chữ, số và lỗi thường nhầm |
-| Trang quản trị và trình tạo bài | Một phần | Có danh mục cố định chỉ đọc, builder 3 cột/preview/11 mẫu, tô nét và xuất bản; còn thiếu ngân hàng nhiều câu hỏi, upload media và phần thưởng |
+| Trang quản trị và trình tạo bài | Một phần | Có danh mục cố định chỉ đọc, ma trận chủ đề - mẫu, cấu hình/preview riêng cho 11 mẫu, tô nét chuyên biệt, upload/thư viện media và xuất bản; còn thiếu ngân hàng nhiều câu hỏi và phần thưởng |
 | Responsive điện thoại/tablet/máy tính | Một phần | CSS responsive và canvas co giãn; chưa có biên bản đủ ba cỡ và tiêu đề tracing mobile còn xuống dòng xấu |
 
 ## 5. Danh sách màn hình
@@ -107,7 +107,7 @@ Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catal
 | Cấu trúc nhóm và chủ đề | Đạt theo quyết định thiết kế; 10 nhóm/43 chủ đề cố định, chỉ đọc và có thống kê độ phủ |
 | Quản lý bài học | Đạt mức cơ bản; lọc, tạo/sửa câu hỏi đầu tiên bằng mẫu chuyên biệt và quản lý trạng thái |
 | Ngân hàng câu hỏi | Chưa đạt |
-| Quản lý hình ảnh và âm thanh | Chưa đạt |
+| Quản lý hình ảnh và âm thanh | Đạt mức cơ bản; có upload, chọn lại và thư viện xem/nghe tài nguyên |
 | Kiểm duyệt nội dung | Một phần |
 | Thống kê sử dụng | Một phần |
 | Cấu hình phần thưởng | Chưa đạt |
@@ -169,7 +169,7 @@ Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catal
 | Seed role/Admin/danh mục cố định | Đạt; idempotent, không tạo bài học hay dữ liệu người dùng mẫu |
 | Dựng DB trên máy mới | Đạt qua migration + seed |
 | Backup/restore dữ liệu người dùng | Chưa kiểm thử |
-| Media assets | Chưa có dữ liệu và chức năng upload |
+| Media assets | Có upload ảnh/audio, chọn tài nguyên đã có và trang `/admin/media`; chưa có thu âm, sửa metadata hoặc xóa tài nguyên |
 | Audit admin | Có bảng, chưa có bản ghi/nghiệp vụ |
 | Content review | Có nghiệp vụ ghi khi gửi duyệt, quy trình còn đơn giản |
 | Unit/integration test | Chưa có test project |

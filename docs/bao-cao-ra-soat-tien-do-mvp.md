@@ -58,7 +58,7 @@ Hai điểm cuối là rủi ro riêng tư cần xử lý trước khi có nhi�
 Còn thiếu:
 
 - Chưa quản lý nhiều câu hỏi đầy đủ trong một bài.
-- Âm thanh/hình ảnh mới nhận URL; chưa có kho media, upload, thu âm và kiểm tra file.
+- Đã có upload, kiểm tra định dạng/kích thước và chọn lại hình ảnh/âm thanh từ thư viện; chưa có thu âm trực tiếp và quản lý xóa/sửa metadata tài nguyên.
 - Chưa có editor kéo-thả trực quan để đặt vùng đích/hotspot lên hình.
 - Chưa lưu số lần thử/gợi ý đúng theo nhiều lần tương tác; mỗi lần gửi hiện tạo một attempt mới với `AttemptCount = 1`.
 
@@ -75,15 +75,15 @@ Còn thiếu:
 
 ### Giai đoạn 4: Hoàn thành một phần
 
-Đã có canvas dùng pointer events, hỗ trợ hoàn tác/xóa, lưu tọa độ và metrics, bảng `TracingTemplates`, trang admin tạo bài tô nét cơ bản.
+Đã có canvas dùng pointer events, hỗ trợ hoàn tác/xóa, lưu tọa độ và metrics, bảng `TracingTemplates`, trang admin tạo/sửa bài tô nét chuyên biệt, lọc chủ đề, chế độ đường viền/tự vẽ, điểm bắt đầu và audio hướng dẫn.
 
 Còn thiếu:
 
 - Canvas chưa đọc `GuideJson` để vẽ checkpoint, thứ tự và chiều nét theo template.
 - `coverageScore` hiện được suy ra từ số điểm thu thập, chưa đo độ phủ hoặc độ lệch so với đường chuẩn.
 - Server chưa tự kiểm tra metrics; luôn lưu bài tô là hoàn thành và tin dữ liệu client gửi lên.
-- Chưa có các bước xem mẫu, nét đậm, nét mờ, tự vẽ và luyện lại riêng nét sai.
-- Chưa có nút nghe lại/hoạt ảnh vẽ mẫu.
+- Đã phân biệt chế độ đường viền và tự vẽ; chưa có chuỗi bước xem mẫu, nét đậm, luyện riêng nét sai và hoạt ảnh vẽ mẫu.
+- Đã có nút nghe lại khi bài được cấu hình audio; chưa có audio mặc định cho từng ký hiệu.
 - Không seed bài tô nét mẫu; nội dung do quản trị tạo.
 - Admin mới nhập ký hiệu và số điểm tối thiểu, chưa nhập/chỉnh `TracingTemplate.GuideJson`.
 
@@ -100,11 +100,11 @@ Còn thiếu:
 
 ### Giai đoạn 6: Hoàn thành một phần
 
-Đã có dashboard admin, màn cấu trúc chương trình chỉ đọc, danh sách bài lọc theo nhóm/trạng thái/dạng, trình tạo ba cột theo giao diện Stitch, xem trước điện thoại, 11 mẫu hoạt động, trình tạo tô nét riêng, các trạng thái `draft/review/published/archived` và bản ghi `ContentReview`. Nhóm/chủ đề là danh mục hệ thống cố định; quản trị chỉ tạo bài. Form tự lọc và chọn chủ đề theo nhóm, server kiểm tra lại quan hệ trước khi lưu.
+Đã có dashboard admin, màn cấu trúc chương trình chỉ đọc, danh sách bài lọc theo nhóm/trạng thái/dạng, trình tạo ba cột theo giao diện Stitch, xem trước điện thoại, cấu hình riêng cho 11 mẫu hoạt động, trình tạo tô nét riêng, upload/thư viện media, các trạng thái `draft/review/published/archived` và bản ghi `ContentReview`. Nhóm/chủ đề là danh mục hệ thống cố định; quản trị chỉ tạo bài. Ma trận chủ đề - mẫu được dùng để lọc giao diện, kiểm tra server, chặn xuất bản và loại bài cũ sai cấu trúc khỏi khu bé học.
 
 Còn thiếu:
 
-- Ngân hàng nhiều câu hỏi và quản lý tài nguyên hình/âm thanh.
+- Ngân hàng nhiều câu hỏi; thư viện media hiện chưa có sửa metadata, xóa tài nguyên và thu âm trực tiếp.
 - Preview hiện mới mô phỏng điện thoại, chưa có chế độ tablet/desktop và chưa chạy thử bài ngay trong editor.
 - Chưa ghi `AuditLogs` cho thao tác admin dù đã có bảng.
 - Chưa tách quyền `ContentEditor` và `Reviewer`; admin hiện tự đổi mọi trạng thái.
@@ -163,3 +163,14 @@ Script/migration không chứa dữ liệu học phát sinh. Khi chuyển hệ t
 5. Hoàn thiện admin cho ngân hàng câu hỏi/tài nguyên, audit và reviewer; danh mục chương trình tiếp tục là dữ liệu hệ thống chỉ đọc.
 6. Thêm unit/integration test, kiểm thử responsive/accessibility và backup/restore.
 7. Chỉ sau các bước trên mới đánh dấu Giai đoạn 7 hoàn thành và phát hành MVP cho nhiều gia đình.
+
+## 6. Cập nhật chuẩn hóa trình tạo bài ngày 2026-08-22
+
+- Đã bổ sung ma trận chủ đề - mẫu hoạt động tập trung; giao diện và server cùng từ chối tổ hợp sai.
+- Đã tách cấu hình và preview riêng cho đủ 11 mẫu hoạt động thay vì dùng chung cấu trúc chọn đáp án.
+- Đã bổ sung upload ảnh/audio, chọn lại tài nguyên từ `MediaAssets` và trang thư viện `/admin/media`.
+- Đã tách trình tạo tô nét, lọc còn các nhóm/chủ đề phù hợp, thêm chế độ đường viền hoặc tự vẽ, điểm bắt đầu và số nét dự kiến.
+- Runtime tô nét không còn ký tự đặc mờ hoặc các nét cố định gây hiểu nhầm.
+- Bài cũ sai ma trận được gắn nhãn **Cần chuẩn hóa**, bị chặn xuất bản và bị loại khỏi khu bé học/lộ trình hôm nay.
+
+Chi tiết cấu hình và quy tắc tương thích được mô tả tại `docs/chuan-hoa-trinh-tao-bai-hoc.md`.

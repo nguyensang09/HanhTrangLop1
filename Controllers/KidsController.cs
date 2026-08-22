@@ -40,15 +40,18 @@ public class KidsController : Controller
             HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, child.Id.ToString());
         }
 
+        var todayItems = await _db.LearningItems
+            .Include(x => x.Topic)
+            .Include(x => x.SkillGroup)
+            .Where(x => x.Status == ContentStatus.Published)
+            .OrderBy(x => x.SkillGroup!.SortOrder)
+            .ToListAsync();
+
         var model = new KidsHomeViewModel
         {
             ChildProfile = child,
             SkillGroups = await _db.SkillGroups.Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(),
-            TodayItems = await _db.LearningItems
-                .Where(x => x.Status == ContentStatus.Published)
-                .OrderBy(x => x.SkillGroup!.SortOrder)
-                .Take(5)
-                .ToListAsync()
+            TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(5).ToList()
         };
 
         return View(model);
@@ -88,6 +91,7 @@ public class KidsController : Controller
             .OrderBy(x => x.Level)
             .ThenBy(x => x.Title)
             .ToListAsync();
+        items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
 
         var itemIds = items.Select(x => x.Id).ToList();
         var latestAttempts = child is null || itemIds.Count == 0
@@ -121,13 +125,14 @@ public class KidsController : Controller
     {
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
             .FirstOrDefaultAsync(x =>
                 x.Id == id &&
                 x.Status == ContentStatus.Published &&
                 (!skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value));
 
-        if (item is null)
+        if (item is null || !ActivityTemplateCatalog.IsItemAllowed(item))
         {
             return NotFound();
         }
@@ -141,6 +146,11 @@ public class KidsController : Controller
             Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
             TracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
             TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
+            TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
+            TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
+            TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
+            TracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty),
+            QuestionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty),
             NextItemId = await FindNextItemIdAsync(item, skillGroupId),
             ReturnSkillGroupId = skillGroupId
         };
@@ -160,6 +170,7 @@ public class KidsController : Controller
 
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
             .FirstOrDefaultAsync(x =>
                 x.Id == id &&
@@ -167,7 +178,7 @@ public class KidsController : Controller
                 (!skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value));
 
         var question = item?.Questions.FirstOrDefault(x => x.Id == answer.QuestionId);
-        if (item is null || question is null)
+        if (item is null || question is null || !ActivityTemplateCatalog.IsItemAllowed(item))
         {
             return NotFound();
         }
@@ -215,6 +226,7 @@ public class KidsController : Controller
             Choices = LearningJsonReader.ReadChoices(question.PayloadJson),
             TracingSymbol = LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
             TracingMinPoints = LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
+            QuestionImageUrl = LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty),
             FeedbackMessage = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect),
             IsCorrect = isCorrect,
             NextItemId = await FindNextItemIdAsync(item, skillGroupId),
@@ -235,13 +247,14 @@ public class KidsController : Controller
         }
 
         var item = await _db.LearningItems
+            .Include(x => x.Topic)
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
             .FirstOrDefaultAsync(x =>
                 x.Id == id &&
                 x.Status == ContentStatus.Published &&
                 x.InteractionType == InteractionTypes.Tracing &&
                 (!skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value));
-        if (item is null)
+        if (item is null || !ActivityTemplateCatalog.IsItemAllowed(item))
         {
             return NotFound();
         }
@@ -415,12 +428,13 @@ public class KidsController : Controller
             return await FindNextItemIdInCurrentSessionAsync(currentItem.Id);
         }
 
-        var itemIds = await _db.LearningItems
+        var items = await _db.LearningItems
+            .Include(x => x.Topic)
             .Where(x => x.SkillGroupId == skillGroupId.Value && x.Status == ContentStatus.Published)
             .OrderBy(x => x.Level)
             .ThenBy(x => x.Title)
-            .Select(x => x.Id)
             .ToListAsync();
+        var itemIds = items.Where(ActivityTemplateCatalog.IsItemAllowed).Select(x => x.Id).ToList();
 
         var currentIndex = itemIds.IndexOf(currentItem.Id);
         return currentIndex >= 0 && currentIndex + 1 < itemIds.Count

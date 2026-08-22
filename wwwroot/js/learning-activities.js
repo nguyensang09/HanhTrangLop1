@@ -238,13 +238,6 @@
     };
 
     const renderStoryChoice = () => {
-        if (payload.imageUrl) {
-            const image = document.createElement("img");
-            image.src = payload.imageUrl;
-            image.alt = "Hình minh họa câu chuyện";
-            image.className = "story-image";
-            runtime.append(image);
-        }
         if (payload.audioUrl) {
             const audioButton = createButton("Nghe câu chuyện", "activity-audio-button");
             const audio = new Audio(payload.audioUrl);

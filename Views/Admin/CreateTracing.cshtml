@@ -3,67 +3,102 @@
     ViewData["Title"] = "Tạo bài tô nét";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
     var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
+    var audioAssets = ViewBag.MediaAssets as IReadOnlyList<MediaAsset> ?? [];
 }
 
-<section class="container dashboard-wrap">
+<section class="container dashboard-wrap tracing-builder-page">
     <div class="dashboard-header">
         <div>
-            <p class="eyebrow">Tracing Builder</p>
-            <h1>Tạo bài tô nét</h1>
+            <p class="eyebrow">Biên tập bài tô nét</p>
+            <h1>@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")</h1>
         </div>
-        <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Kho nội dung</a>
+        <div class="dashboard-actions">
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện</a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho bài học</a>
+        </div>
     </div>
 
-    <form class="soft-card admin-form" asp-action="CreateTracing" method="post" data-admin-learning-form>
-        <div asp-validation-summary="All" class="text-danger"></div>
-
-        <label asp-for="Title">Tên bài</label>
-        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ B" />
-        <span asp-validation-for="Title" class="text-danger"></span>
-
-        <label asp-for="Symbol">Ký tự cần tô</label>
-        <input asp-for="Symbol" class="form-control" maxlength="2" placeholder="A" />
-        <span asp-validation-for="Symbol" class="text-danger"></span>
-
-        <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
-        <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
-            @foreach (var group in skillGroups)
-            {
-                <option value="@group.Id">@group.Name</option>
-            }
-        </select>
-
-        <label asp-for="TopicId">Chủ đề</label>
-        <select asp-for="TopicId" class="form-control" data-topic-select>
-            <option value="">Không chọn</option>
-            @foreach (var topic in topics)
-            {
-                <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId">@topic.Name</option>
-            }
-        </select>
-
-        <label asp-for="InstructionText">Lời hướng dẫn</label>
-        <input asp-for="InstructionText" class="form-control" />
-
-        <label asp-for="PromptText">Câu hỏi</label>
-        <input asp-for="PromptText" class="form-control" />
-
-        <div class="three-column-form">
-            <div>
-                <label asp-for="MinPoints">Số điểm nét tối thiểu</label>
-                <input asp-for="MinPoints" class="form-control" type="number" min="5" max="300" />
-            </div>
-            <div>
-                <label asp-for="Level">Độ khó</label>
-                <select asp-for="Level" class="form-control">
-                    <option value="1">Dễ</option>
-                    <option value="2">Trung bình</option>
-                    <option value="3">Nâng cao</option>
-                </select>
+    <form class="tracing-builder-layout" asp-action="CreateTracing" method="post" enctype="multipart/form-data" data-admin-learning-form data-tracing-builder>
+        <input asp-for="Id" type="hidden" />
+        <div class="soft-card tracing-builder-preview">
+            <div class="builder-stage-heading"><div><span class="material-symbols-outlined">draw</span><strong>Xem trước bảng tô</strong></div></div>
+            <div class="tracing-preview-board" data-tracing-preview-board>
+                <span class="tracing-preview-symbol" data-tracing-preview-symbol>@Model.Symbol</span>
+                <span class="tracing-preview-start" data-tracing-preview-start></span>
             </div>
         </div>
 
-        <button class="app-btn mt-4" type="submit">Lưu bản nháp</button>
+        <div class="soft-card admin-form tracing-builder-properties">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <h2>Phân loại bài tô</h2>
+            <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
+            <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
+                @foreach (var group in skillGroups) { <option value="@group.Id">@group.Name</option> }
+            </select>
+
+            <label asp-for="TopicId">Chủ đề tô nét</label>
+            <select asp-for="TopicId" class="form-control" data-topic-select>
+                @foreach (var topic in topics)
+                {
+                    <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId">@topic.Name</option>
+                }
+            </select>
+            <span asp-validation-for="TopicId" class="text-danger"></span>
+
+            <h2>Nội dung ký tự</h2>
+            <label asp-for="Title">Tên bài</label>
+            <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ b" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+
+            <label asp-for="Symbol">Ký tự hoặc nét cần tô</label>
+            <input asp-for="Symbol" class="form-control" maxlength="2" data-tracing-symbol-input />
+            <span asp-validation-for="Symbol" class="text-danger"></span>
+
+            <div class="two-column-form">
+                <div>
+                    <label asp-for="GuideMode">Kiểu bảng tô</label>
+                    <select asp-for="GuideMode" class="form-control" data-tracing-guide-mode>
+                        <option value="outline">Tô theo đường viền</option>
+                        <option value="free">Tự viết trong khung</option>
+                    </select>
+                </div>
+                <div>
+                    <label asp-for="ExpectedStrokeCount">Số nét dự kiến</label>
+                    <input asp-for="ExpectedStrokeCount" class="form-control" type="number" min="1" max="10" />
+                </div>
+            </div>
+            <label class="toggle-row"><input asp-for="ShowStartPoint" type="checkbox" data-tracing-start-toggle /><span>Hiện điểm bắt đầu</span></label>
+
+            <div class="two-column-form">
+                <div>
+                    <label asp-for="MinPoints">Mức hoàn thành tối thiểu</label>
+                    <input asp-for="MinPoints" class="form-control" type="number" min="5" max="300" />
+                </div>
+                <div>
+                    <label asp-for="Level">Độ khó</label>
+                    <select asp-for="Level" class="form-control"><option value="1">Dễ</option><option value="2">Trung bình</option><option value="3">Nâng cao</option></select>
+                </div>
+            </div>
+
+            <h2>Hướng dẫn và âm thanh</h2>
+            <label asp-for="InstructionText">Lời hướng dẫn</label>
+            <input asp-for="InstructionText" class="form-control" />
+            <label asp-for="PromptText">Yêu cầu trên bảng tô</label>
+            <input asp-for="PromptText" class="form-control" />
+
+            <label asp-for="ExistingAudioAssetId">Âm thanh trong thư viện</label>
+            <select asp-for="ExistingAudioAssetId" class="form-control">
+                <option value="">Không dùng âm thanh</option>
+                @foreach (var asset in audioAssets) { <option value="@asset.Id">@asset.FileName</option> }
+            </select>
+            <label asp-for="AudioFile">Tải âm thanh mới</label>
+            <input asp-for="AudioFile" class="form-control" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4" />
+            <label asp-for="AudioUrl">Hoặc đường dẫn âm thanh</label>
+            <input asp-for="AudioUrl" class="form-control" type="text" />
+
+            <button class="app-btn app-btn-wide" type="submit"><span class="material-symbols-outlined">save</span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</button>
+        </div>
     </form>
 </section>
 

@@ -54,9 +54,20 @@
                             <span class="material-symbols-outlined">@(topic.LearningItemCount > 0 ? "check_circle" : "radio_button_unchecked")</span>
                             <div><strong>@topic.Topic.Name</strong><small>@topic.Topic.Code</small></div>
                             <span class="topic-count">@topic.LearningItemCount bài</span>
-                            <a class="icon-button" asp-action="CreateChoice" asp-route-skillGroupId="@group.SkillGroup.Id" asp-route-topicId="@topic.Topic.Id" title="Tạo bài cho chủ đề" aria-label="Tạo bài cho @topic.Topic.Name">
-                                <span class="material-symbols-outlined">add</span>
-                            </a>
+                            <div class="topic-template-actions">
+                                @foreach (var template in topic.AllowedTemplates)
+                                {
+                                    <a class="icon-button" asp-action="CreateChoice" asp-route-skillGroupId="@group.SkillGroup.Id" asp-route-topicId="@topic.Topic.Id" asp-route-interactionType="@template.InteractionType" title="@template.Name" aria-label="Tạo bài @template.Name cho @topic.Topic.Name">
+                                        <span class="material-symbols-outlined">@template.IconKey</span>
+                                    </a>
+                                }
+                                @if (topic.AllowsTracing)
+                                {
+                                    <a class="icon-button" asp-action="CreateTracing" asp-route-skillGroupId="@group.SkillGroup.Id" asp-route-topicId="@topic.Topic.Id" title="Tô theo nét" aria-label="Tạo bài tô nét cho @topic.Topic.Name">
+                                        <span class="material-symbols-outlined">draw</span>
+                                    </a>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
