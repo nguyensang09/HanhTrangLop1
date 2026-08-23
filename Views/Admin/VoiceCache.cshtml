@@ -1,6 +1,33 @@
 @model IReadOnlyList<TextToSpeechCache>
 @{
     ViewData["Title"] = "Kiểm soát voice";
+    var totalCount = ViewBag.TotalVoiceCount as int? ?? Model.Count;
+    var missingCount = ViewBag.MissingVoiceCount as int? ?? Model.Count(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+    var currentStatus = ViewBag.Status as string;
+    var currentUsageType = ViewBag.UsageType as string;
+    var keyword = ViewBag.Keyword as string;
+    var usageTypes = ViewBag.UsageTypes as IReadOnlyList<string> ?? [];
+    var legacyCount = ViewBag.LegacyVoiceCount as int? ?? 0;
+    var filteredCount = ViewBag.FilteredVoiceCount as int? ?? Model.Count;
+    var currentPage = ViewBag.Page as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 50;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+@functions {
+    private static string DisplayUsageType(string? usageType) => usageType switch
+    {
+        "title" => "Tiêu đề",
+        "instruction" => "Hướng dẫn",
+        "question" => "Câu hỏi",
+        "correct-feedback" => "Phản hồi đúng",
+        "retry-feedback" => "Phản hồi sai",
+        "option" => "Đáp án",
+        "content" => "Nội dung",
+        "tracing-prompt" => "Tô nét",
+        "legacy" => "Voice cũ",
+        "custom" => "Tự tạo",
+        _ => string.IsNullOrWhiteSpace(usageType) ? "Khác" : usageType
+    };
 }
 
 <section class="container dashboard-wrap">
@@ -11,16 +38,32 @@
 
     <div class="dashboard-header">
         <div>
-            <p class="eyebrow">Quản trị âm thanh</p>
+            <p class="eyebrow">Thư viện âm thanh riêng</p>
             <h1>Kiểm soát voice</h1>
+            <p class="empty-note">@totalCount mục, @missingCount mục chưa có file. Đang hiển thị @Model.Count / @filteredCount mục.</p>
         </div>
         <div class="hero-actions">
-            <form class="inline-action-form" asp-action="BackfillVoiceCache" method="post">
+            <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
                 <button class="app-btn app-btn-small" type="submit">
-                    <span class="material-symbols-outlined">sync</span>
-                    Chuẩn hóa voice cũ
+                    <span class="material-symbols-outlined">playlist_add_check</span>
+                    Rà soát bài học
                 </button>
             </form>
+            <form class="inline-action-form" asp-action="GenerateMissingVoiceFiles" method="post">
+                <button class="app-btn app-btn-small" type="submit">
+                    <span class="material-symbols-outlined">record_voice_over</span>
+                    Tự tạo file thiếu
+                </button>
+            </form>
+            @if (legacyCount > 0)
+            {
+                <form class="inline-action-form" asp-action="DeleteLegacyVoiceCache" method="post" data-confirm-delete data-confirm-message="Xóa toàn bộ voice cũ khỏi bảng kiểm soát?">
+                    <button class="app-btn app-btn-muted app-btn-small" type="submit">
+                        <span class="material-symbols-outlined">delete_sweep</span>
+                        Xóa voice cũ (@legacyCount)
+                    </button>
+                </form>
+            }
             <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
                 <span class="material-symbols-outlined">library_books</span>
                 Kho bài học
@@ -28,37 +71,169 @@
         </div>
     </div>
 
-    <div class="soft-card report-panel mt-4">
-        <table class="app-table admin-content-table">
+    <form class="soft-card admin-filter voice-filter" asp-action="VoiceCache" method="get">
+        <input type="hidden" name="pageSize" value="@pageSize" />
+        <div>
+            <label for="q">Tìm text</label>
+            <input id="q" name="q" class="form-control" value="@keyword" placeholder="Nhập câu hỏi, đáp án, phản hồi..." />
+        </div>
+        <div>
+            <label for="status">Trạng thái</label>
+            <select id="status" name="status" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="missing" selected="@(currentStatus == "missing")">Thiếu file</option>
+                <option value="ready" selected="@(currentStatus == "ready")">Có file</option>
+            </select>
+        </div>
+        <div>
+            <label for="usageType">Loại voice</label>
+            <select id="usageType" name="usageType" class="form-control">
+                <option value="">Tất cả</option>
+                @foreach (var type in usageTypes)
+                {
+                    <option value="@type" selected="@(currentUsageType == type)">@DisplayUsageType(type)</option>
+                }
+            </select>
+        </div>
+        <button class="app-btn app-btn-small" type="submit">
+            <span class="material-symbols-outlined">filter_alt</span>
+            Lọc
+        </button>
+        <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">Xóa lọc</a>
+    </form>
+
+    <form class="soft-card voice-generate-form" asp-action="GenerateVoiceFromText" method="post">
+        <div>
+            <label for="voiceText">Text cần tạo voice</label>
+            <input id="voiceText" name="text" class="form-control" maxlength="1000" placeholder="Nhập một câu bất kỳ để tạo file MP3" />
+        </div>
+        <div>
+            <label for="voiceName">Tên kiểm soát</label>
+            <input id="voiceName" name="name" class="form-control" maxlength="200" placeholder="Ví dụ: Lời nhắc mở đầu" />
+        </div>
+        <div>
+            <label for="voiceUsageType">Loại</label>
+            <select id="voiceUsageType" name="usageType" class="form-control">
+                <option value="custom">Tự tạo</option>
+                <option value="instruction">Hướng dẫn</option>
+                <option value="question">Câu hỏi</option>
+                <option value="option">Đáp án</option>
+                <option value="correct-feedback">Phản hồi đúng</option>
+                <option value="retry-feedback">Phản hồi sai</option>
+            </select>
+        </div>
+        <button class="app-btn app-btn-small" type="submit">
+            <span class="material-symbols-outlined">record_voice_over</span>
+            Tạo voice
+        </button>
+    </form>
+
+    <div class="soft-card report-panel mt-4 voice-cache-panel">
+        <table class="app-table voice-cache-table">
             <thead>
             <tr>
-                <th>Nội dung chuẩn hóa</th>
-                <th>Voice</th>
-                <th>Model</th>
-                <th>Dùng lại</th>
-                <th>Âm thanh</th>
-                <th>Cập nhật</th>
+                <th>Nội dung voice</th>
+                <th>Loại</th>
+                <th>Trạng thái</th>
+                <th>Nghe</th>
+                <th>Thao tác</th>
             </tr>
             </thead>
             <tbody>
             @foreach (var item in Model)
             {
+                var hasFile = !string.IsNullOrWhiteSpace(item.AudioUrl) && item.Status == "ready";
                 <tr>
-                    <td>
-                        <strong>@item.NormalizedText</strong>
+                    <td class="voice-main-cell">
+                        <form id="voice-edit-@item.Id" class="voice-edit-form" asp-action="UpdateVoiceCache" asp-route-id="@item.Id" method="post">
+                            <div class="voice-edit-grid">
+                                <input class="form-control" name="name" value="@item.Name" maxlength="200" placeholder="Tên kiểm soát" />
+                                <input class="form-control" name="text" value="@item.NormalizedText" maxlength="500" placeholder="Nội dung cần đọc" />
+                                <select class="form-control" name="usageType">
+                                    <option value="custom" selected="@(item.UsageType == "custom")">Tự tạo</option>
+                                    <option value="title" selected="@(item.UsageType == "title")">Tiêu đề</option>
+                                    <option value="instruction" selected="@(item.UsageType == "instruction")">Hướng dẫn</option>
+                                    <option value="question" selected="@(item.UsageType == "question")">Câu hỏi</option>
+                                    <option value="option" selected="@(item.UsageType == "option")">Đáp án</option>
+                                    <option value="content" selected="@(item.UsageType == "content")">Nội dung nghe</option>
+                                    <option value="correct-feedback" selected="@(item.UsageType == "correct-feedback")">Phản hồi đúng</option>
+                                    <option value="retry-feedback" selected="@(item.UsageType == "retry-feedback")">Phản hồi sai</option>
+                                    <option value="tracing-prompt" selected="@(item.UsageType == "tracing-prompt")">Tô nét</option>
+                                </select>
+                            </div>
+                        </form>
                         @if (!string.IsNullOrWhiteSpace(item.LastError))
                         {
-                            <small class="text-danger">@item.LastError</small>
+                            <small class="voice-path-line text-danger">@item.LastError</small>
+                        }
+                        else if (hasFile)
+                        {
+                            <small class="voice-path-line">@item.AudioUrl</small>
+                        }
+                        else
+                        {
+                            <small class="voice-path-line">Chưa có file.</small>
                         }
                     </td>
-                    <td><small>@item.Provider</small><br />@item.Voice</td>
-                    <td>@item.ModelId<br /><small>@item.Format</small></td>
-                    <td>@item.ReuseCount</td>
-                    <td><audio controls preload="none" src="@item.AudioUrl"></audio></td>
-                    <td><small>@item.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></td>
+                    <td><span class="voice-type-pill">@DisplayUsageType(item.UsageType)</span></td>
+                    <td>
+                        <span class="status-chip @(hasFile ? "status-published" : "status-warning")">@(hasFile ? "Có file" : "Thiếu file")</span>
+                        <small class="voice-reuse">Dùng lại: @item.ReuseCount</small>
+                    </td>
+                    <td class="voice-audio-cell">
+                        @if (hasFile)
+                        {
+                            <audio controls preload="none" src="@item.AudioUrl"></audio>
+                        }
+                    </td>
+                    <td class="voice-upload-cell">
+                        <div class="voice-action-row">
+                            <button class="voice-row-button" type="submit" form="voice-edit-@item.Id" title="Lưu tên, loại hoặc tạo voice mới nếu đổi text">Sửa</button>
+                            @if (!hasFile)
+                            {
+                                <form asp-action="GenerateVoiceCacheFile" asp-route-id="@item.Id" method="post">
+                                    <button class="voice-generate-button" type="submit" title="Tạo file MP3 từ nội dung voice">Tạo file</button>
+                                </form>
+                            }
+                            <form asp-action="UploadVoiceCacheFile" asp-route-id="@item.Id" method="post" enctype="multipart/form-data">
+                            <label class="voice-file-picker">
+                                <span class="material-symbols-outlined">attach_file</span>
+                                <span class="sr-only">Chọn file</span>
+                                <input type="file" name="audioFile" accept="audio/*,.mp3,.wav,.m4a" />
+                            </label>
+                            <button class="voice-save-button" type="submit" title="Lưu file">
+                                <span class="voice-upload-mark" aria-hidden="true">↑</span>
+                                <span>Lưu</span>
+                            </button>
+                            </form>
+                            <form asp-action="DeleteVoiceCache" asp-route-id="@item.Id" method="post" data-confirm-delete data-confirm-message="Xóa voice này khỏi bảng kiểm soát?">
+                                <button class="voice-delete-button" type="submit" title="Xóa voice">Xóa</button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
             }
             </tbody>
         </table>
+        @if (totalPages > 1)
+        {
+            <nav class="voice-pagination" aria-label="Phân trang voice">
+                <a class="app-btn app-btn-muted app-btn-small @(currentPage <= 1 ? "disabled" : "")"
+                   asp-action="VoiceCache"
+                   asp-route-status="@currentStatus"
+                   asp-route-usageType="@currentUsageType"
+                   asp-route-q="@keyword"
+                   asp-route-page="@(Math.Max(1, currentPage - 1))"
+                   asp-route-pageSize="@pageSize">Trước</a>
+                <span>Trang @currentPage / @totalPages</span>
+                <a class="app-btn app-btn-muted app-btn-small @(currentPage >= totalPages ? "disabled" : "")"
+                   asp-action="VoiceCache"
+                   asp-route-status="@currentStatus"
+                   asp-route-usageType="@currentUsageType"
+                   asp-route-q="@keyword"
+                   asp-route-page="@(Math.Min(totalPages, currentPage + 1))"
+                   asp-route-pageSize="@pageSize">Sau</a>
+            </nav>
+        }
     </div>
 </section>

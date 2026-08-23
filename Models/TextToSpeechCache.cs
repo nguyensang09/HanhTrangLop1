@@ -21,13 +21,19 @@ public class TextToSpeechCache
     [Required, MaxLength(64)]
     public string TextHash { get; set; } = string.Empty;
 
+    [Required, MaxLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string UsageType { get; set; } = string.Empty;
+
     [Required, MaxLength(500)]
     public string NormalizedText { get; set; } = string.Empty;
 
     [Required, MaxLength(1000)]
     public string OriginalText { get; set; } = string.Empty;
 
-    [Required, MaxLength(500)]
+    [MaxLength(500)]
     public string AudioUrl { get; set; } = string.Empty;
 
     [MaxLength(30)]

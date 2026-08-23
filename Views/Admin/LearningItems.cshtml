@@ -34,7 +34,7 @@
                 <input type="hidden" name="page" value="@Model.Page" />
                 <button class="app-btn app-btn-muted app-btn-small" type="submit">
                     <span class="material-symbols-outlined">record_voice_over</span>
-                    Bổ sung âm thanh
+                    Rà soát voice
                 </button>
             </form>
             <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
@@ -131,7 +131,7 @@
                             <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
                         }
                         <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
-                            <button class="mini-action" type="submit">Tạo âm thanh</button>
+                            <button class="mini-action" type="submit">Đồng bộ voice</button>
                         </form>
                         <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
                             <button class="mini-action danger-link" type="submit">Xóa</button>

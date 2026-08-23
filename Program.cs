@@ -1,6 +1,5 @@
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Application.Learning;
-using HanhTrangLop1.Infrastructure.TextToSpeech;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,12 +39,6 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<TodayLessonService>();
-builder.Services.Configure<TextToSpeechOptions>(builder.Configuration.GetSection("TextToSpeech"));
-builder.Services.AddHttpClient<ITextToSpeechService, NarakeetTextToSpeechService>((serviceProvider, client) =>
-{
-    var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<TextToSpeechOptions>>().Value;
-    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 5, 120));
-});
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

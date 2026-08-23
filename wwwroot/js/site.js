@@ -1,6 +1,7 @@
 document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
     form.addEventListener("submit", (event) => {
-        if (!window.confirm("Xóa vĩnh viễn bài học và toàn bộ lịch sử làm bài liên quan?")) {
+        const message = form.dataset.confirmMessage || "Xóa vĩnh viễn bài học và toàn bộ lịch sử làm bài liên quan?";
+        if (!window.confirm(message)) {
             event.preventDefault();
         }
     });
@@ -19,6 +20,41 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     const tracingLink = form.querySelector("[data-tracing-link]");
     const isEditing = Boolean(form.querySelector('[name="Id"]')?.value);
     let uploadedImagePreviewUrl = "";
+    const voiceCacheHost = document.querySelector("[data-voice-cache-json]");
+    const imageAssetsHost = document.querySelector("[data-image-assets-json]");
+    let voiceCacheEntries = [];
+    let imageAssets = [];
+    try {
+        voiceCacheEntries = JSON.parse(voiceCacheHost?.textContent || "[]");
+    } catch {
+        voiceCacheEntries = [];
+    }
+    try {
+        imageAssets = JSON.parse(imageAssetsHost?.textContent || "[]");
+    } catch {
+        imageAssets = [];
+    }
+    const normalizeLookupText = (value) => (value || "").replace(/\s+/g, " ").trim().toLocaleLowerCase("vi-VN");
+    const readEntry = (entry, name) => entry?.[name] ?? entry?.[name.charAt(0).toUpperCase() + name.slice(1)] ?? "";
+    const voiceByText = new Map(voiceCacheEntries
+        .filter((entry) => readEntry(entry, "normalizedText"))
+        .map((entry) => [normalizeLookupText(readEntry(entry, "normalizedText")), entry]));
+    const readyVoiceEntries = voiceCacheEntries
+        .filter((entry) => readEntry(entry, "status") === "ready" && readEntry(entry, "audioUrl"));
+    const imageAssetEntries = imageAssets
+        .filter((entry) => readEntry(entry, "storagePath"));
+    const displayUsageType = (usageType) => ({
+        "title": "Ti\u00eau \u0111\u1ec1",
+        "instruction": "H\u01b0\u1edbng d\u1eabn",
+        "question": "C\u00e2u h\u1ecfi",
+        "correct-feedback": "Ph\u1ea3n h\u1ed3i \u0111\u00fang",
+        "retry-feedback": "Ph\u1ea3n h\u1ed3i sai",
+        "option": "\u0110\u00e1p \u00e1n",
+        "content": "N\u1ed9i dung",
+        "tracing-prompt": "T\u00f4 n\u00e9t",
+        "legacy": "Voice c\u0169",
+        "custom": "T\u1ef1 t\u1ea1o"
+    }[usageType] || usageType || "Voice");
 
     const selectedTopicRule = () => {
         const option = topicSelect?.options[topicSelect.selectedIndex];
@@ -309,6 +345,330 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         }
     };
 
+    const updateBuilderVoicePanel = () => {
+        const panel = form.querySelector("[data-builder-voice-panel]");
+        if (!panel) return;
+
+        const list = panel.querySelector("[data-builder-voice-list]");
+        const totalNode = panel.querySelector("[data-builder-voice-total]");
+        const filledNode = panel.querySelector("[data-builder-voice-filled]");
+        if (!list || !totalNode || !filledNode) return;
+
+        const type = interactionSelect?.value || "single_choice";
+        const read = (name) => form.querySelector(`[name="${name}"]`)?.value.trim() || "";
+        const rows = [];
+        const add = (kind, text, required = false) => {
+            const normalized = (text || "").replace(/\s+/g, " ").trim();
+            if (!required && !normalized) return;
+            const key = `${kind}|${normalized.toLocaleLowerCase("vi-VN")}`;
+            if (normalized && rows.some((row) => row.key === key)) return;
+            rows.push({key, kind, text: normalized, required});
+        };
+        const addLines = (kind, value) => {
+            (value || "")
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .forEach((line) => add(kind, line));
+        };
+        const addMappings = (leftKind, rightKind, value) => {
+            (value || "")
+                .split(/\r?\n/)
+                .map((line) => line.split("=").map((part) => part.trim()))
+                .forEach((parts) => {
+                    if (parts[0]) add(leftKind, parts[0]);
+                    if (parts[1]) add(rightKind, parts[1]);
+                });
+        };
+
+        add("Ti\u00eau \u0111\u1ec1", read("Title"), true);
+        add("H\u01b0\u1edbng d\u1eabn", read("InstructionText"), true);
+        add("C\u00e2u h\u1ecfi", read("PromptText"), true);
+        add("Ph\u1ea3n h\u1ed3i \u0111\u00fang", read("CorrectFeedback"), true);
+        add("Ph\u1ea3n h\u1ed3i sai", read("RetryFeedback"), true);
+
+        choiceInputs.forEach((input, index) => add(`\u0110\u00e1p \u00e1n ${index + 1}`, input.value));
+
+        if (["listen_choose", "story_choice"].includes(type)) {
+            add("N\u1ed9i dung nghe", read("SpeechText"), true);
+        }
+        if (["drag_drop", "quantity_builder"].includes(type)) {
+            add("V\u00f9ng \u0111\u00edch", read("TargetLabel"));
+        }
+        if (type === "matching") {
+            addMappings("C\u1eb7p n\u1ed1i tr\u00e1i", "C\u1eb7p n\u1ed1i ph\u1ea3i", read("PairsText"));
+        }
+        if (type === "ordering") {
+            addLines("Th\u1ee9 t\u1ef1", read("SequenceItemsText"));
+        }
+        if (type === "classification") {
+            addMappings("V\u1eadt", "Nh\u00f3m", read("ClassificationText"));
+        }
+        if (["counting", "quantity_builder", "comparison"].includes(type)) {
+            add("\u0110\u1ed3 v\u1eadt", read("ObjectSymbol"));
+        }
+        if (type === "comparison") {
+            add("Nh\u00f3m tr\u00e1i", read("LeftLabel"));
+            add("Nh\u00f3m ph\u1ea3i", read("RightLabel"));
+        }
+
+        const filled = rows.filter((row) => row.text).length;
+        totalNode.textContent = String(rows.length);
+        filledNode.textContent = String(filled);
+        list.replaceChildren();
+
+        rows.forEach((row, index) => {
+            const item = document.createElement("div");
+            item.className = `builder-voice-row ${row.text ? "" : "is-empty"}`;
+            const match = row.text ? voiceByText.get(normalizeLookupText(row.text)) : null;
+            const audioUrl = readEntry(match, "audioUrl");
+            const status = readEntry(match, "status");
+            const hasAudio = Boolean(audioUrl) && status === "ready";
+
+            const kind = document.createElement("small");
+            kind.textContent = row.kind;
+            const text = document.createElement("span");
+            text.textContent = row.text || "Ch\u01b0a nh\u1eadp text";
+            const actions = document.createElement("div");
+            actions.className = "builder-voice-actions";
+            const updateEntryAudio = (entry, result) => {
+                entry.audioUrl = result.audioUrl;
+                entry.AudioUrl = result.audioUrl;
+                entry.status = result.status;
+                entry.Status = result.status;
+                if (result.audioUrl && result.status === "ready") {
+                    setTimeout(updateBuilderVoicePanel, 0);
+                }
+                const audio = actions.querySelector("audio");
+                if (audio) {
+                    audio.src = `${result.audioUrl}?v=${Date.now()}`;
+                    audio.load();
+                }
+            };
+            const makeInlineTools = (entry) => {
+                const uploadBox = document.createElement("div");
+                uploadBox.className = "builder-voice-tools";
+                const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+
+                const listId = `builder-voice-store-${index}`;
+                const voiceByLabel = new Map();
+                const picker = document.createElement("input");
+                picker.className = "form-control";
+                picker.setAttribute("list", listId);
+                picker.placeholder = "Tìm kho voice";
+                const datalist = document.createElement("datalist");
+                datalist.id = listId;
+                readyVoiceEntries.slice(0, 200).forEach((voice) => {
+                    const option = document.createElement("option");
+                    const label = `${displayUsageType(readEntry(voice, "usageType"))} - ${readEntry(voice, "normalizedText")}`;
+                    option.value = label;
+                    option.label = readEntry(voice, "audioUrl");
+                    voiceByLabel.set(label, readEntry(voice, "id"));
+                    datalist.append(option);
+                });
+                picker.addEventListener("change", async () => {
+                    const sourceId = voiceByLabel.get(picker.value);
+                    if (!sourceId) return;
+                    picker.disabled = true;
+                    try {
+                        const data = new FormData();
+                        data.append("sourceId", sourceId);
+                        data.append("__RequestVerificationToken", token);
+                        const response = await fetch(`/admin/voice-cache/${encodeURIComponent(readEntry(entry, "id"))}/copy-inline`, {
+                            method: "POST",
+                            headers: {"RequestVerificationToken": token},
+                            body: data,
+                            credentials: "same-origin"
+                        });
+                        if (!response.ok) {
+                            const error = await response.json().catch(() => ({message: "Kh\u00f4ng th\u1ec3 ch\u1ecdn voice t\u1eeb kho."}));
+                            throw new Error(error.message || "Kh\u00f4ng th\u1ec3 ch\u1ecdn voice t\u1eeb kho.");
+                        }
+                        updateEntryAudio(entry, await response.json());
+                    } catch (error) {
+                        window.alert(error.message);
+                    } finally {
+                        picker.value = "";
+                        picker.disabled = false;
+                    }
+                });
+
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = "audio/*,.mp3,.wav,.m4a";
+                fileInput.addEventListener("change", async () => {
+                    const file = fileInput.files?.[0];
+                    if (!file) {
+                        return;
+                    }
+                    const data = new FormData();
+                    data.append("audioFile", file);
+                    data.append("__RequestVerificationToken", token);
+                    fileInput.disabled = true;
+                    try {
+                        const response = await fetch(`/admin/voice-cache/${encodeURIComponent(readEntry(entry, "id"))}/upload-inline`, {
+                            method: "POST",
+                            headers: {"RequestVerificationToken": token},
+                            body: data,
+                            credentials: "same-origin"
+                        });
+                        if (!response.ok) {
+                            const error = await response.json().catch(() => ({message: "Kh\u00f4ng th\u1ec3 l\u01b0u file voice."}));
+                            throw new Error(error.message || "Kh\u00f4ng th\u1ec3 l\u01b0u file voice.");
+                        }
+                        updateEntryAudio(entry, await response.json());
+                    } catch (error) {
+                        window.alert(error.message);
+                    } finally {
+                        fileInput.value = "";
+                        fileInput.disabled = false;
+                    }
+                });
+                uploadBox.append(picker, datalist, fileInput);
+                return uploadBox;
+            };
+
+            if (!row.text) {
+                const chip = document.createElement("strong");
+                chip.className = "builder-voice-chip";
+                chip.textContent = "Thi\u1ebfu text";
+                actions.append(chip);
+            } else if (hasAudio) {
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.preload = "none";
+                audio.src = audioUrl;
+                actions.append(audio, makeInlineTools(match));
+            } else if (match) {
+                const chip = document.createElement("strong");
+                chip.className = "builder-voice-chip";
+                chip.textContent = "Thi\u1ebfu file";
+                actions.append(chip, makeInlineTools(match));
+            } else {
+                const link = document.createElement("a");
+                link.className = "mini-action";
+                link.href = `/admin/voice-cache?status=missing&q=${encodeURIComponent(row.text)}`;
+                link.target = "_blank";
+                link.rel = "noreferrer";
+                link.textContent = "T\u1ea1o file";
+                const chip = document.createElement("strong");
+                chip.className = "builder-voice-chip";
+                chip.textContent = "Thi\u1ebfu file";
+                actions.append(chip, link);
+            }
+
+            item.append(kind, text, actions);
+            list.append(item);
+        });
+    };
+
+    const collectMediaLabels = () => {
+        const type = interactionSelect?.value || "single_choice";
+        const labels = [];
+        const add = (value) => {
+            const text = (value || "").replace(/\s+/g, " ").trim();
+            if (text && !labels.some((item) => normalizeLookupText(item) === normalizeLookupText(text))) {
+                labels.push(text);
+            }
+        };
+        const addLines = (value) => (value || "")
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .forEach(add);
+        const addMappings = (value) => (value || "")
+            .split(/\r?\n/)
+            .map((line) => line.split("=").map((part) => part.trim()))
+            .forEach((parts) => {
+                if (parts[0]) add(parts[0]);
+                if (parts[1]) add(parts[1]);
+            });
+
+        if (["single_choice", "multi_select", "listen_choose", "drag_drop", "story_choice", "counting"].includes(type)) {
+            choiceInputs.forEach((input) => add(input.value));
+        }
+        if (["drag_drop", "quantity_builder"].includes(type)) {
+            add(form.querySelector('[name="TargetLabel"]')?.value);
+        }
+        if (type === "matching") addMappings(form.querySelector('[name="PairsText"]')?.value);
+        if (type === "ordering") addLines(form.querySelector('[name="SequenceItemsText"]')?.value);
+        if (type === "classification") addMappings(form.querySelector('[name="ClassificationText"]')?.value);
+        if (type === "comparison") {
+            add(form.querySelector('[name="LeftLabel"]')?.value);
+            add(form.querySelector('[name="RightLabel"]')?.value);
+        }
+        return labels;
+    };
+
+    const parseItemMediaText = () => new Map((form.querySelector('[name="ItemMediaText"]')?.value || "")
+        .split(/\r?\n/)
+        .map((line) => line.split(/=(.*)/s).slice(0, 2).map((value) => value.trim()))
+        .filter((pair) => pair[0])
+        .map(([label, url]) => [normalizeLookupText(label), {label, url: url || ""}]));
+
+    const syncItemMediaTextFromBuilder = () => {
+        const rows = [...form.querySelectorAll("[data-item-media-row]")];
+        const textArea = form.querySelector('[name="ItemMediaText"]');
+        if (!textArea || rows.length === 0) return;
+        textArea.value = rows
+            .map((row) => {
+                const label = row.querySelector("[data-item-media-label]")?.textContent?.trim() || "";
+                const url = row.querySelector("[data-item-media-url]")?.value.trim() || "";
+                return label && url ? `${label} = ${url}` : "";
+            })
+            .filter(Boolean)
+            .join("\n");
+    };
+
+    const renderItemMediaBuilder = () => {
+        const list = form.querySelector("[data-item-media-list]");
+        if (!list) return;
+        const currentMap = parseItemMediaText();
+        const labels = collectMediaLabels();
+        list.replaceChildren();
+        if (labels.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "empty-note";
+            empty.textContent = "Nh\u1eadp \u0111\u00e1p \u00e1n ho\u1eb7c n\u1ed9i dung b\u00e0i \u0111\u1ec3 g\u1ee3i \u00fd nh\u00e3n h\u00ecnh.";
+            list.append(empty);
+            return;
+        }
+        labels.forEach((label, index) => {
+            const row = document.createElement("div");
+            row.className = "item-media-row";
+            row.dataset.itemMediaRow = "true";
+
+            const name = document.createElement("span");
+            name.dataset.itemMediaLabel = "true";
+            name.textContent = label;
+
+            const listId = `item-media-store-${index}`;
+            const input = document.createElement("input");
+            input.className = "form-control";
+            input.dataset.itemMediaUrl = "true";
+            input.setAttribute("list", listId);
+            input.placeholder = "Chọn ảnh kho hoặc dán đường dẫn";
+            input.value = currentMap.get(normalizeLookupText(label))?.url || "";
+            input.addEventListener("input", () => {
+                syncItemMediaTextFromBuilder();
+                updateBuilderPreview();
+            });
+
+            const datalist = document.createElement("datalist");
+            datalist.id = listId;
+            imageAssetEntries.forEach((asset) => {
+                const option = document.createElement("option");
+                option.value = readEntry(asset, "storagePath");
+                option.label = `${readEntry(asset, "fileName") || readEntry(asset, "storagePath")} ${readEntry(asset, "altText") || ""}`.trim();
+                datalist.append(option);
+            });
+
+            row.append(name, input, datalist);
+            list.append(row);
+        });
+        syncItemMediaTextFromBuilder();
+    };
+
     skillGroupSelect?.addEventListener("change", filterTopics);
     topicSelect?.addEventListener("change", filterTemplates);
     interactionSelect?.addEventListener("change", () => {
@@ -316,6 +676,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         toggleInteractionFields();
         updateTemplateContext();
         updateBuilderPreview();
+        updateBuilderVoicePanel();
+        renderItemMediaBuilder();
     });
     templateButtons.forEach((button) => button.addEventListener("click", () => {
         interactionSelect.value = button.dataset.templateOption;
@@ -324,13 +686,27 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     choiceInputs.forEach((input) => input.addEventListener("input", () => {
         syncCorrectAnswer();
         updateBuilderPreview();
+        updateBuilderVoicePanel();
+        renderItemMediaBuilder();
     }));
-    form.querySelectorAll("input, textarea").forEach((input) => input.addEventListener("input", updateBuilderPreview));
-    form.querySelectorAll("select").forEach((select) => select.addEventListener("change", updateBuilderPreview));
+    form.querySelectorAll("input, textarea").forEach((input) => input.addEventListener("input", () => {
+        updateBuilderPreview();
+        updateBuilderVoicePanel();
+        if (!input.matches("[data-item-media-url]")) {
+            renderItemMediaBuilder();
+        }
+    }));
+    form.querySelectorAll("select").forEach((select) => select.addEventListener("change", () => {
+        updateBuilderPreview();
+        updateBuilderVoicePanel();
+        renderItemMediaBuilder();
+    }));
+    form.querySelector("[data-item-media-refresh]")?.addEventListener("click", renderItemMediaBuilder);
     form.querySelector('[name="ImageFile"]')?.addEventListener("change", (event) => {
         if (uploadedImagePreviewUrl) URL.revokeObjectURL(uploadedImagePreviewUrl);
         uploadedImagePreviewUrl = event.target.files?.[0] ? URL.createObjectURL(event.target.files[0]) : "";
         updateBuilderPreview();
+        updateBuilderVoicePanel();
     });
 
     filterTopics();
@@ -338,6 +714,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     toggleInteractionFields();
     updateTemplateContext();
     updateBuilderPreview();
+    updateBuilderVoicePanel();
+    renderItemMediaBuilder();
 });
 
 document.querySelectorAll("[data-tracing-builder]").forEach((form) => {

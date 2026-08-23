@@ -52,6 +52,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(x => new { x.Provider, x.Voice, x.ModelId, x.Format, x.TextHash })
             .IsUnique();
 
+        builder.Entity<TextToSpeechCache>()
+            .HasIndex(x => x.Name);
+
         builder.Entity<RewardDefinition>()
             .HasIndex(x => x.Code)
             .IsUnique();

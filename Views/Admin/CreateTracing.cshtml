@@ -3,7 +3,6 @@
     ViewData["Title"] = "Tạo bài tô nét";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
     var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
-    var audioAssets = ViewBag.MediaAssets as IReadOnlyList<MediaAsset> ?? [];
 }
 
 <section class="container dashboard-wrap tracing-builder-page">
@@ -13,7 +12,8 @@
             <h1>@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")</h1>
         </div>
         <div class="dashboard-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện</a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện hình ảnh</a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache"><span class="material-symbols-outlined">graphic_eq</span>Kiểm soát voice</a>
             <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho bài học</a>
         </div>
     </div>
@@ -22,6 +22,8 @@
         <input asp-for="Id" type="hidden" />
         <input asp-for="Status" type="hidden" />
         <input asp-for="IsCompatible" type="hidden" />
+        <input asp-for="AudioUrl" type="hidden" />
+
         <div class="soft-card tracing-builder-preview">
             <div class="builder-stage-heading"><div><span class="material-symbols-outlined">draw</span><strong>Xem trước bảng tô</strong></div></div>
             <div class="tracing-preview-board" data-tracing-preview-board>
@@ -36,7 +38,10 @@
             <h2>Phân loại bài tô</h2>
             <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
             <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
-                @foreach (var group in skillGroups) { <option value="@group.Id">@group.Name</option> }
+                @foreach (var group in skillGroups)
+                {
+                    <option value="@group.Id">@group.Name</option>
+                }
             </select>
 
             <label asp-for="TopicId">Chủ đề tô nét</label>
@@ -87,21 +92,12 @@
                 </div>
             </div>
 
-            <h2>Hướng dẫn và âm thanh</h2>
+            <h2>Hướng dẫn và voice</h2>
             <label asp-for="InstructionText">Lời hướng dẫn</label>
             <input asp-for="InstructionText" class="form-control" />
             <label asp-for="PromptText">Yêu cầu trên bảng tô</label>
             <input asp-for="PromptText" class="form-control" />
-
-            <label asp-for="ExistingAudioAssetId">Âm thanh trong thư viện</label>
-            <select asp-for="ExistingAudioAssetId" class="form-control">
-                <option value="">Không dùng âm thanh</option>
-                @foreach (var asset in audioAssets) { <option value="@asset.Id">@asset.FileName</option> }
-            </select>
-            <label asp-for="AudioFile">Tải âm thanh mới</label>
-            <input asp-for="AudioFile" class="form-control" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4" />
-            <label asp-for="AudioUrl">Hoặc đường dẫn âm thanh</label>
-            <input asp-for="AudioUrl" class="form-control" type="text" />
+            <p class="builder-field-help">Khi lưu bài, yêu cầu và phản hồi sẽ được đưa vào Kiểm soát voice để dùng lại file âm thanh trùng nội dung.</p>
 
             <button class="app-btn app-btn-wide" type="submit"><span class="material-symbols-outlined">save</span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</button>
         </div>

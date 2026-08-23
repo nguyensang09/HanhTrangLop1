@@ -6,10 +6,13 @@
     var activityTemplates = ViewBag.ActivityTemplates as IReadOnlyList<ActivityTemplateDefinition> ?? [];
     var mediaAssets = ViewBag.MediaAssets as IReadOnlyList<MediaAsset> ?? [];
     var imageAssets = mediaAssets.Where(x => x.AssetType == "image").ToList();
-    var audioAssets = mediaAssets.Where(x => x.AssetType == "audio").ToList();
+    var voiceCacheJson = ViewBag.VoiceCacheJson as string ?? "[]";
+    var imageAssetsJson = ViewBag.ImageAssetsJson as string ?? "[]";
 }
 
 <section class="activity-builder-page">
+    <script type="application/json" data-voice-cache-json>@Html.Raw(voiceCacheJson)</script>
+    <script type="application/json" data-image-assets-json>@Html.Raw(imageAssetsJson)</script>
     <div class="builder-topbar">
         <div>
             <p class="eyebrow">Quản trị nội dung</p>
@@ -19,6 +22,10 @@
             <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
                 <span class="material-symbols-outlined">library_books</span>
                 Kho bài học
+            </a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
+                <span class="material-symbols-outlined">graphic_eq</span>
+                Kiểm soát voice
             </a>
             <button class="app-btn app-btn-small" type="submit" form="activity-builder-form">
                 <span class="material-symbols-outlined">save</span>
@@ -31,6 +38,13 @@
         <input asp-for="Id" type="hidden" />
         <input asp-for="Status" type="hidden" />
         <input asp-for="IsCompatible" type="hidden" />
+        <input asp-for="AudioUrl" type="hidden" />
+        <input asp-for="QuestionAudioUrl" type="hidden" />
+        <input asp-for="TitleAudioUrl" type="hidden" />
+        <input asp-for="InstructionAudioUrl" type="hidden" />
+        <input asp-for="CorrectFeedbackAudioUrl" type="hidden" />
+        <input asp-for="RetryFeedbackAudioUrl" type="hidden" />
+
         <aside class="builder-template-panel">
             <h2>Mẫu hoạt động</h2>
             <div class="template-palette">
@@ -79,45 +93,73 @@
             <div asp-validation-summary="All" class="text-danger"></div>
 
             <h2>Thông tin bài học</h2>
-            <label asp-for="Title">Tên bài</label>
-            <input asp-for="Title" class="form-control" maxlength="200" data-preview-source="title" />
-            <span asp-validation-for="Title" class="text-danger"></span>
+            <div class="builder-info-grid">
+                <div class="span-2">
+                    <label asp-for="Title">Tên bài</label>
+                    <input asp-for="Title" class="form-control" maxlength="200" data-preview-source="title" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
 
-            <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
-            <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
-                @foreach (var group in skillGroups)
-                {
-                    <option value="@group.Id">@group.Name</option>
-                }
-            </select>
+                <div>
+                    <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
+                    <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
+                        @foreach (var group in skillGroups)
+                        {
+                            <option value="@group.Id">@group.Name</option>
+                        }
+                    </select>
+                </div>
 
-            <label asp-for="TopicId">Chủ đề</label>
-            <select asp-for="TopicId" class="form-control" data-topic-select>
-                <option value="">Chọn chủ đề</option>
-                @foreach (var topic in topics)
-                {
-                    var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
-                    <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId" data-allowed-types="@string.Join(',', rule.InteractionTypes)" data-allows-tracing="@rule.AllowsTracing.ToString().ToLowerInvariant()">@topic.Name</option>
-                }
-            </select>
-            <span asp-validation-for="TopicId" class="text-danger"></span>
-            <p class="builder-field-help" data-topic-guidance></p>
+                <div class="span-2">
+                    <label asp-for="TopicId">Chủ đề</label>
+                    <select asp-for="TopicId" class="form-control" data-topic-select>
+                        <option value="">Chọn chủ đề</option>
+                        @foreach (var topic in topics)
+                        {
+                            var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
+                            <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId" data-allowed-types="@string.Join(',', rule.InteractionTypes)" data-allows-tracing="@rule.AllowsTracing.ToString().ToLowerInvariant()">@topic.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="TopicId" class="text-danger"></span>
+                    <p class="builder-field-help" data-topic-guidance></p>
+                </div>
 
-            <label asp-for="InteractionType">Mẫu tương tác</label>
-            <select asp-for="InteractionType" class="form-control" data-interaction-select>
-                @foreach (var template in activityTemplates)
-                {
-                    <option value="@template.InteractionType" data-default-instruction="@template.DefaultInstruction" data-default-prompt="@template.DefaultPrompt" data-description="@template.Description">@template.Name</option>
-                }
-            </select>
+                <div>
+                    <label asp-for="InteractionType">Mẫu tương tác</label>
+                    <select asp-for="InteractionType" class="form-control" data-interaction-select>
+                        @foreach (var template in activityTemplates)
+                        {
+                            <option value="@template.InteractionType" data-default-instruction="@template.DefaultInstruction" data-default-prompt="@template.DefaultPrompt" data-description="@template.Description">@template.Name</option>
+                        }
+                    </select>
+                </div>
 
-            <label asp-for="InstructionText">Lời hướng dẫn</label>
-            <textarea asp-for="InstructionText" class="form-control" rows="2" maxlength="500" data-preview-source="instruction"></textarea>
-            <label asp-for="PromptText">Câu hỏi</label>
-            <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" data-preview-source="prompt"></textarea>
+            </div>
+
+            <div class="builder-copy-grid">
+                <div>
+                    <label asp-for="InstructionText">Lời hướng dẫn</label>
+                    <textarea asp-for="InstructionText" class="form-control" rows="2" maxlength="500" data-preview-source="instruction"></textarea>
+                </div>
+                <div>
+                    <label asp-for="PromptText">Câu hỏi</label>
+                    <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" data-preview-source="prompt"></textarea>
+                </div>
+            </div>
+
+            <section class="builder-config-section builder-config-section-always builder-voice-panel" data-builder-voice-panel>
+                <h3>Ki&#7875;m so&#225;t voice c&#7911;a b&#224;i</h3>
+                <div class="builder-voice-summary">
+                    <span>T&#7893;ng m&#7909;c c&#7847;n voice</span>
+                    <strong data-builder-voice-total>0</strong>
+                    <span>&#272;&#227; c&#243; text</span>
+                    <strong data-builder-voice-filled>0</strong>
+                </div>
+                <div class="builder-voice-list" data-builder-voice-list></div>
+                <p class="builder-field-help">Dòng nào có file sẽ tự được dùng khi lưu bài. Có thể đổi ngay bằng cách tìm trong kho voice hoặc chọn file âm thanh từ máy.</p>
+            </section>
 
             <h2>Cấu hình hoạt động</h2>
-
             <div class="builder-template-context">
                 <strong data-config-name></strong>
                 <p data-config-description></p>
@@ -126,6 +168,7 @@
             <section class="builder-config-section" data-builder-fields="single_choice,multi_select,listen_choose,drag_drop,story_choice">
                 <h3 data-choice-heading>Phương án trả lời</h3>
                 <p class="builder-field-help" data-choice-help></p>
+                <p class="builder-field-help">Mỗi lựa chọn có nội dung sẽ được đưa vào Kiểm soát voice để khi bé bấm chọn thì phát âm đúng lựa chọn đó.</p>
                 <div class="builder-choice-grid">
                     <div><label asp-for="ChoiceA">Lựa chọn 1</label><input asp-for="ChoiceA" class="form-control" data-choice-input /></div>
                     <div><label asp-for="ChoiceB">Lựa chọn 2</label><input asp-for="ChoiceB" class="form-control" data-choice-input /></div>
@@ -203,35 +246,15 @@
             </section>
 
             <section class="builder-config-section" data-builder-fields="listen_choose,story_choice">
-                <h3>Âm thanh nội dung</h3>
-                <label asp-for="SpeechText">Nội dung đọc tự động</label>
-                <textarea asp-for="SpeechText" class="form-control" rows="3" maxlength="500" placeholder="Nhập nội dung để trình duyệt đọc khi chưa có tệp âm thanh"></textarea>
-                <p class="builder-field-help">Có thể dùng nội dung đọc tự động, hoặc chọn/tải một tệp âm thanh bên dưới.</p>
-                <label asp-for="ExistingAudioAssetId">Chọn từ thư viện</label>
-                <select asp-for="ExistingAudioAssetId" class="form-control">
-                    <option value="">Tải tệp mới hoặc dùng đường dẫn</option>
-                    @foreach (var asset in audioAssets) { <option value="@asset.Id" data-path="@asset.StoragePath">@asset.FileName</option> }
-                </select>
-                <label asp-for="AudioFile">Tải âm thanh mới</label>
-                <input asp-for="AudioFile" class="form-control" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4" />
-                <label asp-for="AudioUrl">Đường dẫn âm thanh</label>
-                <input asp-for="AudioUrl" class="form-control" type="text" placeholder="/uploads/audio/ten-tep.mp3" />
-                <span asp-validation-for="AudioUrl" class="text-danger"></span>
+                <h3>Nội dung đọc</h3>
+                <label asp-for="SpeechText">Nội dung nghe riêng</label>
+                <textarea asp-for="SpeechText" class="form-control" rows="3" maxlength="500" placeholder="Dùng cho bài Nghe - chọn hoặc Nghe truyện, ví dụ một câu chuyện/ngữ cảnh cần đọc"></textarea>
+                <p class="builder-field-help">Mục này chỉ dùng cho dạng Nghe - chọn và Nghe truyện. Khi bé bấm nghe, hệ thống ưu tiên đọc nội dung này; câu hỏi, đáp án và phản hồi vẫn có voice riêng ở Kiểm soát voice.</p>
             </section>
 
             <section class="builder-config-section builder-config-section-always">
-                <h3>Giọng đọc câu hỏi</h3>
-                <p class="builder-field-help">Nếu không chọn tệp, hệ thống tự đọc tiếng Việt từ nội dung câu hỏi. Tệp riêng giúp giọng đọc ổn định hơn trên mọi thiết bị.</p>
-                <label asp-for="ExistingQuestionAudioAssetId">Chọn từ thư viện âm thanh</label>
-                <select asp-for="ExistingQuestionAudioAssetId" class="form-control">
-                    <option value="">Dùng giọng đọc tự động</option>
-                    @foreach (var asset in audioAssets) { <option value="@asset.Id" data-path="@asset.StoragePath">@asset.FileName</option> }
-                </select>
-                <label asp-for="QuestionAudioFile">Tải giọng đọc câu hỏi</label>
-                <input asp-for="QuestionAudioFile" class="form-control" type="file" accept="audio/mpeg,audio/wav,audio/ogg,audio/mp4" />
-                <label asp-for="QuestionAudioUrl">Đường dẫn giọng đọc câu hỏi</label>
-                <input asp-for="QuestionAudioUrl" class="form-control" type="text" placeholder="/uploads/audio/cau-hoi.mp3" />
-                <span asp-validation-for="QuestionAudioUrl" class="text-danger"></span>
+                <h3>Voice tự động theo nội dung</h3>
+                <p class="builder-field-help">Tên bài, lời hướng dẫn, câu hỏi, đáp án và phản hồi sẽ được rà soát trong Kiểm soát voice để dùng lại file trùng nội dung.</p>
             </section>
 
             <section class="builder-config-section" data-builder-fields="single_choice,multi_select,listen_choose,drag_drop,matching,ordering,counting,quantity_builder,comparison,classification,story_choice">
@@ -239,7 +262,10 @@
                 <label asp-for="ExistingImageAssetId">Chọn từ thư viện</label>
                 <select asp-for="ExistingImageAssetId" class="form-control">
                     <option value="">Không dùng hình thư viện</option>
-                    @foreach (var asset in imageAssets) { <option value="@asset.Id" data-path="@asset.StoragePath">@asset.FileName</option> }
+                    @foreach (var asset in imageAssets)
+                    {
+                        <option value="@asset.Id" data-path="@asset.StoragePath">@asset.FileName</option>
+                    }
                 </select>
                 <label asp-for="ImageFile">Tải hình mới</label>
                 <input asp-for="ImageFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
@@ -254,6 +280,13 @@
                 <h3>Ảnh riêng theo nội dung</h3>
                 <p class="builder-field-help">Nhãn phải trùng với đáp án, vật, mục sắp xếp hoặc một đầu cặp nối. Mỗi dòng theo mẫu: Táo = /uploads/images/tao.jpg</p>
                 <label asp-for="ItemMediaText">Ánh xạ nội dung và hình ảnh</label>
+                <div class="item-media-builder" data-item-media-builder>
+                    <div class="item-media-builder-head">
+                        <strong>Gợi ý nhãn từ nội dung bài</strong>
+                        <button class="mini-action" type="button" data-item-media-refresh>Làm mới nhãn</button>
+                    </div>
+                    <div class="item-media-builder-list" data-item-media-list></div>
+                </div>
                 <textarea asp-for="ItemMediaText" class="form-control" rows="6" maxlength="8000" placeholder="Táo = /images/photos/apple.jpg&#10;Chó = /images/photos/dog.jpg"></textarea>
                 <span asp-validation-for="ItemMediaText" class="text-danger"></span>
             </section>

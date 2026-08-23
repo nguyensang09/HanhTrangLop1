@@ -146,10 +146,10 @@ public static class SeedDataInitializer
         IConfiguration configuration,
         ILogger logger)
     {
-        var provider = configuration["TextToSpeech:Provider"]?.Trim();
-        var voice = configuration["TextToSpeech:Voice"]?.Trim();
-        var modelId = configuration["TextToSpeech:ModelId"]?.Trim();
-        var format = configuration["TextToSpeech:Format"]?.Trim();
+        var provider = configuration["VoiceLibrary:Provider"]?.Trim();
+        var voice = configuration["VoiceLibrary:Voice"]?.Trim();
+        var modelId = configuration["VoiceLibrary:ModelId"]?.Trim();
+        var format = configuration["VoiceLibrary:Format"]?.Trim();
         if (string.IsNullOrWhiteSpace(provider) ||
             string.IsNullOrWhiteSpace(voice) ||
             string.IsNullOrWhiteSpace(modelId) ||
@@ -169,9 +169,9 @@ public static class SeedDataInitializer
         var added = 0;
         foreach (var asset in audioAssets)
         {
-            var normalizedText = NormalizeSpeechText(asset.AltText!);
-            if (string.IsNullOrWhiteSpace(normalizedText) ||
-                normalizedText.StartsWith("tts:v1:", StringComparison.OrdinalIgnoreCase))
+            var voiceText = ExtractVoiceTextFromAltText(asset.AltText!);
+            var normalizedText = NormalizeSpeechText(voiceText);
+            if (string.IsNullOrWhiteSpace(normalizedText))
             {
                 continue;
             }
@@ -189,9 +189,11 @@ public static class SeedDataInitializer
                 Voice = voice,
                 ModelId = modelId,
                 Format = format,
+                Name = TrimMax(normalizedText, 200),
+                UsageType = "legacy",
                 TextHash = hash,
                 NormalizedText = TrimMax(normalizedText, 500),
-                OriginalText = TrimMax(asset.AltText!, 1000),
+                OriginalText = TrimMax(voiceText, 1000),
                 AudioUrl = asset.StoragePath,
                 Status = "ready",
                 CreatedAt = asset.CreatedAt,
@@ -206,6 +208,15 @@ public static class SeedDataInitializer
             await db.SaveChangesAsync();
             logger.LogInformation("Đã chuẩn hóa {Count} file âm thanh cũ vào bảng kiểm soát voice.", added);
         }
+    }
+
+    private static string ExtractVoiceTextFromAltText(string altText)
+    {
+        const string prefix = "tts:v1:";
+        var cleaned = (altText ?? string.Empty).Trim();
+        return cleaned.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? cleaned[prefix.Length..]
+            : cleaned;
     }
 
     private static string NormalizeSpeechText(string text)

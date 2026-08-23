@@ -1,11 +1,10 @@
 ﻿using HanhTrangLop1.Data;
-using HanhTrangLop1.Infrastructure.TextToSpeech;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -43,21 +42,16 @@ public class AdminController : Controller
 
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _environment;
-    private readonly ITextToSpeechService _textToSpeech;
-    private readonly TextToSpeechOptions _textToSpeechOptions;
-    private readonly List<string> _textToSpeechErrors = [];
-    private bool _textToSpeechQuotaExceeded;
+    private readonly IConfiguration _configuration;
 
     public AdminController(
         ApplicationDbContext db,
         IWebHostEnvironment environment,
-        ITextToSpeechService textToSpeech,
-        IOptions<TextToSpeechOptions> textToSpeechOptions)
+        IConfiguration configuration)
     {
         _db = db;
         _environment = environment;
-        _textToSpeech = textToSpeech;
-        _textToSpeechOptions = textToSpeechOptions.Value;
+        _configuration = configuration;
     }
 
     [HttpGet("")]
@@ -162,12 +156,6 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateMissingLearningItemsAudio(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, int page = 1)
     {
-        if (!_textToSpeech.CanGenerate)
-        {
-            TempData["AdminMessage"] = "ChÆ°a cáº¥u hÃ¬nh API táº¡o giá»ng Ä‘á»c. Vui lÃ²ng kiá»ƒm tra TextToSpeech trong appsettings.json.";
-            return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
-        }
-
         var query = _db.LearningItems
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
             .AsQueryable();
@@ -197,37 +185,39 @@ public class AdminController : Controller
             .ThenBy(x => x.Title)
             .ToListAsync();
 
-        var generatedCount = 0;
+        var linkedCount = 0;
         var updatedItems = 0;
         foreach (var item in items)
         {
-            var generatedForItem = await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
-            if (generatedForItem > 0)
+            var linkedForItem = await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
+            if (linkedForItem > 0)
             {
-                generatedCount += generatedForItem;
+                linkedCount += linkedForItem;
                 updatedItems += 1;
             }
         }
 
-        if (generatedCount > 0)
+        var hasChanges = _db.ChangeTracker.HasChanges();
+        if (hasChanges)
         {
-            await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"ÄÃ£ bá»• sung {generatedCount} file Ã¢m thanh cho {updatedItems} bÃ i há»c.";
-        }
-        else
-        {
-            TempData["AdminMessage"] = "KhÃ´ng cÃ³ Ã¢m thanh cáº§n bá»• sung, hoáº·c API TTS khÃ´ng tráº£ vá» file.";
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                TempData["AdminMessage"] = $"Không thể lưu rà soát voice: {GetInnermostMessage(ex)}";
+                return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
+            }
         }
 
-        if (generatedCount > 0)
+        if (linkedCount > 0)
         {
-            var warning = _textToSpeechErrors.Count > 0 ? $" Má»™t sá»‘ file lá»—i: {_textToSpeechErrors[0]}" : string.Empty;
-            TempData["AdminMessage"] = $"ÄÃ£ bá»• sung {generatedCount} file Ã¢m thanh cho {updatedItems} bÃ i há»c.{warning}";
+            TempData["AdminMessage"] = $"Đã đồng bộ {linkedCount} voice có file cho {updatedItems} bài học. Các voice thiếu file đã nằm trong bảng kiểm soát.";
         }
         else
         {
-            var reason = _textToSpeechErrors.Count > 0 ? $" Lá»—i: {_textToSpeechErrors[0]}" : string.Empty;
-            TempData["AdminMessage"] = $"KhÃ´ng cÃ³ Ã¢m thanh cáº§n bá»• sung, hoáº·c API TTS khÃ´ng tráº£ vá» file.{reason}";
+            TempData["AdminMessage"] = "Đã rà soát voice. Chưa có file nào để gắn thêm; hãy vào Kiểm soát voice để tải file cho mục còn thiếu.";
         }
 
         return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
@@ -237,13 +227,6 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateLearningItemAudio(Guid id)
     {
-        if (!_textToSpeech.CanGenerate)
-        {
-            TempData["AdminMessage"] = "ChÆ°a cáº¥u hÃ¬nh API táº¡o giá»ng Ä‘á»c. Vui lÃ²ng kiá»ƒm tra TextToSpeech trong appsettings.json.";
-            var fallbackItem = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == id);
-            return fallbackItem is null ? NotFound() : RedirectToEditor(fallbackItem);
-        }
-
         var item = await _db.LearningItems
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
             .FirstOrDefaultAsync(x => x.Id == id);
@@ -252,15 +235,28 @@ public class AdminController : Controller
             return NotFound();
         }
 
-        var generatedCount = await GenerateAudioForLearningItemAsync(item, onlyMissing: false);
-        if (generatedCount > 0)
+        var linkedCount = await SyncVoiceForLearningItemAsync(item, onlyMissing: false);
+        var hasChanges = _db.ChangeTracker.HasChanges();
+        if (hasChanges)
         {
-            await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"ÄÃ£ táº¡o láº¡i {generatedCount} file Ã¢m thanh cho bÃ i â€œ{item.Title}â€.";
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                TempData["AdminMessage"] = $"Không thể lưu voice cũ: {GetInnermostMessage(ex)}";
+                return RedirectToAction(nameof(VoiceCache));
+            }
+        }
+
+        if (linkedCount > 0)
+        {
+            TempData["AdminMessage"] = $"Đã đồng bộ {linkedCount} voice có file cho bài “{item.Title}”.";
         }
         else
         {
-            TempData["AdminMessage"] = "ChÆ°a táº¡o Ä‘Æ°á»£c Ã¢m thanh. HÃ£y kiá»ƒm tra API key, voiceId vÃ  quota ElevenLabs.";
+            TempData["AdminMessage"] = "Đã rà soát voice cho bài này. Mục thiếu file đã nằm trong Kiểm soát voice để tải lên.";
         }
 
         return RedirectToEditor(item);
@@ -300,22 +296,198 @@ public class AdminController : Controller
     [HttpGet("media")]
     public async Task<IActionResult> MediaLibrary()
     {
-        var assets = await _db.MediaAssets.OrderByDescending(x => x.CreatedAt).ToListAsync();
+        var assets = await _db.MediaAssets
+            .Where(x => x.AssetType == "image")
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
         return View(new AdminMediaLibraryViewModel
         {
-            Images = assets.Where(x => x.AssetType == "image").ToList(),
-            AudioFiles = assets.Where(x => x.AssetType == "audio").ToList()
+            Images = assets
         });
     }
 
     [HttpGet("voice-cache")]
-    public async Task<IActionResult> VoiceCache()
+    public async Task<IActionResult> VoiceCache(string? status, string? usageType, string? q, int page = 1, int pageSize = 50)
     {
-        var entries = await _db.TextToSpeechCaches
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 20, 100);
+        var query = _db.TextToSpeechCaches
+            .Where(x => x.UsageType != "legacy")
+            .AsQueryable();
+        if (status == "ready")
+        {
+            query = query.Where(x => !string.IsNullOrWhiteSpace(x.AudioUrl) && x.Status == "ready");
+        }
+        else if (status == "missing")
+        {
+            query = query.Where(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+        }
+
+        if (!string.IsNullOrWhiteSpace(usageType))
+        {
+            query = query.Where(x => x.UsageType == usageType);
+        }
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var keyword = q.Trim();
+            query = query.Where(x =>
+                x.Name.Contains(keyword) ||
+                x.NormalizedText.Contains(keyword) ||
+                x.OriginalText.Contains(keyword));
+        }
+
+        ViewBag.Status = status;
+        ViewBag.UsageType = usageType;
+        ViewBag.Keyword = q;
+        ViewBag.Page = page;
+        ViewBag.PageSize = pageSize;
+        ViewBag.TotalVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy");
+        ViewBag.MissingVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready"));
+        ViewBag.LegacyVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType == "legacy");
+        ViewBag.UsageTypes = await _db.TextToSpeechCaches
+            .Where(x => !string.IsNullOrWhiteSpace(x.UsageType) && x.UsageType != "legacy")
+            .Select(x => x.UsageType)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToListAsync();
+
+        var filteredCount = await query.CountAsync();
+        ViewBag.FilteredVoiceCount = filteredCount;
+        ViewBag.TotalPages = Math.Max(1, (int)Math.Ceiling(filteredCount / (double)pageSize));
+
+        var entries = await query
             .OrderByDescending(x => x.UpdatedAt)
-            .Take(300)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
         return View(entries);
+    }
+
+    [HttpPost("voice-cache/{id:guid}/update")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? usageType)
+    {
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        if (entry is null)
+        {
+            return NotFound();
+        }
+
+        var normalizedText = NormalizeSpeechText(text ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(normalizedText))
+        {
+            TempData["AdminMessage"] = "Vui lòng nhập nội dung voice.";
+            return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+        }
+
+        var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
+        var duplicated = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            x.Id != id &&
+            x.Provider == cacheKey.Provider &&
+            x.Voice == cacheKey.Voice &&
+            x.ModelId == cacheKey.ModelId &&
+            x.Format == cacheKey.Format &&
+            x.TextHash == cacheKey.TextHash);
+        if (duplicated is not null)
+        {
+            TempData["AdminMessage"] = "Text này đã có trong kho voice. Không thể sửa trùng với một dòng khác.";
+            return RedirectToAction(nameof(VoiceCache), new { q = normalizedText });
+        }
+
+        var textChanged = !string.Equals(entry.TextHash, cacheKey.TextHash, StringComparison.OrdinalIgnoreCase);
+        entry.Provider = cacheKey.Provider;
+        entry.Voice = cacheKey.Voice;
+        entry.ModelId = cacheKey.ModelId;
+        entry.Format = cacheKey.Format;
+        entry.TextHash = cacheKey.TextHash;
+        entry.Name = string.IsNullOrWhiteSpace(name) ? BuildVoiceName(usageType ?? entry.UsageType, null, normalizedText) : AudioAltText(name.Trim());
+        entry.UsageType = string.IsNullOrWhiteSpace(usageType) ? "custom" : usageType.Trim();
+        entry.NormalizedText = AudioAltText(normalizedText);
+        entry.OriginalText = AudioOriginalText(normalizedText);
+        entry.LastError = null;
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
+
+        if (textChanged)
+        {
+            try
+            {
+                entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+                entry.Status = "ready";
+            }
+            catch (Exception ex)
+            {
+                entry.AudioUrl = string.Empty;
+                entry.Status = "missing";
+                entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+            }
+        }
+
+        await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = textChanged
+            ? entry.Status == "ready"
+                ? "Đã sửa nội dung và tạo lại file voice cho dòng này."
+                : "Đã sửa nội dung cho dòng này, nhưng chưa tạo được file. Có thể tải file lên hoặc bấm Tạo file."
+            : "Đã cập nhật tên/loại voice.";
+        return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+    }
+
+    [HttpPost("voice-cache/{id:guid}/generate-file")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateVoiceCacheFile(Guid id)
+    {
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        if (entry is null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+            entry.Status = "ready";
+            entry.LastError = null;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+            TempData["AdminMessage"] = $"Đã tạo file voice cho “{entry.Name}”.";
+        }
+        catch (Exception ex)
+        {
+            entry.Status = "missing";
+            entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+            TempData["AdminMessage"] = $"Không thể tạo file voice: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+    }
+
+    [HttpPost("voice-cache/{id:guid}/delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteVoiceCache(Guid id)
+    {
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        if (entry is null)
+        {
+            return NotFound();
+        }
+
+        _db.TextToSpeechCaches.Remove(entry);
+        await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Đã xóa voice “{entry.Name}”.";
+        return RedirectToAction(nameof(VoiceCache));
+    }
+
+    [HttpPost("voice-cache/delete-legacy")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteLegacyVoiceCache()
+    {
+        var deleted = await _db.TextToSpeechCaches
+            .Where(x => x.UsageType == "legacy")
+            .ExecuteDeleteAsync();
+        TempData["AdminMessage"] = $"Đã xóa {deleted} voice cũ khỏi bảng kiểm soát.";
+        return RedirectToAction(nameof(VoiceCache));
     }
 
     [HttpPost("voice-cache/backfill")]
@@ -326,25 +498,21 @@ public class AdminController : Controller
             .Where(x => x.AssetType == "audio" && !string.IsNullOrWhiteSpace(x.AltText))
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
+        var existingHashes = await _db.TextToSpeechCaches
+            .Select(x => x.TextHash)
+            .ToHashSetAsync(StringComparer.OrdinalIgnoreCase);
 
         var added = 0;
         foreach (var asset in audioAssets)
         {
-            var normalizedText = NormalizeSpeechText(asset.AltText!);
-            if (string.IsNullOrWhiteSpace(normalizedText) ||
-                normalizedText.StartsWith("tts:v1:", StringComparison.OrdinalIgnoreCase))
+            var normalizedText = NormalizeSpeechText(ExtractVoiceTextFromAltText(asset.AltText!));
+            if (string.IsNullOrWhiteSpace(normalizedText))
             {
                 continue;
             }
 
             var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
-            var exists = await _db.TextToSpeechCaches.AnyAsync(x =>
-                x.Provider == cacheKey.Provider &&
-                x.Voice == cacheKey.Voice &&
-                x.ModelId == cacheKey.ModelId &&
-                x.Format == cacheKey.Format &&
-                x.TextHash == cacheKey.TextHash);
-            if (exists)
+            if (existingHashes.Contains(cacheKey.TextHash))
             {
                 continue;
             }
@@ -357,13 +525,16 @@ public class AdminController : Controller
                 ModelId = cacheKey.ModelId,
                 Format = cacheKey.Format,
                 TextHash = cacheKey.TextHash,
+                Name = BuildVoiceName("legacy", null, normalizedText),
+                UsageType = "legacy",
                 NormalizedText = AudioAltText(normalizedText),
-                OriginalText = AudioOriginalText(asset.AltText!),
+                OriginalText = AudioOriginalText(ExtractVoiceTextFromAltText(asset.AltText!)),
                 AudioUrl = asset.StoragePath,
                 Status = "ready",
                 CreatedAt = asset.CreatedAt,
                 UpdatedAt = DateTimeOffset.UtcNow
             });
+            existingHashes.Add(cacheKey.TextHash);
             added += 1;
         }
 
@@ -374,6 +545,192 @@ public class AdminController : Controller
 
         TempData["AdminMessage"] = $"Đã chuẩn hóa {added} voice cũ vào bảng kiểm soát.";
         return RedirectToAction(nameof(VoiceCache));
+    }
+
+    [HttpPost("voice-cache/{id:guid}/upload")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadVoiceCacheFile(Guid id, IFormFile? audioFile)
+    {
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        if (entry is null)
+        {
+            return NotFound();
+        }
+
+        if (audioFile is null || audioFile.Length == 0)
+        {
+            TempData["AdminMessage"] = "Vui lòng chọn file âm thanh để tải lên.";
+            return RedirectToAction(nameof(VoiceCache));
+        }
+
+        ValidateMediaFile(audioFile, "audio", 10 * 1024 * 1024, nameof(audioFile));
+        if (!ModelState.IsValid)
+        {
+            TempData["AdminMessage"] = "File âm thanh chưa hợp lệ. Vui lòng chọn MP3/WAV/M4A.";
+            return RedirectToAction(nameof(VoiceCache));
+        }
+
+        await ApplyVoiceCacheUploadAsync(entry, audioFile);
+        await _db.SaveChangesAsync();
+
+        TempData["AdminMessage"] = $"Đã cập nhật file cho voice “{entry.Name}”.";
+        return RedirectToAction(nameof(VoiceCache));
+    }
+
+    [HttpPost("voice-cache/{id:guid}/upload-inline")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadVoiceCacheFileInline(Guid id, IFormFile? audioFile)
+    {
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        if (entry is null)
+        {
+            return NotFound(new { message = "Không tìm thấy voice." });
+        }
+
+        if (audioFile is null || audioFile.Length == 0)
+        {
+            return BadRequest(new { message = "Vui lòng chọn file âm thanh." });
+        }
+
+        ValidateMediaFile(audioFile, "audio", 10 * 1024 * 1024, nameof(audioFile));
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { message = "File âm thanh chưa hợp lệ. Vui lòng chọn MP3/WAV/M4A." });
+        }
+
+        await ApplyVoiceCacheUploadAsync(entry, audioFile);
+        await _db.SaveChangesAsync();
+        return Json(new
+        {
+            id = entry.Id,
+            audioUrl = entry.AudioUrl,
+            status = entry.Status,
+            updatedAt = entry.UpdatedAt
+        });
+    }
+
+    [HttpPost("voice-cache/{id:guid}/copy-inline")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CopyVoiceCacheFileInline(Guid id, Guid sourceId)
+    {
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        if (entry is null)
+        {
+            return NotFound(new { message = "Không tìm thấy voice cần đổi." });
+        }
+
+        var source = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            x.Id == sourceId &&
+            x.Status == "ready" &&
+            !string.IsNullOrWhiteSpace(x.AudioUrl));
+        if (source is null)
+        {
+            return BadRequest(new { message = "Voice trong kho chưa có file để dùng." });
+        }
+
+        entry.AudioUrl = source.AudioUrl;
+        entry.Status = "ready";
+        entry.LastError = null;
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Json(new
+        {
+            id = entry.Id,
+            audioUrl = entry.AudioUrl,
+            status = entry.Status,
+            updatedAt = entry.UpdatedAt
+        });
+    }
+
+    [HttpPost("voice-cache/generate-missing")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateMissingVoiceFiles()
+    {
+        var entries = await _db.TextToSpeechCaches
+            .Where(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready")
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        var generated = 0;
+        var failed = 0;
+        foreach (var entry in entries)
+        {
+            try
+            {
+                entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+                entry.Status = "ready";
+                entry.LastError = null;
+                entry.UpdatedAt = DateTimeOffset.UtcNow;
+                generated += 1;
+            }
+            catch (Exception ex)
+            {
+                entry.Status = "missing";
+                entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                entry.UpdatedAt = DateTimeOffset.UtcNow;
+                failed += 1;
+            }
+        }
+
+        if (entries.Count > 0)
+        {
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                TempData["AdminMessage"] = $"Không thể lưu file voice tự tạo: {GetInnermostMessage(ex)}";
+                return RedirectToAction(nameof(VoiceCache));
+            }
+        }
+
+        TempData["AdminMessage"] = $"Đã tự tạo {generated} file voice. Lỗi {failed} mục.";
+        return RedirectToAction(nameof(VoiceCache));
+    }
+
+    [HttpPost("voice-cache/generate-text")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateVoiceFromText(string text, string? name, string? usageType)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            TempData["AdminMessage"] = "Vui lòng nhập nội dung cần tạo voice.";
+            return RedirectToAction(nameof(VoiceCache));
+        }
+
+        var entry = await EnsureVoiceCacheEntryAsync(text, string.IsNullOrWhiteSpace(usageType) ? "custom" : usageType.Trim(), name);
+        if (entry is null)
+        {
+            TempData["AdminMessage"] = "Không thể tạo voice vì nội dung trống.";
+            return RedirectToAction(nameof(VoiceCache));
+        }
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            entry.Name = AudioAltText(name.Trim());
+        }
+
+        try
+        {
+            entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+            entry.Status = "ready";
+            entry.LastError = null;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+            TempData["AdminMessage"] = $"Đã tạo voice cho “{entry.NormalizedText}”.";
+            return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+        }
+        catch (Exception ex)
+        {
+            entry.Status = "missing";
+            entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+            TempData["AdminMessage"] = $"Không thể tạo file voice: {ex.Message}";
+            return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+        }
     }
 
     [HttpGet("learning-items/create-choice")]
@@ -428,8 +785,8 @@ public class AdminController : Controller
             SkillGroupId = firstGroupId,
             TopicId = selectedTopic?.Id,
             InteractionType = selectedInteractionType,
-            InstructionText = template?.DefaultInstruction ?? "Con hÃ£y thá»±c hiá»‡n hoáº¡t Ä‘á»™ng.",
-            PromptText = template?.DefaultPrompt ?? "Con tráº£ lá»i cÃ¢u há»i nhÃ©."
+            InstructionText = template?.DefaultInstruction ?? "Con hãy thực hiện hoạt động.",
+            PromptText = template?.DefaultPrompt ?? "Con trả lời câu hỏi nhé."
         });
     }
 
@@ -448,7 +805,7 @@ public class AdminController : Controller
 
         if (!SupportedInteractionTypes.Contains(model.InteractionType))
         {
-            ModelState.AddModelError(nameof(model.InteractionType), "Dáº¡ng tÆ°Æ¡ng tÃ¡c chÆ°a Ä‘Æ°á»£c há»— trá»£.");
+            ModelState.AddModelError(nameof(model.InteractionType), "Dạng tương tác chưa được hỗ trợ.");
             await LoadContentListsAsync();
             return View(model);
         }
@@ -461,7 +818,7 @@ public class AdminController : Controller
         }
 
         await SaveUploadedMediaAsync(model);
-        await GenerateMissingAudioAsync(model);
+        await PopulateVoiceUrlsFromCacheAsync(model);
         configuration = BuildActivityConfiguration(model);
         if (configuration is null)
         {
@@ -529,7 +886,7 @@ public class AdminController : Controller
         {
             _db.LearningItems.Add(item);
         }
-        await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
+        await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateChoice), new { editId = item.Id });
     }
@@ -575,8 +932,8 @@ public class AdminController : Controller
         {
             SkillGroupId = selectedTopic?.SkillGroupId ?? Guid.Empty,
             TopicId = selectedTopic?.Id,
-            InstructionText = "Con tÃ´ theo nÃ©t gá»£i Ã½ nhÃ©.",
-            PromptText = "Con tÃ´ kÃ½ tá»± theo Ä‘Æ°á»ng viá»n."
+            InstructionText = "Con tô theo nét gợi ý nhé.",
+            PromptText = "Con tô ký tự theo đường viền."
         });
     }
 
@@ -597,9 +954,9 @@ public class AdminController : Controller
         {
             model.AudioUrl = await SaveMediaFileAsync(model.AudioFile, "audio");
         }
-        if (string.IsNullOrWhiteSpace(model.AudioUrl) && _textToSpeech.CanGenerate)
+        if (string.IsNullOrWhiteSpace(model.AudioUrl))
         {
-            model.AudioUrl = await GenerateAudioFileAsync(model.PromptText, "tracing-prompt") ?? string.Empty;
+            model.AudioUrl = await ResolveVoiceAudioAsync(model.PromptText, "tracing-prompt") ?? string.Empty;
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -677,15 +1034,15 @@ public class AdminController : Controller
             minPoints = Math.Max(5, model.MinPoints),
             expectedStrokeCount = model.ExpectedStrokeCount
         });
-        question.HintJson = JsonSerializer.Serialize(new { level1 = "Con báº¯t Ä‘áº§u tá»« Ä‘iá»ƒm mÃ u cam nhÃ©." });
+        question.HintJson = JsonSerializer.Serialize(new { level1 = "Con bắt đầu từ điểm màu cam nhé." });
         question.FeedbackJson = JsonSerializer.Serialize(new
         {
-            correct = $"Tá»‘t láº¯m, con Ä‘Ã£ tÃ´ xong {symbol}!",
-            retry = "MÃ¬nh thá»­ tÃ´ láº¡i má»™t nÃ©t nhÃ©."
+            correct = $"Tốt lắm, con đã tô xong {symbol}!",
+            retry = "Mình thử tô lại một nét nhé."
         });
 
         if (!model.Id.HasValue) _db.LearningItems.Add(item);
-        await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
+        await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
@@ -716,7 +1073,7 @@ public class AdminController : Controller
         await ValidateClassificationAsync(model.SkillGroupId, model.TopicId, requireActive: false);
         if (string.IsNullOrWhiteSpace(model.Symbol))
         {
-            ModelState.AddModelError(nameof(model.Symbol), "Vui lÃ²ng nháº­p kÃ½ tá»± cáº§n tÃ´.");
+            ModelState.AddModelError(nameof(model.Symbol), "Vui lòng nhập ký tự cần tô.");
         }
 
         if (!ModelState.IsValid)
@@ -761,7 +1118,7 @@ public class AdminController : Controller
             question.CorrectAnswerJson = JsonSerializer.Serialize(new { minPoints = Math.Clamp(model.MinPoints, 5, 300) });
         }
 
-        await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
+        await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
@@ -783,7 +1140,7 @@ public class AdminController : Controller
 
         if (status == ContentStatus.Published && !ActivityTemplateCatalog.IsItemAllowed(item))
         {
-            TempData["AdminMessage"] = "BÃ i há»c chÆ°a phÃ¹ há»£p vá»›i chá»§ Ä‘á». Vui lÃ²ng sá»­a máº«u hoáº¡t Ä‘á»™ng trÆ°á»›c khi xuáº¥t báº£n.";
+            TempData["AdminMessage"] = "Bài học chưa phù hợp với chủ đề. Vui lòng sửa mẫu hoạt động trước khi xuất bản.";
             return RedirectToEditor(item);
         }
 
@@ -798,7 +1155,7 @@ public class AdminController : Controller
                 Id = Guid.NewGuid(),
                 LearningItemId = item.Id,
                 Status = ContentStatus.Review,
-                Note = "Gá»­i duyá»‡t tá»« admin MVP.",
+                Note = "Gửi duyệt từ admin MVP.",
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }
@@ -850,7 +1207,7 @@ public class AdminController : Controller
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        TempData["AdminMessage"] = $"ÄÃ£ xÃ³a bÃ i há»c â€œ{item.Title}â€.";
+        TempData["AdminMessage"] = $"Đã xóa bài học “{item.Title}”.";
         return RedirectToAction(nameof(LearningItems));
     }
 
@@ -872,7 +1229,32 @@ public class AdminController : Controller
             .OrderBy(x => x.SortOrder)
             .ToListAsync();
         ViewBag.ActivityTemplates = ActivityTemplateCatalog.Templates;
-        ViewBag.MediaAssets = await _db.MediaAssets.OrderByDescending(x => x.CreatedAt).ToListAsync();
+        var mediaAssets = await _db.MediaAssets.OrderByDescending(x => x.CreatedAt).ToListAsync();
+        ViewBag.MediaAssets = mediaAssets;
+        ViewBag.ImageAssetsJson = JsonSerializer.Serialize(mediaAssets
+            .Where(x => x.AssetType == "image")
+            .Take(1000)
+            .Select(x => new
+            {
+                x.Id,
+                x.FileName,
+                x.StoragePath,
+                x.AltText
+            }));
+        var voiceEntries = await _db.TextToSpeechCaches
+            .OrderByDescending(x => x.UpdatedAt)
+            .Take(1000)
+            .Select(x => new
+            {
+                x.Id,
+                x.Name,
+                x.UsageType,
+                x.NormalizedText,
+                x.AudioUrl,
+                x.Status
+            })
+            .ToListAsync();
+        ViewBag.VoiceCacheJson = JsonSerializer.Serialize(voiceEntries);
     }
 
     private async Task LoadTracingListsAsync()
@@ -895,14 +1277,14 @@ public class AdminController : Controller
     {
         if (!topicId.HasValue)
         {
-            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Vui lÃ²ng chá»n chá»§ Ä‘á» tÃ´ nÃ©t.");
+            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Vui lòng chọn chủ đề tô nét.");
             return;
         }
 
         var topicCode = await _db.Topics.Where(x => x.Id == topicId.Value).Select(x => x.Code).FirstOrDefaultAsync();
         if (topicCode is null || !ActivityTemplateCatalog.ForTopic(topicCode).AllowsTracing)
         {
-            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Chá»§ Ä‘á» nÃ y khÃ´ng há»— trá»£ bÃ i tÃ´ theo nÃ©t.");
+            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Chủ đề này không hỗ trợ bài tô theo nét.");
         }
     }
 
@@ -914,7 +1296,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingAudioAssetId.Value && x.AssetType == "audio");
             if (audio is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Ã‚m thanh trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
+                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Âm thanh trong thư viện không còn tồn tại.");
             }
             else
             {
@@ -944,7 +1326,7 @@ public class AdminController : Controller
     {
         if (!topicId.HasValue)
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Vui lÃ²ng chá»n chá»§ Ä‘á» trÆ°á»›c khi chá»n máº«u hoáº¡t Ä‘á»™ng.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Vui lòng chọn chủ đề trước khi chọn mẫu hoạt động.");
             return;
         }
 
@@ -954,7 +1336,7 @@ public class AdminController : Controller
             .FirstOrDefaultAsync();
         if (topicCode is null || !ActivityTemplateCatalog.IsAllowed(topicCode, interactionType))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.InteractionType), "Máº«u hoáº¡t Ä‘á»™ng khÃ´ng phÃ¹ há»£p vá»›i chá»§ Ä‘á» Ä‘Ã£ chá»n.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.InteractionType), "Mẫu hoạt động không phù hợp với chủ đề đã chọn.");
         }
     }
 
@@ -966,7 +1348,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingImageAssetId.Value && x.AssetType == "image");
             if (image is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingImageAssetId), "HÃ¬nh trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
+                ModelState.AddModelError(nameof(model.ExistingImageAssetId), "Hình trong thư viện không còn tồn tại.");
             }
             else
             {
@@ -980,7 +1362,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingAudioAssetId.Value && x.AssetType == "audio");
             if (audio is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Ã‚m thanh trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
+                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Âm thanh trong thư viện không còn tồn tại.");
             }
             else
             {
@@ -994,7 +1376,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingQuestionAudioAssetId.Value && x.AssetType == "audio");
             if (questionAudio is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingQuestionAudioAssetId), "Ã‚m thanh cÃ¢u há»i trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
+                ModelState.AddModelError(nameof(model.ExistingQuestionAudioAssetId), "Âm thanh câu hỏi trong thư viện không còn tồn tại.");
             }
             else
             {
@@ -1021,7 +1403,7 @@ public class AdminController : Controller
         if (file.Length == 0 || file.Length > maxBytes || !allowedExtensions.Contains(extension))
         {
             var limit = maxBytes / 1024 / 1024;
-            ModelState.AddModelError(fieldName, $"Tá»‡p {assetType} khÃ´ng há»£p lá»‡ hoáº·c vÆ°á»£t quÃ¡ {limit} MB.");
+            ModelState.AddModelError(fieldName, $"Tệp {assetType} không hợp lệ hoặc vượt quá {limit} MB.");
         }
     }
 
@@ -1041,43 +1423,24 @@ public class AdminController : Controller
         }
     }
 
-    private async Task GenerateMissingAudioAsync(CreateChoiceItemViewModel model)
+    private async Task PopulateVoiceUrlsFromCacheAsync(CreateChoiceItemViewModel model)
     {
-        if (!_textToSpeech.CanGenerate)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(model.QuestionAudioUrl))
-        {
-            model.QuestionAudioUrl = await GenerateAudioFileAsync(model.PromptText, "question") ?? string.Empty;
-        }
-
-        if (string.IsNullOrWhiteSpace(model.InstructionAudioUrl))
-        {
-            model.InstructionAudioUrl = await GenerateAudioFileAsync(model.InstructionText, "instruction") ?? string.Empty;
-        }
-
-        if (string.IsNullOrWhiteSpace(model.CorrectFeedbackAudioUrl))
-        {
-            model.CorrectFeedbackAudioUrl = await GenerateAudioFileAsync(model.CorrectFeedback, "correct-feedback") ?? string.Empty;
-        }
-
-        if (string.IsNullOrWhiteSpace(model.RetryFeedbackAudioUrl))
-        {
-            model.RetryFeedbackAudioUrl = await GenerateAudioFileAsync(model.RetryFeedback, "retry-feedback") ?? string.Empty;
-        }
+        model.TitleAudioUrl = await ResolveVoiceAudioAsync(model.Title, "title", model.Title) ?? model.TitleAudioUrl;
+        model.QuestionAudioUrl = await ResolveVoiceAudioAsync(model.PromptText, "question", model.Title) ?? model.QuestionAudioUrl;
+        model.InstructionAudioUrl = await ResolveVoiceAudioAsync(model.InstructionText, "instruction", model.Title) ?? model.InstructionAudioUrl;
+        model.CorrectFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.CorrectFeedback, "correct-feedback", model.Title) ?? model.CorrectFeedbackAudioUrl;
+        model.RetryFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.RetryFeedback, "retry-feedback", model.Title) ?? model.RetryFeedbackAudioUrl;
 
         if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
              model.InteractionType == InteractionTypes.StoryChoice) &&
             string.IsNullOrWhiteSpace(model.AudioUrl) &&
             !string.IsNullOrWhiteSpace(model.SpeechText))
         {
-            model.AudioUrl = await GenerateAudioFileAsync(model.SpeechText, "content") ?? string.Empty;
+            model.AudioUrl = await ResolveVoiceAudioAsync(model.SpeechText, "content", model.Title) ?? string.Empty;
         }
     }
 
-    private async Task<int> GenerateAudioForLearningItemAsync(LearningItem item, bool onlyMissing)
+    private async Task<int> SyncVoiceForLearningItemAsync(LearningItem item, bool onlyMissing)
     {
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
         if (question is null)
@@ -1086,83 +1449,37 @@ public class AdminController : Controller
         }
 
         var payload = ParsePayloadObject(question.PayloadJson);
-        var generatedCount = 0;
-        generatedCount += await GeneratePayloadAudioAsync(
-            payload,
-            "titleAudioUrl",
-            item.Title,
-            "title",
-            onlyMissing);
-        generatedCount += await GeneratePayloadAudioAsync(
-            payload,
-            "instructionAudioUrl",
-            item.InstructionText,
-            "instruction",
-            onlyMissing);
-        generatedCount += await GeneratePayloadAudioAsync(
-            payload,
-            "correctAudioUrl",
-            ReadJsonString(question.FeedbackJson, "correct"),
-            "correct-feedback",
-            onlyMissing);
-        generatedCount += await GeneratePayloadAudioAsync(
-            payload,
-            "retryAudioUrl",
-            ReadJsonString(question.FeedbackJson, "retry"),
-            "retry-feedback",
-            onlyMissing);
+        var linkedCount = 0;
+        linkedCount += await SyncPayloadVoiceAsync(payload, "titleAudioUrl", item.Title, "title", item.Title, onlyMissing);
+        linkedCount += await SyncPayloadVoiceAsync(payload, "instructionAudioUrl", item.InstructionText, "instruction", item.Title, onlyMissing);
+        linkedCount += await SyncPayloadVoiceAsync(payload, "correctAudioUrl", ReadJsonString(question.FeedbackJson, "correct"), "correct-feedback", item.Title, onlyMissing);
+        linkedCount += await SyncPayloadVoiceAsync(payload, "retryAudioUrl", ReadJsonString(question.FeedbackJson, "retry"), "retry-feedback", item.Title, onlyMissing);
 
         if (item.InteractionType == InteractionTypes.Tracing)
         {
-            generatedCount += await GeneratePayloadAudioAsync(
-                payload,
-                "audioUrl",
-                question.PromptText,
-                "tracing-prompt",
-                onlyMissing);
-            generatedCount += await GeneratePayloadAudioAsync(
-                payload,
-                "questionAudioUrl",
-                question.PromptText,
-                "question",
-                onlyMissing);
+            linkedCount += await SyncPayloadVoiceAsync(payload, "audioUrl", question.PromptText, "tracing-prompt", item.Title, onlyMissing);
+            linkedCount += await SyncPayloadVoiceAsync(payload, "questionAudioUrl", question.PromptText, "question", item.Title, onlyMissing);
         }
         else
         {
-            generatedCount += await GeneratePayloadAudioAsync(
-                payload,
-                "questionAudioUrl",
-                question.PromptText,
-                "question",
-                onlyMissing);
-
+            linkedCount += await SyncPayloadVoiceAsync(payload, "questionAudioUrl", question.PromptText, "question", item.Title, onlyMissing);
             if (item.InteractionType == InteractionTypes.ListenAndChoose ||
                 item.InteractionType == InteractionTypes.StoryChoice)
             {
-                generatedCount += await GeneratePayloadAudioAsync(
-                    payload,
-                    "audioUrl",
-                    ReadJsonString(payload, "speechText"),
-                    "content",
-                    onlyMissing);
+                linkedCount += await SyncPayloadVoiceAsync(payload, "audioUrl", ReadJsonString(payload, "speechText"), "content", item.Title, onlyMissing);
             }
         }
 
-        generatedCount += await GenerateOptionAudioMapAsync(payload, onlyMissing);
-
-        if (generatedCount == 0)
-        {
-            return 0;
-        }
+        linkedCount += await SyncOptionVoiceMapAsync(payload, item.Title, onlyMissing);
 
         var payloadJson = payload.ToJsonString();
         question.PayloadJson = payloadJson;
         item.ContentJson = payloadJson;
         item.UpdatedAt = DateTimeOffset.UtcNow;
-        return generatedCount;
+        return linkedCount;
     }
 
-    private async Task<int> GeneratePayloadAudioAsync(JsonObject payload, string propertyName, string text, string prefix, bool onlyMissing)
+    private async Task<int> SyncPayloadVoiceAsync(JsonObject payload, string propertyName, string text, string usageType, string? lessonTitle, bool onlyMissing)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -1171,12 +1488,14 @@ public class AdminController : Controller
 
         if (onlyMissing && !string.IsNullOrWhiteSpace(ReadJsonString(payload, propertyName)))
         {
+            await EnsureVoiceCacheEntryAsync(text, usageType, lessonTitle);
             return 0;
         }
 
-        var audioUrl = await GenerateAudioFileAsync(text, prefix);
+        var audioUrl = await ResolveVoiceAudioAsync(text, usageType, lessonTitle);
         if (string.IsNullOrWhiteSpace(audioUrl))
         {
+            payload[propertyName] = string.Empty;
             return 0;
         }
 
@@ -1184,7 +1503,7 @@ public class AdminController : Controller
         return 1;
     }
 
-    private async Task<int> GenerateOptionAudioMapAsync(JsonObject payload, bool onlyMissing)
+    private async Task<int> SyncOptionVoiceMapAsync(JsonObject payload, string? lessonTitle, bool onlyMissing)
     {
         var labels = CollectOptionSpeechLabels(payload)
             .Select(Clean)
@@ -1199,32 +1518,29 @@ public class AdminController : Controller
         var audioMap = payload.TryGetPropertyValue("optionAudio", out var existingNode) && existingNode is JsonObject existingObject
             ? existingObject
             : new JsonObject();
-        var generatedCount = 0;
+        var linkedCount = 0;
         foreach (var label in labels)
         {
             if (onlyMissing && !string.IsNullOrWhiteSpace(ReadJsonString(audioMap, label)))
             {
+                await EnsureVoiceCacheEntryAsync(label, "option", lessonTitle);
                 continue;
             }
 
-            var audioUrl = await GenerateAudioFileAsync(label, "option");
+            var audioUrl = await ResolveVoiceAudioAsync(label, "option", lessonTitle);
             if (string.IsNullOrWhiteSpace(audioUrl))
             {
+                audioMap[label] = string.Empty;
                 continue;
             }
 
             audioMap[label] = audioUrl;
-            generatedCount += 1;
+            linkedCount += 1;
         }
 
-        if (generatedCount > 0)
-        {
-            payload["optionAudio"] = audioMap;
-        }
-
-        return generatedCount;
+        payload["optionAudio"] = audioMap;
+        return linkedCount;
     }
-
     private static IEnumerable<string> CollectOptionSpeechLabels(JsonObject payload)
     {
         foreach (var value in ReadJsonStringArray(payload, "choices"))
@@ -1298,107 +1614,67 @@ public class AdminController : Controller
         return storagePath;
     }
 
-    private async Task<string?> GenerateAudioFileAsync(string text, string prefix)
+    private async Task<string?> ResolveVoiceAudioAsync(string text, string usageType, string? lessonTitle = null)
     {
-        text = Clean(text);
-        if (string.IsNullOrWhiteSpace(text) || _textToSpeechQuotaExceeded)
+        var entry = await EnsureVoiceCacheEntryAsync(text, usageType, lessonTitle);
+        return entry is { Status: "ready", AudioUrl.Length: > 0 } ? entry.AudioUrl : null;
+    }
+
+    private async Task<TextToSpeechCache?> EnsureVoiceCacheEntryAsync(string text, string usageType, string? lessonTitle = null)
+    {
+        var normalizedText = NormalizeSpeechText(text);
+        if (string.IsNullOrWhiteSpace(normalizedText))
         {
             return null;
         }
 
-        var normalizedText = NormalizeSpeechText(text);
         var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
-        var cacheEntry = await _db.TextToSpeechCaches
-            .FirstOrDefaultAsync(x =>
+        var pendingEntry = _db.ChangeTracker.Entries<TextToSpeechCache>()
+            .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Unchanged)
+            .Select(x => x.Entity)
+            .FirstOrDefault(x =>
                 x.Provider == cacheKey.Provider &&
                 x.Voice == cacheKey.Voice &&
                 x.ModelId == cacheKey.ModelId &&
                 x.Format == cacheKey.Format &&
-                x.TextHash == cacheKey.TextHash &&
-                x.Status == "ready");
-        if (cacheEntry is not null)
+                x.TextHash == cacheKey.TextHash);
+        if (pendingEntry is not null)
         {
-            cacheEntry.ReuseCount += 1;
-            cacheEntry.UpdatedAt = DateTimeOffset.UtcNow;
-            return cacheEntry.AudioUrl;
-        }
-
-        var legacyAudioKey = AudioCacheKey(normalizedText);
-        var existingAudio = await _db.MediaAssets
-            .Where(x => x.AssetType == "audio" && x.AltText == legacyAudioKey)
-            .OrderByDescending(x => x.CreatedAt)
-            .Select(x => x.StoragePath)
-            .FirstOrDefaultAsync();
-        existingAudio ??= await _db.MediaAssets
-            .Where(x => x.AssetType == "audio" && x.AltText == AudioAltText(text))
-            .OrderByDescending(x => x.CreatedAt)
-            .Select(x => x.StoragePath)
-            .FirstOrDefaultAsync();
-        if (!string.IsNullOrWhiteSpace(existingAudio))
-        {
-            _db.TextToSpeechCaches.Add(new TextToSpeechCache
+            if (string.IsNullOrWhiteSpace(pendingEntry.Name))
             {
-                Id = Guid.NewGuid(),
-                Provider = cacheKey.Provider,
-                Voice = cacheKey.Voice,
-                ModelId = cacheKey.ModelId,
-                Format = cacheKey.Format,
-                TextHash = cacheKey.TextHash,
-                NormalizedText = AudioAltText(normalizedText),
-                OriginalText = AudioOriginalText(text),
-                AudioUrl = existingAudio,
-                Status = "ready",
-                ReuseCount = 1,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
-            });
-            return existingAudio;
-        }
-
-        GeneratedSpeech? speech;
-        try
-        {
-            speech = await _textToSpeech.GenerateAsync(normalizedText, HttpContext.RequestAborted);
-        }
-        catch (Exception ex)
-        {
-            if (_textToSpeechErrors.Count < 3)
-            {
-                _textToSpeechErrors.Add(ex.Message);
+                pendingEntry.Name = BuildVoiceName(usageType, lessonTitle, normalizedText);
             }
-            if (ex.Message.Contains("quota_exceeded", StringComparison.OrdinalIgnoreCase) ||
-                ex.Message.Contains("quota", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(pendingEntry.UsageType))
             {
-                _textToSpeechQuotaExceeded = true;
+                pendingEntry.UsageType = usageType;
             }
-            TempData["AdminMessage"] = $"TTS lỗi: {ex.Message}";
-            return null;
+            pendingEntry.ReuseCount += 1;
+            pendingEntry.UpdatedAt = DateTimeOffset.UtcNow;
+            return pendingEntry;
         }
 
-        if (speech is null)
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            x.Provider == cacheKey.Provider &&
+            x.Voice == cacheKey.Voice &&
+            x.ModelId == cacheKey.ModelId &&
+            x.Format == cacheKey.Format &&
+            x.TextHash == cacheKey.TextHash);
+        if (entry is not null)
         {
-            return null;
+            if (string.IsNullOrWhiteSpace(entry.Name))
+            {
+                entry.Name = BuildVoiceName(usageType, lessonTitle, normalizedText);
+            }
+            if (string.IsNullOrWhiteSpace(entry.UsageType))
+            {
+                entry.UsageType = usageType;
+            }
+            entry.ReuseCount += 1;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            return entry;
         }
 
-        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio");
-        Directory.CreateDirectory(folder);
-
-        var storedName = $"{NormalizeCode(prefix)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}{speech.Extension}";
-        var diskPath = Path.Combine(folder, storedName);
-        await System.IO.File.WriteAllBytesAsync(diskPath, speech.Content, HttpContext.RequestAborted);
-
-        var storagePath = $"/uploads/audio/{storedName}";
-        _db.MediaAssets.Add(new MediaAsset
-        {
-            Id = Guid.NewGuid(),
-            AssetType = "audio",
-            FileName = storedName,
-            ContentType = speech.ContentType,
-            StoragePath = storagePath,
-            AltText = legacyAudioKey,
-            CreatedAt = DateTimeOffset.UtcNow
-        });
-        _db.TextToSpeechCaches.Add(new TextToSpeechCache
+        entry = new TextToSpeechCache
         {
             Id = Guid.NewGuid(),
             Provider = cacheKey.Provider,
@@ -1406,19 +1682,199 @@ public class AdminController : Controller
             ModelId = cacheKey.ModelId,
             Format = cacheKey.Format,
             TextHash = cacheKey.TextHash,
+            Name = BuildVoiceName(usageType, lessonTitle, normalizedText),
+            UsageType = usageType,
             NormalizedText = AudioAltText(normalizedText),
             OriginalText = AudioOriginalText(text),
-            AudioUrl = storagePath,
-            Status = "ready",
+            AudioUrl = string.Empty,
+            Status = "missing",
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
+        };
+        _db.TextToSpeechCaches.Add(entry);
+        return entry;
+    }
+
+    private async Task<string> SaveVoiceCacheFileAsync(IFormFile file, TextToSpeechCache entry)
+    {
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio");
+        Directory.CreateDirectory(folder);
+
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            extension = ".mp3";
+        }
+        var storedName = $"voice-{NormalizeCode(entry.Name)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}{extension}";
+        var diskPath = Path.Combine(folder, storedName);
+        await using (var stream = System.IO.File.Create(diskPath))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var storagePath = $"/uploads/audio/{storedName}";
+        _db.MediaAssets.Add(new MediaAsset
+        {
+            Id = Guid.NewGuid(),
+            AssetType = "audio",
+            FileName = storedName,
+            ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "audio/mpeg" : file.ContentType,
+            StoragePath = storagePath,
+            AltText = AudioCacheKey(entry.NormalizedText),
+            CreatedAt = DateTimeOffset.UtcNow
         });
         return storagePath;
+    }
+
+    private async Task ApplyVoiceCacheUploadAsync(TextToSpeechCache entry, IFormFile audioFile)
+    {
+        entry.AudioUrl = await SaveVoiceCacheFileAsync(audioFile, entry);
+        entry.Status = "ready";
+        entry.LastError = null;
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    private async Task<string> GenerateVoiceCacheFileAsync(TextToSpeechCache entry)
+    {
+        var text = NormalizeSpeechText(string.IsNullOrWhiteSpace(entry.OriginalText)
+            ? entry.NormalizedText
+            : entry.OriginalText);
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new InvalidOperationException("Voice không có nội dung text để tạo file.");
+        }
+
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio");
+        Directory.CreateDirectory(folder);
+
+        var storedName = $"voice-{NormalizeCode(entry.Name)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}.mp3";
+        var diskPath = Path.Combine(folder, storedName);
+        var voice = _configuration["VoiceLibrary:Voice"]?.Trim();
+        if (string.IsNullOrWhiteSpace(voice))
+        {
+            voice = "vi-VN-HoaiMyNeural";
+        }
+        var rate = _configuration["VoiceLibrary:Rate"]?.Trim();
+        if (string.IsNullOrWhiteSpace(rate))
+        {
+            rate = "-10%";
+        }
+
+        await RunEdgeTextToSpeechAsync(text, voice, rate, diskPath);
+
+        var storagePath = $"/uploads/audio/{storedName}";
+        _db.MediaAssets.Add(new MediaAsset
+        {
+            Id = Guid.NewGuid(),
+            AssetType = "audio",
+            FileName = storedName,
+            ContentType = "audio/mpeg",
+            StoragePath = storagePath,
+            AltText = AudioCacheKey(entry.NormalizedText),
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+        return storagePath;
+    }
+
+    private static async Task RunEdgeTextToSpeechAsync(string text, string voice, string rate, string outputPath)
+    {
+        var candidates = new[]
+        {
+            ("python", new[] { "-m", "edge_tts" }),
+            ("py", new[] { "-m", "edge_tts" })
+        };
+        var errors = new List<string>();
+        foreach (var (fileName, prefixArgs) in candidates)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
+            };
+            foreach (var arg in prefixArgs)
+            {
+                startInfo.ArgumentList.Add(arg);
+            }
+            startInfo.ArgumentList.Add("--voice");
+            startInfo.ArgumentList.Add(voice);
+            startInfo.ArgumentList.Add("--rate");
+            startInfo.ArgumentList.Add(rate);
+            startInfo.ArgumentList.Add("--text");
+            startInfo.ArgumentList.Add(text);
+            startInfo.ArgumentList.Add("--write-media");
+            startInfo.ArgumentList.Add(outputPath);
+
+            try
+            {
+                using var process = Process.Start(startInfo);
+                if (process is null)
+                {
+                    errors.Add($"{fileName}: không khởi động được process.");
+                    continue;
+                }
+
+                var outputTask = process.StandardOutput.ReadToEndAsync();
+                var errorTask = process.StandardError.ReadToEndAsync();
+                var exitTask = process.WaitForExitAsync();
+                var completedTask = await Task.WhenAny(exitTask, Task.Delay(TimeSpan.FromSeconds(45)));
+                if (completedTask != exitTask)
+                {
+                    try
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                    catch
+                    {
+                        // Ignore kill errors; the failure message below is enough for admin.
+                    }
+                    errors.Add($"{fileName}: quá thời gian tạo voice.");
+                    continue;
+                }
+
+                var stdout = await outputTask;
+                var stderr = await errorTask;
+                if (process.ExitCode == 0 && System.IO.File.Exists(outputPath) && new FileInfo(outputPath).Length > 0)
+                {
+                    return;
+                }
+
+                errors.Add($"{fileName}: {stderr} {stdout}".Trim());
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"{fileName}: {ex.Message}");
+            }
+        }
+
+        throw new InvalidOperationException(string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x))));
     }
 
     private static string AudioAltText(string text) => text.Length > 180 ? text[..180] : text;
 
     private static string AudioOriginalText(string text) => text.Length > 1000 ? text[..1000] : text;
+
+    private static string GetInnermostMessage(Exception exception)
+    {
+        var current = exception;
+        while (current.InnerException is not null)
+        {
+            current = current.InnerException;
+        }
+
+        return current.Message;
+    }
+
+    private static string ExtractVoiceTextFromAltText(string altText)
+    {
+        const string prefix = "tts:v1:";
+        var cleaned = Clean(altText);
+        return cleaned.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? cleaned[prefix.Length..]
+            : cleaned;
+    }
 
     private static string NormalizeSpeechText(string text)
     {
@@ -1433,13 +1889,35 @@ public class AdminController : Controller
 
     private TextToSpeechCacheKey BuildTextToSpeechCacheKey(string normalizedText)
     {
-        var provider = string.IsNullOrWhiteSpace(_textToSpeechOptions.Provider) ? "Unknown" : _textToSpeechOptions.Provider.Trim();
-        var voice = string.IsNullOrWhiteSpace(_textToSpeechOptions.Voice) ? "default" : _textToSpeechOptions.Voice.Trim();
-        var modelId = string.IsNullOrWhiteSpace(_textToSpeechOptions.ModelId) ? "default" : _textToSpeechOptions.ModelId.Trim();
-        var format = string.IsNullOrWhiteSpace(_textToSpeechOptions.Format) ? "mp3" : _textToSpeechOptions.Format.Trim();
+        var provider = _configuration["VoiceLibrary:Provider"]?.Trim();
+        var voice = _configuration["VoiceLibrary:Voice"]?.Trim();
+        var modelId = _configuration["VoiceLibrary:ModelId"]?.Trim();
+        var format = _configuration["VoiceLibrary:Format"]?.Trim();
+        provider = string.IsNullOrWhiteSpace(provider) ? "Manual" : provider;
+        voice = string.IsNullOrWhiteSpace(voice) ? "vi-VN-HoaiMyNeural" : voice;
+        modelId = string.IsNullOrWhiteSpace(modelId) ? "manual-upload" : modelId;
+        format = string.IsNullOrWhiteSpace(format) ? "mp3" : format;
         var hashSource = $"{provider}|{voice}|{modelId}|{format}|{normalizedText.ToLowerInvariant()}";
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(hashSource))).ToLowerInvariant();
         return new TextToSpeechCacheKey(provider, voice, modelId, format, hash);
+    }
+
+    private static string BuildVoiceName(string usageType, string? lessonTitle, string normalizedText)
+    {
+        var prefix = usageType switch
+        {
+            "title" => "Tiêu đề",
+            "instruction" => "Hướng dẫn",
+            "question" => "Câu hỏi",
+            "correct-feedback" => "Phản hồi đúng",
+            "retry-feedback" => "Phản hồi sai",
+            "option" => "Đáp án",
+            "content" => "Nội dung",
+            "tracing-prompt" => "Tô nét",
+            _ => "Voice"
+        };
+        var scope = string.IsNullOrWhiteSpace(lessonTitle) ? normalizedText : lessonTitle;
+        return AudioAltText($"{prefix} - {scope}");
     }
 
     private sealed record TextToSpeechCacheKey(
@@ -1448,7 +1926,6 @@ public class AdminController : Controller
         string ModelId,
         string Format,
         string TextHash);
-
     private static CreateChoiceItemViewModel BuildActivityEditorModel(LearningItem item)
     {
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
@@ -1495,8 +1972,8 @@ public class AdminController : Controller
             CorrectFeedbackAudioUrl = ReadJsonString(payloadJson, "correctAudioUrl"),
             RetryFeedbackAudioUrl = ReadJsonString(payloadJson, "retryAudioUrl"),
             SpeechText = ReadJsonString(payloadJson, "speechText"),
-            LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "NhÃ³m A",
-            RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "NhÃ³m B",
+            LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "Nhóm A",
+            RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "Nhóm B",
             Level = item.Level,
             EstimatedMinutes = item.EstimatedMinutes,
             HintText = ReadJsonString(question?.HintJson, "level1"),
@@ -1511,11 +1988,11 @@ public class AdminController : Controller
         if (template?.RequiresAudio == true && string.IsNullOrWhiteSpace(model.AudioUrl) &&
             string.IsNullOrWhiteSpace(model.SpeechText) && model.AudioFile is null)
         {
-            ModelState.AddModelError(nameof(model.AudioUrl), "Dáº¡ng bÃ i nÃ y cáº§n tá»‡p Ã¢m thanh, Ã¢m thanh thÆ° viá»‡n hoáº·c ná»™i dung Ä‘á»c tá»± Ä‘á»™ng.");
+            ModelState.AddModelError(nameof(model.AudioUrl), "Dạng bài này cần nội dung đọc trong bảng Kiểm soát voice hoặc file âm thanh đã gắn.");
         }
         if (template?.RequiresImage == true && string.IsNullOrWhiteSpace(model.ImageUrl) && model.ImageFile is null)
         {
-            ModelState.AddModelError(nameof(model.ImageUrl), "Dáº¡ng bÃ i nÃ y cáº§n má»™t hÃ¬nh minh há»a hoáº·c hÃ¬nh trong thÆ° viá»‡n.");
+            ModelState.AddModelError(nameof(model.ImageUrl), "Dạng bài này cần một hình minh họa hoặc hình trong thư viện.");
         }
         if (!ModelState.IsValid)
         {
@@ -1538,8 +2015,8 @@ public class AdminController : Controller
             ["speechText"] = Clean(model.SpeechText),
             ["instructionSpeechText"] = Clean(model.InstructionText),
             ["questionSpeechText"] = Clean(model.PromptText),
-            ["correctSpeechText"] = "Giá»i láº¯m, con Ä‘Ã£ lÃ m Ä‘Ãºng!",
-            ["retrySpeechText"] = "Con quan sÃ¡t ká»¹ rá»“i thá»­ láº¡i nhÃ©."
+            ["correctSpeechText"] = "Giỏi lắm, con đã làm đúng!",
+            ["retrySpeechText"] = "Con quan sát kỹ rồi thử lại nhé."
         };
 
         payload["correctSpeechText"] = Clean(model.CorrectFeedback);
@@ -1548,10 +2025,10 @@ public class AdminController : Controller
         var itemMedia = ParseMappings(
             model.ItemMediaText,
             nameof(model.ItemMediaText),
-            "Má»—i áº£nh riÃªng cáº§n cÃ³ dáº¡ng TÃªn ná»™i dung = ÄÆ°á»ng dáº«n áº£nh.");
+            "Mỗi ảnh riêng cần có dạng Tên nội dung = Đường dẫn ảnh.");
         if (itemMedia.Count > 30)
         {
-            ModelState.AddModelError(nameof(model.ItemMediaText), "Má»—i bÃ i dÃ¹ng tá»‘i Ä‘a 30 áº£nh riÃªng.");
+            ModelState.AddModelError(nameof(model.ItemMediaText), "Mỗi bài dùng tối đa 30 ảnh riêng.");
             return null;
         }
         foreach (var media in itemMedia)
@@ -1559,7 +2036,7 @@ public class AdminController : Controller
             if (!Uri.TryCreate(media.Right, UriKind.RelativeOrAbsolute, out var uri) ||
                 (!media.Right.StartsWith('/') && !uri.IsAbsoluteUri))
             {
-                ModelState.AddModelError(nameof(model.ItemMediaText), $"ÄÆ°á»ng dáº«n áº£nh cá»§a '{media.Left}' chÆ°a há»£p lá»‡.");
+                ModelState.AddModelError(nameof(model.ItemMediaText), $"Đường dẫn ảnh của '{media.Left}' chưa hợp lệ.");
             }
         }
         if (!ModelState.IsValid)
@@ -1591,7 +2068,7 @@ public class AdminController : Controller
                 if (choices.Length < 2 || correctValues.Length == 0 ||
                     correctValues.Any(value => !choices.Contains(value, StringComparer.OrdinalIgnoreCase)))
                 {
-                    ModelState.AddModelError(nameof(model.CorrectAnswersText), "CÃ¡c Ä‘Ã¡p Ã¡n Ä‘Ãºng pháº£i náº±m trong danh sÃ¡ch lá»±a chá»n.");
+                    ModelState.AddModelError(nameof(model.CorrectAnswersText), "Các đáp án đúng phải nằm trong danh sách lựa chọn.");
                     return null;
                 }
                 payload["choices"] = ToJsonArray(choices);
@@ -1599,10 +2076,10 @@ public class AdminController : Controller
                 return new(payload.ToJsonString(), CanonicalList(correctValues));
 
             case InteractionTypes.Matching:
-                var pairs = ParseMappings(model.PairsText, nameof(model.PairsText), "Má»—i cáº·p cáº§n cÃ³ dáº¡ng BÃªn trÃ¡i = BÃªn pháº£i.");
+                var pairs = ParseMappings(model.PairsText, nameof(model.PairsText), "Mỗi cặp cần có dạng Bên trái = Bên phải.");
                 if (pairs.Count < 2)
                 {
-                    ModelState.AddModelError(nameof(model.PairsText), "BÃ i ná»‘i cáº·p cáº§n Ã­t nháº¥t hai cáº·p.");
+                    ModelState.AddModelError(nameof(model.PairsText), "Bài nối cặp cần ít nhất hai cặp.");
                     return null;
                 }
                 payload["pairs"] = ToMappingArray(pairs);
@@ -1612,7 +2089,7 @@ public class AdminController : Controller
                 var sequence = SplitLines(model.SequenceItemsText);
                 if (sequence.Length < 2)
                 {
-                    ModelState.AddModelError(nameof(model.SequenceItemsText), "BÃ i sáº¯p xáº¿p cáº§n Ã­t nháº¥t hai má»¥c.");
+                    ModelState.AddModelError(nameof(model.SequenceItemsText), "Bài sắp xếp cần ít nhất hai mục.");
                     return null;
                 }
                 payload["items"] = ToJsonArray(sequence);
@@ -1649,7 +2126,7 @@ public class AdminController : Controller
                 var comparisonMode = model.ComparisonMode is "less" or "equal" ? model.ComparisonMode : "more";
                 if (comparisonMode == "equal" && model.TargetCount != model.SecondaryCount)
                 {
-                    ModelState.AddModelError(nameof(model.SecondaryCount), "Khi chá»n kiá»ƒm tra báº±ng nhau, hai nhÃ³m pháº£i cÃ³ cÃ¹ng sá»‘ lÆ°á»£ng.");
+                    ModelState.AddModelError(nameof(model.SecondaryCount), "Khi chọn kiểm tra bằng nhau, hai nhóm phải có cùng số lượng.");
                     return null;
                 }
                 payload["comparisonMode"] = comparisonMode;
@@ -1669,10 +2146,10 @@ public class AdminController : Controller
                 var mappings = ParseMappings(
                     model.ClassificationText,
                     nameof(model.ClassificationText),
-                    "Má»—i váº­t cáº§n cÃ³ dáº¡ng TÃªn váº­t = NhÃ³m phÃ¢n loáº¡i.");
+                    "Mỗi vật cần có dạng Tên vật = Nhóm phân loại.");
                 if (mappings.Count < 2 || mappings.Select(x => x.Right).Distinct(StringComparer.OrdinalIgnoreCase).Count() < 2)
                 {
-                    ModelState.AddModelError(nameof(model.ClassificationText), "BÃ i phÃ¢n loáº¡i cáº§n Ã­t nháº¥t hai váº­t vÃ  hai nhÃ³m.");
+                    ModelState.AddModelError(nameof(model.ClassificationText), "Bài phân loại cần ít nhất hai vật và hai nhóm.");
                     return null;
                 }
                 payload["mappings"] = ToMappingArray(mappings);
@@ -1691,7 +2168,7 @@ public class AdminController : Controller
             return true;
         }
 
-        ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "BÃ i cáº§n Ã­t nháº¥t hai lá»±a chá»n vÃ  má»™t Ä‘Ã¡p Ã¡n Ä‘Ãºng náº±m trong danh sÃ¡ch.");
+        ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "Bài cần ít nhất hai lựa chọn và một đáp án đúng nằm trong danh sách.");
         return false;
     }
 
@@ -1748,13 +2225,13 @@ public class AdminController : Controller
         if (skillGroupId == Guid.Empty || !await _db.SkillGroups.AnyAsync(x =>
                 x.Id == skillGroupId && (!requireActive || x.IsActive)))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.SkillGroupId), "NhÃ³m ká»¹ nÄƒng khÃ´ng há»£p lá»‡ hoáº·c Ä‘ang táº¡m áº©n.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.SkillGroupId), "Nhóm kỹ năng không hợp lệ hoặc đang tạm ẩn.");
         }
 
         if (topicId.HasValue && !await _db.Topics.AnyAsync(x =>
                 x.Id == topicId.Value && x.SkillGroupId == skillGroupId && (!requireActive || x.IsActive)))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Chá»§ Ä‘á» khÃ´ng thuá»™c nhÃ³m ká»¹ nÄƒng Ä‘Ã£ chá»n hoáº·c Ä‘ang táº¡m áº©n.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Chủ đề không thuộc nhóm kỹ năng đã chọn hoặc đang tạm ẩn.");
         }
     }
 
@@ -1763,7 +2240,7 @@ public class AdminController : Controller
         var choices = BuildChoices(choiceA, choiceB, choiceC);
         if (choices.Length < 2 || !choices.Contains(Clean(correctAnswer), StringComparer.OrdinalIgnoreCase))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "ÄÃ¡p Ã¡n Ä‘Ãºng cáº§n náº±m trong cÃ¡c lá»±a chá»n Ä‘Ã£ nháº­p.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "Đáp án đúng cần nằm trong các lựa chọn đã nhập.");
         }
     }
 
