@@ -14,22 +14,22 @@ Các phần đã vận hành gồm ASP.NET Core MVC, Identity, SQL Server, migra
 
 ## 2. Độ phủ nội dung MVP
 
-Đặc tả đề xuất tối thiểu khoảng 190 bài. Source không seed bài học; số lượng thực tế phụ thuộc nội dung quản trị nhập. Tại lần rà soát này, LocalDB chỉ còn 2 bài do người dùng tự tạo sau khi đã xóa toàn bộ bài mẫu cũ. Danh mục hệ thống gồm 10 nhóm và 43 chủ đề, trong đó một số nhóm gần nhau của đặc tả được hợp nhất.
+Đặc tả đề xuất tối thiểu khoảng 190 bài. Source hiện seed idempotent 216 bài học nền và giữ riêng nội dung quản trị tự tạo. Bộ nền có 80 bài tô nét, chuỗi nhận biết chữ/số, đủ ghép lượng 0-9, đủ cả 11 dạng tương tác và đạt chỉ tiêu từng nhóm nội dung. LocalDB có thể nhiều hơn 216 bài do cộng thêm nội dung người dùng đã tạo. Danh mục hệ thống gồm 10 nhóm và 43 chủ đề, trong đó một số nhóm gần nhau của đặc tả được hợp nhất.
 
 | Nhóm nội dung | Đặc tả | Hiện có | Trạng thái |
 |---|---:|---:|---|
-| Vẽ theo nét cơ bản | 12 | 0 | Chưa đạt |
-| Vẽ chữ in hoa | 29 | Do quản trị nhập | Chưa đủ nội dung |
-| Vẽ chữ in thường | 29 | 0 | Chưa đạt |
-| Vẽ chữ số 0-9 | 10 | 0 | Chưa đạt |
-| Chữ cái | 20 | Do quản trị nhập | Chưa đủ nội dung |
-| Nhận biết chữ số | 15 | Do quản trị nhập | Chưa đủ nội dung |
-| Số lượng và toán học | 20 | Do quản trị nhập | Chưa đủ nội dung |
-| Bổ trợ vận động tinh | 10 | 0 | Chưa đạt |
-| Hình dạng và không gian | 10 | 0 | Chưa đạt |
-| Tư duy logic | 15 | 0 | Chưa đạt |
-| Ghi nhớ | 10 | 0 | Chưa đạt |
-| Kỹ năng sống | 10 | 0 | Chưa đạt |
+| Vẽ theo nét cơ bản | 12 | 12 bài nền | Đạt số lượng |
+| Vẽ chữ in hoa | 29 | 29 bài nền | Đạt số lượng |
+| Vẽ chữ in thường | 29 | 29 bài nền | Đạt số lượng |
+| Vẽ chữ số 0-9 | 10 | 10 bài nền | Đạt số lượng |
+| Chữ cái | 20 | Có bộ chữ đầy đủ và bài tương tác bổ sung | Đạt số lượng nền, cần rà soát chất lượng sư phạm |
+| Nhận biết chữ số | 15 | 15 bài nền cho số 0-14 | Đạt số lượng |
+| Số lượng và toán học | 20 | 30 bài đếm, tạo lượng và so sánh | Vượt số lượng tối thiểu |
+| Bổ trợ vận động tinh | 10 | 10 bài nền riêng | Đạt số lượng |
+| Hình dạng và không gian | 10 | 10 bài nền | Đạt số lượng |
+| Tư duy logic | 15 | 15 bài nền | Đạt số lượng |
+| Ghi nhớ | 10 | 10 bài nền | Đạt số lượng |
+| Kỹ năng sống | 10 | 10 bài nền | Đạt số lượng |
 
 Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catalogs` tính độ phủ động từ số chủ đề đã có ít nhất một bài; không ghi cứng tỷ lệ vào tài liệu.
 
@@ -166,7 +166,7 @@ Không tính nhóm/chủ đề là bài học hoàn chỉnh. Trang `/admin/catal
 | Hạng mục | Trạng thái |
 |---|---|
 | SQL Server + EF Core migration | Đạt |
-| Seed role/Admin/danh mục cố định | Đạt; idempotent, không tạo bài học hay dữ liệu người dùng mẫu |
+| Seed role/Admin/danh mục/bài nền | Đạt; idempotent, tạo 216 bài nền, 6 tranh chính và đóng gói 75 pictogram, không tạo dữ liệu người dùng hoặc lịch sử học mẫu |
 | Dựng DB trên máy mới | Đạt qua migration + seed |
 | Backup/restore dữ liệu người dùng | Chưa kiểm thử |
 | Media assets | Có upload ảnh/audio, chọn tài nguyên đã có và trang `/admin/media`; chưa có thu âm, sửa metadata hoặc xóa tài nguyên |

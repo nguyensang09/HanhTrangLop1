@@ -100,7 +100,8 @@ Tài khoản mặc định hiện tại:
 
 - Admin: `admin@hanhtranglop1.local` / `Admin@123456`
 - Tài khoản phụ huynh không được tạo sẵn; người dùng tự đăng ký khi bắt đầu sử dụng.
-- Seed tạo 10 nhóm kỹ năng và 43 chủ đề cố định, nhưng không tạo bài học, hồ sơ bé, lịch sử học hoặc phần thưởng mẫu.
+- Seed tạo 10 nhóm kỹ năng, 43 chủ đề, 216 bài học nền và 6 tranh bài học chính. 75 pictogram hệ thống được đóng gói cùng source, không cần bản ghi SQL. Seed không tạo hồ sơ bé, lịch sử học hoặc phần thưởng mẫu và không ghi đè bài quản trị tự tạo.
+- Migration `AddLearningItemSortOrder` bổ sung thứ tự học. Chạy `Update-Database -Context ApplicationDbContext` để áp dụng khi đóng gói sang máy khác.
 - Quản trị tạo bài học trong các nhóm/chủ đề này; dữ liệu đã tạo không bị seed ghi đè hoặc xóa.
 
 Có thể đổi trong `appsettings.json`.

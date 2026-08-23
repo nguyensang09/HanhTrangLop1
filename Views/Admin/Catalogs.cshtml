@@ -38,7 +38,7 @@
                 <header class="curriculum-group-header">
                     <span class="curriculum-group-icon material-symbols-outlined">@group.SkillGroup.IconKey</span>
                     <div>
-                        <h2>@group.SkillGroup.Name</h2>
+                        <h2><a class="curriculum-drilldown-link" asp-action="LearningItems" asp-route-skillGroupId="@group.SkillGroup.Id">@group.SkillGroup.Name</a></h2>
                         <p>@group.SkillGroup.Description</p>
                     </div>
                     <div class="curriculum-coverage">
@@ -52,7 +52,10 @@
                     {
                         <div class="curriculum-topic-row">
                             <span class="material-symbols-outlined">@(topic.LearningItemCount > 0 ? "check_circle" : "radio_button_unchecked")</span>
-                            <div><strong>@topic.Topic.Name</strong><small>@topic.Topic.Code</small></div>
+                            <div>
+                                <strong><a class="curriculum-drilldown-link" asp-action="LearningItems" asp-route-skillGroupId="@group.SkillGroup.Id" asp-route-topicId="@topic.Topic.Id">@topic.Topic.Name</a></strong>
+                                <small>@topic.Topic.Code</small>
+                            </div>
                             <span class="topic-count">@topic.LearningItemCount bài</span>
                             <div class="topic-template-actions">
                                 @foreach (var template in topic.AllowedTemplates)

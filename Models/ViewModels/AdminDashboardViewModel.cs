@@ -24,8 +24,14 @@ public class AdminLearningItemListViewModel
     public string? Status { get; set; }
     public string? InteractionType { get; set; }
     public Guid? SkillGroupId { get; set; }
+    public Guid? TopicId { get; set; }
     public IReadOnlyList<SkillGroup> SkillGroups { get; set; } = [];
+    public IReadOnlyList<Topic> Topics { get; set; } = [];
     public IReadOnlyList<LearningItem> Items { get; set; } = [];
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 25;
+    public int TotalItems { get; set; }
+    public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
 }
 
 public class EditLearningItemViewModel
@@ -35,6 +41,9 @@ public class EditLearningItemViewModel
     public string Title { get; set; } = string.Empty;
     public Guid SkillGroupId { get; set; }
     public Guid? TopicId { get; set; }
+
+    [Range(0, 100000, ErrorMessage = "Thứ tự bài học phải từ 0 đến 100000.")]
+    public int SortOrder { get; set; }
     [Range(1, 3, ErrorMessage = "Độ khó phải từ 1 đến 3.")]
     public byte Level { get; set; } = 1;
     [Range(1, 30, ErrorMessage = "Thời lượng phải từ 1 đến 30 phút.")]
@@ -58,6 +67,11 @@ public class EditLearningItemViewModel
 public class CreateTracingItemViewModel
 {
     public Guid? Id { get; set; }
+    public string Status { get; set; } = ContentStatus.Draft;
+    public bool IsCompatible { get; set; } = true;
+
+    [Range(0, 100000, ErrorMessage = "Thứ tự bài học phải từ 0 đến 100000.")]
+    public int SortOrder { get; set; }
 
     [Required(ErrorMessage = "Vui lòng nhập tên bài."), MaxLength(200)]
     public string Title { get; set; } = string.Empty;
@@ -84,7 +98,7 @@ public class CreateTracingItemViewModel
     [Range(1, 10, ErrorMessage = "Số nét dự kiến phải từ 1 đến 10.")]
     public int ExpectedStrokeCount { get; set; } = 1;
 
-    public bool ShowStartPoint { get; set; } = true;
+    public bool ShowStartPoint { get; set; }
 
     [MaxLength(1000)]
     public string AudioUrl { get; set; } = string.Empty;
@@ -94,6 +108,13 @@ public class CreateTracingItemViewModel
 
     [Range(1, 3, ErrorMessage = "Độ khó phải từ 1 đến 3.")]
     public byte Level { get; set; } = 1;
+}
+
+public class LearningItemWorkflowViewModel
+{
+    public Guid Id { get; set; }
+    public string Status { get; set; } = ContentStatus.Draft;
+    public bool IsCompatible { get; set; } = true;
 }
 
 public class AdminCatalogViewModel

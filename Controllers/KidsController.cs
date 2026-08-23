@@ -88,7 +88,9 @@ public class KidsController : Controller
             .Include(x => x.Topic)
             .Include(x => x.Questions)
             .Where(x => x.SkillGroupId == id && x.Status == ContentStatus.Published)
-            .OrderBy(x => x.Level)
+            .OrderBy(x => x.Topic!.SortOrder)
+            .ThenBy(x => x.SortOrder)
+            .ThenBy(x => x.Level)
             .ThenBy(x => x.Title)
             .ToListAsync();
         items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
@@ -138,24 +140,11 @@ public class KidsController : Controller
         }
 
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-        var model = new LearnViewModel
-        {
-            Item = item,
-            ChildProfile = await GetSelectedChildProfileAsync(),
-            CurrentQuestion = question,
-            Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
-            TracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
-            TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
-            TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
-            TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
-            TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
-            TracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty),
-            QuestionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty),
-            NextItemId = await FindNextItemIdAsync(item, skillGroupId),
-            ReturnSkillGroupId = skillGroupId
-        };
-
-        return View(model);
+        return View(await BuildLearnViewModelAsync(
+            item,
+            question,
+            await GetSelectedChildProfileAsync(),
+            skillGroupId));
     }
 
     [HttpPost("learn/{id:guid}/answer")]
@@ -184,7 +173,7 @@ public class KidsController : Controller
         }
 
         var correctAnswer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
-        var isCorrect = string.Equals(answer.AnswerValue, correctAnswer, StringComparison.OrdinalIgnoreCase);
+        var isCorrect = LearningAnswerEvaluator.IsCorrect(item.InteractionType, answer.AnswerValue, correctAnswer);
         var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child);
         HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, session.Id.ToString());
 
@@ -218,22 +207,13 @@ public class KidsController : Controller
         await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect);
         await _db.SaveChangesAsync();
 
-        var model = new LearnViewModel
-        {
-            Item = item,
-            ChildProfile = child,
-            CurrentQuestion = question,
-            Choices = LearningJsonReader.ReadChoices(question.PayloadJson),
-            TracingSymbol = LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
-            TracingMinPoints = LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
-            QuestionImageUrl = LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty),
-            FeedbackMessage = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect),
-            IsCorrect = isCorrect,
-            NextItemId = await FindNextItemIdAsync(item, skillGroupId),
-            ReturnSkillGroupId = skillGroupId
-        };
-
-        return View("Learn", model);
+        return View("Learn", await BuildLearnViewModelAsync(
+            item,
+            question,
+            child,
+            skillGroupId,
+            LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect),
+            isCorrect));
     }
 
     [HttpPost("learn/{id:guid}/complete-tracing")]
@@ -295,18 +275,16 @@ public class KidsController : Controller
         await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect: true);
         await _db.SaveChangesAsync();
 
-        var nextItemId = await FindNextItemIdAsync(item, skillGroupId);
-        if (nextItemId.HasValue)
-        {
-            return RedirectToAction(nameof(Learn), new { id = nextItemId.Value, skillGroupId });
-        }
-
-        if (skillGroupId.HasValue)
-        {
-            return RedirectToAction(nameof(Skill), new { id = skillGroupId.Value });
-        }
-
-        return RedirectToAction(nameof(Summary));
+        var feedback = question is null
+            ? "Con đã hoàn thành bài tô nét!"
+            : LearningJsonReader.ReadFeedback(question.FeedbackJson, true);
+        return View("Learn", await BuildLearnViewModelAsync(
+            item,
+            question,
+            child,
+            skillGroupId,
+            feedback,
+            true));
     }
 
     [HttpGet("summary")]
@@ -421,6 +399,36 @@ public class KidsController : Controller
         return await _todayLessonService.FindNextItemIdAsync(session, currentItemId);
     }
 
+    private async Task<LearnViewModel> BuildLearnViewModelAsync(
+        LearningItem item,
+        Question? question,
+        ChildProfile? child,
+        Guid? skillGroupId,
+        string? feedbackMessage = null,
+        bool? isCorrect = null)
+    {
+        return new LearnViewModel
+        {
+            Item = item,
+            ChildProfile = child,
+            CurrentQuestion = question,
+            Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
+            TracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
+            TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
+            TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
+            TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
+            TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
+            TracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty),
+            QuestionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty),
+            QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
+            QuestionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty),
+            FeedbackMessage = feedbackMessage,
+            IsCorrect = isCorrect,
+            NextItemId = await FindNextItemIdAsync(item, skillGroupId),
+            ReturnSkillGroupId = skillGroupId
+        };
+    }
+
     private async Task<Guid?> FindNextItemIdAsync(LearningItem currentItem, Guid? skillGroupId)
     {
         if (!skillGroupId.HasValue)
@@ -431,7 +439,9 @@ public class KidsController : Controller
         var items = await _db.LearningItems
             .Include(x => x.Topic)
             .Where(x => x.SkillGroupId == skillGroupId.Value && x.Status == ContentStatus.Published)
-            .OrderBy(x => x.Level)
+            .OrderBy(x => x.Topic!.SortOrder)
+            .ThenBy(x => x.SortOrder)
+            .ThenBy(x => x.Level)
             .ThenBy(x => x.Title)
             .ToListAsync();
         var itemIds = items.Where(ActivityTemplateCatalog.IsItemAllowed).Select(x => x.Id).ToList();

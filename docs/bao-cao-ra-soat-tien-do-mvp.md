@@ -23,7 +23,7 @@ Ma trận truy vết từng yêu cầu, màn hình và tiêu chí nghiệm thu �
 | Build Release | Thành công, 0 warning, 0 error |
 | Migration SQL Server LocalDB | Database đã ở migration `InitialCreate`, không còn migration chờ chạy |
 | Health check | Kết nối database thành công |
-| Seed khởi đầu | Tạo role, Admin và danh mục chương trình cố định gồm 10 nhóm/43 chủ đề; không tạo phụ huynh, hồ sơ bé, bài học hoặc phần thưởng mẫu |
+| Seed khởi đầu | Tạo role, Admin, 10 nhóm/43 chủ đề, 216 bài học nền, 6 tranh chính và 75 pictogram; không tạo phụ huynh, hồ sơ bé, lịch sử học hoặc phần thưởng mẫu |
 | Đăng nhập phụ huynh | Thành công, mở được dashboard và báo cáo |
 | Đăng nhập admin | Thành công, mở được dashboard và kho nội dung |
 | Test tự động | Chưa có test project; lệnh `dotnet test` không phát hiện bài test để chạy |
@@ -84,7 +84,7 @@ Còn thiếu:
 - Server chưa tự kiểm tra metrics; luôn lưu bài tô là hoàn thành và tin dữ liệu client gửi lên.
 - Đã phân biệt chế độ đường viền và tự vẽ; chưa có chuỗi bước xem mẫu, nét đậm, luyện riêng nét sai và hoạt ảnh vẽ mẫu.
 - Đã có nút nghe lại khi bài được cấu hình audio; chưa có audio mặc định cho từng ký hiệu.
-- Không seed bài tô nét mẫu; nội dung do quản trị tạo.
+- Seed idempotent đủ 29 chữ hoa, 29 chữ thường và chữ số 0-9 cho bài tô nét; quản trị có thể sửa trạng thái hoặc tạo thêm nội dung.
 - Admin mới nhập ký hiệu và số điểm tối thiểu, chưa nhập/chỉnh `TracingTemplate.GuideJson`.
 
 ### Giai đoạn 5: Hoàn thành một phần
@@ -174,3 +174,28 @@ Script/migration không chứa dữ liệu học phát sinh. Khi chuyển hệ t
 - Bài cũ sai ma trận được gắn nhãn **Cần chuẩn hóa**, bị chặn xuất bản và bị loại khỏi khu bé học/lộ trình hôm nay.
 
 Chi tiết cấu hình và quy tắc tương thích được mô tả tại `docs/chuan-hoa-trinh-tao-bai-hoc.md`.
+
+## 7. Cập nhật đồng bộ quản trị - runtime và dữ liệu nền
+
+- Kho bài học hiển thị tên tiếng Việt của dạng bài/trạng thái, phân trang 25 bài, có sửa và xóa với xác nhận.
+- Route chi tiết dẫn vào đúng editor chuyên biệt; editor chứa chung luồng duyệt, xuất bản, lưu trữ và xóa.
+- Runtime lựa chọn dùng bước chọn rõ ràng rồi mới bấm **Kiểm tra**; trả lời đúng mới hiện điều hướng tiếp theo.
+- Bài nối cặp vẽ đường nối có màu; lựa chọn, phân loại và vùng đích có trạng thái màu trực quan.
+- Bộ màu chuyển sang nền xanh rất nhạt, bề mặt trắng và điểm nhấn cam/mint/xanh.
+- Seed idempotent tạo 216 bài nền, vượt ngưỡng 190 của đặc tả: 80 bài tô nét, chuỗi chữ/số có thứ tự, đủ 11 dạng tương tác và đủ chỉ tiêu từng nhóm nội dung.
+
+## 7. Cập nhật lộ trình nội dung và thứ tự học ngày 2026-08-22
+
+- `LearningItems.SortOrder` lưu thứ tự học trong SQL; migration `AddLearningItemSortOrder` tạo cột và chỉ mục theo nhóm/chủ đề/thứ tự.
+- Admin hiển thị và cho sửa thứ tự. Bài mới để `0` được tự xếp sau bài cuối của chủ đề; bài cũ chưa có thứ tự được chuẩn hóa một lần khi seed chạy.
+- Khu bé học, nút bài tiếp theo và lộ trình hôm nay đều sắp theo thứ tự nhóm, chủ đề và bài; chữ cái dùng thứ tự tiếng Việt, số dùng thứ tự giá trị.
+- Cấu hình so sánh tách rõ `more`, `less`, `equal`; chấm chọn nhiều, nối cặp và phân loại không phụ thuộc thứ tự chuỗi gửi từ trình duyệt.
+- Sáu tranh bài học chính và 75 pictogram được đóng gói cục bộ; cả 216 bài có voice hướng dẫn, câu hỏi và phản hồi, bài nghe có thể dùng file audio hoặc giọng đọc `speechSynthesis` tiếng Việt.
+
+## 8. Cập nhật ảnh quan sát và hành vi tương tác ngày 2026-08-22
+
+- Bổ sung 10 ảnh chụp độ phân giải cao từ Wikimedia Commons cho táo, cam, cà rốt, bắp cải, mèo, chó, vịt, cá, tôm và gà; mọi tệp được đóng gói cục bộ và ghi nguồn trong `THIRD_PARTY_NOTICES.md`.
+- Cấu hình `itemMedia` ánh xạ ảnh riêng theo nhãn đáp án/vật/cặp nối; trình tạo, trình sửa, preview và runtime dùng chung hợp đồng JSON.
+- Bài nối dùng đường SVG, điểm neo và khoảng nối rõ; bài phân loại đặt thẻ vật thật vào nhóm; bài sắp xếp hỗ trợ kéo thả; bài đếm hiển thị thứ tự vật đã chạm.
+- Đã kiểm tra desktop và màn 390 x 844: ảnh tải đủ, nhãn không co chữ, không cuộn ngang, vùng chạm giữ kích thước phù hợp.
+- Không tạo migration cho thay đổi này vì dữ liệu mở rộng nằm trong `Questions.PayloadJson`; SQL chỉ được cập nhật qua seed idempotent.

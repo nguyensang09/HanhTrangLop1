@@ -20,6 +20,8 @@
 
     <form class="tracing-builder-layout" asp-action="CreateTracing" method="post" enctype="multipart/form-data" data-admin-learning-form data-tracing-builder>
         <input asp-for="Id" type="hidden" />
+        <input asp-for="Status" type="hidden" />
+        <input asp-for="IsCompatible" type="hidden" />
         <div class="soft-card tracing-builder-preview">
             <div class="builder-stage-heading"><div><span class="material-symbols-outlined">draw</span><strong>Xem trước bảng tô</strong></div></div>
             <div class="tracing-preview-board" data-tracing-preview-board>
@@ -68,12 +70,16 @@
                     <input asp-for="ExpectedStrokeCount" class="form-control" type="number" min="1" max="10" />
                 </div>
             </div>
-            <label class="toggle-row"><input asp-for="ShowStartPoint" type="checkbox" data-tracing-start-toggle /><span>Hiện điểm bắt đầu</span></label>
+            <input asp-for="ShowStartPoint" type="hidden" value="false" />
 
             <div class="two-column-form">
                 <div>
                     <label asp-for="MinPoints">Mức hoàn thành tối thiểu</label>
                     <input asp-for="MinPoints" class="form-control" type="number" min="5" max="300" />
+                </div>
+                <div>
+                    <label asp-for="SortOrder">Thứ tự học</label>
+                    <input asp-for="SortOrder" class="form-control" type="number" min="0" max="100000" placeholder="Tự động" />
                 </div>
                 <div>
                     <label asp-for="Level">Độ khó</label>
@@ -100,6 +106,10 @@
             <button class="app-btn app-btn-wide" type="submit"><span class="material-symbols-outlined">save</span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</button>
         </div>
     </form>
+    @if (Model.Id.HasValue)
+    {
+        <partial name="_LearningItemWorkflow" model="@(new LearningItemWorkflowViewModel { Id = Model.Id.Value, Status = Model.Status, IsCompatible = Model.IsCompatible })" />
+    }
 </section>
 
 @section Scripts {

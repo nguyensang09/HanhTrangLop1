@@ -22,6 +22,11 @@ public static class SeedDataInitializer
         await SeedRolesAsync(roleManager);
         await SeedAdminAsync(userManager, configuration, logger);
         await SeedCurriculumCatalogAsync(db);
+        var createdLessons = await LearningContentSeed.SeedAsync(db);
+        if (createdLessons > 0)
+        {
+            logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
+        }
     }
 
     private static async Task EnsureMigrationHistoryForLegacyDatabaseAsync(ApplicationDbContext db)

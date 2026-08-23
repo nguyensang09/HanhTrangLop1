@@ -44,7 +44,7 @@
                 <dt>Dạng bài</dt><dd>@Model.InteractionType</dd>
                 <dt>Độ khó</dt><dd>@Model.Level</dd>
                 <dt>Thời lượng</dt><dd>@Model.EstimatedMinutes phút</dd>
-                <dt>Trạng thái</dt><dd><span class="status-chip status-@Model.Status">@Model.Status</span></dd>
+                <dt>Trạng thái</dt><dd><span class="status-chip status-@Model.Status">@ContentStatus.GetDisplayName(Model.Status)</span></dd>
             </dl>
 
             <h2 class="mt-4">Luồng duyệt</h2>

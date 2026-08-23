@@ -351,6 +351,9 @@ namespace HanhTrangLop1.Data.Migrations
                     b.Property<Guid>("SkillGroupId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -378,9 +381,9 @@ namespace HanhTrangLop1.Data.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("SkillGroupId");
-
                     b.HasIndex("TopicId");
+
+                    b.HasIndex("SkillGroupId", "TopicId", "SortOrder");
 
                     b.ToTable("LearningItems");
                 });

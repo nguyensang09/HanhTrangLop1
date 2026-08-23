@@ -46,6 +46,7 @@
 - Với bài nghe và chọn, tải audio hoặc chọn audio trong thư viện rồi kiểm tra phát lại.
 - Với bài nghe truyện, tải/chọn đủ audio và ảnh, kiểm tra preview và runtime đều hiển thị đúng.
 - Mở `/admin/media`, kiểm tra ảnh và audio vừa tải có thể tái sử dụng.
+- Nhập `Táo = /images/photos/apple.jpg` trong **Ảnh riêng theo nội dung** và xác nhận preview hiện đúng ảnh cạnh nhãn Táo.
 - Tạo bài tô nét ở chế độ đường viền và tự vẽ; chế độ tự vẽ không được hiện ký tự mờ.
 - Thử xuất bản một bài có tổ hợp chủ đề - mẫu sai và xác nhận server từ chối.
 - Xác nhận bài cũ gắn nhãn `Cần chuẩn hóa` không xuất hiện trong khu bé học.
@@ -55,6 +56,17 @@
 - Kiểm tra bảng `__EFMigrationsHistory`.
 - Kiểm tra có role `Admin`, `Parent`, `ContentEditor`, `Reviewer`.
 - Tạo và xuất bản ít nhất một bài trước khi kiểm thử khu bé học.
-- Kiểm tra seed không tự tạo bài học, phụ huynh, hồ sơ bé hoặc phần thưởng mẫu.
+- Kiểm tra seed có đủ 216 bài học nền, 16 ảnh trong thư viện media và 75 pictogram cục bộ, nhưng không tự tạo phụ huynh, hồ sơ bé, lịch sử học hoặc phần thưởng mẫu.
+- Kiểm tra màn học tự đọc hướng dẫn, câu hỏi, phản hồi; nút nghe lại hoạt động và dùng file giọng đọc câu hỏi khi bài có cấu hình.
+- Kiểm tra bài một thao tác tự chấm, bài nhiều bước chỉ chấm khi bấm `Xong`.
+- Kiểm tra màn 390 x 844 không cuộn ngang, không chồng nội dung và vùng chọn vẫn đủ lớn để chạm.
+- Xác nhận màn học chỉ còn không gian chung thu gọn, tiêu đề, câu hỏi, nội dung quan sát khi cần và khung đáp án; không lặp tên dạng bài, nhãn vùng hoặc huy hiệu A/B/C.
+- Kiểm tra đủ 11 dạng tương tác không có ảnh lỗi; đáp án có pictogram đúng ngữ nghĩa, nhãn chữ rõ và không dùng ảnh để vô tình gợi riêng đáp án đúng.
+- Nối một cặp và xác nhận có một đường SVG cùng hai điểm neo; đổi cặp không để lại đường cũ.
+- Phân loại một vật và xác nhận thẻ vật xuất hiện trong vùng nhóm, có ảnh và nhãn không bị co chữ.
+- Sắp xếp bằng cả tay nắm kéo và nút lên/xuống; thứ tự gửi lên thay đổi theo danh sách đang thấy.
+- Chạm lần lượt các vật trong bài đếm và xác nhận huy hiệu số đếm được đánh lại đúng khi bỏ chọn.
+- Kiểm tra thứ tự chữ `A, Ă, Â, B...`, số `0-9` và nút chuyển bài tiếp theo đều theo `LearningItems.SortOrder`.
+- Khởi động ứng dụng lần hai và xác nhận seed không tạo trùng mã bài hoặc tài nguyên media.
 - Kiểm tra `LearningAttempts` tăng sau khi bé học.
 - Kiểm tra `QuestionAttempts` lưu dữ liệu nét vẽ sau bài tô nét.

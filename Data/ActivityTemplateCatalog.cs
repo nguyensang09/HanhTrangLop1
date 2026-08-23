@@ -79,6 +79,11 @@ public static class ActivityTemplateCatalog
     public static ActivityTemplateDefinition? Find(string interactionType) =>
         Templates.FirstOrDefault(x => x.InteractionType == interactionType);
 
+    public static string GetDisplayName(string? interactionType) =>
+        interactionType == InteractionTypes.Tracing
+            ? "Tô theo nét"
+            : Templates.FirstOrDefault(x => x.InteractionType == interactionType)?.Name ?? "Không xác định";
+
     public static TopicActivityRule ForTopic(string? topicCode) =>
         topicCode is not null && TopicRules.TryGetValue(topicCode, out var rule) ? rule : Rule();
 

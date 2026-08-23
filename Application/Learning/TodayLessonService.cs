@@ -173,6 +173,8 @@ public class TodayLessonService
             .OrderByDescending(x => needsPracticeSkillIds.Contains(x.SkillGroupId))
             .ThenByDescending(x => preferredSkillIds.Contains(x.SkillGroupId))
             .ThenBy(x => x.SkillGroup!.SortOrder)
+            .ThenBy(x => x.Topic!.SortOrder)
+            .ThenBy(x => x.SortOrder)
             .ThenBy(x => x.Title)
             .Take(8)
             .Select(x => x.Id)

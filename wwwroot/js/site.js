@@ -1,3 +1,11 @@
+document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+        if (!window.confirm("Xóa vĩnh viễn bài học và toàn bộ lịch sử làm bài liên quan?")) {
+            event.preventDefault();
+        }
+    });
+});
+
 document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     const skillGroupSelect = form.querySelector("[data-skill-group-select]");
     const topicSelect = form.querySelector("[data-topic-select]");
@@ -10,6 +18,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     const templateButtons = [...form.querySelectorAll("[data-template-option]")];
     const tracingLink = form.querySelector("[data-tracing-link]");
     const isEditing = Boolean(form.querySelector('[name="Id"]')?.value);
+    let uploadedImagePreviewUrl = "";
 
     const selectedTopicRule = () => {
         const option = topicSelect?.options[topicSelect.selectedIndex];
@@ -138,6 +147,37 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         story_choice: "Nghe truyện và chọn"
     };
 
+    const choiceFieldCopy = {
+        single_choice: ["Các đáp án lựa chọn", "Nhập từ 2 đến 5 đáp án; bé chỉ chọn một đáp án trước khi bấm Kiểm tra."],
+        multi_select: ["Các đáp án có thể chọn", "Nhập các đáp án hiển thị, sau đó khai báo riêng tập đáp án đúng bên dưới."],
+        listen_choose: ["Đáp án sau khi nghe", "Các phương án phải khớp với nội dung âm thanh hoặc nội dung đọc tự động."],
+        drag_drop: ["Vật có thể kéo", "Mỗi phương án là một vật hoặc nhãn; đáp án đúng là vật cần đưa vào vùng đích."],
+        story_choice: ["Đáp án câu hỏi truyện", "Các phương án dùng để trả lời câu hỏi sau khi bé nghe truyện và xem tranh."]
+    };
+
+    const updateTemplateContext = () => {
+        if (!interactionSelect) return;
+        const type = interactionSelect.value;
+        const selectedOption = interactionSelect.options[interactionSelect.selectedIndex];
+        const configName = form.querySelector("[data-config-name]");
+        const configDescription = form.querySelector("[data-config-description]");
+        const choiceHeading = form.querySelector("[data-choice-heading]");
+        const choiceHelp = form.querySelector("[data-choice-help]");
+        const topicGuidance = form.querySelector("[data-topic-guidance]");
+        const topicOption = topicSelect?.options[topicSelect.selectedIndex];
+        const allowedNames = selectedTopicRule().allowedTypes.map((value) => templateNames[value] || value);
+
+        if (configName) configName.textContent = templateNames[type] || "Cấu hình hoạt động";
+        if (configDescription) configDescription.textContent = selectedOption?.dataset.description || "";
+        if (choiceHeading) choiceHeading.textContent = choiceFieldCopy[type]?.[0] || "Phương án trả lời";
+        if (choiceHelp) choiceHelp.textContent = choiceFieldCopy[type]?.[1] || "";
+        if (topicGuidance) {
+            topicGuidance.textContent = topicOption?.value
+                ? `Chủ đề “${topicOption.textContent.trim()}” hỗ trợ: ${allowedNames.join(", ")}.`
+                : "Chọn chủ đề để xem các mẫu hoạt động phù hợp.";
+        }
+    };
+
     const applyTemplateDefaults = () => {
         if (!interactionSelect || isEditing) return;
         const option = interactionSelect.options[interactionSelect.selectedIndex];
@@ -164,16 +204,52 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         if (previewInstruction) previewInstruction.textContent = instruction || "Lời hướng dẫn của bài học";
         if (previewPrompt) previewPrompt.textContent = prompt || "Câu hỏi sẽ hiển thị tại đây";
         if (previewName) previewName.textContent = templateNames[type] || type;
-        if (previewMedia) previewMedia.hidden = !["story_choice", "single_choice", "multi_select", "drag_drop", "matching", "classification"].includes(type);
+        if (previewMedia) {
+            const supportsImage = ["story_choice", "single_choice", "multi_select", "drag_drop", "matching", "classification"].includes(type);
+            const supportsAudio = ["listen_choose", "story_choice"].includes(type);
+            const imageSelect = form.querySelector('[name="ExistingImageAssetId"]');
+            const selectedImagePath = imageSelect?.options[imageSelect.selectedIndex]?.dataset.path || "";
+            const imageUrl = uploadedImagePreviewUrl || form.querySelector('[name="ImageUrl"]')?.value.trim() || selectedImagePath;
+            previewMedia.hidden = !supportsImage && !supportsAudio;
+            previewMedia.replaceChildren();
+            if (supportsImage && imageUrl) {
+                const image = document.createElement("img");
+                image.src = imageUrl;
+                image.alt = "Hình minh họa xem trước";
+                previewMedia.append(image);
+            } else {
+                const icon = document.createElement("span");
+                icon.className = "material-symbols-outlined";
+                icon.textContent = supportsAudio ? "hearing" : "image";
+                previewMedia.append(icon);
+            }
+        }
         if (!previewOptions) return;
 
         let labels = choiceInputs.map((input) => input.value.trim()).filter(Boolean);
         if (labels.length === 0) labels = ["A", "B", "C"];
+        const itemMedia = new Map((form.querySelector('[name="ItemMediaText"]')?.value || "")
+            .split(/\r?\n/)
+            .map((line) => line.split(/=(.*)/s).slice(0, 2).map((value) => value.trim()))
+            .filter((pair) => pair[0] && pair[1])
+            .map(([label, url]) => [label.toLocaleLowerCase("vi-VN"), url]));
         const makePreviewItem = (text, className = "") => {
             const element = document.createElement("button");
             element.type = "button";
             element.className = className;
-            element.textContent = text;
+            const mediaUrl = itemMedia.get(String(text).trim().toLocaleLowerCase("vi-VN"));
+            if (mediaUrl) {
+                const image = document.createElement("img");
+                image.className = "preview-item-media";
+                image.src = mediaUrl;
+                image.alt = String(text);
+                const label = document.createElement("span");
+                label.textContent = text;
+                element.classList.add("has-preview-media");
+                element.append(image, label);
+            } else {
+                element.textContent = text;
+            }
             return element;
         };
         previewOptions.className = `builder-preview-options preview-${type}`;
@@ -214,8 +290,10 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             const symbol = form.querySelector('[name="ObjectSymbol"]')?.value || "●";
             const left = Math.min(8, Number(form.querySelector('[name="TargetCount"]')?.value || 4));
             const right = Math.min(8, Number(form.querySelector('[name="SecondaryCount"]')?.value || 2));
-            previewOptions.append(makePreviewItem(`A\n${Array.from({length:left}, () => symbol).join(" ")}`, "preview-group"));
-            previewOptions.append(makePreviewItem(`B\n${Array.from({length:right}, () => symbol).join(" ")}`, "preview-group"));
+            const leftLabel = form.querySelector('[name="LeftLabel"]')?.value || "Nhóm A";
+            const rightLabel = form.querySelector('[name="RightLabel"]')?.value || "Nhóm B";
+            previewOptions.append(makePreviewItem(`${leftLabel}\n${Array.from({length:left}, () => symbol).join(" ")}`, "preview-group"));
+            previewOptions.append(makePreviewItem(`${rightLabel}\n${Array.from({length:right}, () => symbol).join(" ")}`, "preview-group"));
         } else if (type === "classification") {
             const mappings = (form.querySelector('[name="ClassificationText"]')?.value || "Táo = Trái cây\nCà rốt = Rau củ")
                 .split(/\r?\n/).map((line) => line.split("=").map((value) => value.trim())).filter((pair) => pair[0]);
@@ -236,6 +314,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     interactionSelect?.addEventListener("change", () => {
         applyTemplateDefaults();
         toggleInteractionFields();
+        updateTemplateContext();
         updateBuilderPreview();
     });
     templateButtons.forEach((button) => button.addEventListener("click", () => {
@@ -247,10 +326,17 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         updateBuilderPreview();
     }));
     form.querySelectorAll("input, textarea").forEach((input) => input.addEventListener("input", updateBuilderPreview));
+    form.querySelectorAll("select").forEach((select) => select.addEventListener("change", updateBuilderPreview));
+    form.querySelector('[name="ImageFile"]')?.addEventListener("change", (event) => {
+        if (uploadedImagePreviewUrl) URL.revokeObjectURL(uploadedImagePreviewUrl);
+        uploadedImagePreviewUrl = event.target.files?.[0] ? URL.createObjectURL(event.target.files[0]) : "";
+        updateBuilderPreview();
+    });
 
     filterTopics();
     syncCorrectAnswer();
     toggleInteractionFields();
+    updateTemplateContext();
     updateBuilderPreview();
 });
 

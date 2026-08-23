@@ -14,6 +14,11 @@
     <link rel="stylesheet" href="~/HanhTrangLop1.styles.css" asp-append-version="true" />
 </head>
 <body class="app-shell">
+    @{
+        var focusMode = ViewData["FocusMode"] as bool? == true;
+    }
+    @if (!focusMode)
+    {
     <header>
         <nav class="navbar navbar-expand-lg app-navbar">
             <div class="container">
@@ -33,6 +38,7 @@
             </div>
         </nav>
     </header>
+    }
 
     <div class="app-page">
         <main role="main">
@@ -40,11 +46,16 @@
         </main>
     </div>
 
+    @if (!focusMode)
+    {
     <footer class="app-footer">
         <div class="container">
-            Hành Trang Lớp 1 - học vui 10 đến 15 phút mỗi ngày.
+            <span>Hành Trang Lớp 1 - học vui 10 đến 15 phút mỗi ngày.</span>
+            <a class="app-footer-credit" href="https://openmoji.org/" target="_blank" rel="noopener">Pictogram OpenMoji, CC BY-SA 4.0</a>
+            <a class="app-footer-credit" href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Ảnh chụp từ Wikimedia Commons</a>
         </div>
     </footer>
+    }
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

@@ -1,4 +1,5 @@
 using HanhTrangLop1.Data;
+using HanhTrangLop1.Infrastructure.TextToSpeech;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -40,11 +41,13 @@ public class AdminController : Controller
 
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _environment;
+    private readonly ITextToSpeechService _textToSpeech;
 
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment environment)
+    public AdminController(ApplicationDbContext db, IWebHostEnvironment environment, ITextToSpeechService textToSpeech)
     {
         _db = db;
         _environment = environment;
+        _textToSpeech = textToSpeech;
     }
 
     [HttpGet("")]
@@ -78,7 +81,7 @@ public class AdminController : Controller
     }
 
     [HttpGet("learning-items")]
-    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId)
+    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, int page = 1)
     {
         var query = _db.LearningItems
             .Include(x => x.SkillGroup)
@@ -101,13 +104,33 @@ public class AdminController : Controller
             query = query.Where(x => x.SkillGroupId == skillGroupId.Value);
         }
 
+        if (topicId.HasValue)
+        {
+            query = query.Where(x => x.TopicId == topicId.Value);
+        }
+
+        const int pageSize = 25;
+        var totalItems = await query.CountAsync();
+        page = Math.Clamp(page, 1, Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize)));
         var model = new AdminLearningItemListViewModel
         {
             Status = status,
             InteractionType = interactionType,
             SkillGroupId = skillGroupId,
+            TopicId = topicId,
             SkillGroups = await _db.SkillGroups.OrderBy(x => x.SortOrder).ToListAsync(),
-            Items = await query.OrderByDescending(x => x.UpdatedAt).ToListAsync()
+            Topics = await _db.Topics.OrderBy(x => x.SortOrder).ToListAsync(),
+            Items = await query
+                .OrderBy(x => x.SkillGroup!.SortOrder)
+                .ThenBy(x => x.Topic!.SortOrder)
+                .ThenBy(x => x.SortOrder)
+                .ThenBy(x => x.Title)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(),
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems
         };
 
         return View(model);
@@ -116,17 +139,13 @@ public class AdminController : Controller
     [HttpGet("learning-items/{id:guid}")]
     public async Task<IActionResult> LearningItemDetail(Guid id)
     {
-        var item = await _db.LearningItems
-            .Include(x => x.SkillGroup)
-            .Include(x => x.Topic)
-            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var item = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == id);
         if (item is null)
         {
             return NotFound();
         }
 
-        return View(item);
+        return RedirectToEditor(item);
     }
 
     [HttpGet("catalogs")]
@@ -179,6 +198,7 @@ public class AdminController : Controller
         if (editId.HasValue)
         {
             var item = await _db.LearningItems
+                .Include(x => x.Topic)
                 .Include(x => x.Questions.OrderBy(question => question.SortOrder))
                 .FirstOrDefaultAsync(x => x.Id == editId.Value);
             if (item is null)
@@ -255,6 +275,7 @@ public class AdminController : Controller
         }
 
         await SaveUploadedMediaAsync(model);
+        await GenerateMissingAudioAsync(model);
         configuration = BuildActivityConfiguration(model);
         if (configuration is null)
         {
@@ -286,6 +307,9 @@ public class AdminController : Controller
         item.SkillGroupId = model.SkillGroupId;
         item.TopicId = model.TopicId;
         item.Level = model.Level;
+        item.SortOrder = model.SortOrder > 0
+            ? model.SortOrder
+            : item.SortOrder > 0 ? item.SortOrder : await GetNextSortOrderAsync(model.TopicId);
         item.InteractionType = model.InteractionType;
         item.EstimatedMinutes = model.EstimatedMinutes;
         item.InstructionText = Clean(model.InstructionText);
@@ -320,7 +344,7 @@ public class AdminController : Controller
             _db.LearningItems.Add(item);
         }
         await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(LearningItemDetail), new { id = item.Id });
+        return RedirectToAction(nameof(CreateChoice), new { editId = item.Id });
     }
 
     [HttpGet("learning-items/create-tracing")]
@@ -330,6 +354,7 @@ public class AdminController : Controller
         if (editId.HasValue)
         {
             var item = await _db.LearningItems
+                .Include(x => x.Topic)
                 .Include(x => x.Questions.OrderBy(q => q.SortOrder))
                 .FirstOrDefaultAsync(x => x.Id == editId.Value && x.InteractionType == InteractionTypes.Tracing);
             if (item is null) return NotFound();
@@ -337,13 +362,16 @@ public class AdminController : Controller
             return View(new CreateTracingItemViewModel
             {
                 Id = item.Id,
+                Status = item.Status,
+                IsCompatible = ActivityTemplateCatalog.IsItemAllowed(item),
                 Title = item.Title,
                 SkillGroupId = item.SkillGroupId,
                 TopicId = item.TopicId,
+                SortOrder = item.SortOrder,
                 Symbol = ReadJsonString(question?.PayloadJson, "symbol"),
                 GuideMode = ReadJsonString(question?.PayloadJson, "guideMode") is { Length: > 0 } guide ? guide : "outline",
                 ExpectedStrokeCount = ReadJsonInt(question?.PayloadJson, "expectedStrokeCount", 1),
-                ShowStartPoint = ReadJsonBool(question?.PayloadJson, "showStartPoint", true),
+                ShowStartPoint = false,
                 AudioUrl = ReadJsonString(question?.PayloadJson, "audioUrl"),
                 InstructionText = item.InstructionText,
                 PromptText = question?.PromptText ?? string.Empty,
@@ -382,6 +410,10 @@ public class AdminController : Controller
         {
             model.AudioUrl = await SaveMediaFileAsync(model.AudioFile, "audio");
         }
+        if (string.IsNullOrWhiteSpace(model.AudioUrl) && _textToSpeech.CanGenerate)
+        {
+            model.AudioUrl = await GenerateAudioFileAsync(model.PromptText, "tracing-prompt") ?? string.Empty;
+        }
 
         var now = DateTimeOffset.UtcNow;
         var symbol = string.IsNullOrWhiteSpace(model.Symbol) ? "A" : model.Symbol.Trim();
@@ -402,7 +434,7 @@ public class AdminController : Controller
             templateId,
             guideMode,
             expectedStrokeCount = model.ExpectedStrokeCount,
-            showStartPoint = model.ShowStartPoint,
+            showStartPoint = false,
             audioUrl = Clean(model.AudioUrl)
         });
 
@@ -421,7 +453,7 @@ public class AdminController : Controller
         {
             guideMode,
             expectedStrokeCount = model.ExpectedStrokeCount,
-            showStartPoint = model.ShowStartPoint
+            showStartPoint = false
         });
 
         item ??= new LearningItem
@@ -436,6 +468,9 @@ public class AdminController : Controller
         item.SkillGroupId = model.SkillGroupId;
         item.TopicId = model.TopicId;
         item.Level = model.Level;
+        item.SortOrder = model.SortOrder > 0
+            ? model.SortOrder
+            : item.SortOrder > 0 ? item.SortOrder : await GetNextSortOrderAsync(model.TopicId);
         item.InteractionType = InteractionTypes.Tracing;
         item.EstimatedMinutes = 5;
         item.InstructionText = model.InstructionText.Trim();
@@ -464,7 +499,7 @@ public class AdminController : Controller
 
         if (!model.Id.HasValue) _db.LearningItems.Add(item);
         await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(LearningItemDetail), new { id = item.Id });
+        return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
 
     [HttpGet("learning-items/{id:guid}/edit")]
@@ -539,7 +574,7 @@ public class AdminController : Controller
         }
 
         await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(LearningItemDetail), new { id = item.Id });
+        return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
 
     [HttpPost("learning-items/{id:guid}/status")]
@@ -560,7 +595,7 @@ public class AdminController : Controller
         if (status == ContentStatus.Published && !ActivityTemplateCatalog.IsItemAllowed(item))
         {
             TempData["AdminMessage"] = "Bài học chưa phù hợp với chủ đề. Vui lòng sửa mẫu hoạt động trước khi xuất bản.";
-            return RedirectToAction(nameof(LearningItemDetail), new { id });
+            return RedirectToEditor(item);
         }
 
         item.Status = status;
@@ -580,7 +615,61 @@ public class AdminController : Controller
         }
 
         await _db.SaveChangesAsync();
-        return RedirectToAction(nameof(LearningItemDetail), new { id });
+        return RedirectToEditor(item);
+    }
+
+    [HttpPost("learning-items/{id:guid}/delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteLearningItem(Guid id)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        var item = await _db.LearningItems
+            .Include(x => x.Questions)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        Guid? tracingTemplateId = null;
+        if (item.InteractionType == InteractionTypes.Tracing)
+        {
+            tracingTemplateId = ReadJsonGuid(
+                item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault()?.PayloadJson,
+                "templateId");
+        }
+
+        await _db.QuestionAttempts
+            .Where(x => x.Question != null && x.Question.LearningItemId == item.Id)
+            .ExecuteDeleteAsync();
+
+        await _db.LearningAttempts
+            .Where(x => x.LearningItemId == item.Id)
+            .ExecuteDeleteAsync();
+
+        _db.LearningItems.Remove(item);
+        if (tracingTemplateId.HasValue)
+        {
+            var tracingTemplate = await _db.TracingTemplates.FirstOrDefaultAsync(x => x.Id == tracingTemplateId.Value);
+            if (tracingTemplate is not null)
+            {
+                _db.TracingTemplates.Remove(tracingTemplate);
+            }
+        }
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        TempData["AdminMessage"] = $"Đã xóa bài học “{item.Title}”.";
+        return RedirectToAction(nameof(LearningItems));
+    }
+
+    private IActionResult RedirectToEditor(LearningItem item)
+    {
+        return item.InteractionType == InteractionTypes.Tracing
+            ? RedirectToAction(nameof(CreateTracing), new { editId = item.Id })
+            : RedirectToAction(nameof(CreateChoice), new { editId = item.Id });
     }
 
     private async Task LoadContentListsAsync(Guid? includeSkillGroupId = null, Guid? includeTopicId = null)
@@ -710,8 +799,23 @@ public class AdminController : Controller
             }
         }
 
+        if (model.ExistingQuestionAudioAssetId.HasValue)
+        {
+            var questionAudio = await _db.MediaAssets.FirstOrDefaultAsync(x =>
+                x.Id == model.ExistingQuestionAudioAssetId.Value && x.AssetType == "audio");
+            if (questionAudio is null)
+            {
+                ModelState.AddModelError(nameof(model.ExistingQuestionAudioAssetId), "Âm thanh câu hỏi trong thư viện không còn tồn tại.");
+            }
+            else
+            {
+                model.QuestionAudioUrl = questionAudio.StoragePath;
+            }
+        }
+
         ValidateMediaFile(model.ImageFile, "image", 5 * 1024 * 1024, nameof(model.ImageFile));
         ValidateMediaFile(model.AudioFile, "audio", 10 * 1024 * 1024, nameof(model.AudioFile));
+        ValidateMediaFile(model.QuestionAudioFile, "audio", 10 * 1024 * 1024, nameof(model.QuestionAudioFile));
     }
 
     private void ValidateMediaFile(IFormFile? file, string assetType, long maxBytes, string fieldName)
@@ -742,6 +846,31 @@ public class AdminController : Controller
         {
             model.AudioUrl = await SaveMediaFileAsync(model.AudioFile, "audio");
         }
+        if (model.QuestionAudioFile is not null)
+        {
+            model.QuestionAudioUrl = await SaveMediaFileAsync(model.QuestionAudioFile, "audio");
+        }
+    }
+
+    private async Task GenerateMissingAudioAsync(CreateChoiceItemViewModel model)
+    {
+        if (!_textToSpeech.CanGenerate)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.QuestionAudioUrl))
+        {
+            model.QuestionAudioUrl = await GenerateAudioFileAsync(model.PromptText, "question") ?? string.Empty;
+        }
+
+        if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
+             model.InteractionType == InteractionTypes.StoryChoice) &&
+            string.IsNullOrWhiteSpace(model.AudioUrl) &&
+            !string.IsNullOrWhiteSpace(model.SpeechText))
+        {
+            model.AudioUrl = await GenerateAudioFileAsync(model.SpeechText, "content") ?? string.Empty;
+        }
     }
 
     private async Task<string> SaveMediaFileAsync(IFormFile file, string assetType)
@@ -771,6 +900,44 @@ public class AdminController : Controller
         return storagePath;
     }
 
+    private async Task<string?> GenerateAudioFileAsync(string text, string prefix)
+    {
+        GeneratedSpeech? speech;
+        try
+        {
+            speech = await _textToSpeech.GenerateAsync(text, HttpContext.RequestAborted);
+        }
+        catch
+        {
+            return null;
+        }
+
+        if (speech is null)
+        {
+            return null;
+        }
+
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio");
+        Directory.CreateDirectory(folder);
+
+        var storedName = $"{NormalizeCode(prefix)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid():N}{speech.Extension}";
+        var diskPath = Path.Combine(folder, storedName);
+        await System.IO.File.WriteAllBytesAsync(diskPath, speech.Content, HttpContext.RequestAborted);
+
+        var storagePath = $"/uploads/audio/{storedName}";
+        _db.MediaAssets.Add(new MediaAsset
+        {
+            Id = Guid.NewGuid(),
+            AssetType = "audio",
+            FileName = storedName,
+            ContentType = speech.ContentType,
+            StoragePath = storagePath,
+            AltText = text.Length > 180 ? text[..180] : text,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+        return storagePath;
+    }
+
     private static CreateChoiceItemViewModel BuildActivityEditorModel(LearningItem item)
     {
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
@@ -781,9 +948,12 @@ public class AdminController : Controller
         return new CreateChoiceItemViewModel
         {
             Id = item.Id,
+            Status = item.Status,
+            IsCompatible = ActivityTemplateCatalog.IsItemAllowed(item),
             Title = item.Title,
             SkillGroupId = item.SkillGroupId,
             TopicId = item.TopicId,
+            SortOrder = item.SortOrder,
             InteractionType = item.InteractionType,
             InstructionText = item.InstructionText,
             PromptText = question?.PromptText ?? string.Empty,
@@ -799,12 +969,19 @@ public class AdminController : Controller
             SequenceItemsText = string.Join(Environment.NewLine, ReadJsonStringArray(payloadJson, "items")),
             PairsText = ReadJsonMappingLines(payloadJson, "pairs"),
             ClassificationText = ReadJsonMappingLines(payloadJson, "mappings"),
+            ItemMediaText = ReadJsonObjectLines(payloadJson, "itemMedia"),
             TargetLabel = ReadJsonString(payloadJson, "targetLabel"),
             ObjectSymbol = ReadJsonString(payloadJson, "objectSymbol"),
             TargetCount = ReadJsonInt(payloadJson, "targetCount", 4),
             SecondaryCount = ReadJsonInt(payloadJson, "rightCount", 2),
+            ComparisonMode = ReadJsonString(payloadJson, "comparisonMode") is { Length: > 0 } comparisonMode ? comparisonMode : "more",
             ImageUrl = ReadJsonString(payloadJson, "imageUrl"),
+            ImageAltText = ReadJsonString(payloadJson, "imageAltText"),
             AudioUrl = ReadJsonString(payloadJson, "audioUrl"),
+            QuestionAudioUrl = ReadJsonString(payloadJson, "questionAudioUrl"),
+            SpeechText = ReadJsonString(payloadJson, "speechText"),
+            LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "Nhóm A",
+            RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "Nhóm B",
             Level = item.Level,
             EstimatedMinutes = item.EstimatedMinutes,
             HintText = ReadJsonString(question?.HintJson, "level1"),
@@ -816,9 +993,10 @@ public class AdminController : Controller
     private ActivityConfiguration? BuildActivityConfiguration(CreateChoiceItemViewModel model)
     {
         var template = ActivityTemplateCatalog.Find(model.InteractionType);
-        if (template?.RequiresAudio == true && string.IsNullOrWhiteSpace(model.AudioUrl) && model.AudioFile is null)
+        if (template?.RequiresAudio == true && string.IsNullOrWhiteSpace(model.AudioUrl) &&
+            string.IsNullOrWhiteSpace(model.SpeechText) && model.AudioFile is null)
         {
-            ModelState.AddModelError(nameof(model.AudioUrl), "Dạng bài này cần một tệp âm thanh hoặc âm thanh trong thư viện.");
+            ModelState.AddModelError(nameof(model.AudioUrl), "Dạng bài này cần tệp âm thanh, âm thanh thư viện hoặc nội dung đọc tự động.");
         }
         if (template?.RequiresImage == true && string.IsNullOrWhiteSpace(model.ImageUrl) && model.ImageFile is null)
         {
@@ -832,9 +1010,42 @@ public class AdminController : Controller
         var choices = BuildChoices(model.ChoiceA, model.ChoiceB, model.ChoiceC, model.ChoiceD, model.ChoiceE);
         var payload = new JsonObject
         {
+            ["schemaVersion"] = 2,
+            ["activityType"] = model.InteractionType,
             ["imageUrl"] = Clean(model.ImageUrl),
-            ["audioUrl"] = Clean(model.AudioUrl)
+            ["imageAltText"] = Clean(model.ImageAltText),
+            ["audioUrl"] = Clean(model.AudioUrl),
+            ["questionAudioUrl"] = Clean(model.QuestionAudioUrl),
+            ["speechText"] = Clean(model.SpeechText),
+            ["instructionSpeechText"] = Clean(model.InstructionText),
+            ["questionSpeechText"] = Clean(model.PromptText),
+            ["correctSpeechText"] = "Giỏi lắm, con đã làm đúng!",
+            ["retrySpeechText"] = "Con quan sát kỹ rồi thử lại nhé."
         };
+
+        var itemMedia = ParseMappings(
+            model.ItemMediaText,
+            nameof(model.ItemMediaText),
+            "Mỗi ảnh riêng cần có dạng Tên nội dung = Đường dẫn ảnh.");
+        if (itemMedia.Count > 30)
+        {
+            ModelState.AddModelError(nameof(model.ItemMediaText), "Mỗi bài dùng tối đa 30 ảnh riêng.");
+            return null;
+        }
+        foreach (var media in itemMedia)
+        {
+            if (!Uri.TryCreate(media.Right, UriKind.RelativeOrAbsolute, out var uri) ||
+                (!media.Right.StartsWith('/') && !uri.IsAbsoluteUri))
+            {
+                ModelState.AddModelError(nameof(model.ItemMediaText), $"Đường dẫn ảnh của '{media.Left}' chưa hợp lệ.");
+            }
+        }
+        if (!ModelState.IsValid)
+        {
+            return null;
+        }
+        payload["itemMedia"] = new JsonObject(itemMedia
+            .Select(media => new KeyValuePair<string, JsonNode?>(media.Left, JsonValue.Create(media.Right))));
 
         switch (model.InteractionType)
         {
@@ -911,9 +1122,25 @@ public class AdminController : Controller
                 payload["objectSymbol"] = Clean(model.ObjectSymbol);
                 payload["leftCount"] = model.TargetCount;
                 payload["rightCount"] = model.SecondaryCount;
-                var comparisonAnswer = model.TargetCount == model.SecondaryCount
-                    ? "equal"
-                    : model.TargetCount > model.SecondaryCount ? "left" : "right";
+                payload["leftLabel"] = Clean(model.LeftLabel);
+                payload["rightLabel"] = Clean(model.RightLabel);
+                var comparisonMode = model.ComparisonMode is "less" or "equal" ? model.ComparisonMode : "more";
+                if (comparisonMode == "equal" && model.TargetCount != model.SecondaryCount)
+                {
+                    ModelState.AddModelError(nameof(model.SecondaryCount), "Khi chọn kiểm tra bằng nhau, hai nhóm phải có cùng số lượng.");
+                    return null;
+                }
+                payload["comparisonMode"] = comparisonMode;
+                var comparisonAnswer = comparisonMode switch
+                {
+                    "equal" => "equal",
+                    "less" => model.TargetCount == model.SecondaryCount
+                        ? "equal"
+                        : model.TargetCount < model.SecondaryCount ? "left" : "right",
+                    _ => model.TargetCount == model.SecondaryCount
+                        ? "equal"
+                        : model.TargetCount > model.SecondaryCount ? "left" : "right"
+                };
                 return new(payload.ToJsonString(), comparisonAnswer);
 
             case InteractionTypes.Classification:
@@ -1039,6 +1266,15 @@ public class AdminController : Controller
         return code[..Math.Min(80, code.Length)];
     }
 
+    private async Task<int> GetNextSortOrderAsync(Guid? topicId)
+    {
+        var currentMax = await _db.LearningItems
+            .Where(x => x.TopicId == topicId)
+            .Select(x => (int?)x.SortOrder)
+            .MaxAsync() ?? 0;
+        return currentMax + 10;
+    }
+
     private static string NormalizeCode(string value)
     {
         var normalized = value.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
@@ -1132,6 +1368,19 @@ public class AdminController : Controller
 
         return string.Join(Environment.NewLine, mappings.Select(mapping =>
             $"{mapping?["left"]?.GetValue<string>()} = {mapping?["right"]?.GetValue<string>()}"));
+    }
+
+    private static string ReadJsonObjectLines(string? json, string propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return string.Empty;
+        }
+
+        var values = JsonNode.Parse(json)?[propertyName] as JsonObject;
+        return values is null
+            ? string.Empty
+            : string.Join(Environment.NewLine, values.Select(value => $"{value.Key} = {value.Value?.GetValue<string>()}"));
     }
 
     private readonly record struct ActivityConfiguration(string PayloadJson, string CorrectAnswer);

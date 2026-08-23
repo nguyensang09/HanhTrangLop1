@@ -18,6 +18,8 @@ public class LearningItem
 
     public byte Level { get; set; } = 1;
 
+    public int SortOrder { get; set; }
+
     [Required, MaxLength(50)]
     public string InteractionType { get; set; } = InteractionTypes.SingleChoice;
 

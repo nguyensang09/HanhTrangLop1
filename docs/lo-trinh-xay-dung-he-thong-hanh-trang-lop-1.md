@@ -138,7 +138,7 @@ Lựa chọn này giải quyết đúng nhu cầu mang hệ thống sang máy kh
 
 - Source luôn đi kèm lịch sử migration nên không phụ thuộc file database trên máy phát triển.
 - Máy mới chạy `Update-Database` hoặc `dotnet ef database update` để tạo đúng schema.
-- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản Admin và danh mục chương trình cố định nếu chưa có; không tạo bài học hoặc dữ liệu người dùng mẫu.
+- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản Admin, danh mục chương trình, 216 bài học nền và 6 tranh bài học chính nếu còn thiếu; 75 pictogram được đóng gói cùng source. Hệ thống không tạo hồ sơ hoặc lịch sử người dùng mẫu và không ghi đè bài quản trị tự tạo.
 - Có thể sinh script SQL idempotent từ migration để bàn giao cho DBA hoặc triển khai không cần EF CLI.
 
 Database First là quy trình ngược lại: schema SQL được thiết kế trước rồi dùng `Scaffold-DbContext` để sinh model. Không nên trộn Database First và Code First migration trong cùng một vòng đời schema vì dễ tạo hai nguồn chuẩn xung đột. Nếu sau này tổ chức yêu cầu DBA làm chủ schema, cần lập kế hoạch chuyển đổi riêng sang SQL Database Project/DACPAC và ngừng tạo migration từ model.
@@ -210,6 +210,7 @@ Chủ đề như gia đình, động vật, trường học, giao thông, thời
 | SkillGroupId | uniqueidentifier | FK |
 | TopicId | uniqueidentifier nullable | FK |
 | Level | tinyint | 1 dễ, 2 trung bình, 3 nâng cao |
+| SortOrder | int | Thứ tự học trong chủ đề |
 | InteractionType | varchar(50) | single_choice, drag_drop, tracing |
 | EstimatedMinutes | int | 3-7 phút |
 | InstructionText | nvarchar(500) | Lời hướng dẫn |
@@ -444,7 +445,7 @@ Thời lượng đề xuất: 2 tuần.
 - Admin nhập bài dạng chọn một đáp án, nghe-chọn, kéo-thả cơ bản.
 - Màn hình làm bài chung.
 - Lưu attempt, số lần thử, gợi ý, sao.
-- Không seed nội dung bài học; quản trị tự tạo và xuất bản nội dung theo từng chủ đề cố định.
+- Seed bộ nội dung nền theo mã ổn định; quản trị tiếp tục tạo, sửa trạng thái và xuất bản nội dung bổ sung theo từng chủ đề cố định.
 
 Tiêu chí hoàn thành:
 

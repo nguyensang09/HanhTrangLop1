@@ -32,7 +32,7 @@ Terminal:
 dotnet ef database update -c ApplicationDbContext
 ```
 
-Khi ứng dụng chạy lần đầu, hệ thống tự nạp role, tài khoản Admin và danh mục cố định 10 nhóm/43 chủ đề. Hệ thống không tạo phụ huynh, hồ sơ bé, bài học hoặc phần thưởng mẫu.
+Khi ứng dụng chạy lần đầu, hệ thống tự nạp role, tài khoản Admin, danh mục cố định 10 nhóm/43 chủ đề, 216 bài học nền và 6 tranh bài học chính. Source đi kèm 75 pictogram hệ thống để chạy ngoại tuyến. Hệ thống không tạo phụ huynh, hồ sơ bé, lịch sử học hoặc phần thưởng mẫu. Seed dùng mã bài ổn định để chỉ bổ sung bài còn thiếu, không ghi đè bài quản trị tự tạo.
 
 Dự án dùng Code First có migration. Các file `Data/Migrations` đi cùng source là gói mô tả schema; không cần chép file `.mdf` từ máy phát triển.
 

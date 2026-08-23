@@ -44,6 +44,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(x => x.Code)
             .IsUnique();
 
+        builder.Entity<LearningItem>()
+            .HasIndex(x => new { x.SkillGroupId, x.TopicId, x.SortOrder });
+
         builder.Entity<RewardDefinition>()
             .HasIndex(x => x.Code)
             .IsUnique();

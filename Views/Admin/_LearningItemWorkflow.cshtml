@@ -1,0 +1,40 @@
+@model LearningItemWorkflowViewModel
+
+<section class="admin-workflow-panel" aria-label="Trạng thái và thao tác bài học">
+    <div class="admin-workflow-status">
+        <span class="admin-workflow-label">Trạng thái hiện tại</span>
+        <span class="status-chip status-@Model.Status">@ContentStatus.GetDisplayName(Model.Status)</span>
+        @if (!Model.IsCompatible)
+        {
+            <span class="status-chip status-warning">Cần chuẩn hóa</span>
+        }
+    </div>
+    <div class="status-action-row">
+        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+            <input type="hidden" name="status" value="@ContentStatus.Draft" />
+            <button class="app-btn app-btn-muted app-btn-small" type="submit">Đưa về nháp</button>
+        </form>
+        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+            <input type="hidden" name="status" value="@ContentStatus.Review" />
+            <button class="app-btn app-btn-muted app-btn-small" type="submit">Gửi duyệt</button>
+        </form>
+        @if (Model.IsCompatible)
+        {
+            <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                <input type="hidden" name="status" value="@ContentStatus.Published" />
+                <button class="app-btn app-btn-small" type="submit">Xuất bản</button>
+            </form>
+        }
+        <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+            <input type="hidden" name="status" value="@ContentStatus.Archived" />
+            <button class="app-btn app-btn-muted app-btn-small" type="submit">Lưu trữ</button>
+        </form>
+        <form asp-action="DeleteLearningItem" asp-route-id="@Model.Id" method="post" data-confirm-delete>
+            <button class="danger-link" type="submit"><span class="material-symbols-outlined">delete</span>Xóa bài</button>
+        </form>
+    </div>
+    @if (!Model.IsCompatible)
+    {
+        <p class="text-danger">Hãy chọn lại mẫu hoạt động phù hợp với chủ đề trước khi xuất bản.</p>
+    }
+</section>
