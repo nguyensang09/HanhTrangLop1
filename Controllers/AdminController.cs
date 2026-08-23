@@ -366,7 +366,7 @@ public class AdminController : Controller
 
     [HttpPost("voice-cache/{id:guid}/update")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? usageType)
+    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? usageType, bool generateFile = true)
     {
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
         if (entry is null)
@@ -408,7 +408,7 @@ public class AdminController : Controller
         entry.LastError = null;
         entry.UpdatedAt = DateTimeOffset.UtcNow;
 
-        if (textChanged)
+        if (textChanged || generateFile)
         {
             try
             {
@@ -424,10 +424,10 @@ public class AdminController : Controller
         }
 
         await _db.SaveChangesAsync();
-        TempData["AdminMessage"] = textChanged
+        TempData["AdminMessage"] = (textChanged || generateFile)
             ? entry.Status == "ready"
-                ? "Đã sửa nội dung và tạo lại file voice cho dòng này."
-                : "Đã sửa nội dung cho dòng này, nhưng chưa tạo được file. Có thể tải file lên hoặc bấm Tạo file."
+                ? "Đã cập nhật nội dung và tạo lại file voice cho dòng này."
+                : "Đã cập nhật nội dung cho dòng này, nhưng chưa tạo được file. Có thể tải file lên hoặc bấm Tạo file."
             : "Đã cập nhật tên/loại voice.";
         return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
     }

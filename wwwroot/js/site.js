@@ -7,6 +7,15 @@ document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
     });
 });
 
+document.querySelectorAll("[data-auto-submit-file]").forEach((form) => {
+    const input = form.querySelector('input[type="file"]');
+    input?.addEventListener("change", () => {
+        if (input.files?.length) {
+            form.requestSubmit();
+        }
+    });
+});
+
 document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     const skillGroupSelect = form.querySelector("[data-skill-group-select]");
     const topicSelect = form.querySelector("[data-topic-select]");

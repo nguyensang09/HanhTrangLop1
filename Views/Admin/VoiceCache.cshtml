@@ -188,23 +188,19 @@
                     </td>
                     <td class="voice-upload-cell">
                         <div class="voice-action-row">
-                            <button class="voice-row-button" type="submit" form="voice-edit-@item.Id" title="Lưu tên, loại hoặc tạo voice mới nếu đổi text">Sửa</button>
+                            <button class="voice-row-button" type="submit" form="voice-edit-@item.Id" name="generateFile" value="true" title="Cập nhật dòng này và tạo lại file MP3 từ nội dung hiện tại">Cập nhật</button>
                             @if (!hasFile)
                             {
                                 <form asp-action="GenerateVoiceCacheFile" asp-route-id="@item.Id" method="post">
                                     <button class="voice-generate-button" type="submit" title="Tạo file MP3 từ nội dung voice">Tạo file</button>
                                 </form>
                             }
-                            <form asp-action="UploadVoiceCacheFile" asp-route-id="@item.Id" method="post" enctype="multipart/form-data">
-                            <label class="voice-file-picker">
-                                <span class="material-symbols-outlined">attach_file</span>
-                                <span class="sr-only">Chọn file</span>
-                                <input type="file" name="audioFile" accept="audio/*,.mp3,.wav,.m4a" />
-                            </label>
-                            <button class="voice-save-button" type="submit" title="Lưu file">
-                                <span class="voice-upload-mark" aria-hidden="true">↑</span>
-                                <span>Lưu</span>
-                            </button>
+                            <form asp-action="UploadVoiceCacheFile" asp-route-id="@item.Id" method="post" enctype="multipart/form-data" data-auto-submit-file>
+                                <label class="voice-file-picker" title="Chọn file âm thanh để thay thế">
+                                    <span class="material-symbols-outlined">attach_file</span>
+                                    <span class="sr-only">Chọn file</span>
+                                    <input type="file" name="audioFile" accept="audio/*,.mp3,.wav,.m4a" />
+                                </label>
                             </form>
                             <form asp-action="DeleteVoiceCache" asp-route-id="@item.Id" method="post" data-confirm-delete data-confirm-message="Xóa voice này khỏi bảng kiểm soát?">
                                 <button class="voice-delete-button" type="submit" title="Xóa voice">Xóa</button>

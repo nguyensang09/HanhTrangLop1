@@ -1824,7 +1824,7 @@ a {
 }
 
 .voice-cache-table th:nth-child(5) {
-  width: 300px;
+  width: 248px;
 }
 
 .voice-main-cell {
@@ -1890,7 +1890,7 @@ a {
 }
 
 .voice-row-button {
-  width: 50px;
+  width: 78px;
   background: #12384a;
   color: #fff;
 }
@@ -1980,43 +1980,8 @@ a {
   pointer-events: none;
 }
 
-.voice-file-picker .material-symbols-outlined,
-.voice-save-button .material-symbols-outlined {
+.voice-file-picker .material-symbols-outlined {
   font-size: 1.05rem;
-}
-
-.voice-save-button {
-  display: inline-flex;
-  width: 72px;
-  height: 34px;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--primary, #ff7d4d);
-  color: #ffffff;
-  box-shadow: none;
-  cursor: pointer;
-  padding: 0;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.voice-save-button span:not(.material-symbols-outlined) {
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-
-.voice-upload-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 900;
-  line-height: 1;
 }
 
 .voice-pagination {
