@@ -1,11 +1,13 @@
-using HanhTrangLop1.Data;
+﻿using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure.TextToSpeech;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -42,12 +44,20 @@ public class AdminController : Controller
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _environment;
     private readonly ITextToSpeechService _textToSpeech;
+    private readonly TextToSpeechOptions _textToSpeechOptions;
+    private readonly List<string> _textToSpeechErrors = [];
+    private bool _textToSpeechQuotaExceeded;
 
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment environment, ITextToSpeechService textToSpeech)
+    public AdminController(
+        ApplicationDbContext db,
+        IWebHostEnvironment environment,
+        ITextToSpeechService textToSpeech,
+        IOptions<TextToSpeechOptions> textToSpeechOptions)
     {
         _db = db;
         _environment = environment;
         _textToSpeech = textToSpeech;
+        _textToSpeechOptions = textToSpeechOptions.Value;
     }
 
     [HttpGet("")]
@@ -154,7 +164,7 @@ public class AdminController : Controller
     {
         if (!_textToSpeech.CanGenerate)
         {
-            TempData["AdminMessage"] = "Chưa cấu hình API tạo giọng đọc. Vui lòng kiểm tra TextToSpeech trong appsettings.json.";
+            TempData["AdminMessage"] = "ChÆ°a cáº¥u hÃ¬nh API táº¡o giá»ng Ä‘á»c. Vui lÃ²ng kiá»ƒm tra TextToSpeech trong appsettings.json.";
             return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
         }
 
@@ -202,11 +212,22 @@ public class AdminController : Controller
         if (generatedCount > 0)
         {
             await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"Đã bổ sung {generatedCount} file âm thanh cho {updatedItems} bài học.";
+            TempData["AdminMessage"] = $"ÄÃ£ bá»• sung {generatedCount} file Ã¢m thanh cho {updatedItems} bÃ i há»c.";
         }
         else
         {
-            TempData["AdminMessage"] = "Không có âm thanh cần bổ sung, hoặc API TTS không trả về file.";
+            TempData["AdminMessage"] = "KhÃ´ng cÃ³ Ã¢m thanh cáº§n bá»• sung, hoáº·c API TTS khÃ´ng tráº£ vá» file.";
+        }
+
+        if (generatedCount > 0)
+        {
+            var warning = _textToSpeechErrors.Count > 0 ? $" Má»™t sá»‘ file lá»—i: {_textToSpeechErrors[0]}" : string.Empty;
+            TempData["AdminMessage"] = $"ÄÃ£ bá»• sung {generatedCount} file Ã¢m thanh cho {updatedItems} bÃ i há»c.{warning}";
+        }
+        else
+        {
+            var reason = _textToSpeechErrors.Count > 0 ? $" Lá»—i: {_textToSpeechErrors[0]}" : string.Empty;
+            TempData["AdminMessage"] = $"KhÃ´ng cÃ³ Ã¢m thanh cáº§n bá»• sung, hoáº·c API TTS khÃ´ng tráº£ vá» file.{reason}";
         }
 
         return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
@@ -218,7 +239,7 @@ public class AdminController : Controller
     {
         if (!_textToSpeech.CanGenerate)
         {
-            TempData["AdminMessage"] = "Chưa cấu hình API tạo giọng đọc. Vui lòng kiểm tra TextToSpeech trong appsettings.json.";
+            TempData["AdminMessage"] = "ChÆ°a cáº¥u hÃ¬nh API táº¡o giá»ng Ä‘á»c. Vui lÃ²ng kiá»ƒm tra TextToSpeech trong appsettings.json.";
             var fallbackItem = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == id);
             return fallbackItem is null ? NotFound() : RedirectToEditor(fallbackItem);
         }
@@ -235,11 +256,11 @@ public class AdminController : Controller
         if (generatedCount > 0)
         {
             await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"Đã tạo lại {generatedCount} file âm thanh cho bài “{item.Title}”.";
+            TempData["AdminMessage"] = $"ÄÃ£ táº¡o láº¡i {generatedCount} file Ã¢m thanh cho bÃ i â€œ{item.Title}â€.";
         }
         else
         {
-            TempData["AdminMessage"] = "Chưa tạo được âm thanh. Hãy kiểm tra API key, voiceId và quota ElevenLabs.";
+            TempData["AdminMessage"] = "ChÆ°a táº¡o Ä‘Æ°á»£c Ã¢m thanh. HÃ£y kiá»ƒm tra API key, voiceId vÃ  quota ElevenLabs.";
         }
 
         return RedirectToEditor(item);
@@ -285,6 +306,74 @@ public class AdminController : Controller
             Images = assets.Where(x => x.AssetType == "image").ToList(),
             AudioFiles = assets.Where(x => x.AssetType == "audio").ToList()
         });
+    }
+
+    [HttpGet("voice-cache")]
+    public async Task<IActionResult> VoiceCache()
+    {
+        var entries = await _db.TextToSpeechCaches
+            .OrderByDescending(x => x.UpdatedAt)
+            .Take(300)
+            .ToListAsync();
+        return View(entries);
+    }
+
+    [HttpPost("voice-cache/backfill")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BackfillVoiceCache()
+    {
+        var audioAssets = await _db.MediaAssets
+            .Where(x => x.AssetType == "audio" && !string.IsNullOrWhiteSpace(x.AltText))
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        var added = 0;
+        foreach (var asset in audioAssets)
+        {
+            var normalizedText = NormalizeSpeechText(asset.AltText!);
+            if (string.IsNullOrWhiteSpace(normalizedText) ||
+                normalizedText.StartsWith("tts:v1:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
+            var exists = await _db.TextToSpeechCaches.AnyAsync(x =>
+                x.Provider == cacheKey.Provider &&
+                x.Voice == cacheKey.Voice &&
+                x.ModelId == cacheKey.ModelId &&
+                x.Format == cacheKey.Format &&
+                x.TextHash == cacheKey.TextHash);
+            if (exists)
+            {
+                continue;
+            }
+
+            _db.TextToSpeechCaches.Add(new TextToSpeechCache
+            {
+                Id = Guid.NewGuid(),
+                Provider = cacheKey.Provider,
+                Voice = cacheKey.Voice,
+                ModelId = cacheKey.ModelId,
+                Format = cacheKey.Format,
+                TextHash = cacheKey.TextHash,
+                NormalizedText = AudioAltText(normalizedText),
+                OriginalText = AudioOriginalText(asset.AltText!),
+                AudioUrl = asset.StoragePath,
+                Status = "ready",
+                CreatedAt = asset.CreatedAt,
+                UpdatedAt = DateTimeOffset.UtcNow
+            });
+            added += 1;
+        }
+
+        if (added > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        TempData["AdminMessage"] = $"Đã chuẩn hóa {added} voice cũ vào bảng kiểm soát.";
+        return RedirectToAction(nameof(VoiceCache));
     }
 
     [HttpGet("learning-items/create-choice")]
@@ -339,8 +428,8 @@ public class AdminController : Controller
             SkillGroupId = firstGroupId,
             TopicId = selectedTopic?.Id,
             InteractionType = selectedInteractionType,
-            InstructionText = template?.DefaultInstruction ?? "Con hãy thực hiện hoạt động.",
-            PromptText = template?.DefaultPrompt ?? "Con trả lời câu hỏi nhé."
+            InstructionText = template?.DefaultInstruction ?? "Con hÃ£y thá»±c hiá»‡n hoáº¡t Ä‘á»™ng.",
+            PromptText = template?.DefaultPrompt ?? "Con tráº£ lá»i cÃ¢u há»i nhÃ©."
         });
     }
 
@@ -359,7 +448,7 @@ public class AdminController : Controller
 
         if (!SupportedInteractionTypes.Contains(model.InteractionType))
         {
-            ModelState.AddModelError(nameof(model.InteractionType), "Dạng tương tác chưa được hỗ trợ.");
+            ModelState.AddModelError(nameof(model.InteractionType), "Dáº¡ng tÆ°Æ¡ng tÃ¡c chÆ°a Ä‘Æ°á»£c há»— trá»£.");
             await LoadContentListsAsync();
             return View(model);
         }
@@ -486,8 +575,8 @@ public class AdminController : Controller
         {
             SkillGroupId = selectedTopic?.SkillGroupId ?? Guid.Empty,
             TopicId = selectedTopic?.Id,
-            InstructionText = "Con tô theo nét gợi ý nhé.",
-            PromptText = "Con tô ký tự theo đường viền."
+            InstructionText = "Con tÃ´ theo nÃ©t gá»£i Ã½ nhÃ©.",
+            PromptText = "Con tÃ´ kÃ½ tá»± theo Ä‘Æ°á»ng viá»n."
         });
     }
 
@@ -588,11 +677,11 @@ public class AdminController : Controller
             minPoints = Math.Max(5, model.MinPoints),
             expectedStrokeCount = model.ExpectedStrokeCount
         });
-        question.HintJson = JsonSerializer.Serialize(new { level1 = "Con bắt đầu từ điểm màu cam nhé." });
+        question.HintJson = JsonSerializer.Serialize(new { level1 = "Con báº¯t Ä‘áº§u tá»« Ä‘iá»ƒm mÃ u cam nhÃ©." });
         question.FeedbackJson = JsonSerializer.Serialize(new
         {
-            correct = $"Tốt lắm, con đã tô xong {symbol}!",
-            retry = "Mình thử tô lại một nét nhé."
+            correct = $"Tá»‘t láº¯m, con Ä‘Ã£ tÃ´ xong {symbol}!",
+            retry = "MÃ¬nh thá»­ tÃ´ láº¡i má»™t nÃ©t nhÃ©."
         });
 
         if (!model.Id.HasValue) _db.LearningItems.Add(item);
@@ -627,7 +716,7 @@ public class AdminController : Controller
         await ValidateClassificationAsync(model.SkillGroupId, model.TopicId, requireActive: false);
         if (string.IsNullOrWhiteSpace(model.Symbol))
         {
-            ModelState.AddModelError(nameof(model.Symbol), "Vui lòng nhập ký tự cần tô.");
+            ModelState.AddModelError(nameof(model.Symbol), "Vui lÃ²ng nháº­p kÃ½ tá»± cáº§n tÃ´.");
         }
 
         if (!ModelState.IsValid)
@@ -694,7 +783,7 @@ public class AdminController : Controller
 
         if (status == ContentStatus.Published && !ActivityTemplateCatalog.IsItemAllowed(item))
         {
-            TempData["AdminMessage"] = "Bài học chưa phù hợp với chủ đề. Vui lòng sửa mẫu hoạt động trước khi xuất bản.";
+            TempData["AdminMessage"] = "BÃ i há»c chÆ°a phÃ¹ há»£p vá»›i chá»§ Ä‘á». Vui lÃ²ng sá»­a máº«u hoáº¡t Ä‘á»™ng trÆ°á»›c khi xuáº¥t báº£n.";
             return RedirectToEditor(item);
         }
 
@@ -709,7 +798,7 @@ public class AdminController : Controller
                 Id = Guid.NewGuid(),
                 LearningItemId = item.Id,
                 Status = ContentStatus.Review,
-                Note = "Gửi duyệt từ admin MVP.",
+                Note = "Gá»­i duyá»‡t tá»« admin MVP.",
                 CreatedAt = DateTimeOffset.UtcNow
             });
         }
@@ -761,7 +850,7 @@ public class AdminController : Controller
         await _db.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        TempData["AdminMessage"] = $"Đã xóa bài học “{item.Title}”.";
+        TempData["AdminMessage"] = $"ÄÃ£ xÃ³a bÃ i há»c â€œ{item.Title}â€.";
         return RedirectToAction(nameof(LearningItems));
     }
 
@@ -806,14 +895,14 @@ public class AdminController : Controller
     {
         if (!topicId.HasValue)
         {
-            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Vui lòng chọn chủ đề tô nét.");
+            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Vui lÃ²ng chá»n chá»§ Ä‘á» tÃ´ nÃ©t.");
             return;
         }
 
         var topicCode = await _db.Topics.Where(x => x.Id == topicId.Value).Select(x => x.Code).FirstOrDefaultAsync();
         if (topicCode is null || !ActivityTemplateCatalog.ForTopic(topicCode).AllowsTracing)
         {
-            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Chủ đề này không hỗ trợ bài tô theo nét.");
+            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Chá»§ Ä‘á» nÃ y khÃ´ng há»— trá»£ bÃ i tÃ´ theo nÃ©t.");
         }
     }
 
@@ -825,7 +914,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingAudioAssetId.Value && x.AssetType == "audio");
             if (audio is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Âm thanh trong thư viện không còn tồn tại.");
+                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Ã‚m thanh trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
             }
             else
             {
@@ -855,7 +944,7 @@ public class AdminController : Controller
     {
         if (!topicId.HasValue)
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Vui lòng chọn chủ đề trước khi chọn mẫu hoạt động.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Vui lÃ²ng chá»n chá»§ Ä‘á» trÆ°á»›c khi chá»n máº«u hoáº¡t Ä‘á»™ng.");
             return;
         }
 
@@ -865,7 +954,7 @@ public class AdminController : Controller
             .FirstOrDefaultAsync();
         if (topicCode is null || !ActivityTemplateCatalog.IsAllowed(topicCode, interactionType))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.InteractionType), "Mẫu hoạt động không phù hợp với chủ đề đã chọn.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.InteractionType), "Máº«u hoáº¡t Ä‘á»™ng khÃ´ng phÃ¹ há»£p vá»›i chá»§ Ä‘á» Ä‘Ã£ chá»n.");
         }
     }
 
@@ -877,7 +966,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingImageAssetId.Value && x.AssetType == "image");
             if (image is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingImageAssetId), "Hình trong thư viện không còn tồn tại.");
+                ModelState.AddModelError(nameof(model.ExistingImageAssetId), "HÃ¬nh trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
             }
             else
             {
@@ -891,7 +980,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingAudioAssetId.Value && x.AssetType == "audio");
             if (audio is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Âm thanh trong thư viện không còn tồn tại.");
+                ModelState.AddModelError(nameof(model.ExistingAudioAssetId), "Ã‚m thanh trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
             }
             else
             {
@@ -905,7 +994,7 @@ public class AdminController : Controller
                 x.Id == model.ExistingQuestionAudioAssetId.Value && x.AssetType == "audio");
             if (questionAudio is null)
             {
-                ModelState.AddModelError(nameof(model.ExistingQuestionAudioAssetId), "Âm thanh câu hỏi trong thư viện không còn tồn tại.");
+                ModelState.AddModelError(nameof(model.ExistingQuestionAudioAssetId), "Ã‚m thanh cÃ¢u há»i trong thÆ° viá»‡n khÃ´ng cÃ²n tá»“n táº¡i.");
             }
             else
             {
@@ -932,7 +1021,7 @@ public class AdminController : Controller
         if (file.Length == 0 || file.Length > maxBytes || !allowedExtensions.Contains(extension))
         {
             var limit = maxBytes / 1024 / 1024;
-            ModelState.AddModelError(fieldName, $"Tệp {assetType} không hợp lệ hoặc vượt quá {limit} MB.");
+            ModelState.AddModelError(fieldName, $"Tá»‡p {assetType} khÃ´ng há»£p lá»‡ hoáº·c vÆ°á»£t quÃ¡ {limit} MB.");
         }
     }
 
@@ -1211,13 +1300,77 @@ public class AdminController : Controller
 
     private async Task<string?> GenerateAudioFileAsync(string text, string prefix)
     {
+        text = Clean(text);
+        if (string.IsNullOrWhiteSpace(text) || _textToSpeechQuotaExceeded)
+        {
+            return null;
+        }
+
+        var normalizedText = NormalizeSpeechText(text);
+        var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
+        var cacheEntry = await _db.TextToSpeechCaches
+            .FirstOrDefaultAsync(x =>
+                x.Provider == cacheKey.Provider &&
+                x.Voice == cacheKey.Voice &&
+                x.ModelId == cacheKey.ModelId &&
+                x.Format == cacheKey.Format &&
+                x.TextHash == cacheKey.TextHash &&
+                x.Status == "ready");
+        if (cacheEntry is not null)
+        {
+            cacheEntry.ReuseCount += 1;
+            cacheEntry.UpdatedAt = DateTimeOffset.UtcNow;
+            return cacheEntry.AudioUrl;
+        }
+
+        var legacyAudioKey = AudioCacheKey(normalizedText);
+        var existingAudio = await _db.MediaAssets
+            .Where(x => x.AssetType == "audio" && x.AltText == legacyAudioKey)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => x.StoragePath)
+            .FirstOrDefaultAsync();
+        existingAudio ??= await _db.MediaAssets
+            .Where(x => x.AssetType == "audio" && x.AltText == AudioAltText(text))
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => x.StoragePath)
+            .FirstOrDefaultAsync();
+        if (!string.IsNullOrWhiteSpace(existingAudio))
+        {
+            _db.TextToSpeechCaches.Add(new TextToSpeechCache
+            {
+                Id = Guid.NewGuid(),
+                Provider = cacheKey.Provider,
+                Voice = cacheKey.Voice,
+                ModelId = cacheKey.ModelId,
+                Format = cacheKey.Format,
+                TextHash = cacheKey.TextHash,
+                NormalizedText = AudioAltText(normalizedText),
+                OriginalText = AudioOriginalText(text),
+                AudioUrl = existingAudio,
+                Status = "ready",
+                ReuseCount = 1,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            });
+            return existingAudio;
+        }
+
         GeneratedSpeech? speech;
         try
         {
-            speech = await _textToSpeech.GenerateAsync(text, HttpContext.RequestAborted);
+            speech = await _textToSpeech.GenerateAsync(normalizedText, HttpContext.RequestAborted);
         }
         catch (Exception ex)
         {
+            if (_textToSpeechErrors.Count < 3)
+            {
+                _textToSpeechErrors.Add(ex.Message);
+            }
+            if (ex.Message.Contains("quota_exceeded", StringComparison.OrdinalIgnoreCase) ||
+                ex.Message.Contains("quota", StringComparison.OrdinalIgnoreCase))
+            {
+                _textToSpeechQuotaExceeded = true;
+            }
             TempData["AdminMessage"] = $"TTS lỗi: {ex.Message}";
             return null;
         }
@@ -1242,11 +1395,59 @@ public class AdminController : Controller
             FileName = storedName,
             ContentType = speech.ContentType,
             StoragePath = storagePath,
-            AltText = text.Length > 180 ? text[..180] : text,
+            AltText = legacyAudioKey,
             CreatedAt = DateTimeOffset.UtcNow
+        });
+        _db.TextToSpeechCaches.Add(new TextToSpeechCache
+        {
+            Id = Guid.NewGuid(),
+            Provider = cacheKey.Provider,
+            Voice = cacheKey.Voice,
+            ModelId = cacheKey.ModelId,
+            Format = cacheKey.Format,
+            TextHash = cacheKey.TextHash,
+            NormalizedText = AudioAltText(normalizedText),
+            OriginalText = AudioOriginalText(text),
+            AudioUrl = storagePath,
+            Status = "ready",
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
         });
         return storagePath;
     }
+
+    private static string AudioAltText(string text) => text.Length > 180 ? text[..180] : text;
+
+    private static string AudioOriginalText(string text) => text.Length > 1000 ? text[..1000] : text;
+
+    private static string NormalizeSpeechText(string text)
+    {
+        return string.Join(' ', Clean(text).Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static string AudioCacheKey(string normalizedText)
+    {
+        var key = $"tts:v1:{normalizedText.ToLowerInvariant()}";
+        return key.Length > 500 ? key[..500] : key;
+    }
+
+    private TextToSpeechCacheKey BuildTextToSpeechCacheKey(string normalizedText)
+    {
+        var provider = string.IsNullOrWhiteSpace(_textToSpeechOptions.Provider) ? "Unknown" : _textToSpeechOptions.Provider.Trim();
+        var voice = string.IsNullOrWhiteSpace(_textToSpeechOptions.Voice) ? "default" : _textToSpeechOptions.Voice.Trim();
+        var modelId = string.IsNullOrWhiteSpace(_textToSpeechOptions.ModelId) ? "default" : _textToSpeechOptions.ModelId.Trim();
+        var format = string.IsNullOrWhiteSpace(_textToSpeechOptions.Format) ? "mp3" : _textToSpeechOptions.Format.Trim();
+        var hashSource = $"{provider}|{voice}|{modelId}|{format}|{normalizedText.ToLowerInvariant()}";
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(hashSource))).ToLowerInvariant();
+        return new TextToSpeechCacheKey(provider, voice, modelId, format, hash);
+    }
+
+    private sealed record TextToSpeechCacheKey(
+        string Provider,
+        string Voice,
+        string ModelId,
+        string Format,
+        string TextHash);
 
     private static CreateChoiceItemViewModel BuildActivityEditorModel(LearningItem item)
     {
@@ -1294,8 +1495,8 @@ public class AdminController : Controller
             CorrectFeedbackAudioUrl = ReadJsonString(payloadJson, "correctAudioUrl"),
             RetryFeedbackAudioUrl = ReadJsonString(payloadJson, "retryAudioUrl"),
             SpeechText = ReadJsonString(payloadJson, "speechText"),
-            LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "Nhóm A",
-            RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "Nhóm B",
+            LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "NhÃ³m A",
+            RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "NhÃ³m B",
             Level = item.Level,
             EstimatedMinutes = item.EstimatedMinutes,
             HintText = ReadJsonString(question?.HintJson, "level1"),
@@ -1310,11 +1511,11 @@ public class AdminController : Controller
         if (template?.RequiresAudio == true && string.IsNullOrWhiteSpace(model.AudioUrl) &&
             string.IsNullOrWhiteSpace(model.SpeechText) && model.AudioFile is null)
         {
-            ModelState.AddModelError(nameof(model.AudioUrl), "Dạng bài này cần tệp âm thanh, âm thanh thư viện hoặc nội dung đọc tự động.");
+            ModelState.AddModelError(nameof(model.AudioUrl), "Dáº¡ng bÃ i nÃ y cáº§n tá»‡p Ã¢m thanh, Ã¢m thanh thÆ° viá»‡n hoáº·c ná»™i dung Ä‘á»c tá»± Ä‘á»™ng.");
         }
         if (template?.RequiresImage == true && string.IsNullOrWhiteSpace(model.ImageUrl) && model.ImageFile is null)
         {
-            ModelState.AddModelError(nameof(model.ImageUrl), "Dạng bài này cần một hình minh họa hoặc hình trong thư viện.");
+            ModelState.AddModelError(nameof(model.ImageUrl), "Dáº¡ng bÃ i nÃ y cáº§n má»™t hÃ¬nh minh há»a hoáº·c hÃ¬nh trong thÆ° viá»‡n.");
         }
         if (!ModelState.IsValid)
         {
@@ -1337,8 +1538,8 @@ public class AdminController : Controller
             ["speechText"] = Clean(model.SpeechText),
             ["instructionSpeechText"] = Clean(model.InstructionText),
             ["questionSpeechText"] = Clean(model.PromptText),
-            ["correctSpeechText"] = "Giỏi lắm, con đã làm đúng!",
-            ["retrySpeechText"] = "Con quan sát kỹ rồi thử lại nhé."
+            ["correctSpeechText"] = "Giá»i láº¯m, con Ä‘Ã£ lÃ m Ä‘Ãºng!",
+            ["retrySpeechText"] = "Con quan sÃ¡t ká»¹ rá»“i thá»­ láº¡i nhÃ©."
         };
 
         payload["correctSpeechText"] = Clean(model.CorrectFeedback);
@@ -1347,10 +1548,10 @@ public class AdminController : Controller
         var itemMedia = ParseMappings(
             model.ItemMediaText,
             nameof(model.ItemMediaText),
-            "Mỗi ảnh riêng cần có dạng Tên nội dung = Đường dẫn ảnh.");
+            "Má»—i áº£nh riÃªng cáº§n cÃ³ dáº¡ng TÃªn ná»™i dung = ÄÆ°á»ng dáº«n áº£nh.");
         if (itemMedia.Count > 30)
         {
-            ModelState.AddModelError(nameof(model.ItemMediaText), "Mỗi bài dùng tối đa 30 ảnh riêng.");
+            ModelState.AddModelError(nameof(model.ItemMediaText), "Má»—i bÃ i dÃ¹ng tá»‘i Ä‘a 30 áº£nh riÃªng.");
             return null;
         }
         foreach (var media in itemMedia)
@@ -1358,7 +1559,7 @@ public class AdminController : Controller
             if (!Uri.TryCreate(media.Right, UriKind.RelativeOrAbsolute, out var uri) ||
                 (!media.Right.StartsWith('/') && !uri.IsAbsoluteUri))
             {
-                ModelState.AddModelError(nameof(model.ItemMediaText), $"Đường dẫn ảnh của '{media.Left}' chưa hợp lệ.");
+                ModelState.AddModelError(nameof(model.ItemMediaText), $"ÄÆ°á»ng dáº«n áº£nh cá»§a '{media.Left}' chÆ°a há»£p lá»‡.");
             }
         }
         if (!ModelState.IsValid)
@@ -1390,7 +1591,7 @@ public class AdminController : Controller
                 if (choices.Length < 2 || correctValues.Length == 0 ||
                     correctValues.Any(value => !choices.Contains(value, StringComparer.OrdinalIgnoreCase)))
                 {
-                    ModelState.AddModelError(nameof(model.CorrectAnswersText), "Các đáp án đúng phải nằm trong danh sách lựa chọn.");
+                    ModelState.AddModelError(nameof(model.CorrectAnswersText), "CÃ¡c Ä‘Ã¡p Ã¡n Ä‘Ãºng pháº£i náº±m trong danh sÃ¡ch lá»±a chá»n.");
                     return null;
                 }
                 payload["choices"] = ToJsonArray(choices);
@@ -1398,10 +1599,10 @@ public class AdminController : Controller
                 return new(payload.ToJsonString(), CanonicalList(correctValues));
 
             case InteractionTypes.Matching:
-                var pairs = ParseMappings(model.PairsText, nameof(model.PairsText), "Mỗi cặp cần có dạng Bên trái = Bên phải.");
+                var pairs = ParseMappings(model.PairsText, nameof(model.PairsText), "Má»—i cáº·p cáº§n cÃ³ dáº¡ng BÃªn trÃ¡i = BÃªn pháº£i.");
                 if (pairs.Count < 2)
                 {
-                    ModelState.AddModelError(nameof(model.PairsText), "Bài nối cặp cần ít nhất hai cặp.");
+                    ModelState.AddModelError(nameof(model.PairsText), "BÃ i ná»‘i cáº·p cáº§n Ã­t nháº¥t hai cáº·p.");
                     return null;
                 }
                 payload["pairs"] = ToMappingArray(pairs);
@@ -1411,7 +1612,7 @@ public class AdminController : Controller
                 var sequence = SplitLines(model.SequenceItemsText);
                 if (sequence.Length < 2)
                 {
-                    ModelState.AddModelError(nameof(model.SequenceItemsText), "Bài sắp xếp cần ít nhất hai mục.");
+                    ModelState.AddModelError(nameof(model.SequenceItemsText), "BÃ i sáº¯p xáº¿p cáº§n Ã­t nháº¥t hai má»¥c.");
                     return null;
                 }
                 payload["items"] = ToJsonArray(sequence);
@@ -1448,7 +1649,7 @@ public class AdminController : Controller
                 var comparisonMode = model.ComparisonMode is "less" or "equal" ? model.ComparisonMode : "more";
                 if (comparisonMode == "equal" && model.TargetCount != model.SecondaryCount)
                 {
-                    ModelState.AddModelError(nameof(model.SecondaryCount), "Khi chọn kiểm tra bằng nhau, hai nhóm phải có cùng số lượng.");
+                    ModelState.AddModelError(nameof(model.SecondaryCount), "Khi chá»n kiá»ƒm tra báº±ng nhau, hai nhÃ³m pháº£i cÃ³ cÃ¹ng sá»‘ lÆ°á»£ng.");
                     return null;
                 }
                 payload["comparisonMode"] = comparisonMode;
@@ -1468,10 +1669,10 @@ public class AdminController : Controller
                 var mappings = ParseMappings(
                     model.ClassificationText,
                     nameof(model.ClassificationText),
-                    "Mỗi vật cần có dạng Tên vật = Nhóm phân loại.");
+                    "Má»—i váº­t cáº§n cÃ³ dáº¡ng TÃªn váº­t = NhÃ³m phÃ¢n loáº¡i.");
                 if (mappings.Count < 2 || mappings.Select(x => x.Right).Distinct(StringComparer.OrdinalIgnoreCase).Count() < 2)
                 {
-                    ModelState.AddModelError(nameof(model.ClassificationText), "Bài phân loại cần ít nhất hai vật và hai nhóm.");
+                    ModelState.AddModelError(nameof(model.ClassificationText), "BÃ i phÃ¢n loáº¡i cáº§n Ã­t nháº¥t hai váº­t vÃ  hai nhÃ³m.");
                     return null;
                 }
                 payload["mappings"] = ToMappingArray(mappings);
@@ -1490,7 +1691,7 @@ public class AdminController : Controller
             return true;
         }
 
-        ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "Bài cần ít nhất hai lựa chọn và một đáp án đúng nằm trong danh sách.");
+        ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "BÃ i cáº§n Ã­t nháº¥t hai lá»±a chá»n vÃ  má»™t Ä‘Ã¡p Ã¡n Ä‘Ãºng náº±m trong danh sÃ¡ch.");
         return false;
     }
 
@@ -1547,13 +1748,13 @@ public class AdminController : Controller
         if (skillGroupId == Guid.Empty || !await _db.SkillGroups.AnyAsync(x =>
                 x.Id == skillGroupId && (!requireActive || x.IsActive)))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.SkillGroupId), "Nhóm kỹ năng không hợp lệ hoặc đang tạm ẩn.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.SkillGroupId), "NhÃ³m ká»¹ nÄƒng khÃ´ng há»£p lá»‡ hoáº·c Ä‘ang táº¡m áº©n.");
         }
 
         if (topicId.HasValue && !await _db.Topics.AnyAsync(x =>
                 x.Id == topicId.Value && x.SkillGroupId == skillGroupId && (!requireActive || x.IsActive)))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Chủ đề không thuộc nhóm kỹ năng đã chọn hoặc đang tạm ẩn.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Chá»§ Ä‘á» khÃ´ng thuá»™c nhÃ³m ká»¹ nÄƒng Ä‘Ã£ chá»n hoáº·c Ä‘ang táº¡m áº©n.");
         }
     }
 
@@ -1562,7 +1763,7 @@ public class AdminController : Controller
         var choices = BuildChoices(choiceA, choiceB, choiceC);
         if (choices.Length < 2 || !choices.Contains(Clean(correctAnswer), StringComparer.OrdinalIgnoreCase))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "Đáp án đúng cần nằm trong các lựa chọn đã nhập.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.CorrectAnswer), "ÄÃ¡p Ã¡n Ä‘Ãºng cáº§n náº±m trong cÃ¡c lá»±a chá»n Ä‘Ã£ nháº­p.");
         }
     }
 
@@ -1763,3 +1964,4 @@ public class AdminController : Controller
     private readonly record struct ActivityConfiguration(string PayloadJson, string CorrectAnswer);
     private readonly record struct ActivityMapping(string Left, string Right);
 }
+

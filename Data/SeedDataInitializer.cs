@@ -1,6 +1,8 @@
 using HanhTrangLop1.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace HanhTrangLop1.Data;
 
@@ -16,12 +18,13 @@ public static class SeedDataInitializer
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        // Chỉ khởi tạo cấu trúc database và tài khoản quản trị nền tảng.
         await EnsureMigrationHistoryForLegacyDatabaseAsync(db);
         await db.Database.MigrateAsync();
         await SeedRolesAsync(roleManager);
         await SeedAdminAsync(userManager, configuration, logger);
         await SeedCurriculumCatalogAsync(db);
+        await BackfillTextToSpeechCacheAsync(db, configuration, logger);
+
         var createdLessons = await LearningContentSeed.SeedAsync(db);
         if (createdLessons > 0)
         {
@@ -36,7 +39,6 @@ public static class SeedDataInitializer
             return;
         }
 
-        // Ghi nhận migration nền cho database cũ đã tạo bằng EnsureCreated.
         await db.Database.ExecuteSqlRawAsync($"""
             IF OBJECT_ID(N'[dbo].[AspNetUsers]', N'U') IS NOT NULL
                AND OBJECT_ID(N'[dbo].[__EFMigrationsHistory]', N'U') IS NULL
@@ -56,7 +58,6 @@ public static class SeedDataInitializer
     private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
     {
         var roles = new[] { "Parent", "Admin", "ContentEditor", "Reviewer" };
-
         foreach (var role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
@@ -138,5 +139,88 @@ public static class SeedDataInitializer
         }
 
         await db.SaveChangesAsync();
+    }
+
+    private static async Task BackfillTextToSpeechCacheAsync(
+        ApplicationDbContext db,
+        IConfiguration configuration,
+        ILogger logger)
+    {
+        var provider = configuration["TextToSpeech:Provider"]?.Trim();
+        var voice = configuration["TextToSpeech:Voice"]?.Trim();
+        var modelId = configuration["TextToSpeech:ModelId"]?.Trim();
+        var format = configuration["TextToSpeech:Format"]?.Trim();
+        if (string.IsNullOrWhiteSpace(provider) ||
+            string.IsNullOrWhiteSpace(voice) ||
+            string.IsNullOrWhiteSpace(modelId) ||
+            string.IsNullOrWhiteSpace(format))
+        {
+            return;
+        }
+
+        var existingHashes = await db.TextToSpeechCaches
+            .Select(x => x.TextHash)
+            .ToHashSetAsync(StringComparer.OrdinalIgnoreCase);
+        var audioAssets = await db.MediaAssets
+            .Where(x => x.AssetType == "audio" && !string.IsNullOrWhiteSpace(x.AltText))
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        var added = 0;
+        foreach (var asset in audioAssets)
+        {
+            var normalizedText = NormalizeSpeechText(asset.AltText!);
+            if (string.IsNullOrWhiteSpace(normalizedText) ||
+                normalizedText.StartsWith("tts:v1:", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var hash = TextToSpeechHash(provider, voice, modelId, format, normalizedText);
+            if (existingHashes.Contains(hash))
+            {
+                continue;
+            }
+
+            db.TextToSpeechCaches.Add(new TextToSpeechCache
+            {
+                Id = Guid.NewGuid(),
+                Provider = provider,
+                Voice = voice,
+                ModelId = modelId,
+                Format = format,
+                TextHash = hash,
+                NormalizedText = TrimMax(normalizedText, 500),
+                OriginalText = TrimMax(asset.AltText!, 1000),
+                AudioUrl = asset.StoragePath,
+                Status = "ready",
+                CreatedAt = asset.CreatedAt,
+                UpdatedAt = DateTimeOffset.UtcNow
+            });
+            existingHashes.Add(hash);
+            added += 1;
+        }
+
+        if (added > 0)
+        {
+            await db.SaveChangesAsync();
+            logger.LogInformation("Đã chuẩn hóa {Count} file âm thanh cũ vào bảng kiểm soát voice.", added);
+        }
+    }
+
+    private static string NormalizeSpeechText(string text)
+    {
+        return string.Join(' ', (text ?? string.Empty).Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private static string TextToSpeechHash(string provider, string voice, string modelId, string format, string normalizedText)
+    {
+        var source = $"{provider}|{voice}|{modelId}|{format}|{normalizedText.ToLowerInvariant()}";
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source))).ToLowerInvariant();
+    }
+
+    private static string TrimMax(string value, int maxLength)
+    {
+        return value.Length <= maxLength ? value : value[..maxLength];
     }
 }

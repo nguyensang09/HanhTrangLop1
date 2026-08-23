@@ -2889,6 +2889,25 @@ a {
   text-align: center;
 }
 
+.learning-complete-visual {
+  display: grid;
+  min-height: min(46dvh, 380px);
+  place-items: center;
+  align-content: center;
+  gap: 16px;
+  margin: 22px 0;
+  border: 2px solid #bde8e1;
+  border-top: 8px solid #31bc91;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.learning-complete-visual .material-symbols-outlined {
+  color: #0f8f73;
+  font-size: 4.5rem;
+  font-variation-settings: "FILL" 1;
+}
+
 .learning-result.retry {
   grid-template-columns: 56px 38px minmax(0, 1fr);
   min-height: auto;

@@ -15,6 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<SkillGroup> SkillGroups => Set<SkillGroup>();
     public DbSet<Topic> Topics => Set<Topic>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
+    public DbSet<TextToSpeechCache> TextToSpeechCaches => Set<TextToSpeechCache>();
     public DbSet<LearningItem> LearningItems => Set<LearningItem>();
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<TracingTemplate> TracingTemplates => Set<TracingTemplate>();
@@ -46,6 +47,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<LearningItem>()
             .HasIndex(x => new { x.SkillGroupId, x.TopicId, x.SortOrder });
+
+        builder.Entity<TextToSpeechCache>()
+            .HasIndex(x => new { x.Provider, x.Voice, x.ModelId, x.Format, x.TextHash })
+            .IsUnique();
 
         builder.Entity<RewardDefinition>()
             .HasIndex(x => x.Code)

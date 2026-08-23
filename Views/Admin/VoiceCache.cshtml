@@ -1,0 +1,64 @@
+@model IReadOnlyList<TextToSpeechCache>
+@{
+    ViewData["Title"] = "Kiểm soát voice";
+}
+
+<section class="container dashboard-wrap">
+    @if (TempData["AdminMessage"] is string message)
+    {
+        <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
+    }
+
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Quản trị âm thanh</p>
+            <h1>Kiểm soát voice</h1>
+        </div>
+        <div class="hero-actions">
+            <form class="inline-action-form" asp-action="BackfillVoiceCache" method="post">
+                <button class="app-btn app-btn-small" type="submit">
+                    <span class="material-symbols-outlined">sync</span>
+                    Chuẩn hóa voice cũ
+                </button>
+            </form>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
+                <span class="material-symbols-outlined">library_books</span>
+                Kho bài học
+            </a>
+        </div>
+    </div>
+
+    <div class="soft-card report-panel mt-4">
+        <table class="app-table admin-content-table">
+            <thead>
+            <tr>
+                <th>Nội dung chuẩn hóa</th>
+                <th>Voice</th>
+                <th>Model</th>
+                <th>Dùng lại</th>
+                <th>Âm thanh</th>
+                <th>Cập nhật</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@item.NormalizedText</strong>
+                        @if (!string.IsNullOrWhiteSpace(item.LastError))
+                        {
+                            <small class="text-danger">@item.LastError</small>
+                        }
+                    </td>
+                    <td><small>@item.Provider</small><br />@item.Voice</td>
+                    <td>@item.ModelId<br /><small>@item.Format</small></td>
+                    <td>@item.ReuseCount</td>
+                    <td><audio controls preload="none" src="@item.AudioUrl"></audio></td>
+                    <td><small>@item.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

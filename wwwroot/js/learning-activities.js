@@ -77,6 +77,28 @@
     const colorValues = new Map([
         ["đỏ", "#ff654d"], ["xanh", "#28a9d8"], ["vàng", "#f7c948"], ["tím", "#8873dc"]
     ]);
+    [
+        ["táo", "apple.svg"], ["cam", "orange.svg"], ["cà rốt", "carrot.svg"], ["bắp cải", "leafy-green.svg"],
+        ["cá", "fish.svg"], ["tôm", "shrimp.svg"], ["mèo", "cat.svg"], ["chó", "dog.svg"], ["vịt", "duck.svg"], ["gà", "chicken.svg"], ["chim", "bird.svg"], ["ong", "bee.svg"], ["thỏ", "rabbit.svg"],
+        ["áo mưa", "coat.svg"], ["ô", "umbrella.svg"], ["mũ rộng vành", "sun-hat.svg"], ["kính râm", "sunglasses.svg"],
+        ["bút", "pencil.svg"], ["vở", "notebook.svg"], ["sách", "book.svg"], ["ba lô", "backpack.svg"], ["bát", "bowl.svg"], ["thìa", "spoon.svg"], ["nồi", "cooking-pot.svg"],
+        ["thuyền", "sailboat.svg"], ["xe đạp", "bicycle.svg"], ["ô tô", "car.svg"], ["xe", "car.svg"], ["xe buýt", "bus.svg"], ["máy bay", "airplane.svg"],
+        ["kem", "ice-cream.svg"], ["nước đá", "ice-cube.svg"], ["canh", "cooking-pot.svg"], ["trà", "tea.svg"],
+        ["dưới nước", "fish.svg"], ["trên đường", "car.svg"], ["trên cạn", "cat.svg"], ["trái cây", "apple.svg"], ["rau củ", "carrot.svg"],
+        ["mặt trời", "sun.svg"], ["mặt trăng", "moon.svg"], ["quả bóng", "ball.svg"], ["cây", "seedling.svg"],
+        ["trời mưa", "umbrella.svg"], ["trời nắng", "sun.svg"], ["học tập", "notebook.svg"], ["nhà bếp", "cooking-pot.svg"],
+        ["ban ngày", "sun.svg"], ["ban đêm", "moon.svg"], ["lạnh", "ice-cube.svg"], ["nóng", "tea.svg"], ["mềm", "pillow.svg"], ["cứng", "brick.svg"]
+    ].forEach(([label, file]) => pictograms.set(label, file));
+    [
+        ["hình tròn", "circle"], ["tròn", "circle"], ["○", "circle"],
+        ["hình vuông", "square"], ["vuông", "square"], ["□", "square"],
+        ["hình tam giác", "triangle"], ["tam giác", "triangle"], ["△", "triangle"],
+        ["hình chữ nhật", "rectangle"], ["hình bầu dục", "oval"], ["hình thoi", "diamond"],
+        ["hình ngôi sao", "star"], ["hình trái tim", "heart"]
+    ].forEach(([label, shape]) => shapeClasses.set(label, shape));
+    [["đỏ", "#ff654d"], ["xanh", "#28a9d8"], ["vàng", "#f7c948"], ["tím", "#8873dc"]]
+        .forEach(([label, color]) => colorValues.set(label, color));
+
     const itemMedia = new Map(Object.entries(payload.itemMedia || {})
         .map(([label, url]) => [label.trim().toLocaleLowerCase("vi-VN"), String(url || "").trim()]));
     const resolveItemMedia = (text) => {
