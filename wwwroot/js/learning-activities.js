@@ -166,10 +166,14 @@
     };
     const speak = (text) => {
         if (!text || !window.speechSynthesis) return;
+        const vietnameseVoice = window.speechSynthesis.getVoices()
+            .find((voice) => voice.lang.toLowerCase().startsWith("vi"));
+        if (!vietnameseVoice) return;
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = "vi-VN";
         utterance.rate = 0.86;
+        utterance.voice = vietnameseVoice;
         window.speechSynthesis.speak(utterance);
     };
     const playPromptAudio = () => {
@@ -227,12 +231,45 @@
         targetLabel.textContent = payload.targetLabel || "Thả vào đây";
         target.append(targetIcon, targetLabel);
         let activeValue = "";
+        let dragGhost = null;
 
         const dropValue = (value) => {
             activeValue = value;
             decorateButton(target, value);
             target.classList.add("filled");
             setAnswer(value, true, true);
+        };
+        const movePointerDrag = (event) => {
+            if (!dragGhost) return;
+            event.preventDefault();
+            dragGhost.style.left = `${event.clientX}px`;
+            dragGhost.style.top = `${event.clientY}px`;
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            target.classList.toggle("drop-hover", Boolean(dropTarget?.closest?.(".activity-drop-zone")));
+        };
+        const finishPointerDrag = (event) => {
+            if (!dragGhost) return;
+            event.preventDefault();
+            dragGhost.remove();
+            dragGhost = null;
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            target.classList.remove("drop-hover");
+            if (dropTarget?.closest?.(".activity-drop-zone") && activeValue) {
+                dropValue(activeValue);
+            }
+        };
+        const startPointerDrag = (event, choice, button) => {
+            if (event.pointerType === "mouse") return;
+            event.preventDefault();
+            activeValue = choice;
+            source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            target.classList.add("ready");
+            dragGhost = button.cloneNode(true);
+            dragGhost.classList.add("drag-ghost");
+            document.body.append(dragGhost);
+            button.setPointerCapture(event.pointerId);
+            movePointerDrag(event);
         };
         (payload.choices || []).forEach((choice) => {
             const button = createButton(choice, "activity-option draggable-option");
@@ -244,6 +281,10 @@
                 target.classList.add("ready");
             });
             button.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/plain", choice));
+            button.addEventListener("pointerdown", (event) => startPointerDrag(event, choice, button));
+            button.addEventListener("pointermove", movePointerDrag);
+            button.addEventListener("pointerup", finishPointerDrag);
+            button.addEventListener("pointercancel", finishPointerDrag);
             source.append(button);
         });
         target.addEventListener("click", () => activeValue && dropValue(activeValue));
@@ -439,8 +480,11 @@
         const remove = createButton("Bớt một", "activity-option muted");
         add.addEventListener("click", () => { if (count < Number(payload.maxItems || 20)) count += 1; update(); });
         remove.addEventListener("click", () => { if (count > 0) count -= 1; update(); });
+        const controls = document.createElement("div");
+        controls.className = "quantity-controls";
+        controls.append(add, remove);
         target.append(counter, objects);
-        runtime.append(target, add, remove);
+        runtime.append(target, controls);
         update();
     };
 

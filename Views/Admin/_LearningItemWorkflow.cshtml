@@ -10,6 +10,12 @@
         }
     </div>
     <div class="status-action-row">
+        <form asp-action="GenerateLearningItemAudio" asp-route-id="@Model.Id" method="post">
+            <button class="app-btn app-btn-small" type="submit">
+                <span class="material-symbols-outlined">record_voice_over</span>
+                Tạo lại giọng đọc
+            </button>
+        </form>
         <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
             <input type="hidden" name="status" value="@ContentStatus.Draft" />
             <button class="app-btn app-btn-muted app-btn-small" type="submit">Đưa về nháp</button>

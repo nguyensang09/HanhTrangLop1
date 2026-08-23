@@ -1,6 +1,6 @@
-﻿@model AdminLearningItemListViewModel
+@model AdminLearningItemListViewModel
 @{
-    ViewData["Title"] = "Kho ná»™i dung";
+    ViewData["Title"] = "Kho nội dung";
 }
 
 <section class="container dashboard-wrap">
@@ -10,31 +10,42 @@
     }
     <div class="dashboard-header">
         <div>
-            <p class="eyebrow">Quáº£n trá»‹ ná»™i dung</p>
-            <h1>Kho bÃ i há»c</h1>
+            <p class="eyebrow">Quản trị nội dung</p>
+            <h1>Kho bài học</h1>
         </div>
         <div class="hero-actions">
             <a class="app-btn app-btn-muted app-btn-small" asp-action="Catalogs">
                 <span class="material-symbols-outlined">account_tree</span>
-                Cáº¥u trÃºc chÆ°Æ¡ng trÃ¬nh
+                Cấu trúc chương trình
             </a>
             <a class="app-btn app-btn-small" asp-action="CreateChoice" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
                 <span class="material-symbols-outlined">add</span>
-                Táº¡o bÃ i tÆ°Æ¡ng tÃ¡c
+                Tạo bài tương tác
             </a>
             <a class="app-btn app-btn-small" asp-action="CreateTracing" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
                 <span class="material-symbols-outlined">draw</span>
-                Táº¡o bÃ i tÃ´ nÃ©t
+                Tạo bài tô nét
             </a>
+            <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
+                <input type="hidden" name="status" value="@Model.Status" />
+                <input type="hidden" name="interactionType" value="@Model.InteractionType" />
+                <input type="hidden" name="skillGroupId" value="@Model.SkillGroupId" />
+                <input type="hidden" name="topicId" value="@Model.TopicId" />
+                <input type="hidden" name="page" value="@Model.Page" />
+                <button class="app-btn app-btn-muted app-btn-small" type="submit">
+                    <span class="material-symbols-outlined">record_voice_over</span>
+                    Bổ sung âm thanh
+                </button>
+            </form>
             <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
         </div>
     </div>
 
     <form class="soft-card admin-filter" asp-action="LearningItems" method="get">
         <div>
-            <label for="skillGroupId">NhÃ³m ká»¹ nÄƒng</label>
+            <label for="skillGroupId">Nhóm kỹ năng</label>
             <select id="skillGroupId" name="skillGroupId" class="form-control">
-                <option value="">Táº¥t cáº£</option>
+                <option value="">Tất cả</option>
                 @foreach (var group in Model.SkillGroups)
                 {
                     <option value="@group.Id" selected="@(Model.SkillGroupId == group.Id)">@group.Name</option>
@@ -42,13 +53,13 @@
             </select>
         </div>
         <div>
-            <label for="status">Tráº¡ng thÃ¡i</label>
+            <label for="status">Trạng thái</label>
             <select id="status" name="status" class="form-control">
-                <option value="">Táº¥t cáº£</option>
-                <option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">NhÃ¡p</option>
-                <option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chá» duyá»‡t</option>
-                <option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuáº¥t báº£n</option>
-                <option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">LÆ°u trá»¯</option>
+                <option value="">Tất cả</option>
+                <option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option>
+                <option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option>
+                <option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option>
+                <option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option>
             </select>
         </div>
         <div>
@@ -64,34 +75,34 @@
         <div>
             <label for="interactionType">Dạng bài</label>
             <select id="interactionType" name="interactionType" class="form-control">
-                <option value="">Táº¥t cáº£</option>
-                <option value="@InteractionTypes.SingleChoice" selected="@(Model.InteractionType == InteractionTypes.SingleChoice)">Chá»n Ä‘Ã¡p Ã¡n</option>
-                <option value="@InteractionTypes.MultiSelect" selected="@(Model.InteractionType == InteractionTypes.MultiSelect)">Chá»n nhiá»u</option>
-                <option value="@InteractionTypes.ListenAndChoose" selected="@(Model.InteractionType == InteractionTypes.ListenAndChoose)">Nghe - chá»n</option>
-                <option value="@InteractionTypes.DragDrop" selected="@(Model.InteractionType == InteractionTypes.DragDrop)">KÃ©o - tháº£</option>
-                <option value="@InteractionTypes.Matching" selected="@(Model.InteractionType == InteractionTypes.Matching)">Ná»‘i cáº·p</option>
-                <option value="@InteractionTypes.Ordering" selected="@(Model.InteractionType == InteractionTypes.Ordering)">Sáº¯p xáº¿p</option>
-                <option value="@InteractionTypes.Counting" selected="@(Model.InteractionType == InteractionTypes.Counting)">Äáº¿m Ä‘á»“ váº­t</option>
-                <option value="@InteractionTypes.QuantityBuilder" selected="@(Model.InteractionType == InteractionTypes.QuantityBuilder)">Táº¡o sá»‘ lÆ°á»£ng</option>
-                <option value="@InteractionTypes.Comparison" selected="@(Model.InteractionType == InteractionTypes.Comparison)">So sÃ¡nh</option>
-                <option value="@InteractionTypes.Classification" selected="@(Model.InteractionType == InteractionTypes.Classification)">PhÃ¢n loáº¡i</option>
-                <option value="@InteractionTypes.StoryChoice" selected="@(Model.InteractionType == InteractionTypes.StoryChoice)">Nghe truyá»‡n</option>
-                <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">TÃ´ nÃ©t</option>
+                <option value="">Tất cả</option>
+                <option value="@InteractionTypes.SingleChoice" selected="@(Model.InteractionType == InteractionTypes.SingleChoice)">Chọn đáp án</option>
+                <option value="@InteractionTypes.MultiSelect" selected="@(Model.InteractionType == InteractionTypes.MultiSelect)">Chọn nhiều</option>
+                <option value="@InteractionTypes.ListenAndChoose" selected="@(Model.InteractionType == InteractionTypes.ListenAndChoose)">Nghe - chọn</option>
+                <option value="@InteractionTypes.DragDrop" selected="@(Model.InteractionType == InteractionTypes.DragDrop)">Kéo - thả</option>
+                <option value="@InteractionTypes.Matching" selected="@(Model.InteractionType == InteractionTypes.Matching)">Nối cặp</option>
+                <option value="@InteractionTypes.Ordering" selected="@(Model.InteractionType == InteractionTypes.Ordering)">Sắp xếp</option>
+                <option value="@InteractionTypes.Counting" selected="@(Model.InteractionType == InteractionTypes.Counting)">Đếm đồ vật</option>
+                <option value="@InteractionTypes.QuantityBuilder" selected="@(Model.InteractionType == InteractionTypes.QuantityBuilder)">Tạo số lượng</option>
+                <option value="@InteractionTypes.Comparison" selected="@(Model.InteractionType == InteractionTypes.Comparison)">So sánh</option>
+                <option value="@InteractionTypes.Classification" selected="@(Model.InteractionType == InteractionTypes.Classification)">Phân loại</option>
+                <option value="@InteractionTypes.StoryChoice" selected="@(Model.InteractionType == InteractionTypes.StoryChoice)">Nghe truyện</option>
+                <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô nét</option>
             </select>
         </div>
-        <button class="app-btn app-btn-small" type="submit">Lá»c</button>
+        <button class="app-btn app-btn-small" type="submit">Lọc</button>
     </form>
 
     <div class="soft-card report-panel mt-4">
         <table class="app-table admin-content-table">
             <thead>
             <tr>
-                <th>TÃªn bÃ i</th>
-                <th>NhÃ³m</th>
-                <th>Dáº¡ng</th>
-                <th>Thá»© tá»±</th>
-                <th>CÃ¢u há»i</th>
-                <th>Tráº¡ng thÃ¡i</th>
+                <th>Tên bài</th>
+                <th>Nhóm</th>
+                <th>Dạng</th>
+                <th>Thứ tự</th>
+                <th>Câu hỏi</th>
+                <th>Trạng thái</th>
                 <th></th>
             </tr>
             </thead>
@@ -102,21 +113,24 @@
                 <tr>
                     <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
                     <td>@item.SkillGroup?.Name</td>
-                    <td>@ActivityTemplateCatalog.GetDisplayName(item.InteractionType) @if (!isCompatible) { <span class="status-chip status-warning">Cáº§n chuáº©n hÃ³a</span> }</td>
+                    <td>@ActivityTemplateCatalog.GetDisplayName(item.InteractionType) @if (!isCompatible) { <span class="status-chip status-warning">Cần chuẩn hóa</span> }</td>
                     <td>@item.SortOrder</td>
                     <td>@item.Questions.Count</td>
                     <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
                     <td class="table-actions">
                         @if (item.InteractionType == InteractionTypes.Tracing)
                         {
-                            <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sá»­a</a>
+                            <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sửa</a>
                         }
                         else
                         {
-                            <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sá»­a</a>
+                            <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
                         }
+                        <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
+                            <button class="mini-action" type="submit">Tạo âm thanh</button>
+                        </form>
                         <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
-                            <button class="mini-action danger-link" type="submit">XÃ³a</button>
+                            <button class="mini-action danger-link" type="submit">Xóa</button>
                         </form>
                     </td>
                 </tr>
@@ -127,13 +141,13 @@
 
     @if (Model.TotalPages > 1)
     {
-        <nav class="admin-pagination" aria-label="PhÃ¢n trang kho bÃ i há»c">
+        <nav class="admin-pagination" aria-label="Phân trang kho bài học">
             <a class="icon-button @(Model.Page == 1 ? "disabled" : "")"
                asp-action="LearningItems" asp-route-page="@(Model.Page - 1)" asp-route-status="@Model.Status"
                asp-route-interactionType="@Model.InteractionType" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId"
-               aria-label="Trang trÆ°á»›c"><span class="material-symbols-outlined">chevron_left</span></a>
+               aria-label="Trang trước"><span class="material-symbols-outlined">chevron_left</span></a>
             <strong>Trang @Model.Page / @Model.TotalPages</strong>
-            <span>@Model.TotalItems bÃ i há»c</span>
+            <span>@Model.TotalItems bài học</span>
             <a class="icon-button @(Model.Page == Model.TotalPages ? "disabled" : "")"
                asp-action="LearningItems" asp-route-page="@(Model.Page + 1)" asp-route-status="@Model.Status"
                asp-route-interactionType="@Model.InteractionType" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId"

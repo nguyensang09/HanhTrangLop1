@@ -942,18 +942,18 @@ a {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 18px;
   border: 2px solid #ded5ca;
-  padding: 22px;
+  padding: 20px;
 }
 
 .counting-object {
   border: 0;
   border-radius: 8px;
   background: #fff4dd;
-  font-size: 2.2rem;
-  min-width: 64px;
-  min-height: 64px;
+  font-size: 4rem;
+  min-width: 96px;
+  min-height: 96px;
   position: relative;
 }
 
@@ -981,28 +981,43 @@ a {
 .quantity-target {
   display: grid;
   place-items: center;
-  min-height: 180px;
+  min-height: 144px;
   border: 3px dashed #dec5b7;
   background: #fffdf8;
   padding: 20px;
+}
+
+.quantity-target strong {
+  font-size: 1.25rem;
 }
 
 .quantity-objects {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
   margin-top: 12px;
-  font-size: 2rem;
+  font-size: 3rem;
   line-height: 1.4;
+}
+
+.quantity-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .counting-pictogram,
 .counting-photo,
 .counting-symbol {
-  width: 54px;
-  height: 54px;
+  width: 78px;
+  height: 78px;
   object-fit: contain;
+}
+
+.counting-symbol {
+  font-size: 4.2rem;
+  line-height: 1;
 }
 
 .counting-photo {
@@ -2414,7 +2429,7 @@ a {
   margin-left: 10px;
 }
 
-.inline-action-form button {
+.inline-action-form button:not(.app-btn) {
   border: 0;
   background: transparent;
   padding: 0;
@@ -2911,7 +2926,12 @@ a {
 }
 
 .learning-result strong {
-  font-size: 1.7rem;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 .learning-result.success {
@@ -3012,6 +3032,7 @@ a {
 .lesson-question-zone {
   border: 2px solid #9fded3;
   background: #f4fcfa;
+  padding: 8px 12px;
 }
 
 .lesson-content-zone {
@@ -3068,7 +3089,7 @@ a {
   border: 0;
   border-radius: 8px;
   background: #fff;
-  padding: 12px 14px;
+  padding: 8px 12px;
   box-shadow: inset 0 0 0 1px #dcefeb;
 }
 
@@ -3080,8 +3101,8 @@ a {
 .learning-prompt h2 {
   margin: 0;
   color: #173d4d;
-  font-size: 1.45rem;
-  line-height: 1.45;
+  font-size: 1.38rem;
+  line-height: 1.25;
   text-align: center;
 }
 
@@ -3105,9 +3126,46 @@ a {
 .learning-focus-shell .activity-drop-zone,
 .learning-focus-shell .comparison-group,
 .learning-focus-shell .activity-audio-button {
-  min-height: 124px;
-  font-size: 1.24rem;
+  min-height: 112px;
+  font-size: 1.34rem;
   line-height: 1.35;
+}
+
+.learning-focus-shell .activity-option-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.learning-focus-shell .activity-option:not(.has-answer-visual) .answer-label,
+.learning-focus-shell .counting-object:not(.has-answer-visual) .answer-label {
+  font-size: clamp(2.25rem, 7vw, 4.8rem);
+  line-height: 1;
+}
+
+.learning-focus-shell .interaction-single_choice .activity-option,
+.learning-focus-shell .interaction-counting .activity-option {
+  min-height: 128px;
+}
+
+.learning-focus-shell .drag-source .draggable-option {
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-ghost {
+  position: fixed;
+  z-index: 10000;
+  width: min(220px, 42vw);
+  min-height: 104px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.98);
+  opacity: 0.92;
+}
+
+.activity-drop-zone.drop-hover {
+  border-style: solid;
+  border-color: #ff8a5b;
+  background: #fff0e8;
+  box-shadow: 0 0 0 6px rgba(255, 138, 91, 0.18);
 }
 
 .learning-focus-shell .activity-option.has-answer-visual,
@@ -3266,7 +3324,7 @@ a {
   }
 
   .learning-focus-shell .activity-option-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   }
 
   .learning-focus-shell .activity-runtime {
@@ -3282,7 +3340,7 @@ a {
   .learning-focus-shell .activity-option,
   .learning-focus-shell .activity-drop-zone,
   .learning-focus-shell .activity-audio-button {
-    min-height: 108px;
+    min-height: 98px;
     padding: 10px;
     font-size: 1.04rem;
   }

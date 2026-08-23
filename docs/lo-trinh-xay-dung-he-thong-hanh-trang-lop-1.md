@@ -138,7 +138,7 @@ Lựa chọn này giải quyết đúng nhu cầu mang hệ thống sang máy kh
 
 - Source luôn đi kèm lịch sử migration nên không phụ thuộc file database trên máy phát triển.
 - Máy mới chạy `Update-Database` hoặc `dotnet ef database update` để tạo đúng schema.
-- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản Admin, danh mục chương trình, 216 bài học nền và 6 tranh bài học chính nếu còn thiếu; 75 pictogram được đóng gói cùng source. Hệ thống không tạo hồ sơ hoặc lịch sử người dùng mẫu và không ghi đè bài quản trị tự tạo.
+- Khi ứng dụng khởi động, seed idempotent tạo role, tài khoản Admin, danh mục chương trình, 190 bài học nền và 3 ảnh truyện nếu còn thiếu; không tạo hồ sơ hoặc lịch sử người dùng mẫu và không ghi đè bài quản trị tự tạo.
 - Có thể sinh script SQL idempotent từ migration để bàn giao cho DBA hoặc triển khai không cần EF CLI.
 
 Database First là quy trình ngược lại: schema SQL được thiết kế trước rồi dùng `Scaffold-DbContext` để sinh model. Không nên trộn Database First và Code First migration trong cùng một vòng đời schema vì dễ tạo hai nguồn chuẩn xung đột. Nếu sau này tổ chức yêu cầu DBA làm chủ schema, cần lập kế hoạch chuyển đổi riêng sang SQL Database Project/DACPAC và ngừng tạo migration từ model.

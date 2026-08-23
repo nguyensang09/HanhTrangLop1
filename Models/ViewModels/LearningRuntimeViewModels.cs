@@ -17,7 +17,11 @@ public class LearnViewModel
     public string TracingAudioUrl { get; set; } = string.Empty;
     public string QuestionImageUrl { get; set; } = string.Empty;
     public string QuestionImageAltText { get; set; } = "Hình minh họa bài học";
+    public string TitleAudioUrl { get; set; } = string.Empty;
     public string QuestionAudioUrl { get; set; } = string.Empty;
+    public string InstructionAudioUrl { get; set; } = string.Empty;
+    public string CorrectFeedbackAudioUrl { get; set; } = string.Empty;
+    public string RetryFeedbackAudioUrl { get; set; } = string.Empty;
     public string? FeedbackMessage { get; set; }
     public bool? IsCorrect { get; set; }
     public Guid? NextItemId { get; set; }
@@ -105,7 +109,17 @@ public class CreateChoiceItemViewModel
     public string ImageAltText { get; set; } = string.Empty;
 
     [MaxLength(1000)]
+    public string TitleAudioUrl { get; set; } = string.Empty;
     public string QuestionAudioUrl { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string InstructionAudioUrl { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string CorrectFeedbackAudioUrl { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string RetryFeedbackAudioUrl { get; set; } = string.Empty;
 
     [MaxLength(1000)]
     public string AudioUrl { get; set; } = string.Empty;

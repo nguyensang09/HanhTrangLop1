@@ -148,6 +148,103 @@ public class AdminController : Controller
         return RedirectToEditor(item);
     }
 
+    [HttpPost("learning-items/generate-missing-audio")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateMissingLearningItemsAudio(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, int page = 1)
+    {
+        if (!_textToSpeech.CanGenerate)
+        {
+            TempData["AdminMessage"] = "Chưa cấu hình API tạo giọng đọc. Vui lòng kiểm tra TextToSpeech trong appsettings.json.";
+            return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
+        }
+
+        var query = _db.LearningItems
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            query = query.Where(x => x.Status == status);
+        }
+
+        if (!string.IsNullOrWhiteSpace(interactionType))
+        {
+            query = query.Where(x => x.InteractionType == interactionType);
+        }
+
+        if (skillGroupId.HasValue)
+        {
+            query = query.Where(x => x.SkillGroupId == skillGroupId.Value);
+        }
+
+        if (topicId.HasValue)
+        {
+            query = query.Where(x => x.TopicId == topicId.Value);
+        }
+
+        var items = await query
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .ToListAsync();
+
+        var generatedCount = 0;
+        var updatedItems = 0;
+        foreach (var item in items)
+        {
+            var generatedForItem = await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
+            if (generatedForItem > 0)
+            {
+                generatedCount += generatedForItem;
+                updatedItems += 1;
+            }
+        }
+
+        if (generatedCount > 0)
+        {
+            await _db.SaveChangesAsync();
+            TempData["AdminMessage"] = $"Đã bổ sung {generatedCount} file âm thanh cho {updatedItems} bài học.";
+        }
+        else
+        {
+            TempData["AdminMessage"] = "Không có âm thanh cần bổ sung, hoặc API TTS không trả về file.";
+        }
+
+        return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
+    }
+
+    [HttpPost("learning-items/{id:guid}/generate-audio")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateLearningItemAudio(Guid id)
+    {
+        if (!_textToSpeech.CanGenerate)
+        {
+            TempData["AdminMessage"] = "Chưa cấu hình API tạo giọng đọc. Vui lòng kiểm tra TextToSpeech trong appsettings.json.";
+            var fallbackItem = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == id);
+            return fallbackItem is null ? NotFound() : RedirectToEditor(fallbackItem);
+        }
+
+        var item = await _db.LearningItems
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var generatedCount = await GenerateAudioForLearningItemAsync(item, onlyMissing: false);
+        if (generatedCount > 0)
+        {
+            await _db.SaveChangesAsync();
+            TempData["AdminMessage"] = $"Đã tạo lại {generatedCount} file âm thanh cho bài “{item.Title}”.";
+        }
+        else
+        {
+            TempData["AdminMessage"] = "Chưa tạo được âm thanh. Hãy kiểm tra API key, voiceId và quota ElevenLabs.";
+        }
+
+        return RedirectToEditor(item);
+    }
+
     [HttpGet("catalogs")]
     public async Task<IActionResult> Catalogs()
     {
@@ -343,6 +440,7 @@ public class AdminController : Controller
         {
             _db.LearningItems.Add(item);
         }
+        await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateChoice), new { editId = item.Id });
     }
@@ -498,6 +596,7 @@ public class AdminController : Controller
         });
 
         if (!model.Id.HasValue) _db.LearningItems.Add(item);
+        await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
@@ -573,6 +672,7 @@ public class AdminController : Controller
             question.CorrectAnswerJson = JsonSerializer.Serialize(new { minPoints = Math.Clamp(model.MinPoints, 5, 300) });
         }
 
+        await GenerateAudioForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
@@ -864,12 +964,221 @@ public class AdminController : Controller
             model.QuestionAudioUrl = await GenerateAudioFileAsync(model.PromptText, "question") ?? string.Empty;
         }
 
+        if (string.IsNullOrWhiteSpace(model.InstructionAudioUrl))
+        {
+            model.InstructionAudioUrl = await GenerateAudioFileAsync(model.InstructionText, "instruction") ?? string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.CorrectFeedbackAudioUrl))
+        {
+            model.CorrectFeedbackAudioUrl = await GenerateAudioFileAsync(model.CorrectFeedback, "correct-feedback") ?? string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.RetryFeedbackAudioUrl))
+        {
+            model.RetryFeedbackAudioUrl = await GenerateAudioFileAsync(model.RetryFeedback, "retry-feedback") ?? string.Empty;
+        }
+
         if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
              model.InteractionType == InteractionTypes.StoryChoice) &&
             string.IsNullOrWhiteSpace(model.AudioUrl) &&
             !string.IsNullOrWhiteSpace(model.SpeechText))
         {
             model.AudioUrl = await GenerateAudioFileAsync(model.SpeechText, "content") ?? string.Empty;
+        }
+    }
+
+    private async Task<int> GenerateAudioForLearningItemAsync(LearningItem item, bool onlyMissing)
+    {
+        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        if (question is null)
+        {
+            return 0;
+        }
+
+        var payload = ParsePayloadObject(question.PayloadJson);
+        var generatedCount = 0;
+        generatedCount += await GeneratePayloadAudioAsync(
+            payload,
+            "titleAudioUrl",
+            item.Title,
+            "title",
+            onlyMissing);
+        generatedCount += await GeneratePayloadAudioAsync(
+            payload,
+            "instructionAudioUrl",
+            item.InstructionText,
+            "instruction",
+            onlyMissing);
+        generatedCount += await GeneratePayloadAudioAsync(
+            payload,
+            "correctAudioUrl",
+            ReadJsonString(question.FeedbackJson, "correct"),
+            "correct-feedback",
+            onlyMissing);
+        generatedCount += await GeneratePayloadAudioAsync(
+            payload,
+            "retryAudioUrl",
+            ReadJsonString(question.FeedbackJson, "retry"),
+            "retry-feedback",
+            onlyMissing);
+
+        if (item.InteractionType == InteractionTypes.Tracing)
+        {
+            generatedCount += await GeneratePayloadAudioAsync(
+                payload,
+                "audioUrl",
+                question.PromptText,
+                "tracing-prompt",
+                onlyMissing);
+            generatedCount += await GeneratePayloadAudioAsync(
+                payload,
+                "questionAudioUrl",
+                question.PromptText,
+                "question",
+                onlyMissing);
+        }
+        else
+        {
+            generatedCount += await GeneratePayloadAudioAsync(
+                payload,
+                "questionAudioUrl",
+                question.PromptText,
+                "question",
+                onlyMissing);
+
+            if (item.InteractionType == InteractionTypes.ListenAndChoose ||
+                item.InteractionType == InteractionTypes.StoryChoice)
+            {
+                generatedCount += await GeneratePayloadAudioAsync(
+                    payload,
+                    "audioUrl",
+                    ReadJsonString(payload, "speechText"),
+                    "content",
+                    onlyMissing);
+            }
+        }
+
+        generatedCount += await GenerateOptionAudioMapAsync(payload, onlyMissing);
+
+        if (generatedCount == 0)
+        {
+            return 0;
+        }
+
+        var payloadJson = payload.ToJsonString();
+        question.PayloadJson = payloadJson;
+        item.ContentJson = payloadJson;
+        item.UpdatedAt = DateTimeOffset.UtcNow;
+        return generatedCount;
+    }
+
+    private async Task<int> GeneratePayloadAudioAsync(JsonObject payload, string propertyName, string text, string prefix, bool onlyMissing)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return 0;
+        }
+
+        if (onlyMissing && !string.IsNullOrWhiteSpace(ReadJsonString(payload, propertyName)))
+        {
+            return 0;
+        }
+
+        var audioUrl = await GenerateAudioFileAsync(text, prefix);
+        if (string.IsNullOrWhiteSpace(audioUrl))
+        {
+            return 0;
+        }
+
+        payload[propertyName] = audioUrl;
+        return 1;
+    }
+
+    private async Task<int> GenerateOptionAudioMapAsync(JsonObject payload, bool onlyMissing)
+    {
+        var labels = CollectOptionSpeechLabels(payload)
+            .Select(Clean)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (labels.Count == 0)
+        {
+            return 0;
+        }
+
+        var audioMap = payload.TryGetPropertyValue("optionAudio", out var existingNode) && existingNode is JsonObject existingObject
+            ? existingObject
+            : new JsonObject();
+        var generatedCount = 0;
+        foreach (var label in labels)
+        {
+            if (onlyMissing && !string.IsNullOrWhiteSpace(ReadJsonString(audioMap, label)))
+            {
+                continue;
+            }
+
+            var audioUrl = await GenerateAudioFileAsync(label, "option");
+            if (string.IsNullOrWhiteSpace(audioUrl))
+            {
+                continue;
+            }
+
+            audioMap[label] = audioUrl;
+            generatedCount += 1;
+        }
+
+        if (generatedCount > 0)
+        {
+            payload["optionAudio"] = audioMap;
+        }
+
+        return generatedCount;
+    }
+
+    private static IEnumerable<string> CollectOptionSpeechLabels(JsonObject payload)
+    {
+        foreach (var value in ReadJsonStringArray(payload, "choices"))
+        {
+            yield return value;
+        }
+
+        foreach (var value in ReadJsonStringArray(payload, "items"))
+        {
+            yield return value;
+        }
+
+        foreach (var value in ReadJsonStringArray(payload, "categories"))
+        {
+            yield return value;
+        }
+
+        foreach (var value in ReadJsonMappingLabels(payload, "pairs"))
+        {
+            yield return value;
+        }
+
+        foreach (var value in ReadJsonMappingLabels(payload, "mappings"))
+        {
+            yield return value;
+        }
+
+        var targetLabel = ReadJsonString(payload, "targetLabel");
+        if (!string.IsNullOrWhiteSpace(targetLabel))
+        {
+            yield return targetLabel;
+        }
+
+        var leftLabel = ReadJsonString(payload, "leftLabel");
+        if (!string.IsNullOrWhiteSpace(leftLabel))
+        {
+            yield return leftLabel;
+        }
+
+        var rightLabel = ReadJsonString(payload, "rightLabel");
+        if (!string.IsNullOrWhiteSpace(rightLabel))
+        {
+            yield return rightLabel;
         }
     }
 
@@ -907,8 +1216,9 @@ public class AdminController : Controller
         {
             speech = await _textToSpeech.GenerateAsync(text, HttpContext.RequestAborted);
         }
-        catch
+        catch (Exception ex)
         {
+            TempData["AdminMessage"] = $"TTS lỗi: {ex.Message}";
             return null;
         }
 
@@ -978,7 +1288,11 @@ public class AdminController : Controller
             ImageUrl = ReadJsonString(payloadJson, "imageUrl"),
             ImageAltText = ReadJsonString(payloadJson, "imageAltText"),
             AudioUrl = ReadJsonString(payloadJson, "audioUrl"),
+            TitleAudioUrl = ReadJsonString(payloadJson, "titleAudioUrl"),
             QuestionAudioUrl = ReadJsonString(payloadJson, "questionAudioUrl"),
+            InstructionAudioUrl = ReadJsonString(payloadJson, "instructionAudioUrl"),
+            CorrectFeedbackAudioUrl = ReadJsonString(payloadJson, "correctAudioUrl"),
+            RetryFeedbackAudioUrl = ReadJsonString(payloadJson, "retryAudioUrl"),
             SpeechText = ReadJsonString(payloadJson, "speechText"),
             LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "Nhóm A",
             RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "Nhóm B",
@@ -1015,13 +1329,20 @@ public class AdminController : Controller
             ["imageUrl"] = Clean(model.ImageUrl),
             ["imageAltText"] = Clean(model.ImageAltText),
             ["audioUrl"] = Clean(model.AudioUrl),
+            ["titleAudioUrl"] = Clean(model.TitleAudioUrl),
             ["questionAudioUrl"] = Clean(model.QuestionAudioUrl),
+            ["instructionAudioUrl"] = Clean(model.InstructionAudioUrl),
+            ["correctAudioUrl"] = Clean(model.CorrectFeedbackAudioUrl),
+            ["retryAudioUrl"] = Clean(model.RetryFeedbackAudioUrl),
             ["speechText"] = Clean(model.SpeechText),
             ["instructionSpeechText"] = Clean(model.InstructionText),
             ["questionSpeechText"] = Clean(model.PromptText),
             ["correctSpeechText"] = "Giỏi lắm, con đã làm đúng!",
             ["retrySpeechText"] = "Con quan sát kỹ rồi thử lại nhé."
         };
+
+        payload["correctSpeechText"] = Clean(model.CorrectFeedback);
+        payload["retrySpeechText"] = Clean(model.RetryFeedback);
 
         var itemMedia = ParseMappings(
             model.ItemMediaText,
@@ -1316,6 +1637,62 @@ public class AdminController : Controller
 
         var node = JsonNode.Parse(json);
         return node?[propertyName]?.GetValue<string>() ?? string.Empty;
+    }
+
+    private static string ReadJsonString(JsonObject payload, string propertyName)
+    {
+        return payload.TryGetPropertyValue(propertyName, out var node)
+            ? node?.GetValue<string>() ?? string.Empty
+            : string.Empty;
+    }
+
+    private static IReadOnlyList<string> ReadJsonStringArray(JsonObject payload, string propertyName)
+    {
+        return payload.TryGetPropertyValue(propertyName, out var node) && node is JsonArray array
+            ? array.Select(x => x?.GetValue<string>() ?? string.Empty)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList()
+            : [];
+    }
+
+    private static IEnumerable<string> ReadJsonMappingLabels(JsonObject payload, string propertyName)
+    {
+        if (!payload.TryGetPropertyValue(propertyName, out var node) || node is not JsonArray array)
+        {
+            yield break;
+        }
+
+        foreach (var item in array.OfType<JsonObject>())
+        {
+            var left = ReadJsonString(item, "left");
+            if (!string.IsNullOrWhiteSpace(left))
+            {
+                yield return left;
+            }
+
+            var right = ReadJsonString(item, "right");
+            if (!string.IsNullOrWhiteSpace(right))
+            {
+                yield return right;
+            }
+        }
+    }
+
+    private static JsonObject ParsePayloadObject(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new JsonObject();
+        }
+
+        try
+        {
+            return JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        }
+        catch
+        {
+            return new JsonObject();
+        }
     }
 
     private static IReadOnlyList<string> ReadJsonStringArray(string? json, string propertyName)
