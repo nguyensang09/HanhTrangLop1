@@ -72,23 +72,23 @@ public class CreateChoiceItemViewModel
     [Required(ErrorMessage = "Vui lòng nhập câu hỏi."), MaxLength(500)]
     public string PromptText { get; set; } = string.Empty;
 
-    public string ChoiceA { get; set; } = string.Empty;
+    public string? ChoiceA { get; set; }
 
-    public string ChoiceB { get; set; } = string.Empty;
+    public string? ChoiceB { get; set; }
 
-    public string ChoiceC { get; set; } = string.Empty;
-    public string ChoiceD { get; set; } = string.Empty;
-    public string ChoiceE { get; set; } = string.Empty;
+    public string? ChoiceC { get; set; }
+    public string? ChoiceD { get; set; }
+    public string? ChoiceE { get; set; }
 
-    public string CorrectAnswer { get; set; } = string.Empty;
+    public string? CorrectAnswer { get; set; }
 
-    public string CorrectAnswersText { get; set; } = string.Empty;
-    public string SequenceItemsText { get; set; } = string.Empty;
-    public string PairsText { get; set; } = string.Empty;
-    public string ClassificationText { get; set; } = string.Empty;
+    public string? CorrectAnswersText { get; set; }
+    public string? SequenceItemsText { get; set; }
+    public string? PairsText { get; set; }
+    public string? ClassificationText { get; set; }
 
     [MaxLength(8000)]
-    public string ItemMediaText { get; set; } = string.Empty;
+    public string? ItemMediaText { get; set; }
 
     public string TargetLabel { get; set; } = "Vùng đích";
     public string ObjectSymbol { get; set; } = "🍎";
@@ -103,29 +103,31 @@ public class CreateChoiceItemViewModel
     public string ComparisonMode { get; set; } = "more";
 
     [MaxLength(1000)]
-    public string ImageUrl { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
 
     [MaxLength(250)]
-    public string ImageAltText { get; set; } = string.Empty;
+    public string? ImageAltText { get; set; }
 
     [MaxLength(1000)]
-    public string TitleAudioUrl { get; set; } = string.Empty;
-    public string QuestionAudioUrl { get; set; } = string.Empty;
+    public string? TitleAudioUrl { get; set; }
 
     [MaxLength(1000)]
-    public string InstructionAudioUrl { get; set; } = string.Empty;
+    public string? QuestionAudioUrl { get; set; }
 
     [MaxLength(1000)]
-    public string CorrectFeedbackAudioUrl { get; set; } = string.Empty;
+    public string? InstructionAudioUrl { get; set; }
 
     [MaxLength(1000)]
-    public string RetryFeedbackAudioUrl { get; set; } = string.Empty;
+    public string? CorrectFeedbackAudioUrl { get; set; }
 
     [MaxLength(1000)]
-    public string AudioUrl { get; set; } = string.Empty;
+    public string? RetryFeedbackAudioUrl { get; set; }
+
+    [MaxLength(1000)]
+    public string? AudioUrl { get; set; }
 
     [MaxLength(500)]
-    public string SpeechText { get; set; } = string.Empty;
+    public string? SpeechText { get; set; }
 
     [MaxLength(100)]
     public string LeftLabel { get; set; } = "Nhóm A";

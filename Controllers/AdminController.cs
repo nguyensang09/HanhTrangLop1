@@ -752,6 +752,10 @@ public class AdminController : Controller
             {
                 return RedirectToAction(nameof(EditLearningItem), new { id = item.Id });
             }
+            if (NormalizeLegacyActivityPayload(item))
+            {
+                await _db.SaveChangesAsync();
+            }
             return View(BuildActivityEditorModel(item));
         }
 
@@ -1736,9 +1740,9 @@ public class AdminController : Controller
 
     private async Task<string> GenerateVoiceCacheFileAsync(TextToSpeechCache entry)
     {
-        var text = NormalizeSpeechText(string.IsNullOrWhiteSpace(entry.OriginalText)
+        var text = ResolveTextForSpeechSynthesis(NormalizeSpeechText(string.IsNullOrWhiteSpace(entry.OriginalText)
             ? entry.NormalizedText
-            : entry.OriginalText);
+            : entry.OriginalText));
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new InvalidOperationException("Voice không có nội dung text để tạo file.");
@@ -1881,6 +1885,16 @@ public class AdminController : Controller
         return string.Join(' ', Clean(text).Split(' ', StringSplitOptions.RemoveEmptyEntries));
     }
 
+    private static string ResolveTextForSpeechSynthesis(string text) => text switch
+    {
+        "△" or "▲" => "hình tam giác",
+        "□" or "■" => "hình vuông",
+        "○" or "●" => "hình tròn",
+        "◇" or "◆" => "hình thoi",
+        "☆" or "★" => "ngôi sao",
+        _ => text
+    };
+
     private static string AudioCacheKey(string normalizedText)
     {
         var key = $"tts:v1:{normalizedText.ToLowerInvariant()}";
@@ -1932,6 +1946,9 @@ public class AdminController : Controller
         var payloadJson = question?.PayloadJson ?? "{}";
         var choices = ReadJsonStringArray(payloadJson, "choices");
         var correctAnswer = ReadJsonString(question?.CorrectAnswerJson, "value");
+        var hintText = ReadJsonString(question?.HintJson, "level1");
+        var correctFeedback = ReadJsonString(question?.FeedbackJson, "correct");
+        var retryFeedback = ReadJsonString(question?.FeedbackJson, "retry");
 
         return new CreateChoiceItemViewModel
         {
@@ -1976,10 +1993,84 @@ public class AdminController : Controller
             RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "Nhóm B",
             Level = item.Level,
             EstimatedMinutes = item.EstimatedMinutes,
-            HintText = ReadJsonString(question?.HintJson, "level1"),
-            CorrectFeedback = ReadJsonString(question?.FeedbackJson, "correct"),
-            RetryFeedback = ReadJsonString(question?.FeedbackJson, "retry")
+            HintText = string.IsNullOrWhiteSpace(hintText) ? "Con nhìn kỹ từng lựa chọn nhé." : hintText,
+            CorrectFeedback = string.IsNullOrWhiteSpace(correctFeedback) ? "Giỏi lắm, con chọn đúng rồi!" : correctFeedback,
+            RetryFeedback = string.IsNullOrWhiteSpace(retryFeedback) ? "Không sao, mình thử lại nhẹ nhàng nhé." : retryFeedback
         };
+    }
+
+    private static bool NormalizeLegacyActivityPayload(LearningItem item)
+    {
+        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        if (question is null)
+        {
+            return false;
+        }
+
+        var payload = ParsePayloadObject(question.PayloadJson);
+        var changed = false;
+
+        EnsureNumber("schemaVersion", 2);
+        EnsureString("activityType", item.InteractionType);
+        EnsureString("imageUrl");
+        EnsureString("imageAltText");
+        EnsureString("audioUrl");
+        EnsureString("titleAudioUrl");
+        EnsureString("questionAudioUrl");
+        EnsureString("instructionAudioUrl");
+        EnsureString("correctAudioUrl");
+        EnsureString("retryAudioUrl");
+        EnsureString("speechText");
+        EnsureString("instructionSpeechText", item.InstructionText);
+        EnsureString("questionSpeechText", question.PromptText);
+        EnsureString("correctSpeechText", ReadJsonString(question.FeedbackJson, "correct"));
+        EnsureString("retrySpeechText", ReadJsonString(question.FeedbackJson, "retry"));
+        EnsureObject("itemMedia");
+        EnsureObject("optionAudio");
+
+        if (!changed)
+        {
+            return false;
+        }
+
+        var payloadJson = payload.ToJsonString();
+        question.PayloadJson = payloadJson;
+        item.ContentJson = payloadJson;
+        item.UpdatedAt = DateTimeOffset.UtcNow;
+        return true;
+
+        void EnsureString(string propertyName, string? value = null)
+        {
+            if (payload.TryGetPropertyValue(propertyName, out var node) && node is not null)
+            {
+                return;
+            }
+
+            payload[propertyName] = Clean(value);
+            changed = true;
+        }
+
+        void EnsureNumber(string propertyName, int value)
+        {
+            if (payload.TryGetPropertyValue(propertyName, out var node) && node is not null)
+            {
+                return;
+            }
+
+            payload[propertyName] = value;
+            changed = true;
+        }
+
+        void EnsureObject(string propertyName)
+        {
+            if (payload.TryGetPropertyValue(propertyName, out var node) && node is JsonObject)
+            {
+                return;
+            }
+
+            payload[propertyName] = new JsonObject();
+            changed = true;
+        }
     }
 
     private ActivityConfiguration? BuildActivityConfiguration(CreateChoiceItemViewModel model)
@@ -2161,7 +2252,7 @@ public class AdminController : Controller
         }
     }
 
-    private bool ValidateChoiceSet(string[] choices, string correctAnswer)
+    private bool ValidateChoiceSet(string[] choices, string? correctAnswer)
     {
         if (choices.Length >= 2 && choices.Contains(Clean(correctAnswer), StringComparer.OrdinalIgnoreCase))
         {
@@ -2172,7 +2263,7 @@ public class AdminController : Controller
         return false;
     }
 
-    private List<ActivityMapping> ParseMappings(string value, string fieldName, string errorMessage)
+    private List<ActivityMapping> ParseMappings(string? value, string fieldName, string errorMessage)
     {
         var mappings = new List<ActivityMapping>();
         foreach (var line in SplitLines(value))
@@ -2244,11 +2335,11 @@ public class AdminController : Controller
         }
     }
 
-    private static string[] BuildChoices(params string[] values)
+    private static string[] BuildChoices(params string?[] values)
     {
         return values
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => x.Trim())
+            .Select(Clean)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }

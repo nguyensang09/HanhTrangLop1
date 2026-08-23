@@ -32,12 +32,12 @@
         }
         return button;
     };
-    const setAnswer = (value, ready = true, autoSubmit = false) => {
+    const setAnswer = (value, ready = true, autoSubmit = false, autoSubmitDelay = 500) => {
         answerInput.value = value;
         submitButton.disabled = !ready;
         window.clearTimeout(submitTimer);
         if (ready && autoSubmit && autoSubmitTypes.has(type)) {
-            submitTimer = window.setTimeout(() => form?.requestSubmit(), 500);
+            submitTimer = window.setTimeout(() => form?.requestSubmit(), autoSubmitDelay);
         }
     };
     const canonicalMappings = (mappings) => Object.entries(mappings)
@@ -205,6 +205,28 @@
             speak(payload.speechText);
         }
     };
+    const optionAudio = payload.optionAudio && typeof payload.optionAudio === "object" ? payload.optionAudio : {};
+    const normalizeOptionKey = (value) => String(value || "").trim().toLocaleLowerCase("vi-VN");
+    const resolveOptionAudioUrl = (value) => {
+        const direct = optionAudio[String(value || "").trim()];
+        if (direct) return String(direct);
+        const normalized = normalizeOptionKey(value);
+        const match = Object.entries(optionAudio)
+            .find(([label]) => normalizeOptionKey(label) === normalized);
+        return match?.[1] ? String(match[1]) : "";
+    };
+    const playAnswerAudio = (value) => {
+        const audioUrl = resolveOptionAudioUrl(value);
+        window.speechSynthesis?.cancel?.();
+        if (audioUrl) {
+            const audio = new Audio(audioUrl);
+            audio.play().catch(() => speak(value));
+            return true;
+        }
+
+        speak(value);
+        return Boolean(value);
+    };
 
     const renderChoice = (allowMultiple = false) => {
         const selected = new Set();
@@ -227,10 +249,11 @@
                     selected.clear();
                     grid.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 }
+                playAnswerAudio(choice);
                 selected.has(choice) ? selected.delete(choice) : selected.add(choice);
                 button.classList.toggle("selected", selected.has(choice));
                 const answer = allowMultiple ? [...selected].sort().join("|") : [...selected][0] || "";
-                setAnswer(answer, selected.size > 0, !allowMultiple);
+                setAnswer(answer, selected.size > 0, !allowMultiple, 1200);
             });
             grid.append(button);
         });
@@ -257,9 +280,10 @@
 
         const dropValue = (value) => {
             activeValue = value;
+            playAnswerAudio(value);
             decorateButton(target, value);
             target.classList.add("filled");
-            setAnswer(value, true, true);
+            setAnswer(value, true, true, 1200);
         };
         const movePointerDrag = (event) => {
             if (!dragGhost) return;
@@ -297,6 +321,7 @@
             const button = createButton(choice, "activity-option draggable-option");
             button.draggable = true;
             button.addEventListener("click", () => {
+                playAnswerAudio(choice);
                 activeValue = choice;
                 source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 button.classList.add("selected");
@@ -369,6 +394,7 @@
             button.dataset.value = pair.left;
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
             button.addEventListener("click", () => {
+                playAnswerAudio(pair.left);
                 selectedLeft = pair.left;
                 leftColumn.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 button.classList.add("selected");
@@ -384,6 +410,7 @@
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
             button.addEventListener("click", () => {
                 if (!selectedLeft) return;
+                playAnswerAudio(right);
                 Object.entries(mappings).forEach(([left, mappedRight]) => {
                     if (mappedRight === right && left !== selectedLeft) delete mappings[left];
                 });
@@ -441,6 +468,10 @@
                 down.setAttribute("aria-label", `Đưa ${item} xuống`);
                 up.addEventListener("click", () => moveItem(index, index - 1));
                 down.addEventListener("click", () => moveItem(index, index + 1));
+                row.addEventListener("click", (event) => {
+                    if (event.target.closest(".ordering-control")) return;
+                    playAnswerAudio(item);
+                });
                 row.addEventListener("dragstart", () => { draggingIndex = index; row.classList.add("dragging"); });
                 row.addEventListener("dragover", (event) => { event.preventDefault(); row.classList.add("drag-over"); });
                 row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
@@ -477,9 +508,10 @@
         (payload.choices || []).forEach((choice) => {
             const button = createButton(choice);
             button.addEventListener("click", () => {
+                playAnswerAudio(choice);
                 choices.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 button.classList.add("selected");
-                setAnswer(String(choice), true, true);
+                setAnswer(String(choice), true, true, 1200);
             });
             choices.append(button);
         });
@@ -522,7 +554,7 @@
             if (Number(count) === 0) objects.textContent = "=";
             else appendRepeatedVisuals(objects, payload.objectSymbol || "●", count);
             button.append(title, objects);
-            button.addEventListener("click", () => { board.querySelectorAll("button").forEach((item) => item.classList.remove("selected")); button.classList.add("selected"); setAnswer(value, true, true); });
+            button.addEventListener("click", () => { playAnswerAudio(label); board.querySelectorAll("button").forEach((item) => item.classList.remove("selected")); button.classList.add("selected"); setAnswer(value, true, true, 1200); });
             return button;
         };
         board.append(
@@ -542,6 +574,7 @@
             const button = createButton(mapping.left);
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
             button.addEventListener("click", () => {
+                playAnswerAudio(mapping.left);
                 selectedItem = mapping.left;
                 source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 button.classList.add("selected");
@@ -559,6 +592,7 @@
             button.style.setProperty("--category-color", categoryColor);
             button.addEventListener("click", () => {
                 if (!selectedItem) return;
+                playAnswerAudio(category);
                 answers[selectedItem] = category;
                 const itemButton = [...source.children].find((item) => item.textContent === selectedItem);
                 itemButton.classList.add("matched");

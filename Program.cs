@@ -1,5 +1,6 @@
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.Voice;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,9 +40,53 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<TodayLessonService>();
+builder.Services.AddScoped<VoiceLibraryMaintenanceService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+if (args.Contains("--reset-voice-library", StringComparer.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var maintenance = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
+    var result = await maintenance.ResetAndRebuildAsync();
+    app.Logger.LogInformation(
+        "Voice reset completed. DeletedVoiceRows={DeletedVoiceRows}, DeletedAudioRows={DeletedAudioRows}, DeletedAudioFiles={DeletedAudioFiles}, LearningItemsScanned={LearningItemsScanned}, VoiceRowsCreated={VoiceRowsCreated}, VoiceFilesCreated={VoiceFilesCreated}, VoiceFilesFailed={VoiceFilesFailed}, LearningItemsUpdated={LearningItemsUpdated}",
+        result.DeletedVoiceRows,
+        result.DeletedAudioRows,
+        result.DeletedAudioFiles,
+        result.LearningItemsScanned,
+        result.VoiceRowsCreated,
+        result.VoiceFilesCreated,
+        result.VoiceFilesFailed,
+        result.LearningItemsUpdated);
+    Console.WriteLine($"Voice reset completed: deleted voice rows {result.DeletedVoiceRows}, deleted audio rows {result.DeletedAudioRows}, deleted files {result.DeletedAudioFiles}, scanned lessons {result.LearningItemsScanned}, created voice rows {result.VoiceRowsCreated}, generated files {result.VoiceFilesCreated}, failed files {result.VoiceFilesFailed}, updated lessons {result.LearningItemsUpdated}.");
+    return;
+}
+
+if (args.Contains("--voice-report", StringComparer.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var maintenance = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
+    Console.WriteLine(await maintenance.BuildReportAsync());
+    return;
+}
+
+if (args.Contains("--generate-missing-voice-files", StringComparer.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var maintenance = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
+    var result = await maintenance.GenerateMissingAndRelinkAsync();
+    Console.WriteLine($"Generated missing voice files: created {result.Created}, failed {result.Failed}, updated lessons {result.UpdatedItems}.");
+    return;
+}
+
+if (args.Contains("--normalize-legacy-learning-items", StringComparer.OrdinalIgnoreCase))
+{
+    await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
+    Console.WriteLine("Normalized legacy learning items and relinked available voice files.");
+    return;
+}
 
 await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
 
