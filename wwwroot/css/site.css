@@ -6784,3 +6784,421 @@ body.focus-mode-active,
   font-size: 0.78rem;
   font-weight: 700;
 }
+
+.reward-filter-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+
+.reward-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.reward-tab-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 10px 18px !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  border: 2px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-family: var(--font-display) !important;
+  font-size: 0.9rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.reward-tab-btn.active {
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%) !important;
+  border-color: #ea580c !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.3) !important;
+}
+
+.reward-tab-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+/* ===================================================
+   DAILY ROADMAP STRIP (Lộ trình 20 ngày học)
+   =================================================== */
+.daily-roadmap-section {
+  margin-bottom: 20px;
+}
+
+.roadmap-section-header {
+  margin-bottom: 12px;
+}
+
+.roadmap-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f172a;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.roadmap-title-row .material-symbols-outlined {
+  color: #ff7a00;
+  font-size: 1.3rem;
+}
+
+.roadmap-sub {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.roadmap-days-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 2px 14px;
+  scrollbar-width: thin;
+}
+
+.roadmap-day-node {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 82px !important;
+  padding: 10px 8px !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  border: 2px solid #e2e8f0 !important;
+  text-decoration: none !important;
+  gap: 3px !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.roadmap-day-node .day-badge-num {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.roadmap-day-node .day-icon {
+  font-size: 1.4rem;
+}
+
+.roadmap-day-node .day-status-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.roadmap-day-node.is-completed {
+  border-color: #a7f3d0 !important;
+  background: #f0fdf4 !important;
+}
+.roadmap-day-node.is-completed .day-icon { color: #10b981; }
+.roadmap-day-node.is-completed .day-status-text { color: #059669; }
+
+.roadmap-day-node.is-current {
+  border-color: #fed7aa !important;
+  background: #fff7ed !important;
+  box-shadow: 0 6px 16px rgba(255, 122, 0, 0.2) !important;
+}
+.roadmap-day-node.is-current .day-icon { color: #ff7a00; }
+.roadmap-day-node.is-current .day-status-text { color: #ea580c; }
+
+.roadmap-day-node.is-selected {
+  border: 2.5px solid #ff7a00 !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: 0 8px 20px rgba(255, 122, 0, 0.3) !important;
+}
+
+.roadmap-day-node.is-locked {
+  opacity: 0.6;
+  background: #f8fafc !important;
+  border-style: dashed !important;
+}
+.roadmap-day-node.is-locked .day-icon { color: #94a3b8; }
+
+/* ===================================================
+   ADMIN PARENTS & KIDS MANAGEMENT
+   =================================================== */
+.admin-search-card {
+  margin-bottom: 20px;
+}
+
+.admin-search-form {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-search-input-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.admin-search-input-wrap .material-symbols-outlined {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+}
+
+.admin-search-input-wrap input {
+  width: 100%;
+  padding: 10px 14px 10px 42px;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.admin-parent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.admin-parent-block {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  background: #ffffff;
+}
+
+.admin-parent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.parent-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.parent-avatar-icon {
+  font-size: 2.2rem;
+  color: #0284c7;
+}
+
+.parent-email {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.parent-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-kids-count {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.admin-btn-icon-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-icon-danger:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.admin-children-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.admin-child-card {
+  border: 1.5px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 14px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.child-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.child-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+
+.child-stat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.child-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.pill-star { background: #fef3c7; color: #b45309; }
+.pill-completed { background: #ecfdf5; color: #059669; }
+.pill-badge { background: #ede9fe; color: #6d28d9; }
+
+.child-detail-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.child-detail-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.6rem;
+}
+
+.child-hero-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.child-hero-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.hero-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  min-width: 80px;
+}
+
+.hero-stat-box strong {
+  font-size: 1.3rem;
+  color: #0f172a;
+}
+
+.hero-stat-box span {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.admin-danger-zone {
+  border: 2px dashed #f87171 !important;
+  background: #fff5f5 !important;
+  padding: 20px !important;
+  margin-bottom: 20px;
+}
+
+.danger-zone-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.danger-icon {
+  color: #ef4444;
+  font-size: 2rem;
+}
+
+.danger-actions-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-btn-warning {
+  background: #f59e0b;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-btn-warning:hover {
+  background: #d97706;
+}
+
+.admin-btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-btn-danger:hover {
+  background: #dc2626;
+}

@@ -1,4 +1,4 @@
-﻿using HanhTrangLop1.Data;
+using HanhTrangLop1.Data;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -43,15 +43,18 @@ public class AdminController : Controller
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
+    private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
 
     public AdminController(
         ApplicationDbContext db,
         IWebHostEnvironment environment,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager)
     {
         _db = db;
         _environment = environment;
         _configuration = configuration;
+        _userManager = userManager;
     }
 
     [HttpGet("")]
@@ -2527,6 +2530,239 @@ public class AdminController : Controller
         return values is null
             ? string.Empty
             : string.Join(Environment.NewLine, values.Select(value => $"{value.Key} = {value.Value?.GetValue<string>()}"));
+    }
+
+    [HttpGet("parents-and-kids")]
+    public async Task<IActionResult> ParentsAndKids(string? q)
+    {
+        var usersQuery = _db.Users.AsQueryable();
+        var childrenQuery = _db.ChildProfiles.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var search = q.Trim().ToLower();
+            usersQuery = usersQuery.Where(u => u.Email!.ToLower().Contains(search) || (u.DisplayName != null && u.DisplayName.ToLower().Contains(search)));
+            childrenQuery = childrenQuery.Where(c => c.Nickname.ToLower().Contains(search));
+        }
+
+        var users = await usersQuery.OrderByDescending(x => x.Email).ToListAsync();
+        var children = await childrenQuery.ToListAsync();
+
+        var childIds = children.Select(x => x.Id).ToList();
+        var attempts = await _db.LearningAttempts
+            .Where(x => childIds.Contains(x.ChildProfileId))
+            .ToListAsync();
+
+        var sessions = await _db.LearningSessions
+            .Where(x => childIds.Contains(x.ChildProfileId))
+            .ToListAsync();
+
+        var rewards = await _db.ChildRewards
+            .Where(x => childIds.Contains(x.ChildProfileId))
+            .ToListAsync();
+
+        AdminChildItemViewModel MapChild(ChildProfile child, ApplicationUser? parent)
+        {
+            var cAttempts = attempts.Where(x => x.ChildProfileId == child.Id).ToList();
+            var cSessions = sessions.Where(x => x.ChildProfileId == child.Id).ToList();
+            var cRewards = rewards.Where(x => x.ChildProfileId == child.Id).ToList();
+            var lastAttempt = cAttempts.OrderByDescending(x => x.StartedAt).FirstOrDefault();
+
+            return new AdminChildItemViewModel
+            {
+                Id = child.Id,
+                Nickname = child.Nickname,
+                AvatarKey = child.AvatarKey,
+                BirthYear = child.BirthYear,
+                DailyLearningMinutes = child.DailyLearningMinutes,
+                CreatedAt = child.CreatedAt,
+                ParentEmail = parent?.Email,
+                ParentDisplayName = parent?.DisplayName,
+                TotalStars = cAttempts.Sum(x => x.StarsEarned),
+                CompletedLessonsCount = cAttempts.Count(x => x.Status == "completed"),
+                TotalSessionsCount = cSessions.Count(x => x.Status == "completed"),
+                BadgesCount = cRewards.Count,
+                LastActiveAt = lastAttempt?.StartedAt
+            };
+        }
+
+        var parentItems = new List<AdminParentItemViewModel>();
+        foreach (var user in users)
+        {
+            var userChildren = children.Where(c => c.ParentUserId == user.Id).ToList();
+            parentItems.Add(new AdminParentItemViewModel
+            {
+                UserId = user.Id,
+                Email = user.Email ?? string.Empty,
+                DisplayName = user.DisplayName,
+                Children = userChildren.Select(c => MapChild(c, user)).ToList()
+            });
+        }
+
+        var guestChildren = children
+            .Where(c => string.IsNullOrEmpty(c.ParentUserId))
+            .Select(c => MapChild(c, null))
+            .ToList();
+
+        var model = new AdminParentsAndKidsViewModel
+        {
+            SearchQuery = q ?? string.Empty,
+            Parents = parentItems,
+            GuestChildren = guestChildren,
+            TotalParentsCount = users.Count,
+            TotalChildrenCount = children.Count,
+            TotalCompletedSessions = sessions.Count(x => x.Status == "completed")
+        };
+
+        return View(model);
+    }
+
+    [HttpGet("kids/{id:guid}")]
+    public async Task<IActionResult> ChildDetail(Guid id)
+    {
+        var child = await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == id);
+        if (child is null) return NotFound();
+
+        ApplicationUser? parent = null;
+        if (!string.IsNullOrEmpty(child.ParentUserId))
+        {
+            parent = await _db.Users.FirstOrDefaultAsync(x => x.Id == child.ParentUserId);
+        }
+
+        var attempts = await _db.LearningAttempts
+            .Include(x => x.LearningItem)
+            .ThenInclude(x => x!.SkillGroup)
+            .Where(x => x.ChildProfileId == id)
+            .OrderByDescending(x => x.StartedAt)
+            .Take(50)
+            .ToListAsync();
+
+        var sessions = await _db.LearningSessions
+            .Where(x => x.ChildProfileId == id)
+            .OrderByDescending(x => x.StartedAt)
+            .Take(20)
+            .ToListAsync();
+
+        var rewards = await _db.ChildRewards
+            .Include(x => x.RewardDefinition)
+            .Where(x => x.ChildProfileId == id)
+            .OrderByDescending(x => x.EarnedAt)
+            .ToListAsync();
+
+        var skillProgresses = await _db.SkillProgress
+            .Include(x => x.SkillGroup)
+            .Where(x => x.ChildProfileId == id)
+            .ToListAsync();
+
+        var model = new AdminChildDetailViewModel
+        {
+            Child = child,
+            Parent = parent,
+            TotalStars = attempts.Sum(x => x.StarsEarned),
+            CompletedLessonsCount = attempts.Count(x => x.Status == "completed"),
+            NeedsPracticeCount = attempts.Count(x => x.Status == "needs_practice"),
+            TotalSessionsCount = sessions.Count(x => x.Status == "completed"),
+            EarnedRewards = rewards,
+            RecentAttempts = attempts,
+            RecentSessions = sessions,
+            SkillProgresses = skillProgresses
+        };
+
+        return View(model);
+    }
+
+    [HttpPost("kids/{id:guid}/clear-progress")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ClearChildProgress(Guid id)
+    {
+        var child = await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == id);
+        if (child is null) return NotFound();
+
+        var attempts = await _db.LearningAttempts.Where(x => x.ChildProfileId == id).ToListAsync();
+        var attemptAnswers = await _db.QuestionAttempts
+            .Where(x => attempts.Select(a => a.Id).Contains(x.LearningAttemptId))
+            .ToListAsync();
+        var sessions = await _db.LearningSessions.Where(x => x.ChildProfileId == id).ToListAsync();
+        var skillProgresses = await _db.SkillProgress.Where(x => x.ChildProfileId == id).ToListAsync();
+        var rewards = await _db.ChildRewards.Where(x => x.ChildProfileId == id).ToListAsync();
+
+        _db.QuestionAttempts.RemoveRange(attemptAnswers);
+        _db.LearningAttempts.RemoveRange(attempts);
+        _db.LearningSessions.RemoveRange(sessions);
+        _db.SkillProgress.RemoveRange(skillProgresses);
+        _db.ChildRewards.RemoveRange(rewards);
+
+        await _db.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = $"Đã xóa sạch tiến độ học tập của bé {child.Nickname} thành công! Bé có thể bắt đầu học lại từ đầu.";
+        return RedirectToAction(nameof(ChildDetail), new { id });
+    }
+
+    [HttpPost("kids/{id:guid}/delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteChildProfile(Guid id)
+    {
+        var child = await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == id);
+        if (child is null) return NotFound();
+
+        var attempts = await _db.LearningAttempts.Where(x => x.ChildProfileId == id).ToListAsync();
+        var attemptAnswers = await _db.QuestionAttempts
+            .Where(x => attempts.Select(a => a.Id).Contains(x.LearningAttemptId))
+            .ToListAsync();
+        var sessions = await _db.LearningSessions.Where(x => x.ChildProfileId == id).ToListAsync();
+        var skillProgresses = await _db.SkillProgress.Where(x => x.ChildProfileId == id).ToListAsync();
+        var rewards = await _db.ChildRewards.Where(x => x.ChildProfileId == id).ToListAsync();
+
+        _db.QuestionAttempts.RemoveRange(attemptAnswers);
+        _db.LearningAttempts.RemoveRange(attempts);
+        _db.LearningSessions.RemoveRange(sessions);
+        _db.SkillProgress.RemoveRange(skillProgresses);
+        _db.ChildRewards.RemoveRange(rewards);
+        _db.ChildProfiles.Remove(child);
+
+        await _db.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = $"Đã xóa hồ sơ bé {child.Nickname} và dữ liệu liên quan thành công.";
+        return RedirectToAction(nameof(ParentsAndKids));
+    }
+
+    [HttpPost("parents/{userId}/delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteParentAccount(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return NotFound();
+
+        // Không cho phép xóa admin chính
+        if (await _userManager.IsInRoleAsync(user, "Admin") && user.Email == "admin@hanhtranglop1.local")
+        {
+            TempData["ErrorMessage"] = "Không thể xóa tài khoản quản trị viên hệ thống!";
+            return RedirectToAction(nameof(ParentsAndKids));
+        }
+
+        var children = await _db.ChildProfiles.Where(x => x.ParentUserId == userId).ToListAsync();
+        var childIds = children.Select(x => x.Id).ToList();
+
+        var attempts = await _db.LearningAttempts.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var attemptAnswers = await _db.QuestionAttempts
+            .Where(x => attempts.Select(a => a.Id).Contains(x.LearningAttemptId))
+            .ToListAsync();
+        var sessions = await _db.LearningSessions.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var skillProgresses = await _db.SkillProgress.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var rewards = await _db.ChildRewards.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+
+        _db.QuestionAttempts.RemoveRange(attemptAnswers);
+        _db.LearningAttempts.RemoveRange(attempts);
+        _db.LearningSessions.RemoveRange(sessions);
+        _db.SkillProgress.RemoveRange(skillProgresses);
+        _db.ChildRewards.RemoveRange(rewards);
+        _db.ChildProfiles.RemoveRange(children);
+
+        await _userManager.DeleteAsync(user);
+        await _db.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = $"Đã xóa tài khoản phụ huynh {user.Email} và các hồ sơ bé liên quan thành công.";
+        return RedirectToAction(nameof(ParentsAndKids));
     }
 
     private readonly record struct ActivityConfiguration(string PayloadJson, string CorrectAnswer);

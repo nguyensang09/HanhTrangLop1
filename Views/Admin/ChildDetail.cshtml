@@ -1,0 +1,192 @@
+@model AdminChildDetailViewModel
+@{
+    ViewData["Title"] = $"Chi tiết học tập - {Model.Child.Nickname}";
+}
+
+<section class="container dashboard-wrap">
+    @if (TempData["SuccessMessage"] is string msg)
+    {
+        <div class="feedback-band success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <strong>@msg</strong>
+        </div>
+    }
+
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Quản trị hồ sơ bé</p>
+            <h1>Bé @Model.Child.Nickname</h1>
+        </div>
+        <div class="hero-actions">
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="ParentsAndKids">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Danh sách phụ huynh & bé
+            </a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Row -->
+    <div class="stat-row">
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">star</span>
+            <strong>@Model.TotalStars</strong>
+            <span>Ngôi sao vàng</span>
+        </div>
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">task_alt</span>
+            <strong>@Model.CompletedLessonsCount</strong>
+            <span>Bài hoàn thành</span>
+        </div>
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">refresh</span>
+            <strong>@Model.NeedsPracticeCount</strong>
+            <span>Cần luyện thêm</span>
+        </div>
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">emoji_events</span>
+            <strong>@Model.EarnedRewards.Count</strong>
+            <span>Huy hiệu đạt được</span>
+        </div>
+    </div>
+
+    <!-- Child Profile Card -->
+    <div class="soft-card mt-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0 0 6px;">Thông tin hồ sơ bé @Model.Child.Nickname</h2>
+            <p style="margin: 0; color: #475569; font-size: 0.95rem;">
+                Phụ huynh: <strong>@(Model.Parent?.Email ?? "Hồ sơ Khách (Chưa đăng nhập)")</strong>
+                @(Model.Parent != null ? $"({Model.Parent.DisplayName})" : "")
+            </p>
+            <p style="margin: 4px 0 0; color: #64748b; font-size: 0.85rem;">
+                Năm sinh: @(Model.Child.BirthYear.HasValue ? Model.Child.BirthYear.Value.ToString() : "Mầm non") • Mục tiêu: @Model.Child.DailyLearningMinutes phút/ngày • Ngày tạo: @Model.Child.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <form method="post" asp-action="ClearChildProgress" asp-route-id="@Model.Child.Id" onsubmit="return confirm('XÁC NHẬN CLEAR: Toàn bộ lịch sử bài học, điểm sao, phiên học và huy hiệu của bé sẽ bị XÓA SẠCH để bé học lại từ Ngày 1. Bạn có chắc chắn?');" style="margin: 0;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="app-btn app-btn-muted app-btn-small" style="color: #b45309; border-color: #fde68a; background: #fffbeb;">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                    Clear dữ liệu (Học lại từ đầu)
+                </button>
+            </form>
+
+            <form method="post" asp-action="DeleteChildProfile" asp-route-id="@Model.Child.Id" onsubmit="return confirm('CẢNH BÁO XÓA: Bạn có chắc chắn muốn XÓA VĨNH VIỄN hồ sơ bé này cùng toàn bộ dữ liệu liên quan?');" style="margin: 0;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="app-btn app-btn-muted app-btn-small" style="color: #dc2626; border-color: #fca5a5; background: #fee2e2;">
+                    <span class="material-symbols-outlined">delete</span>
+                    Xóa vĩnh viễn hồ sơ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Skill Progress Overview -->
+    @if (Model.SkillProgresses.Count > 0)
+    {
+        <div class="soft-card report-panel mt-4">
+            <div class="panel-heading">
+                <h2>Tiến độ theo nhóm kỹ năng</h2>
+            </div>
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Nhóm kỹ năng</th>
+                        <th>Độ thành thạo</th>
+                        <th>Đã hoàn thành</th>
+                        <th>Cần luyện thêm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sp in Model.SkillProgresses)
+                    {
+                        var percent = (int)(sp.MasteryLevel * 100);
+                        <tr>
+                            <td><strong>@(sp.SkillGroup?.Name ?? "Nhóm kỹ năng")</strong></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="progress-track" style="width: 120px; height: 10px;">
+                                        <div class="progress-bar-fill" style="width:@percent%"></div>
+                                    </div>
+                                    <span>@percent%</span>
+                                </div>
+                            </td>
+                            <td><span class="status-chip status-published">@sp.CompletedItems bài</span></td>
+                            <td><span class="status-chip status-draft">@sp.NeedsPracticeItems bài</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- Earned Badges -->
+    @if (Model.EarnedRewards.Count > 0)
+    {
+        <div class="soft-card report-panel mt-4">
+            <div class="panel-heading">
+                <h2>Huy hiệu & Phần thưởng đã đạt được (@Model.EarnedRewards.Count)</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                @foreach (var rew in Model.EarnedRewards)
+                {
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid #fde68a; background: #fffbeb; border-radius: 14px;">
+                        <span class="material-symbols-outlined" style="font-size: 1.8rem; color: #d97706;">@(rew.RewardDefinition?.IconKey ?? "star")</span>
+                        <div>
+                            <strong style="display: block; font-size: 0.95rem; color: #78350f;">@(rew.RewardDefinition?.Name ?? "Huy hiệu")</strong>
+                            <small style="color: #92400e; font-size: 0.78rem;">Nhận: @rew.EarnedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Recent Attempts History Table -->
+    <div class="soft-card report-panel mt-4">
+        <div class="panel-heading">
+            <h2>Lịch sử làm bài tập gần nhất (@Model.RecentAttempts.Count lần học)</h2>
+        </div>
+
+        @if (Model.RecentAttempts.Count > 0)
+        {
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Bài học</th>
+                        <th>Nhóm kỹ năng</th>
+                        <th>Kết quả</th>
+                        <th>Số sao</th>
+                        <th>Thời lượng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var att in Model.RecentAttempts)
+                    {
+                        <tr>
+                            <td>@att.StartedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><strong>@(att.LearningItem?.Title ?? "Bài tập")</strong></td>
+                            <td>@(att.LearningItem?.SkillGroup?.Name ?? "—")</td>
+                            <td>
+                                <span class="status-chip @(att.Status == "completed" ? "status-published" : "status-draft")">
+                                    @(att.Status == "completed" ? "Đạt chuẩn" : "Cần luyện lại")
+                                </span>
+                            </td>
+                            <td>+@att.StarsEarned ⭐</td>
+                            <td>@att.DurationSeconds giây</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Bé chưa có lịch sử làm bài tập nào.</p>
+        }
+    </div>
+</section>

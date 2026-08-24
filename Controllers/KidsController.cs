@@ -80,7 +80,7 @@ public class KidsController : Controller
     }
 
     [HttpGet("today")]
-    public async Task<IActionResult> Today()
+    public async Task<IActionResult> Today(int? day)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -88,9 +88,12 @@ public class KidsController : Controller
             return RedirectToAction("Index", "Profiles");
         }
 
-        var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child);
+        var currentDay = await _todayLessonService.GetCurrentDayNumberAsync(child);
+        var targetDay = day ?? currentDay;
+
+        var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child, targetDay);
         HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, session.Id.ToString());
-        var model = await _todayLessonService.BuildTodayViewModelAsync(child, session);
+        var model = await _todayLessonService.BuildTodayViewModelAsync(child, session, targetDay);
 
         return View(model);
     }
@@ -175,6 +178,12 @@ public class KidsController : Controller
         }
 
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        if (!skillGroupId.HasValue)
+        {
+            var activeSession = await GetCurrentLearningSessionAsync(child, id);
+            HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, activeSession.Id.ToString());
+        }
+
         return View(await BuildLearnViewModelAsync(
             item,
             question,
@@ -209,7 +218,7 @@ public class KidsController : Controller
 
         var correctAnswer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
         var isCorrect = LearningAnswerEvaluator.IsCorrect(item.InteractionType, answer.AnswerValue, correctAnswer);
-        var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child);
+        var session = await GetCurrentLearningSessionAsync(child, item.Id);
         HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, session.Id.ToString());
 
         var learningAttempt = new LearningAttempt
@@ -274,7 +283,9 @@ public class KidsController : Controller
             return NotFound();
         }
 
-        var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child);
+        var session = await GetCurrentLearningSessionAsync(child, item.Id);
+        HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, session.Id.ToString());
+
         var attempt = new LearningAttempt
         {
             Id = Guid.NewGuid(),
@@ -425,33 +436,58 @@ public class KidsController : Controller
 
     private async Task EnsureDefaultRewardsExistAsync()
     {
-        if (await _db.RewardDefinitions.AnyAsync()) return;
-
         var rewardSeeds = new (string Code, string Name, string Type, string Icon, string Rule)[]
         {
+            // Huy hiệu tiến trình & chuyên cần
             ("badge-first-step", "Bước Chân Đầu Tiên", "badge", "hotel_class", "Hoàn thành bài học đầu tiên"),
             ("badge-daily-champion", "Chiến Binh Chăm Chỉ", "badge", "military_tech", "Hoàn thành trọn vẹn buổi học hôm nay"),
-            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các chữ cái tiếng Việt"),
+            ("badge-streak-3d", "Ong Vàng Siêng Năng", "badge", "local_fire_department", "Hoàn thành 3 ngày học liên tiếp"),
+            ("badge-streak-7d", "Bậc Thầy Chuyên Cần", "badge", "workspace_premium", "Kiên trì học 7 ngày cùng Sóc Nâu"),
+            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng"),
+            ("badge-star-collector", "Nhà Sưu Tầm Sao", "badge", "stars", "Tích lũy trên 25 ngôi sao vàng"),
+
+            // Huy hiệu nhóm kỹ năng
+            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các bài học chữ cái tiếng Việt"),
+            ("badge-handwriting-hero", "Bàn Tay Khéo Léo", "badge", "edit", "Hoàn thành các bài luyện tô nét chữ chuẩn"),
             ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Làm quen các con số và đếm số lượng"),
             ("badge-logic-explorer", "Thám Tử Thông Minh", "badge", "psychology", "Vượt qua các câu đố tư duy logic"),
             ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
-            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng")
+            ("badge-story-teller", "Nhà Kể Chuyện Nhí", "badge", "auto_stories", "Mở rộng vốn từ và nghe hiểu câu chuyện"),
+            ("badge-shape-master", "Kiến Trúc Sư Tí Hon", "badge", "category", "Phân biệt thành thạo các hình khối và không gian"),
+
+            // Vật phẩm trang trí khu vườn của bé
+            ("item-golden-acorn", "Quả Sồi Hoàng Gia", "item", "nature", "Vật phẩm quý giá nhận khi chăm chỉ học tập"),
+            ("item-magic-pencil", "Bút Chì Cầu Vồng", "item", "draw", "Bút chì thần kỳ tô điểm những nét chữ đẹp"),
+            ("item-knowledge-tree", "Cây Tri Thức 3D", "item", "park", "Khu vườn nở hoa khi bé học thêm nhiều điều mới"),
+            ("item-tiny-crown", "Vương Miện Tí Hon", "item", "royalty", "Vương miện vinh danh bạn nhỏ xuất sắc"),
+            ("item-trophy-gold", "Cúp Sóc Nâu Danh Dự", "item", "trophy", "Cúp vàng cao quý nhất của trường mầm non Sóc Nâu")
         };
 
+        var existing = await _db.RewardDefinitions.ToDictionaryAsync(x => x.Code);
+        var added = false;
         foreach (var (code, name, type, icon, rule) in rewardSeeds)
         {
-            _db.RewardDefinitions.Add(new RewardDefinition
+            if (!existing.TryGetValue(code, out var item))
             {
-                Id = Guid.NewGuid(),
-                Code = code,
-                Name = name,
-                RewardType = type,
-                IconKey = icon,
-                RuleJson = rule,
-                IsActive = true
-            });
+                item = new RewardDefinition
+                {
+                    Id = Guid.NewGuid(),
+                    Code = code
+                };
+                _db.RewardDefinitions.Add(item);
+                added = true;
+            }
+            item.Name = name;
+            item.RewardType = type;
+            item.IconKey = icon;
+            item.RuleJson = rule;
+            item.IsActive = true;
         }
-        await _db.SaveChangesAsync();
+
+        if (added || existing.Count < rewardSeeds.Length)
+        {
+            await _db.SaveChangesAsync();
+        }
     }
 
     private async Task<List<RewardDefinition>> EvaluateAndAwardBadgesAsync(Guid childProfileId, LearningSession session, int completedCount, int starsEarned)
@@ -482,24 +518,57 @@ public class KidsController : Controller
             }
         }
 
-        // 1. Bước chân đầu tiên: Hoàn thành ít nhất 1 bài
-        if (completedCount >= 1)
+        // Lấy dữ liệu tổng hợp lịch sử của bé
+        var totalAttempts = await _db.LearningAttempts
+            .Include(x => x.LearningItem)
+            .ThenInclude(x => x!.SkillGroup)
+            .Where(x => x.ChildProfileId == childProfileId && x.Status == "completed")
+            .ToListAsync();
+
+        var totalStars = totalAttempts.Sum(x => x.StarsEarned);
+        var totalSessions = await _db.LearningSessions
+            .CountAsync(x => x.ChildProfileId == childProfileId && x.Status == "completed");
+
+        // 1. Bước chân đầu tiên: Hoàn thành bài học đầu tiên
+        if (totalAttempts.Count >= 1)
         {
             TryAward("badge-first-step");
         }
 
-        // 2. Chiến binh chăm chỉ: Hoàn thành buổi học
+        // 2. Chiến binh chăm chỉ: Hoàn thành buổi học hôm nay
         if (session.Status == "completed" && completedCount >= 1)
         {
             TryAward("badge-daily-champion");
         }
 
-        // 3. Đại sứ Sóc Nâu: Tổng sao >= 10
-        var totalStars = await _db.LearningAttempts.Where(x => x.ChildProfileId == childProfileId).SumAsync(x => x.StarsEarned);
-        if (totalStars >= 10)
-        {
-            TryAward("badge-super-scholar");
-        }
+        // 3. Chuỗi học tập
+        if (totalSessions >= 3) TryAward("badge-streak-3d");
+        if (totalSessions >= 7) TryAward("badge-streak-7d");
+
+        // 4. Mốc số sao
+        if (totalStars >= 10) TryAward("badge-super-scholar");
+        if (totalStars >= 25) TryAward("badge-star-collector");
+
+        // 5. Huy hiệu kỹ năng theo nhóm bài
+        var completedSkillCodes = totalAttempts
+            .Where(x => x.LearningItem?.SkillGroup != null)
+            .Select(x => x.LearningItem!.SkillGroup!.Code)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (completedSkillCodes.Contains("chu-cai")) TryAward("badge-alphabet-star");
+        if (totalAttempts.Any(x => x.LearningItem?.InteractionType == InteractionTypes.Tracing)) TryAward("badge-handwriting-hero");
+        if (completedSkillCodes.Contains("chu-so") || completedSkillCodes.Contains("so-luong-toan")) TryAward("badge-math-whiz");
+        if (completedSkillCodes.Contains("tu-duy-logic")) TryAward("badge-logic-explorer");
+        if (completedSkillCodes.Contains("ky-nang-song")) TryAward("badge-habit-hero");
+        if (completedSkillCodes.Contains("ngon-ngu")) TryAward("badge-story-teller");
+        if (completedSkillCodes.Contains("hinh-dang-khong-gian")) TryAward("badge-shape-master");
+
+        // 6. Vật phẩm trang trí khu vườn
+        if (totalAttempts.Count >= 5) TryAward("item-golden-acorn");
+        if (totalAttempts.Count(x => x.LearningItem?.InteractionType == InteractionTypes.Tracing) >= 3) TryAward("item-magic-pencil");
+        if (totalAttempts.Count >= 10) TryAward("item-knowledge-tree");
+        if (totalSessions >= 5) TryAward("item-tiny-crown");
+        if (totalStars >= 50) TryAward("item-trophy-gold");
 
         if (newlyAwarded.Count > 0)
         {
@@ -599,6 +668,41 @@ public class KidsController : Controller
         });
     }
 
+    private async Task<LearningSession> GetCurrentLearningSessionAsync(ChildProfile child, Guid? currentItemId = null)
+    {
+        var sessionRaw = HttpContext.Session.GetString(SessionKeys.CurrentLearningSessionId);
+        if (Guid.TryParse(sessionRaw, out var sessionId))
+        {
+            var session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id);
+            if (session is not null)
+            {
+                if (!currentItemId.HasValue || session.SessionPlanJson.Contains(currentItemId.Value.ToString()))
+                {
+                    return session;
+                }
+            }
+        }
+
+        if (currentItemId.HasValue)
+        {
+            var matchingSession = await _db.LearningSessions
+                .Where(x => x.ChildProfileId == child.Id && x.SessionPlanJson.Contains(currentItemId.Value.ToString()))
+                .OrderByDescending(x => x.StartedAt)
+                .FirstOrDefaultAsync();
+
+            if (matchingSession is not null)
+            {
+                HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, matchingSession.Id.ToString());
+                return matchingSession;
+            }
+        }
+
+        var currentDay = await _todayLessonService.GetCurrentDayNumberAsync(child);
+        var defaultSession = await _todayLessonService.GetOrCreateActiveSessionAsync(child, currentDay);
+        HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, defaultSession.Id.ToString());
+        return defaultSession;
+    }
+
     private async Task<Guid?> FindNextItemIdInCurrentSessionAsync(Guid currentItemId)
     {
         var child = await GetSelectedChildProfileAsync();
@@ -607,7 +711,7 @@ public class KidsController : Controller
             return null;
         }
 
-        var session = await _todayLessonService.GetOrCreateActiveSessionAsync(child);
+        var session = await GetCurrentLearningSessionAsync(child, currentItemId);
         return await _todayLessonService.FindNextItemIdAsync(session, currentItemId);
     }
 

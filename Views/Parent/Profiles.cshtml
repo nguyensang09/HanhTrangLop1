@@ -37,7 +37,7 @@
                         <p>Âm thanh: @(child.SoundEnabled ? "Bật" : "Tắt")</p>
                     </div>
                     <div class="profile-actions">
-                        <a class="app-btn app-btn-muted app-btn-small" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@child.Id">Cho bé học</a>
+                        <a class="app-btn app-btn-muted app-btn-small" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@child.Id">Bé vào lớp</a>
                         <a class="app-btn app-btn-muted app-btn-small" asp-action="EditProfile" asp-route-id="@child.Id">Sửa</a>
                         <form asp-action="DeleteProfile" asp-route-id="@child.Id" method="post">
                             <button class="danger-link" type="submit">Xóa</button>

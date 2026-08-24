@@ -1,31 +1,64 @@
 @model TodayLessonViewModel
 @{
-    ViewData["Title"] = "Bài học hôm nay";
+    ViewData["Title"] = $"Lộ trình Ngày {Model.SelectedDayNumber}";
     var progressPercent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
 }
 
 <section class="kid-screen kid-today-screen">
     <!-- Topbar -->
-    <div class="kid-topbar">
-        <a class="icon-link clay-button" asp-controller="Kids" asp-action="Home" title="Quay lại trang chủ">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </a>
-        <div class="kid-topbar-title-wrap">
-            <p class="eyebrow">Lộ trình hôm nay</p>
-            <h1>@Model.ChildProfile.Nickname học hôm nay</h1>
+    <div class="kid-topbar home-topbar clay-card">
+        <div class="kid-header-profile">
+            <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Về trang chủ">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <p class="eyebrow">Hành trình theo ngày</p>
+                <h1>@Model.DayThemeTitle</h1>
+            </div>
         </div>
-        <div class="star-pill clay-button">
-            <span class="material-symbols-outlined star-icon">star</span>
-            <span>@Model.CompletedCount/@Model.TotalCount</span>
+        <div class="star-pill clay-button celebration-pill">
+            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span>@Model.CompletedCount/@Model.TotalCount bài</span>
         </div>
     </div>
 
-    <!-- Progress Card -->
+    <!-- Dải Chọn Ngày Học (Daily Roadmap Strip) -->
+    <div class="daily-roadmap-section">
+        <div class="roadmap-section-header">
+            <div class="roadmap-title-row">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <strong>Lộ trình 20 ngày học chuẩn sư phạm</strong>
+            </div>
+            <span class="roadmap-sub">Bấm vào các ngày trước để học lại bất cứ lúc nào!</span>
+        </div>
+
+        <div class="roadmap-days-strip">
+            @foreach (var day in Model.RoadmapDays)
+            {
+                var isSelected = day.DayNumber == Model.SelectedDayNumber;
+                <a class="roadmap-day-node clay-button @(isSelected ? "is-selected" : "") @(day.IsCompleted ? "is-completed" : "") @(day.IsCurrent ? "is-current" : "") @(day.IsLocked ? "is-locked" : "")"
+                   asp-controller="Kids"
+                   asp-action="Today"
+                   asp-route-day="@(day.IsLocked ? Model.CurrentDayNumber : day.DayNumber)"
+                   title="@day.Title">
+                    <span class="day-badge-num">Ngày @day.DayNumber</span>
+                    <span class="material-symbols-outlined day-icon">
+                        @(day.IsCompleted ? "check_circle" : day.IsCurrent ? "play_circle" : day.IsLocked ? "lock" : "history")
+                    </span>
+                    <span class="day-status-text">
+                        @(day.IsCompleted ? "Đã xong" : day.IsCurrent ? "Hôm nay" : day.IsLocked ? "Chưa mở" : "Ôn lại")
+                    </span>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Progress Card Của Ngày Đang Chọn -->
     <div class="soft-card clay-card today-progress-card">
         <div class="progress-info-row">
             <div class="progress-stats">
-                <span class="progress-count-pill">@Model.CompletedCount/@Model.TotalCount hoạt động</span>
-                <span class="progress-time-hint">Học khoảng @Model.Session.PlannedMinutes phút, nhớ nghỉ mắt khi mỏi nhé! 🌿</span>
+                <span class="progress-count-pill">Hoàn thành @Model.CompletedCount/@Model.TotalCount bài học</span>
+                <span class="progress-time-hint">🌿 Mỗi ngày học 10–15 phút để hình thành thói quen tự giác!</span>
             </div>
             <span class="progress-percent-label">@progressPercent%</span>
         </div>
@@ -34,7 +67,7 @@
         </div>
     </div>
 
-    <!-- Learning Path / Journey Line -->
+    <!-- Learning Path Steps -->
     <div class="today-line">
         @for (var i = 0; i < Model.Steps.Count; i++)
         {
@@ -60,7 +93,7 @@
                     {
                         <a class="app-btn app-btn-small clay-button step-action-btn" asp-controller="Kids" asp-action="Learn" asp-route-id="@step.Item.Id">
                             <span class="material-symbols-outlined">@(step.Status == TodayLessonStepStatus.Completed ? "replay" : "play_circle")</span>
-                            <span>@(step.Status == TodayLessonStepStatus.Completed ? "Ôn lại" : "Vào học ngay")</span>
+                            <span>@(step.Status == TodayLessonStepStatus.Completed ? "Học lại bài" : "Vào học ngay")</span>
                         </a>
                     }
                 </div>
@@ -72,7 +105,7 @@
     <div class="today-footer-action">
         <a class="app-btn app-btn-muted app-btn-wide clay-button" asp-controller="Kids" asp-action="Summary">
             <span class="material-symbols-outlined">stars</span>
-            <span>Tổng kết buổi học</span>
+            <span>Tổng kết buổi học & Nhận thưởng</span>
         </a>
     </div>
 </section>

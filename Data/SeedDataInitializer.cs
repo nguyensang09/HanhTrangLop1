@@ -156,13 +156,29 @@ public static class SeedDataInitializer
     {
         var rewardSeeds = new (string Code, string Name, string Type, string Icon, string Rule)[]
         {
+            // Huy hiệu tiến trình & chuyên cần
             ("badge-first-step", "Bước Chân Đầu Tiên", "badge", "hotel_class", "Hoàn thành bài học đầu tiên"),
             ("badge-daily-champion", "Chiến Binh Chăm Chỉ", "badge", "military_tech", "Hoàn thành trọn vẹn buổi học hôm nay"),
-            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các chữ cái tiếng Việt"),
+            ("badge-streak-3d", "Ong Vàng Siêng Năng", "badge", "local_fire_department", "Hoàn thành 3 ngày học liên tiếp"),
+            ("badge-streak-7d", "Bậc Thầy Chuyên Cần", "badge", "workspace_premium", "Kiên trì học 7 ngày cùng Sóc Nâu"),
+            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng"),
+            ("badge-star-collector", "Nhà Sưu Tầm Sao", "badge", "stars", "Tích lũy trên 25 ngôi sao vàng"),
+
+            // Huy hiệu nhóm kỹ năng
+            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các bài học chữ cái tiếng Việt"),
+            ("badge-handwriting-hero", "Bàn Tay Khéo Léo", "badge", "edit", "Hoàn thành các bài luyện tô nét chữ chuẩn"),
             ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Làm quen các con số và đếm số lượng"),
             ("badge-logic-explorer", "Thám Tử Thông Minh", "badge", "psychology", "Vượt qua các câu đố tư duy logic"),
             ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
-            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng")
+            ("badge-story-teller", "Nhà Kể Chuyện Nhí", "badge", "auto_stories", "Mở rộng vốn từ và nghe hiểu câu chuyện"),
+            ("badge-shape-master", "Kiến Trúc Sư Tí Hon", "badge", "category", "Phân biệt thành thạo các hình khối và không gian"),
+
+            // Vật phẩm trang trí khu vườn của bé
+            ("item-golden-acorn", "Quả Sồi Hoàng Gia", "item", "nature", "Vật phẩm quý giá nhận khi chăm chỉ học tập"),
+            ("item-magic-pencil", "Bút Chì Cầu Vồng", "item", "draw", "Bút chì thần kỳ tô điểm những nét chữ đẹp"),
+            ("item-knowledge-tree", "Cây Tri Thức 3D", "item", "park", "Khu vườn nở hoa khi bé học thêm nhiều điều mới"),
+            ("item-tiny-crown", "Vương Miện Tí Hon", "item", "royalty", "Vương miện vinh danh bạn nhỏ xuất sắc"),
+            ("item-trophy-gold", "Cúp Sóc Nâu Danh Dự", "item", "trophy", "Cúp vàng cao quý nhất của trường mầm non Sóc Nâu")
         };
 
         var existing = await db.RewardDefinitions.ToDictionaryAsync(x => x.Code);

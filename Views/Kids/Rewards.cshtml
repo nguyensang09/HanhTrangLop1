@@ -19,7 +19,7 @@
         </div>
         <div class="star-pill clay-button celebration-pill">
             <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
-            <span>@earnedCount/@totalCount huy hiệu</span>
+            <span>@earnedCount/@totalCount đã mở</span>
         </div>
     </div>
 
@@ -30,23 +30,37 @@
         </div>
         <div class="summary-hero-copy">
             <h2>Khu Vườn Danh Dự Của Bé! ✨</h2>
-            <p>Bé đã tích lũy được <strong>@Model.TotalStars ngôi sao vàng</strong>. Hãy tiếp tục học đều đặn mỗi ngày cùng Sóc Nâu để mở khóa trọn bộ huy hiệu danh giá nhé!</p>
+            <p>Bé đã tích lũy được <strong>@Model.TotalStars ngôi sao vàng</strong>. Hãy học chăm chỉ mỗi ngày cùng Sóc Nâu để mở khóa trọn bộ 18 danh hiệu và vật phẩm kỳ diệu nhé!</p>
         </div>
     </div>
 
-    <!-- Rewards & Badges Grid -->
-    <div class="reward-section-header">
-        <h2 class="section-title">
-            <span class="material-symbols-outlined title-icon">military_tech</span>
-            Bảng Huy Hiệu Vinh Danh
-        </h2>
-        <span class="section-sub">Hoàn thành bài tập để thắp sáng tất cả huy hiệu</span>
+    <!-- Filter Category Tabs -->
+    <div class="reward-filter-tabs">
+        <button type="button" class="reward-tab-btn active clay-button" onclick="filterRewards('all', this)">
+            <span class="material-symbols-outlined">stars</span>
+            <span>Tất cả (@totalCount)</span>
+        </button>
+        <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('badge', this)">
+            <span class="material-symbols-outlined">military_tech</span>
+            <span>Huy hiệu (@Model.Badges.Count(x => x.Definition.RewardType == "badge"))</span>
+        </button>
+        <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('item', this)">
+            <span class="material-symbols-outlined">park</span>
+            <span>Vật phẩm (@Model.Badges.Count(x => x.Definition.RewardType == "item"))</span>
+        </button>
+        <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('earned', this)">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Đã đạt (@earnedCount)</span>
+        </button>
     </div>
 
-    <div class="rewards-collection-grid">
+    <!-- Rewards & Badges Grid -->
+    <div class="rewards-collection-grid" id="rewardsCollectionGrid">
         @foreach (var badge in Model.Badges)
         {
-            <div class="reward-badge-card clay-card @(badge.IsEarned ? "is-unlocked" : "is-locked")">
+            <div class="reward-badge-card clay-card @(badge.IsEarned ? "is-unlocked" : "is-locked")"
+                 data-reward-type="@badge.Definition.RewardType"
+                 data-is-earned="@(badge.IsEarned ? "true" : "false")">
                 <div class="badge-medal-wrap">
                     <span class="material-symbols-outlined badge-icon">@badge.Definition.IconKey</span>
                     @if (badge.IsEarned)
@@ -64,7 +78,7 @@
                 {
                     <span class="badge-earned-pill">
                         <span class="material-symbols-outlined mini-star">check_circle</span>
-                        <span>Đã đạt</span>
+                        <span>Đã đạt @(badge.EarnedAt.HasValue ? $"• {badge.EarnedAt.Value:dd/MM}" : "")</span>
                     </span>
                 }
                 else
@@ -98,3 +112,30 @@
         <span>Phụ huynh</span>
     </a>
 </nav>
+
+@section Scripts {
+    <script>
+        function filterRewards(filter, btn) {
+            document.querySelectorAll(".reward-tab-btn").forEach(el => el.classList.remove("active"));
+            if (btn) btn.classList.add("active");
+
+            const cards = document.querySelectorAll(".reward-badge-card");
+            cards.forEach(card => {
+                const type = card.getAttribute("data-reward-type");
+                const isEarned = card.getAttribute("data-is-earned") === "true";
+
+                if (filter === "all") {
+                    card.style.display = "flex";
+                } else if (filter === "badge" && type === "badge") {
+                    card.style.display = "flex";
+                } else if (filter === "item" && type === "item") {
+                    card.style.display = "flex";
+                } else if (filter === "earned" && isEarned) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,205 @@
+@model AdminParentsAndKidsViewModel
+@{
+    ViewData["Title"] = "Quản lý Phụ huynh & Bé";
+}
+
+<section class="container dashboard-wrap">
+    @if (TempData["SuccessMessage"] is string msg)
+    {
+        <div class="feedback-band success">
+            <span class="material-symbols-outlined">check_circle</span>
+            <strong>@msg</strong>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errMsg)
+    {
+        <div class="feedback-band error">
+            <span class="material-symbols-outlined">error</span>
+            <strong>@errMsg</strong>
+        </div>
+    }
+
+    <div class="dashboard-header">
+        <div>
+            <p class="eyebrow">Quản trị hệ thống</p>
+            <h1>Quản lý Phụ huynh & Hồ sơ Bé</h1>
+        </div>
+        <div class="hero-actions">
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
+                <span class="material-symbols-outlined">library_books</span>
+                Kho nội dung
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Row -->
+    <div class="stat-row">
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">group</span>
+            <strong>@Model.TotalParentsCount</strong>
+            <span>Tài khoản phụ huynh</span>
+        </div>
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">face</span>
+            <strong>@Model.TotalChildrenCount</strong>
+            <span>Tổng số hồ sơ bé</span>
+        </div>
+        <div class="soft-card stat-card">
+            <span class="material-symbols-outlined">task_alt</span>
+            <strong>@Model.TotalCompletedSessions</strong>
+            <span>Buổi học hoàn thành</span>
+        </div>
+    </div>
+
+    <!-- Search & Filter Form -->
+    <form class="soft-card admin-filter mt-4" asp-action="ParentsAndKids" method="get">
+        <div style="flex: 1;">
+            <label for="q">Tìm kiếm phụ huynh hoặc bé</label>
+            <input id="q" name="q" class="form-control" type="text" value="@Model.SearchQuery" placeholder="Nhập email, tên phụ huynh hoặc nickname của bé..." />
+        </div>
+        <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <button class="app-btn app-btn-small" type="submit">
+                <span class="material-symbols-outlined">search</span>
+                Tìm kiếm
+            </button>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+            {
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="ParentsAndKids">Xóa lọc</a>
+            }
+        </div>
+    </form>
+
+    <!-- Parents & Children Table/List -->
+    <div class="soft-card report-panel mt-4">
+        <div class="panel-heading">
+            <h2>Danh sách Phụ huynh & Các bé (@Model.Parents.Count tài khoản)</h2>
+        </div>
+
+        @if (Model.Parents.Count == 0)
+        {
+            <p>Không tìm thấy tài khoản phụ huynh nào.</p>
+        }
+        else
+        {
+            <div class="admin-parent-list">
+                @foreach (var parent in Model.Parents)
+                {
+                    <div class="soft-card mb-3" style="background: #ffffff; border: 1.5px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="material-symbols-outlined" style="font-size: 2rem; color: #0284c7;">account_circle</span>
+                                <div>
+                                    <strong style="font-size: 1.05rem;">@(string.IsNullOrWhiteSpace(parent.DisplayName) ? "Phụ huynh" : parent.DisplayName)</strong>
+                                    <span style="display: block; font-size: 0.85rem; color: #64748b;">@parent.Email</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="status-chip status-published">@parent.Children.Count bé</span>
+                                @if (parent.Email != "admin@hanhtranglop1.local")
+                                {
+                                    <form method="post" asp-action="DeleteParentAccount" asp-route-userId="@parent.UserId" onsubmit="return confirm('CẢNH BÁO: Xóa tài khoản phụ huynh này và toàn bộ hồ sơ của các bé?');" style="margin: 0;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="app-btn app-btn-muted app-btn-small" style="color: #dc2626; border-color: #fca5a5; background: #fee2e2;" title="Xóa tài khoản phụ huynh">
+                                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
+                                            Xóa tài khoản
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+
+                        @if (parent.Children.Count > 0)
+                        {
+                            <table class="app-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nickname</th>
+                                        <th>Độ tuổi</th>
+                                        <th>Thời lượng</th>
+                                        <th>Tiến độ</th>
+                                        <th>Huy hiệu</th>
+                                        <th>Hoạt động gần nhất</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var child in parent.Children)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@child.Nickname</strong>
+                                            </td>
+                                            <td>@(child.BirthYear.HasValue ? $"{DateTime.Now.Year - child.BirthYear.Value} tuổi" : "Mầm non")</td>
+                                            <td>@child.DailyLearningMinutes phút/ngày</td>
+                                            <td>
+                                                <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
+                                                <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
+                                            </td>
+                                            <td>@child.BadgesCount 🏆</td>
+                                            <td>@(child.LastActiveAt.HasValue ? child.LastActiveAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa học")</td>
+                                            <td>
+                                                <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
+                                                    <span class="material-symbols-outlined">visibility</span>
+                                                    Chi tiết & Xóa rác
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Chưa tạo hồ sơ bé nào.</p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Guest Children -->
+    @if (Model.GuestChildren.Count > 0)
+    {
+        <div class="soft-card report-panel mt-4">
+            <div class="panel-heading">
+                <h2>Hồ sơ bé Khách / Chưa đăng nhập (@Model.GuestChildren.Count bé)</h2>
+            </div>
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Nickname</th>
+                        <th>Thời lượng</th>
+                        <th>Tiến độ</th>
+                        <th>Huy hiệu</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var child in Model.GuestChildren)
+                    {
+                        <tr>
+                            <td><strong>@child.Nickname</strong></td>
+                            <td>@child.DailyLearningMinutes phút/ngày</td>
+                            <td>
+                                <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
+                                <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
+                            </td>
+                            <td>@child.BadgesCount 🏆</td>
+                            <td>
+                                <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                    Chi tiết & Dọn rác
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

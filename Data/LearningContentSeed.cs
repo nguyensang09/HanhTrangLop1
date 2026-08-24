@@ -1031,6 +1031,48 @@ public static class LearningContentSeed
             "Con quan sát tranh và chọn hành động an toàn.", "Khi qua đường, con nên làm gì?",
             ["Đi cùng người lớn", "Tự chạy thật nhanh", "Đứng chơi giữa đường"], "Đi cùng người lớn",
             imageUrl: "/images/lessons/visual-road-safety.png");
+
+        // Bổ sung bài học mới cho các nhóm kỹ năng
+        // 1. Phân loại & Nơi ở
+        yield return Mapping("seed-logic-animal-homes", "Ghép con vật và nơi ở", "phan-loai", InteractionTypes.Matching,
+            [("Chim", "Tổ chim"), ("Cá", "Hồ nước"), ("Thỏ", "Vườn cà rốt"), ("Ong", "Tổ ong")]);
+        yield return Mapping("seed-logic-fruits-veggies", "Phân loại rau củ và trái cây", "phan-loai", InteractionTypes.Classification,
+            [("Táo", "Trái cây"), ("Cam", "Trái cây"), ("Cà rốt", "Rau củ"), ("Bắp cải", "Rau củ")]);
+        yield return Mapping("seed-logic-weather-clothes", "Mặc trang phục theo thời tiết", "phan-loai", InteractionTypes.Matching,
+            [("Trời nắng", "Mũ rộng vành"), ("Trời mưa", "Áo mưa"), ("Trời lạnh", "Khăn")]);
+
+        // 2. Kỹ năng sống & Thói quen tốt
+        yield return Ordering("seed-life-brush-teeth", "Quy trình đánh răng đúng cách", "kheo-tay",
+            ["Lấy kem", "Chải mặt ngoài", "Chải mặt trong", "Súc miệng"]);
+        yield return Ordering("seed-life-clean-table", "Gọn gàng góc học tập", "kheo-tay",
+            ["Gập sách", "Cất bút", "Xếp ba lô", "Lau bàn"]);
+        yield return Choice("seed-life-happy-expression", "Cảm xúc khi làm việc tốt", "cam-xuc", InteractionTypes.SingleChoice,
+            "Con chọn cảm xúc phù hợp.", "Khi giúp đỡ bạn, con cảm thấy thế nào?", ["Vui vẻ", "Tức giận", "Buồn bã"], "Vui vẻ",
+            imageUrl: "/images/pictograms/speaking.svg");
+        yield return Choice("seed-life-help-parents", "Bé ngoan giúp đỡ việc nhà", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn việc làm phù hợp với lứa tuổi.", "Bé có thể giúp mẹ làm việc gì?", ["Gấp quần áo gọn gàng", "Tự ý bật bếp gas", "Nghịch nước bẩn"], "Gấp quần áo gọn gàng",
+            imageUrl: "/images/pictograms/shirt.svg");
+
+        // 3. Ngôn ngữ, Câu đố vần & Kể chuyện
+        yield return Choice("seed-lang-rhyme-cat", "Câu đố: Chú mèo bắt chuột", "kham-pha-chu", InteractionTypes.SingleChoice,
+            "Con nghe câu đố và chọn đáp án.", "Con gì mắt sáng, thích bắt chuột, kêu meo meo?", ["Con mèo", "Con cún", "Con vịt"], "Con mèo",
+            imageUrl: "/images/photos/cat.jpg");
+        yield return Choice("seed-lang-rhyme-rooster", "Câu đố: Tiếng gáy ban mai", "kham-pha-chu", InteractionTypes.SingleChoice,
+            "Con nghe câu đố và chọn đáp án.", "Con gì gáy ò ó o gọi mọi người thức dậy?", ["Gà trống", "Con thỏ", "Con ong"], "Gà trống",
+            imageUrl: "/images/photos/chicken.jpg");
+        yield return Story("seed-lang-story-frog", "Chuyện chú ếch ngoan ngoãn", "giao-tiep",
+            "Mỗi buổi sáng gặp người lớn, chú ếch nhỏ đều cúi đầu lễ phép khoanh tay chào hỏi.",
+            "/images/pictograms/speaking.svg",
+            "Chú ếch con trong truyện đã làm gì khi gặp người lớn?",
+            ["Khoanh tay chào lễ phép", "Nhảy đi mất", "Không nói gì"], "Khoanh tay chào lễ phép");
+
+        // 4. Hình dạng & Không gian
+        yield return Choice("seed-shape-find-circle", "Đồ vật hình tròn quanh bé", "hinh-dang", InteractionTypes.SingleChoice,
+            "Con quan sát và chọn đồ vật có hình tròn.", "Đồ vật nào dưới đây có dạng hình tròn?", ["Quả bóng", "Cái bảng đen", "Hộp quà vuông"], "Quả bóng",
+            imageUrl: "/images/pictograms/ball.svg");
+        yield return Choice("seed-shape-find-square", "Đồ vật hình vuông", "hinh-dang", InteractionTypes.SingleChoice,
+            "Con chọn đồ vật có bốn cạnh bằng nhau.", "Đồ vật nào có dạng hình vuông?", ["Cái khăn vuông", "Quả trứng", "Bánh xe"], "Cái khăn vuông",
+            imageUrl: "/images/photos/flashcard-shape-square.svg");
     }
 
     private static string NormalizeSeedCode(string value) => value
