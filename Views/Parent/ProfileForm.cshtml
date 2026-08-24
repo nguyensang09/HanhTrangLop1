@@ -7,39 +7,85 @@
 <section class="auth-panel">
     <div class="soft-card form-card">
         <h1>@ViewData["Title"]</h1>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <label asp-for="Nickname">Tên bé</label>
-            <input asp-for="Nickname" class="form-control" />
+            <input asp-for="Nickname" class="form-control" placeholder="Ví dụ: Bé Bắp, Minh Khang..." />
             <span asp-validation-for="Nickname" class="text-danger"></span>
 
             <label asp-for="BirthYear">Năm sinh</label>
-            <input asp-for="BirthYear" class="form-control" />
+            <input asp-for="BirthYear" class="form-control" placeholder="Ví dụ: 2019, 2020..." />
             <span asp-validation-for="BirthYear" class="text-danger"></span>
 
-            <label asp-for="AvatarKey">Nhân vật</label>
-            <select asp-for="AvatarKey" class="form-control">
-                <option value="soc-nau">Sóc Nâu</option>
-                <option value="tho-trang">Thỏ Trắng</option>
-                <option value="gau-vang">Gấu Vàng</option>
-            </select>
-            <span asp-validation-for="AvatarKey" class="text-danger"></span>
+            <!-- Chọn Avatar 3D hoặc Tải ảnh của bé -->
+            <div class="avatar-selector-section">
+                <label>Ảnh đại diện của bé</label>
+                <div class="avatar-3d-grid">
+                    <label class="avatar-option">
+                        <input type="radio" asp-for="AvatarKey" value="avatar-squirrel" checked="@(Model.AvatarKey == "avatar-squirrel" || Model.AvatarKey == "soc-nau")" />
+                        <div class="avatar-card clay-card">
+                            <img src="~/images/avatars/avatar-squirrel.png" alt="Sóc Nâu" />
+                            <span>Sóc Nâu</span>
+                        </div>
+                    </label>
+                    <label class="avatar-option">
+                        <input type="radio" asp-for="AvatarKey" value="avatar-cat" checked="@(Model.AvatarKey == "avatar-cat")" />
+                        <div class="avatar-card clay-card">
+                            <img src="~/images/avatars/avatar-cat.png" alt="Mèo Con" />
+                            <span>Mèo Con</span>
+                        </div>
+                    </label>
+                    <label class="avatar-option">
+                        <input type="radio" asp-for="AvatarKey" value="avatar-dog" checked="@(Model.AvatarKey == "avatar-dog")" />
+                        <div class="avatar-card clay-card">
+                            <img src="~/images/avatars/avatar-dog.png" alt="Cún Con" />
+                            <span>Cún Con</span>
+                        </div>
+                    </label>
+                    <label class="avatar-option">
+                        <input type="radio" asp-for="AvatarKey" value="avatar-bunny" checked="@(Model.AvatarKey == "avatar-bunny" || Model.AvatarKey == "tho-trang")" />
+                        <div class="avatar-card clay-card">
+                            <img src="~/images/avatars/avatar-bunny.png" alt="Thỏ Trắng" />
+                            <span>Thỏ Trắng</span>
+                        </div>
+                    </label>
+                    <label class="avatar-option">
+                        <input type="radio" asp-for="AvatarKey" value="avatar-bear" checked="@(Model.AvatarKey == "avatar-bear" || Model.AvatarKey == "gau-vang")" />
+                        <div class="avatar-card clay-card">
+                            <img src="~/images/avatars/avatar-bear.png" alt="Gấu Con" />
+                            <span>Gấu Con</span>
+                        </div>
+                    </label>
+                </div>
 
-            <label asp-for="DailyLearningMinutes">Thời lượng học mỗi ngày</label>
+                <div class="custom-avatar-upload mt-3">
+                    <label asp-for="AvatarFile" class="upload-label-btn clay-button">
+                        <span class="material-symbols-outlined">add_a_photo</span>
+                        <span>Hoặc tải ảnh thật của con lên</span>
+                    </label>
+                    <input asp-for="AvatarFile" type="file" accept="image/*" class="custom-file-input" style="display:none;" id="avatarFileInput" onchange="previewAvatar(this)" />
+                    <div id="avatarPreviewContainer" class="avatar-preview-box" style="display:none;">
+                        <img id="avatarPreviewImg" src="" alt="Ảnh bé vừa chọn" />
+                        <small>Ảnh bé đã được chọn ✨</small>
+                    </div>
+                </div>
+            </div>
+
+            <label asp-for="DailyLearningMinutes" class="mt-3">Thời lượng học mỗi ngày</label>
             <select asp-for="DailyLearningMinutes" class="form-control">
-                <option value="10">10 phút</option>
-                <option value="15">15 phút</option>
-                <option value="20">20 phút</option>
+                <option value="10">10 phút (Khởi động)</option>
+                <option value="15">15 phút (Tiêu chuẩn đề xuất)</option>
+                <option value="20">20 phút (Chăm chỉ)</option>
             </select>
             <span asp-validation-for="DailyLearningMinutes" class="text-danger"></span>
 
-            <label class="check-row">
+            <label class="check-row mt-2">
                 <input asp-for="SoundEnabled" />
-                Bật âm thanh hướng dẫn
+                Bật âm thanh & giọng đọc hướng dẫn của Sóc Nâu
             </label>
 
-            <button class="app-btn app-btn-wide" type="submit">Lưu hồ sơ</button>
+            <button class="app-btn app-btn-wide mt-3" type="submit">Lưu hồ sơ</button>
             <a class="form-back-link" asp-action="Profiles">Quay lại danh sách</a>
         </form>
     </div>
@@ -47,4 +93,16 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreviewImg').src = e.target.result;
+                    document.getElementById('avatarPreviewContainer').style.display = 'flex';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 }

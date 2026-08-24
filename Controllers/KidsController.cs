@@ -130,10 +130,12 @@ public class KidsController : Controller
                 .OrderByDescending(x => x.StartedAt)
                 .ToListAsync();
 
+        var mostRecentAttempt = latestAttempts.OrderByDescending(x => x.CompletedAt ?? x.StartedAt).FirstOrDefault();
         var model = new SkillLearningListViewModel
         {
             ChildProfile = child,
             SkillGroup = skillGroup,
+            LastPracticedItemId = mostRecentAttempt?.LearningItemId,
             Items = items.Select(item =>
             {
                 var latestAttempt = latestAttempts.FirstOrDefault(x => x.LearningItemId == item.Id);

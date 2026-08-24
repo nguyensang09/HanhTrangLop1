@@ -168,12 +168,14 @@ public class ParentController : Controller
             return View("ProfileForm", model);
         }
 
+        var uploadedAvatar = await SaveUploadedAvatarAsync(model.AvatarFile);
+
         var child = new ChildProfile
         {
             ParentUserId = GetCurrentUserId(),
             Nickname = model.Nickname.Trim(),
             BirthYear = model.BirthYear,
-            AvatarKey = model.AvatarKey,
+            AvatarKey = uploadedAvatar ?? model.AvatarKey ?? "avatar-squirrel",
             DailyLearningMinutes = model.DailyLearningMinutes,
             SoundEnabled = model.SoundEnabled
         };
@@ -227,15 +229,48 @@ public class ParentController : Controller
             return NotFound();
         }
 
+        var uploadedAvatar = await SaveUploadedAvatarAsync(model.AvatarFile);
+
         child.Nickname = model.Nickname.Trim();
         child.BirthYear = model.BirthYear;
-        child.AvatarKey = model.AvatarKey;
+        if (!string.IsNullOrEmpty(uploadedAvatar))
+        {
+            child.AvatarKey = uploadedAvatar;
+        }
+        else if (!string.IsNullOrEmpty(model.AvatarKey))
+        {
+            child.AvatarKey = model.AvatarKey;
+        }
         child.DailyLearningMinutes = model.DailyLearningMinutes;
         child.SoundEnabled = model.SoundEnabled;
         child.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Profiles));
+    }
+
+    private async Task<string?> SaveUploadedAvatarAsync(IFormFile? file)
+    {
+        if (file is null || file.Length == 0) return null;
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+        if (!Directory.Exists(uploadsDir))
+        {
+            Directory.CreateDirectory(uploadsDir);
+        }
+
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (string.IsNullOrEmpty(ext) || ext is not (".jpg" or ".jpeg" or ".png" or ".webp" or ".gif"))
+        {
+            ext = ".png";
+        }
+
+        var fileName = $"child_{Guid.NewGuid():N}{ext}";
+        var filePath = Path.Combine(uploadsDir, fileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+        return $"/uploads/avatars/{fileName}";
     }
 
     [Authorize]

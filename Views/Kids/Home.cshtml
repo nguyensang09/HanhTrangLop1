@@ -1,14 +1,29 @@
 @model KidsHomeViewModel
 @{
     ViewData["Title"] = "Khu học của bé";
+
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
 }
 
 <section class="kid-screen kid-home-screen">
-    <!-- Topbar with Avatar, Nickname and Profile Switcher -->
-    <div class="kid-topbar">
+    <!-- Topbar Hồ Sơ Bé Tinh Gọn -->
+    <div class="kid-topbar home-topbar clay-card">
         <div class="kid-header-profile">
             <div class="squirrel-avatar-wrap">
-                <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="squirrel-avatar" />
+                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Ảnh bé" class="squirrel-avatar" />
             </div>
             <div>
                 <p class="eyebrow">Sóc Nâu Đồng Hành</p>
@@ -23,13 +38,11 @@
         </div>
     </div>
 
-    <!-- Cheerful Mascot Banner -->
-    <div class="message-card clay-card mascot-welcome-card">
-        <div class="mascot-badge-col">
-            <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="mascot-greeting-img pulse-animation" />
-        </div>
-        <div class="mascot-speech-col">
-            <div class="mascot-speech-header">
+    <!-- Lời Chào Sóc Nâu Tự Động Thu Gọn Sau Vài Giây -->
+    <div class="mascot-greeting-toast clay-card" id="mascotGreetingToast">
+        <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu 3D" class="toast-mascot-img" />
+        <div class="toast-speech-col">
+            <div class="toast-speech-header">
                 <strong>Hôm nay mình học một chút thôi nhé! 🌟</strong>
                 <button class="sound-button clay-button" type="button" aria-label="Nghe lời chào" onclick="window.speechSynthesis && window.speechSynthesis.speak(new SpeechSynthesisUtterance('Chào bạn nhỏ! Hôm nay mình học một chút thôi nhé. Bắt đầu bằng nét chữ, rồi chơi với số và hình.'))">
                     <span class="material-symbols-outlined">volume_up</span>
@@ -37,35 +50,60 @@
             </div>
             <p>Bắt đầu bằng nét chữ, rồi cùng chơi với những con số và thế giới xung quanh.</p>
         </div>
+        <button type="button" class="toast-close-btn" onclick="dismissGreetingToast()" aria-label="Đóng lời chào">
+            <span class="material-symbols-outlined">close</span>
+        </button>
     </div>
 
-    <!-- Giant Primary Action Button -->
-    <a class="app-btn app-btn-wide app-btn-hero clay-button" asp-controller="Kids" asp-action="Today">
-        <span class="material-symbols-outlined btn-icon-lg">play_circle</span>
-        <span>Bắt đầu bài học hôm nay</span>
+    <!-- Nút Bắt Đầu Bài Học Hôm Nay 3D -->
+    <a class="hero-mission-card clay-button" asp-controller="Kids" asp-action="Today">
+        <div class="hero-mission-icon-wrap">
+            <span class="material-symbols-outlined hero-play-icon">play_circle</span>
+        </div>
+        <div class="hero-mission-content">
+            <span class="hero-mission-badge">Mục tiêu hôm nay ✨</span>
+            <strong>Bắt đầu bài học ngay</strong>
+            <small>Chỉ 10 - 15 phút mỗi ngày cùng Sóc Nâu</small>
+        </div>
+        <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
     </a>
 
-    <!-- Skills Category Grid -->
+    <!-- Lưới Khám Phá Các Nhóm Kỹ Năng Đa Dạng Sắc Màu -->
     <div class="skill-section-header">
         <h2 class="section-title">
             <span class="material-symbols-outlined title-icon">category</span>
             Khám phá các nhóm kỹ năng
         </h2>
-        <span class="section-sub">Chọn một chủ đề bé yêu thích để bắt đầu</span>
+        <span class="section-sub">Chọn một chủ đề bé yêu thích để bắt đầu hành trình</span>
     </div>
 
     <div class="skill-grid">
         @foreach (var group in Model.SkillGroups)
         {
-            <a class="skill-tile clay-card" asp-controller="Kids" asp-action="Skill" asp-route-id="@group.Id" style="--tile-color:@group.Color">
+            var (badgeText, icon3d, themeClass) = group.Code switch
+            {
+                "chu-cai" => ("29 Chữ Cái & Nét", "menu_book", "theme-coral"),
+                "chu-so" => ("Chữ Số 0 - 9", "pin", "theme-amber"),
+                "so-luong-toan" => ("Đếm & So Sánh", "calculate", "theme-mint"),
+                "tu-duy-logic" => ("Ghép Bóng & Logic", "extension", "theme-cyan"),
+                "ky-nang-song" => ("Kỹ Năng & Cảm Xúc", "volunteer_activism", "theme-purple"),
+                "ngon-ngu" => ("Vốn Từ & Âm Vần", "record_voice_over", "theme-pink"),
+                "hinh-dang-khong-gian" => ("Hình Khối & Không Gian", "category", "theme-teal"),
+                _ => ("Khám Phá Mới", group.IconKey, "theme-coral")
+            };
+
+            <a class="skill-tile clay-card @themeClass" asp-controller="Kids" asp-action="Skill" asp-route-id="@group.Id">
                 <div class="skill-tile-icon-wrap">
-                    <span class="material-symbols-outlined skill-tile-icon">@group.IconKey</span>
+                    <span class="material-symbols-outlined skill-tile-icon">@icon3d</span>
                 </div>
                 <div class="skill-tile-body">
+                    <div class="skill-tag-pill">@badgeText</div>
                     <strong>@group.Name</strong>
                     <small>@group.Description</small>
                 </div>
-                <span class="skill-tile-arrow material-symbols-outlined">arrow_forward</span>
+                <div class="skill-tile-arrow-wrap">
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </div>
             </a>
         }
     </div>
@@ -90,3 +128,24 @@
         <span>Phụ huynh</span>
     </a>
 </nav>
+
+@section Scripts {
+    <script>
+        function dismissGreetingToast() {
+            const toast = document.getElementById("mascotGreetingToast");
+            if (toast) {
+                toast.classList.add("toast-dismissed");
+                setTimeout(() => {
+                    toast.style.display = "none";
+                }, 400);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Tự động thu gọn lời chào nhanh sau 2 giây
+            setTimeout(() => {
+                dismissGreetingToast();
+            }, 2000);
+        });
+    </script>
+}

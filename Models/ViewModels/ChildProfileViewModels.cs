@@ -27,4 +27,6 @@ public class ChildProfileFormViewModel
     public int DailyLearningMinutes { get; set; } = 15;
 
     public bool SoundEnabled { get; set; } = true;
+
+    public IFormFile? AvatarFile { get; set; }
 }

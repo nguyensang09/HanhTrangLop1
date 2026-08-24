@@ -1,6 +1,6 @@
 @model HomeIndexViewModel
 @{
-    ViewData["Title"] = "Sóc Nâu Đồng Hành - Học vui chuẩn bị vào lớp 1";
+    ViewData["Title"] = "Sóc Nâu Đồng Hành - Hành Trang Vào Lớp 1 Cho Bé";
 }
 
 <section class="hero-wrap landing-hero">
@@ -14,39 +14,69 @@
                     <span class="material-symbols-outlined btn-icon-lg">play_circle</span>
                     <span>Vào góc học của bé</span>
                 </a>
-                <a class="app-btn app-btn-muted clay-button" asp-controller="Profiles" asp-action="Index">
-                    <span class="material-symbols-outlined">face</span>
-                    <span>Chọn hồ sơ bé</span>
-                </a>
                 <a class="app-btn app-btn-muted clay-button" asp-controller="Parent" asp-action="Dashboard">
                     <span class="material-symbols-outlined">family_restroom</span>
                     <span>Góc phụ huynh</span>
+                </a>
+                <a class="app-btn app-btn-muted clay-button" asp-controller="Profiles" asp-action="Index">
+                    <span class="material-symbols-outlined">face</span>
+                    <span>Chọn hồ sơ bé</span>
                 </a>
             </div>
         </div>
         <div class="hero-card clay-card landing-mascot-card">
             <div class="landing-mascot-img-wrap">
-                <img src="~/images/soc-nau.svg" alt="Sóc Nâu Đồng Hành" class="landing-mascot-img pulse-animation" />
+                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Đồng Hành" class="landing-mascot-img pulse-animation" />
             </div>
-            <h2>Chào bạn nhỏ! 👋</h2>
-            <p>Hôm nay mình học nhẹ nhàng, vui vẻ và khám phá nhiều điều kỳ thú nhé!</p>
+            <div class="landing-mascot-bubble">
+                <strong>Chào bạn nhỏ! 👋</strong>
+                <p>Hôm nay mình cùng khám phá những điều kỳ thú nhé!</p>
+            </div>
         </div>
     </div>
 </section>
 
+<!-- 3 Cột Trụ Cột Nổi Bật -->
+<section class="container landing-features-section">
+    <div class="landing-feature-grid">
+        <div class="feature-card clay-card feature-coral">
+            <div class="feature-icon-wrap">
+                <span class="material-symbols-outlined">menu_book</span>
+            </div>
+            <h3>29 Chữ Cái & 14 Nét Viết</h3>
+            <p>Nhận biết mặt chữ, phát âm chuẩn tiếng Việt và bảng tô nét tương tác trực quan.</p>
+        </div>
+        <div class="feature-card clay-card feature-amber">
+            <div class="feature-icon-wrap">
+                <span class="material-symbols-outlined">calculate</span>
+            </div>
+            <h3>Chữ Số & Toán Trực Quan</h3>
+            <p>Làm quen số 0-9, đếm số lượng hoa quả, so sánh nhiều ít và ghép nhóm dễ hiểu.</p>
+        </div>
+        <div class="feature-card clay-card feature-mint">
+            <div class="feature-icon-wrap">
+                <span class="material-symbols-outlined">self_improvement</span>
+            </div>
+            <h3>Kỹ Năng & Thói Quen Tốt</h3>
+            <p>Rèn luyện nề nếp tự phục vụ, an toàn giao thông và giao tiếp tự tin khi đến trường.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Thống Kê Nổi Bật -->
 <section class="container stat-row landing-stats">
-    <div class="soft-card clay-card stat-card">
-        <span class="material-symbols-outlined stat-icon" style="color: #ff7d4d;">category</span>
+    <div class="soft-card clay-card stat-card stat-coral">
+        <span class="material-symbols-outlined stat-icon">category</span>
         <strong>@Model.SkillGroupCount</strong>
         <span>Nhóm kỹ năng toàn diện</span>
     </div>
-    <div class="soft-card clay-card stat-card">
-        <span class="material-symbols-outlined stat-icon" style="color: #00897b;">auto_stories</span>
+    <div class="soft-card clay-card stat-card stat-mint">
+        <span class="material-symbols-outlined stat-icon">auto_stories</span>
         <strong>@Model.PublishedItemCount</strong>
         <span>Bài học tương tác có hình ảnh</span>
     </div>
-    <div class="soft-card clay-card stat-card">
-        <span class="material-symbols-outlined stat-icon" style="color: #1e88e5;">child_care</span>
+    <div class="soft-card clay-card stat-card stat-sky">
+        <span class="material-symbols-outlined stat-icon">child_care</span>
         <strong>@Model.ChildProfileCount</strong>
         <span>Bé đang đồng hành</span>
     </div>

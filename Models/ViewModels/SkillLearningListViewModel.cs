@@ -5,6 +5,7 @@ public class SkillLearningListViewModel
     public ChildProfile? ChildProfile { get; set; }
     public SkillGroup SkillGroup { get; set; } = new();
     public IReadOnlyList<SkillLearningItemViewModel> Items { get; set; } = [];
+    public Guid? LastPracticedItemId { get; set; }
     public int CompletedCount => Items.Count(x => x.LatestStatus == "completed");
 }
 
