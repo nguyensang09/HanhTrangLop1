@@ -603,6 +603,8 @@
                 }
                 const label = document.createElement("span");
                 label.className = "ordering-label";
+                if (itemClean.length > 2) label.classList.add("long-label");
+                else label.classList.add("short-label");
                 label.textContent = itemClean;
                 value.append(label);
 

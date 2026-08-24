@@ -32,7 +32,7 @@
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
     
-    <!-- Topbar Focus Mode -->
+    <!-- Topbar Focus Mode (1 Tiêu đề chính + 1 Nút nghe) -->
     <header class="learning-common-zone">
         <div class="learning-focus-topbar">
             @if (Model.ReturnSkillGroupId.HasValue)
@@ -43,27 +43,10 @@
             {
                 <a class="icon-link clay-button" asp-controller="Kids" asp-action="Today" title="Quay lại"><span class="material-symbols-outlined">arrow_back</span></a>
             }
-            <h1>@Model.Item.Title</h1>
-            <button class="learning-voice-button clay-button" type="button" title="Nghe tiêu đề" data-learning-replay="title">
+            <h1>@(Model.CurrentQuestion?.PromptText ?? Model.Item.Title)</h1>
+            <button class="learning-voice-button clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
                 <span class="material-symbols-outlined">volume_up</span>
             </button>
-        </div>
-
-        <div class="learning-journey" aria-label="Tiến trình làm bài">
-            <div class="learning-journey-step completed" title="Nghe câu hỏi">
-                <span class="material-symbols-outlined">volume_up</span>
-                <span class="visually-hidden">Nghe câu hỏi</span>
-            </div>
-            <span class="learning-journey-line completed" aria-hidden="true"></span>
-            <div class="learning-journey-step @(Model.IsCorrect == true ? "completed" : "active")" title="Làm bài">
-                <span class="material-symbols-outlined">touch_app</span>
-                <span class="visually-hidden">Làm bài</span>
-            </div>
-            <span class="learning-journey-line @(Model.IsCorrect == true ? "completed" : string.Empty)" aria-hidden="true"></span>
-            <div class="learning-journey-step @(Model.IsCorrect == true ? "completed celebration" : string.Empty)" title="Hoàn thành">
-                <span class="material-symbols-outlined">star</span>
-                <span class="visually-hidden">Hoàn thành</span>
-            </div>
         </div>
     </header>
 
@@ -79,14 +62,6 @@
     @if (Model.IsCorrect != true && Model.Item.InteractionType == InteractionTypes.Tracing)
     {
         <div class="choice-board tracing-lesson-layout interaction-tracing">
-            <div class="lesson-question-zone">
-                <div class="learning-prompt">
-                    <button class="learning-prompt-audio clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
-                        <span class="material-symbols-outlined">volume_up</span>
-                    </button>
-                    <h2>@(Model.CurrentQuestion?.PromptText ?? Model.Item.InstructionText)</h2>
-                </div>
-            </div>
             <div class="lesson-answer-zone tracing-answer-zone">
                 <div class="tracing-board tracing-canvas-host clay-card"
                      data-tracing-min-points="@Model.TracingMinPoints"
@@ -126,14 +101,6 @@
     {
         <form class="choice-board interaction-@Model.Item.InteractionType" asp-controller="Kids" asp-action="Answer" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" method="post">
             <input type="hidden" name="QuestionId" value="@Model.CurrentQuestion.Id" />
-            <div class="lesson-question-zone">
-                <div class="learning-prompt">
-                    <button class="learning-prompt-audio clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
-                        <span class="material-symbols-outlined">volume_up</span>
-                    </button>
-                    <h2>@Model.CurrentQuestion.PromptText</h2>
-                </div>
-            </div>
             @if (!string.IsNullOrWhiteSpace(Model.QuestionImageUrl))
             {
                 <div class="lesson-content-zone">
