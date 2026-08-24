@@ -1,24 +1,57 @@
 @model ChildProfileListViewModel
 @{
-    ViewData["Title"] = "Chọn hồ sơ";
+    ViewData["Title"] = "Chọn hồ sơ của bé";
 }
 
-<section class="kid-screen">
+<section class="kid-screen kid-profiles-screen">
     <div class="kid-topbar">
-        <a class="icon-link" asp-controller="Home" asp-action="Index"><span class="material-symbols-outlined">arrow_back</span></a>
-        <div>
-            <p class="eyebrow">Ai học hôm nay?</p>
-            <h1>Chọn hồ sơ</h1>
+        <a class="icon-link clay-button" asp-controller="Home" asp-action="Index" title="Trang chủ">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div class="kid-topbar-title-wrap">
+            <p class="eyebrow">Ai sẽ học hôm nay?</p>
+            <h1>Chọn hồ sơ của bé 👦👧</h1>
         </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a class="app-btn app-btn-small app-btn-muted clay-button" asp-controller="Parent" asp-action="CreateProfile">
+                <span class="material-symbols-outlined">person_add</span>
+                <span>Thêm bé</span>
+            </a>
+        }
     </div>
+
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="soft-card clay-card guest-notice-card">
+            <div class="guest-notice-body">
+                <span class="material-symbols-outlined guest-icon">family_restroom</span>
+                <div>
+                    <h2>Góc học tập cá nhân hóa cho bé</h2>
+                    <p>Phụ huynh đăng nhập hoặc đăng ký tài khoản miễn phí để lưu lại tiến độ học tập, huy hiệu và tùy chỉnh thời lượng học cho từng bé.</p>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                <a class="app-btn clay-button" asp-controller="Parent" asp-action="Register">Đăng ký tài khoản</a>
+                <a class="app-btn app-btn-muted clay-button" asp-controller="Parent" asp-action="Login">Đăng nhập</a>
+            </div>
+        </div>
+    }
 
     @if (!Model.Children.Any())
     {
-        <div class="soft-card empty-state">
-            <h2>Chưa có hồ sơ bé</h2>
-            <p>Phụ huynh tạo hồ sơ đầu tiên để bé bắt đầu học nhé.</p>
-            <a class="app-btn" asp-controller="Parent" asp-action="Register">Tạo tài khoản phụ huynh</a>
-        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="soft-card clay-card empty-state text-center p-5">
+                <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="empty-mascot-img mb-3" />
+                <h2>Chưa có hồ sơ bé nào</h2>
+                <p>Tạo hồ sơ cho bé để Sóc Nâu sắp xếp lộ trình bài học phù hợp mỗi ngày.</p>
+                <a class="app-btn clay-button app-btn-hero mt-3" asp-controller="Parent" asp-action="CreateProfile">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Tạo hồ sơ bé đầu tiên</span>
+                </a>
+            </div>
+        }
     }
     else
     {
@@ -26,15 +59,23 @@
             @foreach (var child in Model.Children)
             {
                 var isSelected = Model.SelectedChildProfileId == child.Id;
-                <form asp-action="Select" method="post" class="profile-card @(isSelected ? "selected" : "")">
+                <form asp-action="Select" method="post" class="profile-card clay-card @(isSelected ? "selected" : "")">
                     <input type="hidden" name="childProfileId" value="@child.Id" />
-                    <button type="submit">
-                        <span class="profile-avatar">@child.Nickname.Substring(0, 1).ToUpperInvariant()</span>
-                        <strong>@child.Nickname</strong>
-                        <small>@child.DailyLearningMinutes phút mỗi ngày</small>
+                    <button type="submit" class="profile-select-btn" title="Chọn bé @child.Nickname để vào học">
+                        <div class="profile-avatar-circle @(isSelected ? "active" : "")">
+                            @child.Nickname.Substring(0, 1).ToUpperInvariant()
+                        </div>
+                        <strong class="profile-name">@child.Nickname</strong>
+                        <span class="profile-minutes">⏱ @child.DailyLearningMinutes phút mỗi ngày</span>
                         @if (isSelected)
                         {
-                            <em>Đang chọn</em>
+                            <span class="profile-selected-badge">
+                                <span class="material-symbols-outlined">check_circle</span> Đang chọn • Nhấn vào học
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="profile-tap-hint">Nhấn để chọn</span>
                         }
                     </button>
                 </form>

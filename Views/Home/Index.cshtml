@@ -1,51 +1,53 @@
 @model HomeIndexViewModel
 @{
-    ViewData["Title"] = "Chào mừng";
+    ViewData["Title"] = "Sóc Nâu Đồng Hành - Học vui chuẩn bị vào lớp 1";
 }
 
-<section class="hero-wrap">
+<section class="hero-wrap landing-hero">
     <div class="container hero-grid">
         <div class="hero-copy">
-            <p class="eyebrow">Hành trang vào lớp 1</p>
-            <h1>Xin chào bé!</h1>
-            <p class="hero-text">Cùng Sóc Nâu luyện chữ, làm quen số, chơi toán trực quan và tích lũy những kỹ năng nhỏ mỗi ngày.</p>
+            <span class="eyebrow-pill">🎒 Hành trang vào lớp 1 cho bé 5 tuổi</span>
+            <h1 class="hero-title">Học vui mỗi ngày cùng <span class="text-gradient-primary">Sóc Nâu</span>!</h1>
+            <p class="hero-text">Cùng bé luyện nét vẽ chữ, làm quen chữ số, chơi toán trực quan và tích lũy kỹ năng tự tin bước vào lớp 1 — chỉ 10 đến 15 phút mỗi ngày, học mà chơi, không áp lực.</p>
             <div class="hero-actions">
-                <a class="app-btn" asp-controller="Kids" asp-action="Home">
-                    <span class="material-symbols-outlined">play_circle</span>
-                    Bắt đầu ngay
+                <a class="app-btn clay-button app-btn-hero" asp-controller="Kids" asp-action="Home">
+                    <span class="material-symbols-outlined btn-icon-lg">play_circle</span>
+                    <span>Vào góc học của bé</span>
                 </a>
-                <a class="app-btn app-btn-muted" asp-controller="Parent" asp-action="Login">
-                    <span class="material-symbols-outlined">family_restroom</span>
-                    Góc phụ huynh
-                </a>
-                <a class="app-btn app-btn-muted" asp-controller="Profiles" asp-action="Index">
+                <a class="app-btn app-btn-muted clay-button" asp-controller="Profiles" asp-action="Index">
                     <span class="material-symbols-outlined">face</span>
-                    Chọn hồ sơ
+                    <span>Chọn hồ sơ bé</span>
+                </a>
+                <a class="app-btn app-btn-muted clay-button" asp-controller="Parent" asp-action="Dashboard">
+                    <span class="material-symbols-outlined">family_restroom</span>
+                    <span>Góc phụ huynh</span>
                 </a>
             </div>
         </div>
-        <div class="hero-card">
-            <div class="squirrel-face">Sóc</div>
-            <h2>Chào mừng bạn nhỏ!</h2>
-            <p>Hôm nay mình học nhẹ nhàng, vui vẻ và không áp lực nhé.</p>
+        <div class="hero-card clay-card landing-mascot-card">
+            <div class="landing-mascot-img-wrap">
+                <img src="~/images/soc-nau.svg" alt="Sóc Nâu Đồng Hành" class="landing-mascot-img pulse-animation" />
+            </div>
+            <h2>Chào bạn nhỏ! 👋</h2>
+            <p>Hôm nay mình học nhẹ nhàng, vui vẻ và khám phá nhiều điều kỳ thú nhé!</p>
         </div>
     </div>
 </section>
 
-<section class="container stat-row">
-    <div class="soft-card stat-card">
-        <span class="material-symbols-outlined">category</span>
+<section class="container stat-row landing-stats">
+    <div class="soft-card clay-card stat-card">
+        <span class="material-symbols-outlined stat-icon" style="color: #ff7d4d;">category</span>
         <strong>@Model.SkillGroupCount</strong>
-        <span>nhóm kỹ năng</span>
+        <span>Nhóm kỹ năng toàn diện</span>
     </div>
-    <div class="soft-card stat-card">
-        <span class="material-symbols-outlined">auto_stories</span>
+    <div class="soft-card clay-card stat-card">
+        <span class="material-symbols-outlined stat-icon" style="color: #00897b;">auto_stories</span>
         <strong>@Model.PublishedItemCount</strong>
-        <span>bài đã xuất bản</span>
+        <span>Bài học tương tác có hình ảnh</span>
     </div>
-    <div class="soft-card stat-card">
-        <span class="material-symbols-outlined">child_care</span>
+    <div class="soft-card clay-card stat-card">
+        <span class="material-symbols-outlined stat-icon" style="color: #1e88e5;">child_care</span>
         <strong>@Model.ChildProfileCount</strong>
-        <span>hồ sơ bé</span>
+        <span>Bé đang đồng hành</span>
     </div>
 </section>

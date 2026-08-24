@@ -6,15 +6,19 @@
 <section class="auth-panel">
     <div class="soft-card form-card">
         <h1>Góc phụ huynh</h1>
+        <p class="text-muted" style="font-size:0.95rem; margin-bottom:1.25rem;">
+            Đăng nhập để theo dõi và cùng bé học tập mỗi ngày.
+        </p>
+
         <form asp-action="Login" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <label asp-for="Email">Email</label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
+            <label asp-for="Username">Tên tài khoản</label>
+            <input asp-for="Username" class="form-control" placeholder="Nhập tên tài khoản hoặc email..." autocomplete="username" />
+            <span asp-validation-for="Username" class="text-danger"></span>
 
             <label asp-for="Password">Mật khẩu</label>
-            <input asp-for="Password" class="form-control" />
+            <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu..." autocomplete="current-password" />
             <span asp-validation-for="Password" class="text-danger"></span>
 
             <label class="check-row">
@@ -23,7 +27,10 @@
             </label>
 
             <button class="app-btn app-btn-wide" type="submit">Đăng nhập</button>
-            <a asp-action="Register">Tạo tài khoản mới</a>
+            <div class="mt-3 text-center">
+                <span>Chưa có tài khoản? </span>
+                <a asp-action="Register" style="font-weight:600;">Tạo tài khoản mới</a>
+            </div>
         </form>
     </div>
 </section>

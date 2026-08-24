@@ -4,48 +4,63 @@
     var progressPercent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
 }
 
-<section class="kid-screen">
+<section class="kid-screen kid-today-screen">
+    <!-- Topbar -->
     <div class="kid-topbar">
-        <a class="icon-link" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">arrow_back</span></a>
-        <div>
+        <a class="icon-link clay-button" asp-controller="Kids" asp-action="Home" title="Quay lại trang chủ">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div class="kid-topbar-title-wrap">
             <p class="eyebrow">Lộ trình hôm nay</p>
             <h1>@Model.ChildProfile.Nickname học hôm nay</h1>
         </div>
-    </div>
-
-    <div class="soft-card today-progress-card">
-        <div>
-            <strong>@Model.CompletedCount/@Model.TotalCount hoạt động</strong>
-            <span>Học khoảng @Model.Session.PlannedMinutes phút, nghỉ mắt khi thấy mỏi nhé.</span>
+        <div class="star-pill clay-button">
+            <span class="material-symbols-outlined star-icon">star</span>
+            <span>@Model.CompletedCount/@Model.TotalCount</span>
         </div>
-        <div class="progress-track"><div style="width:@progressPercent%"></div></div>
     </div>
 
+    <!-- Progress Card -->
+    <div class="soft-card clay-card today-progress-card">
+        <div class="progress-info-row">
+            <div class="progress-stats">
+                <span class="progress-count-pill">@Model.CompletedCount/@Model.TotalCount hoạt động</span>
+                <span class="progress-time-hint">Học khoảng @Model.Session.PlannedMinutes phút, nhớ nghỉ mắt khi mỏi nhé! 🌿</span>
+            </div>
+            <span class="progress-percent-label">@progressPercent%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-bar-fill" style="width:@progressPercent%"></div>
+        </div>
+    </div>
+
+    <!-- Learning Path / Journey Line -->
     <div class="today-line">
-        @foreach (var step in Model.Steps)
+        @for (var i = 0; i < Model.Steps.Count; i++)
         {
+            var step = Model.Steps[i];
             var statusClass = step.Status.ToString().ToLowerInvariant();
-            <article class="today-step @statusClass">
-                <div class="step-dot">
+            <article class="today-step @statusClass clay-card">
+                <div class="step-dot @statusClass">
                     <span class="material-symbols-outlined">
                         @(step.Status == TodayLessonStepStatus.Completed ? "check" :
                             step.Status == TodayLessonStepStatus.NeedsPractice ? "refresh" :
-                            step.Status == TodayLessonStepStatus.Active ? "edit" : "lock")
+                            step.Status == TodayLessonStepStatus.Active ? "play_arrow" : "lock")
                     </span>
                 </div>
-                <div class="soft-card step-card">
-                    <small>
-                        @(step.Status == TodayLessonStepStatus.Completed ? $"Hoàn thành - {step.StarsEarned} sao" :
-                            step.Status == TodayLessonStepStatus.NeedsPractice ? "Cần luyện thêm" :
-                            step.Status == TodayLessonStepStatus.Active ? "Đang học" : "Sắp mở")
-                    </small>
+                <div class="step-card-content">
+                    <div class="step-status-tag @statusClass">
+                        @(step.Status == TodayLessonStepStatus.Completed ? $"✨ Hoàn thành (+{step.StarsEarned} sao)" :
+                            step.Status == TodayLessonStepStatus.NeedsPractice ? "🔄 Cần luyện thêm" :
+                            step.Status == TodayLessonStepStatus.Active ? "🔥 Đang học" : "🔒 Sắp mở")
+                    </div>
                     <h2>@step.Item.Title</h2>
                     <p>@step.Item.InstructionText</p>
                     @if (step.Status != TodayLessonStepStatus.Locked)
                     {
-                        <a class="mini-action" asp-controller="Kids" asp-action="Learn" asp-route-id="@step.Item.Id">
-                            <span class="material-symbols-outlined">play_circle</span>
-                            @(step.Status == TodayLessonStepStatus.Completed ? "Ôn lại" : "Vào bài")
+                        <a class="app-btn app-btn-small clay-button step-action-btn" asp-controller="Kids" asp-action="Learn" asp-route-id="@step.Item.Id">
+                            <span class="material-symbols-outlined">@(step.Status == TodayLessonStepStatus.Completed ? "replay" : "play_circle")</span>
+                            <span>@(step.Status == TodayLessonStepStatus.Completed ? "Ôn lại" : "Vào học ngay")</span>
                         </a>
                     }
                 </div>
@@ -53,5 +68,31 @@
         }
     </div>
 
-    <a class="app-btn app-btn-muted app-btn-wide mt-4" asp-controller="Kids" asp-action="Summary">Tổng kết buổi học</a>
+    <!-- Summary Button -->
+    <div class="today-footer-action">
+        <a class="app-btn app-btn-muted app-btn-wide clay-button" asp-controller="Kids" asp-action="Summary">
+            <span class="material-symbols-outlined">stars</span>
+            <span>Tổng kết buổi học</span>
+        </a>
+    </div>
 </section>
+
+<!-- Bottom Nav -->
+<nav class="kid-bottom-nav">
+    <a asp-controller="Kids" asp-action="Home">
+        <span class="material-symbols-outlined">home</span>
+        <span>Trang chủ</span>
+    </a>
+    <a class="active" asp-controller="Kids" asp-action="Today">
+        <span class="material-symbols-outlined">edit_square</span>
+        <span>Bài tập</span>
+    </a>
+    <a asp-controller="Kids" asp-action="Rewards">
+        <span class="material-symbols-outlined">emoji_events</span>
+        <span>Quà tặng</span>
+    </a>
+    <a asp-controller="Parent" asp-action="Dashboard">
+        <span class="material-symbols-outlined">family_restroom</span>
+        <span>Phụ huynh</span>
+    </a>
+</nav>

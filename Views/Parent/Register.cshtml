@@ -1,27 +1,39 @@
 @model RegisterViewModel
 @{
-    ViewData["Title"] = "Tạo tài khoản";
+    ViewData["Title"] = "Tạo tài khoản phụ huynh";
 }
 
 <section class="auth-panel">
     <div class="soft-card form-card">
         <h1>Tạo tài khoản phụ huynh</h1>
+        <p class="text-muted" style="font-size:0.95rem; margin-bottom:1.25rem;">
+            Đăng ký nhanh chóng để lưu tiến độ và hành trình học tập cho bé.
+        </p>
+
         <form asp-action="Register" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <label asp-for="Email">Email</label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
+            <label asp-for="Username">Tên tài khoản</label>
+            <input asp-for="Username" class="form-control" placeholder="Ví dụ: phuhuynh_nam, sdt, hoặc email..." autocomplete="username" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+
+            <label asp-for="DisplayName">Tên phụ huynh (tùy chọn)</label>
+            <input asp-for="DisplayName" class="form-control" placeholder="Ví dụ: Bố Tuấn, Mẹ Lan..." />
+            <span asp-validation-for="DisplayName" class="text-danger"></span>
 
             <label asp-for="Password">Mật khẩu</label>
-            <input asp-for="Password" class="form-control" />
+            <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu (từ 3 ký tự)..." autocomplete="new-password" />
             <span asp-validation-for="Password" class="text-danger"></span>
 
-            <label asp-for="ChildNickname">Tên bé</label>
-            <input asp-for="ChildNickname" class="form-control" />
+            <label asp-for="ChildNickname">Tên bé (hồ sơ đầu tiên)</label>
+            <input asp-for="ChildNickname" class="form-control" placeholder="Ví dụ: Bé Bống, Bé Bo..." />
             <span asp-validation-for="ChildNickname" class="text-danger"></span>
 
-            <button class="app-btn app-btn-wide" type="submit">Tạo tài khoản</button>
+            <button class="app-btn app-btn-wide mt-3" type="submit">Đăng ký & Bắt đầu</button>
+            <div class="mt-3 text-center">
+                <span>Đã có tài khoản? </span>
+                <a asp-action="Login" style="font-weight:600;">Đăng nhập tại đây</a>
+            </div>
         </form>
     </div>
 </section>

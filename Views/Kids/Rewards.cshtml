@@ -1,27 +1,64 @@
 @model IReadOnlyList<RewardDefinition>
 @{
-    ViewData["Title"] = "Quà tặng";
+    ViewData["Title"] = "Quà tặng & Huy hiệu của bé";
 }
 
-<section class="kid-screen">
+<section class="kid-screen kid-rewards-screen">
+    <!-- Topbar -->
     <div class="kid-topbar">
-        <a class="icon-link" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">arrow_back</span></a>
-        <h1>Khu vườn của bé</h1>
+        <a class="icon-link clay-button" asp-controller="Kids" asp-action="Home" title="Quay lại">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div class="kid-topbar-title-wrap">
+            <p class="eyebrow">Bộ sưu tập huy hiệu</p>
+            <h1>Khu vườn của bé 🌳</h1>
+        </div>
+        <div class="star-pill clay-button">
+            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span>@Model.Count quà tặng</span>
+        </div>
     </div>
 
-    <div class="garden-card">
-        <div class="squirrel-face">Sóc</div>
-        <p>Khi hoàn thành bài học, bé sẽ nhận thêm sao, huy hiệu và vật phẩm để trang trí khu vườn.</p>
+    <!-- Garden Welcome Banner -->
+    <div class="garden-card clay-card">
+        <div class="garden-mascot-col">
+            <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="garden-mascot-img pulse-animation" />
+        </div>
+        <div class="garden-copy-col">
+            <h2>Chào mừng bé đến với Khu Vườn Kỳ Diệu! ✨</h2>
+            <p>Mỗi khi chăm chỉ học xong một bài học, bé sẽ được Sóc Nâu tặng thêm những ngôi sao vàng, huy hiệu danh dự và các người bạn nhỏ để trang trí khu vườn thêm rực rỡ.</p>
+        </div>
     </div>
 
-    <div class="skill-grid">
+    <!-- Rewards & Badges Grid -->
+    <div class="reward-section-header">
+        <h2 class="section-title">
+            <span class="material-symbols-outlined title-icon">military_tech</span>
+            Huy hiệu & Vật phẩm đã mở khóa
+        </h2>
+    </div>
+
+    <div class="rewards-grid">
         @foreach (var reward in Model)
         {
-            <div class="skill-tile">
-                <span class="material-symbols-outlined">@reward.IconKey</span>
-                <strong>@reward.Name</strong>
-                <small>@reward.RewardType</small>
+            <div class="reward-tile clay-card">
+                <div class="reward-medal-badge">
+                    <span class="material-symbols-outlined reward-icon">@reward.IconKey</span>
+                </div>
+                <strong class="reward-name">@reward.Name</strong>
+                <span class="reward-type-tag">@reward.RewardType</span>
+                <span class="reward-stars-earned">
+                    <span class="material-symbols-outlined mini-star" style="font-variation-settings: 'FILL' 1;">star</span> Đã đạt
+                </span>
             </div>
         }
     </div>
 </section>
+
+<!-- Bottom Nav -->
+<nav class="kid-bottom-nav">
+    <a asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span><span>Trang chủ</span></a>
+    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span><span>Bài tập</span></a>
+    <a class="active" asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span><span>Quà tặng</span></a>
+    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span><span>Phụ huynh</span></a>
+</nav>

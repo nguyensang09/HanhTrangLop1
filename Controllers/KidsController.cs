@@ -3,6 +3,7 @@ using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -15,11 +16,16 @@ public class KidsController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly TodayLessonService _todayLessonService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public KidsController(ApplicationDbContext db, TodayLessonService todayLessonService)
+    public KidsController(
+        ApplicationDbContext db,
+        TodayLessonService todayLessonService,
+        UserManager<ApplicationUser> userManager)
     {
         _db = db;
         _todayLessonService = todayLessonService;
+        _userManager = userManager;
     }
 
     [HttpGet("")]
@@ -28,17 +34,32 @@ public class KidsController : Controller
     {
         if (childProfileId.HasValue)
         {
-            HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, childProfileId.Value.ToString());
+            var canSelect = false;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = _userManager.GetUserId(User);
+                canSelect = await _db.ChildProfiles.AnyAsync(x => x.Id == childProfileId.Value && (x.ParentUserId == userId || User.IsInRole("Admin")));
+            }
+            else
+            {
+                canSelect = await _db.ChildProfiles.AnyAsync(x => x.Id == childProfileId.Value && x.ParentUserId == null);
+            }
+
+            if (canSelect)
+            {
+                HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, childProfileId.Value.ToString());
+                HttpContext.Session.Remove(SessionKeys.CurrentLearningSessionId);
+            }
         }
 
-        var selectedProfileId = GetSelectedChildProfileId();
-        var child = selectedProfileId.HasValue
-            ? await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == selectedProfileId.Value)
-            : await _db.ChildProfiles.OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
-
-        if (child is not null)
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null)
         {
-            HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, child.Id.ToString());
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("CreateProfile", "Parent");
+            }
+            return RedirectToAction("Index", "Profiles");
         }
 
         var todayItems = await _db.LearningItems
@@ -85,6 +106,11 @@ public class KidsController : Controller
         }
 
         var child = await GetSelectedChildProfileAsync();
+        if (child is null)
+        {
+            return RedirectToAction("Index", "Profiles");
+        }
+
         var items = await _db.LearningItems
             .Include(x => x.Topic)
             .Include(x => x.Questions)
@@ -97,7 +123,7 @@ public class KidsController : Controller
         items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
 
         var itemIds = items.Select(x => x.Id).ToList();
-        var latestAttempts = child is null || itemIds.Count == 0
+        var latestAttempts = itemIds.Count == 0
             ? []
             : await _db.LearningAttempts
                 .Where(x => x.ChildProfileId == child.Id && itemIds.Contains(x.LearningItemId))
@@ -126,6 +152,12 @@ public class KidsController : Controller
     [HttpGet("learn/{id:guid}")]
     public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId)
     {
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null)
+        {
+            return RedirectToAction("Index", "Profiles");
+        }
+
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
@@ -144,7 +176,7 @@ public class KidsController : Controller
         return View(await BuildLearnViewModelAsync(
             item,
             question,
-            await GetSelectedChildProfileAsync(),
+            child,
             skillGroupId));
     }
 
@@ -349,18 +381,60 @@ public class KidsController : Controller
     private async Task<ChildProfile?> GetSelectedChildProfileAsync()
     {
         var selectedProfileId = GetSelectedChildProfileId();
-        if (selectedProfileId.HasValue)
-        {
-            return await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == selectedProfileId.Value);
-        }
 
-        var firstChild = await _db.ChildProfiles.OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
-        if (firstChild is not null)
+        if (User.Identity?.IsAuthenticated == true)
         {
-            HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, firstChild.Id.ToString());
-        }
+            var userId = _userManager.GetUserId(User);
+            if (selectedProfileId.HasValue)
+            {
+                var sessionChild = await _db.ChildProfiles
+                    .FirstOrDefaultAsync(x => x.Id == selectedProfileId.Value && (x.ParentUserId == userId || User.IsInRole("Admin")));
+                if (sessionChild is not null)
+                {
+                    return sessionChild;
+                }
+            }
 
-        return firstChild;
+            var firstChild = await _db.ChildProfiles
+                .Where(x => x.ParentUserId == userId)
+                .OrderBy(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (firstChild is not null)
+            {
+                HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, firstChild.Id.ToString());
+            }
+            else
+            {
+                HttpContext.Session.Remove(SessionKeys.SelectedChildProfileId);
+            }
+
+            return firstChild;
+        }
+        else
+        {
+            if (selectedProfileId.HasValue)
+            {
+                var guestChild = await _db.ChildProfiles
+                    .FirstOrDefaultAsync(x => x.Id == selectedProfileId.Value && x.ParentUserId == null);
+                if (guestChild is not null)
+                {
+                    return guestChild;
+                }
+            }
+
+            var defaultGuest = await _db.ChildProfiles
+                .Where(x => x.ParentUserId == null)
+                .OrderBy(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (defaultGuest is not null)
+            {
+                HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, defaultGuest.Id.ToString());
+            }
+
+            return defaultGuest;
+        }
     }
 
     private async Task UpdateSkillProgressAsync(Guid childProfileId, Guid skillGroupId, bool isCorrect)
@@ -408,7 +482,8 @@ public class KidsController : Controller
         string? feedbackMessage = null,
         bool? isCorrect = null)
     {
-        var tracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A");
+        var payloadSymbol = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", string.Empty);
+        var tracingSymbol = ExtractTracingSymbol(payloadSymbol, item.Title, question?.PromptText);
         var questionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty);
         if (string.IsNullOrWhiteSpace(questionImageUrl) && item.InteractionType == InteractionTypes.Tracing)
         {
@@ -445,21 +520,68 @@ public class KidsController : Controller
         };
     }
 
+    private static string ExtractTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
+    {
+        if (!string.IsNullOrWhiteSpace(payloadSymbol) && !string.Equals(payloadSymbol.Trim(), "A", StringComparison.OrdinalIgnoreCase))
+        {
+            return payloadSymbol.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(promptText))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(promptText, @"cách viết\s+([^\s!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups[1].Value.Trim();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(itemTitle))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét)\s+([^\s!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                var val = match.Groups[2].Value.Trim();
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    return val;
+                }
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(payloadSymbol) ? "A" : payloadSymbol.Trim();
+    }
+
     private static string ResolveLetterFlashcardUrl(string symbol)
     {
-        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length != 1)
+        if (string.IsNullOrWhiteSpace(symbol))
         {
             return string.Empty;
         }
 
-        var letter = char.ToUpperInvariant(symbol[0]);
-        return letter is >= 'A' and <= 'Z'
-            ? $"/images/photos/flashcard-letter-{char.ToLowerInvariant(letter)}.jpg"
-            : string.Empty;
+        var trimmed = symbol.Trim().ToLowerInvariant();
+        if (trimmed.Length == 1)
+        {
+            var ch = trimmed[0];
+            if (ch is 'ă' or 'â' or 'đ' or 'ê' or 'ô' or 'ơ' or 'ư')
+            {
+                return $"/images/photos/flashcard-letter-{ch}.svg";
+            }
+            if (ch is >= 'a' and <= 'z')
+            {
+                return $"/images/photos/flashcard-letter-{ch}.jpg";
+            }
+        }
+
+        return string.Empty;
     }
 
     private static string ResolveNumberFlashcardUrl(string symbol)
     {
+        if (string.Equals(symbol?.Trim(), "0", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/images/photos/flashcard-number-0.svg";
+        }
         return int.TryParse(symbol, out var number) && number is >= 1 and <= 20
             ? $"/images/photos/flashcard-number-{number}.jpg"
             : string.Empty;

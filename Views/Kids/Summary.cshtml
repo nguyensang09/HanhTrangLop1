@@ -3,45 +3,80 @@
     ViewData["Title"] = "Tổng kết buổi học";
 }
 
-<section class="kid-screen">
+<section class="kid-screen kid-summary-screen">
+    <!-- Topbar -->
     <div class="kid-topbar">
         <div>
-            <p class="eyebrow">Hoàn thành hôm nay</p>
-            <h1>Giỏi lắm, @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")!</h1>
+            <p class="eyebrow">Hoàn thành buổi học</p>
+            <h1>Giỏi lắm, @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")! 🎉</h1>
         </div>
-        <div class="star-pill"><span class="material-symbols-outlined">star</span>@Model.StarsEarned</div>
-    </div>
-
-    <div class="summary-hero">
-        <div class="squirrel-face">Sóc</div>
-        <div>
-            <h2>Mình đã học xong một buổi ngắn rồi.</h2>
-            <p>Bé hoàn thành @Model.CompletedItems bài, nhận @Model.StarsEarned sao. Những bài cần luyện thêm sẽ được Sóc Nâu nhắc nhẹ ở lần sau.</p>
+        <div class="star-pill clay-button celebration-pill">
+            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span>+@Model.StarsEarned sao</span>
         </div>
     </div>
 
+    <!-- Celebration Hero Card -->
+    <div class="summary-hero clay-card">
+        <div class="summary-mascot-wrap">
+            <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="summary-mascot-img pulse-animation" />
+        </div>
+        <div class="summary-hero-copy">
+            <h2>Bé đã hoàn thành xuất sắc buổi học hôm nay! 🌟</h2>
+            <p>Bé hoàn thành <strong>@Model.CompletedItems</strong> hoạt động và nhận được <strong>@Model.StarsEarned</strong> ngôi sao lấp lánh. Những bài cần luyện thêm sẽ được Sóc Nâu nhắc nhẹ ở các buổi sau.</p>
+        </div>
+    </div>
+
+    <!-- Stat Highlights Row -->
     <div class="stat-row">
-        <div class="soft-card stat-card"><span class="material-symbols-outlined">task_alt</span><strong>@Model.CompletedItems</strong><span>Bài hoàn thành</span></div>
-        <div class="soft-card stat-card"><span class="material-symbols-outlined">tips_and_updates</span><strong>@Model.NeedsPracticeItems</strong><span>Cần luyện thêm</span></div>
-        <div class="soft-card stat-card"><span class="material-symbols-outlined">schedule</span><strong>@((Model.Session?.ActualSeconds ?? 0) / 60) phút</strong><span>Thời gian</span></div>
+        <div class="soft-card clay-card stat-card">
+            <span class="material-symbols-outlined stat-icon completed-stat">task_alt</span>
+            <strong>@Model.CompletedItems</strong>
+            <span>Bài hoàn thành</span>
+        </div>
+        <div class="soft-card clay-card stat-card">
+            <span class="material-symbols-outlined stat-icon practice-stat">tips_and_updates</span>
+            <strong>@Model.NeedsPracticeItems</strong>
+            <span>Cần luyện thêm</span>
+        </div>
+        <div class="soft-card clay-card stat-card">
+            <span class="material-symbols-outlined stat-icon time-stat">schedule</span>
+            <strong>@((Model.Session?.ActualSeconds ?? 0) / 60) phút</strong>
+            <span>Thời gian học</span>
+        </div>
     </div>
 
-    <div class="soft-card summary-list">
-        <h2>Các hoạt động vừa học</h2>
-        @foreach (var attempt in Model.Attempts)
-        {
-            <div class="summary-row">
-                <span class="material-symbols-outlined">@(attempt.Status == "completed" ? "check_circle" : "refresh")</span>
-                <div>
-                    <strong>@attempt.LearningItem?.Title</strong>
-                    <small>@(attempt.Status == "completed" ? "Hoàn thành" : "Cần luyện thêm") - @attempt.StarsEarned sao</small>
+    <!-- Attempt List -->
+    <div class="soft-card clay-card summary-list">
+        <h2 class="summary-list-title">
+            <span class="material-symbols-outlined">checklist</span>
+            Các hoạt động vừa hoàn thành
+        </h2>
+        <div class="summary-rows">
+            @foreach (var attempt in Model.Attempts)
+            {
+                <div class="summary-row @(attempt.Status == "completed" ? "completed" : "practice")">
+                    <span class="material-symbols-outlined row-status-icon">
+                        @(attempt.Status == "completed" ? "check_circle" : "refresh")
+                    </span>
+                    <div class="summary-row-body">
+                        <strong>@attempt.LearningItem?.Title</strong>
+                        <small>@(attempt.Status == "completed" ? "✨ Đạt chuẩn" : "🔄 Cùng luyện lại") — +@attempt.StarsEarned sao</small>
+                    </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
 
-    <div class="hero-actions">
-        <a class="app-btn" asp-controller="Kids" asp-action="Rewards">Nhận quà</a>
-        <a class="app-btn app-btn-muted" asp-controller="Kids" asp-action="Home">Về trang chủ</a>
+    <!-- Navigation Actions -->
+    <div class="hero-actions summary-actions">
+        <a class="app-btn clay-button app-btn-hero flex-grow-1" asp-controller="Kids" asp-action="Rewards">
+            <span class="material-symbols-outlined">emoji_events</span>
+            <span>Xem kho quà tặng & huy hiệu</span>
+        </a>
+        <a class="app-btn app-btn-muted clay-button" asp-controller="Kids" asp-action="Home">
+            <span class="material-symbols-outlined">home</span>
+            <span>Về trang chủ</span>
+        </a>
     </div>
 </section>

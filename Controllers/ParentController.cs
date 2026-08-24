@@ -1,4 +1,5 @@
 using HanhTrangLop1.Data;
+using HanhTrangLop1.Infrastructure;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -167,7 +168,7 @@ public class ParentController : Controller
             return View("ProfileForm", model);
         }
 
-        _db.ChildProfiles.Add(new ChildProfile
+        var child = new ChildProfile
         {
             ParentUserId = GetCurrentUserId(),
             Nickname = model.Nickname.Trim(),
@@ -175,9 +176,14 @@ public class ParentController : Controller
             AvatarKey = model.AvatarKey,
             DailyLearningMinutes = model.DailyLearningMinutes,
             SoundEnabled = model.SoundEnabled
-        });
+        };
 
+        _db.ChildProfiles.Add(child);
         await _db.SaveChangesAsync();
+
+        HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, child.Id.ToString());
+        HttpContext.Session.Remove(SessionKeys.CurrentLearningSessionId);
+
         return RedirectToAction(nameof(Profiles));
     }
 
@@ -243,6 +249,13 @@ public class ParentController : Controller
             return NotFound();
         }
 
+        var selectedRaw = HttpContext.Session.GetString(SessionKeys.SelectedChildProfileId);
+        if (Guid.TryParse(selectedRaw, out var selectedId) && selectedId == id)
+        {
+            HttpContext.Session.Remove(SessionKeys.SelectedChildProfileId);
+            HttpContext.Session.Remove(SessionKeys.CurrentLearningSessionId);
+        }
+
         _db.ChildProfiles.Remove(child);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(Profiles));
@@ -263,13 +276,36 @@ public class ParentController : Controller
             return View(model);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+        var username = model.Username.Trim();
+        var user = await _userManager.FindByNameAsync(username) ?? await _userManager.FindByEmailAsync(username);
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu chưa đúng.");
+            return View(model);
+        }
+
+        var result = await _signInManager.PasswordSignInAsync(user.UserName!, model.Password, model.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
+            HttpContext.Session.Remove(SessionKeys.CurrentLearningSessionId);
+            var child = await _db.ChildProfiles
+                .Where(x => x.ParentUserId == user.Id)
+                .OrderBy(x => x.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (child is not null)
+            {
+                HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, child.Id.ToString());
+            }
+            else
+            {
+                HttpContext.Session.Remove(SessionKeys.SelectedChildProfileId);
+            }
+
             return RedirectToAction(nameof(Dashboard));
         }
 
-        ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu chưa đúng.");
+        ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu chưa đúng.");
         return View(model);
     }
 
@@ -288,12 +324,23 @@ public class ParentController : Controller
             return View(model);
         }
 
+        var username = model.Username.Trim();
+        var existingUser = await _userManager.FindByNameAsync(username);
+        if (existingUser is not null)
+        {
+            ModelState.AddModelError(nameof(model.Username), "Tên tài khoản này đã được sử dụng. Vui lòng chọn tên khác hoặc đăng nhập.");
+            return View(model);
+        }
+
+        var displayName = string.IsNullOrWhiteSpace(model.DisplayName) ? $"Phụ huynh {username}" : model.DisplayName.Trim();
+        var email = username.Contains('@') ? username : $"{username.ToLowerInvariant().Replace(" ", "")}@parent.hanhtranglop1.local";
+
         var user = new ApplicationUser
         {
-            UserName = model.Email,
-            Email = model.Email,
+            UserName = username,
+            Email = email,
             EmailConfirmed = true,
-            DisplayName = "Phụ huynh"
+            DisplayName = displayName
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -308,15 +355,19 @@ public class ParentController : Controller
         }
 
         await _userManager.AddToRoleAsync(user, "Parent");
-        _db.ChildProfiles.Add(new ChildProfile
+        var child = new ChildProfile
         {
             ParentUserId = user.Id,
-            Nickname = model.ChildNickname,
+            Nickname = model.ChildNickname.Trim(),
             DailyLearningMinutes = 15
-        });
+        };
+        _db.ChildProfiles.Add(child);
         await _db.SaveChangesAsync();
 
         await _signInManager.SignInAsync(user, isPersistent: false);
+        HttpContext.Session.Clear();
+        HttpContext.Session.SetString(SessionKeys.SelectedChildProfileId, child.Id.ToString());
+
         return RedirectToAction(nameof(Dashboard));
     }
 
@@ -326,6 +377,7 @@ public class ParentController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
+        HttpContext.Session.Clear();
         return RedirectToAction("Index", "Home");
     }
 

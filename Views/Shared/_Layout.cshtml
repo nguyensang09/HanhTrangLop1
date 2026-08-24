@@ -2,18 +2,18 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hành Trang Lớp 1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - Hành Trang Lớp 1 | Sóc Nâu Đồng Hành</title>
     <script type="importmap"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HanhTrangLop1.styles.css" asp-append-version="true" />
 </head>
-<body class="app-shell">
+<body class="app-shell @(ViewData["FocusMode"] as bool? == true ? "focus-mode-active" : "")">
     @{
         var focusMode = ViewData["FocusMode"] as bool? == true;
     }
@@ -22,17 +22,42 @@
     <header>
         <nav class="navbar navbar-expand-lg app-navbar">
             <div class="container">
-                <a class="navbar-brand app-brand" asp-area="" asp-controller="Home" asp-action="Index">Sóc Nâu Đồng Hành</a>
+                <a class="navbar-brand app-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="brand-avatar" />
+                    <span>Sóc Nâu Đồng Hành</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Mở điều hướng">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse justify-content-end">
                     <ul class="navbar-nav align-items-lg-center gap-lg-2">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Kids" asp-action="Home">Khu học của bé</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Parent" asp-action="Dashboard">Phụ huynh</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a></li>
-                        <li class="nav-item"><a class="btn app-btn app-btn-small" asp-controller="Parent" asp-action="Login">Đăng nhập</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined nav-icon">school</span>Khu học của bé</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Profiles" asp-action="Index"><span class="material-symbols-outlined nav-icon">face</span>Hồ sơ bé</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined nav-icon">family_restroom</span>Góc phụ huynh</a></li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index"><span class="material-symbols-outlined nav-icon">admin_panel_settings</span>Admin</a></li>
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item ms-lg-2">
+                                <span class="badge bg-light text-dark border px-3 py-2 user-badge">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:text-bottom;">person</span>
+                                    @(User.Identity.Name)
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Parent" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn app-btn app-btn-small app-btn-muted">Đăng xuất</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="btn app-btn app-btn-small" asp-controller="Parent" asp-action="Login">Đăng nhập</a></li>
+                            <li class="nav-item"><a class="btn app-btn app-btn-small app-btn-muted" asp-controller="Parent" asp-action="Register">Đăng ký</a></li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -49,10 +74,15 @@
     @if (!focusMode)
     {
     <footer class="app-footer">
-        <div class="container">
-            <span>Hành Trang Lớp 1 - học vui 10 đến 15 phút mỗi ngày.</span>
-            <a class="app-footer-credit" href="https://openmoji.org/" target="_blank" rel="noopener">Pictogram OpenMoji, CC BY-SA 4.0</a>
-            <a class="app-footer-credit" href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Ảnh chụp từ Wikimedia Commons</a>
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="footer-avatar" />
+                <span>Hành Trang Lớp 1 - Học vui 10-15 phút mỗi ngày cùng Sóc Nâu</span>
+            </div>
+            <div class="footer-links">
+                <a class="app-footer-credit" href="https://openmoji.org/" target="_blank" rel="noopener">Pictogram OpenMoji (CC BY-SA 4.0)</a>
+                <a class="app-footer-credit" href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a>
+            </div>
         </div>
     </footer>
     }

@@ -3,44 +3,90 @@
     ViewData["Title"] = "Khu học của bé";
 }
 
-<section class="kid-screen">
+<section class="kid-screen kid-home-screen">
+    <!-- Topbar with Avatar, Nickname and Profile Switcher -->
     <div class="kid-topbar">
-        <div>
-            <p class="eyebrow">Sóc Nâu Đồng Hành</p>
-            <h1>Chào @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")!</h1>
+        <div class="kid-header-profile">
+            <div class="squirrel-avatar-wrap">
+                <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="squirrel-avatar" />
+            </div>
+            <div>
+                <p class="eyebrow">Sóc Nâu Đồng Hành</p>
+                <h1>Chào @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")! 👋</h1>
+            </div>
         </div>
-        <a class="star-pill" asp-controller="Profiles" asp-action="Index"><span class="material-symbols-outlined">face</span>Đổi bé</a>
+        <div class="kid-topbar-actions">
+            <a class="star-pill clay-button" asp-controller="Profiles" asp-action="Index" title="Đổi hồ sơ bé">
+                <span class="material-symbols-outlined">face</span>
+                <span>Đổi bé</span>
+            </a>
+        </div>
     </div>
 
-    <div class="message-card">
-        <button class="sound-button" aria-label="Nghe lời chào">
-            <span class="material-symbols-outlined">volume_up</span>
-        </button>
-        <strong>Hôm nay mình học một chút thôi nhé.</strong>
-        <span>Bắt đầu bằng nét chữ, rồi chơi với số và hình.</span>
+    <!-- Cheerful Mascot Banner -->
+    <div class="message-card clay-card mascot-welcome-card">
+        <div class="mascot-badge-col">
+            <img src="~/images/soc-nau.svg" alt="Sóc Nâu" class="mascot-greeting-img pulse-animation" />
+        </div>
+        <div class="mascot-speech-col">
+            <div class="mascot-speech-header">
+                <strong>Hôm nay mình học một chút thôi nhé! 🌟</strong>
+                <button class="sound-button clay-button" type="button" aria-label="Nghe lời chào" onclick="window.speechSynthesis && window.speechSynthesis.speak(new SpeechSynthesisUtterance('Chào bạn nhỏ! Hôm nay mình học một chút thôi nhé. Bắt đầu bằng nét chữ, rồi chơi với số và hình.'))">
+                    <span class="material-symbols-outlined">volume_up</span>
+                </button>
+            </div>
+            <p>Bắt đầu bằng nét chữ, rồi cùng chơi với những con số và thế giới xung quanh.</p>
+        </div>
     </div>
 
-    <a class="app-btn app-btn-wide" asp-controller="Kids" asp-action="Today">
-        <span class="material-symbols-outlined">play_arrow</span>
-        Bắt đầu học
+    <!-- Giant Primary Action Button -->
+    <a class="app-btn app-btn-wide app-btn-hero clay-button" asp-controller="Kids" asp-action="Today">
+        <span class="material-symbols-outlined btn-icon-lg">play_circle</span>
+        <span>Bắt đầu bài học hôm nay</span>
     </a>
 
-    <h2 class="section-title">Nhóm kỹ năng</h2>
+    <!-- Skills Category Grid -->
+    <div class="skill-section-header">
+        <h2 class="section-title">
+            <span class="material-symbols-outlined title-icon">category</span>
+            Khám phá các nhóm kỹ năng
+        </h2>
+        <span class="section-sub">Chọn một chủ đề bé yêu thích để bắt đầu</span>
+    </div>
+
     <div class="skill-grid">
         @foreach (var group in Model.SkillGroups)
         {
-            <a class="skill-tile" asp-controller="Kids" asp-action="Skill" asp-route-id="@group.Id" style="--tile-color:@group.Color">
-                <span class="material-symbols-outlined">@group.IconKey</span>
-                <strong>@group.Name</strong>
-                <small>@group.Description</small>
+            <a class="skill-tile clay-card" asp-controller="Kids" asp-action="Skill" asp-route-id="@group.Id" style="--tile-color:@group.Color">
+                <div class="skill-tile-icon-wrap">
+                    <span class="material-symbols-outlined skill-tile-icon">@group.IconKey</span>
+                </div>
+                <div class="skill-tile-body">
+                    <strong>@group.Name</strong>
+                    <small>@group.Description</small>
+                </div>
+                <span class="skill-tile-arrow material-symbols-outlined">arrow_forward</span>
             </a>
         }
     </div>
 </section>
 
+<!-- Bottom Navigation for Kids -->
 <nav class="kid-bottom-nav">
-    <a asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span>Trang chủ</a>
-    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span>Bài tập</a>
-    <a asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span>Quà tặng</a>
-    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span>Phụ huynh</a>
+    <a class="active" asp-controller="Kids" asp-action="Home">
+        <span class="material-symbols-outlined">home</span>
+        <span>Trang chủ</span>
+    </a>
+    <a asp-controller="Kids" asp-action="Today">
+        <span class="material-symbols-outlined">edit_square</span>
+        <span>Bài tập</span>
+    </a>
+    <a asp-controller="Kids" asp-action="Rewards">
+        <span class="material-symbols-outlined">emoji_events</span>
+        <span>Quà tặng</span>
+    </a>
+    <a asp-controller="Parent" asp-action="Dashboard">
+        <span class="material-symbols-outlined">family_restroom</span>
+        <span>Phụ huynh</span>
+    </a>
 </nav>

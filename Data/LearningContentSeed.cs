@@ -10,26 +10,77 @@ public static class LearningContentSeed
     private static readonly IReadOnlyDictionary<string, string> ObservationPhotos =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            // Fruits & Vegetables
             ["Táo"] = "/images/photos/flashcard-apple.jpg",
             ["Quả táo"] = "/images/photos/flashcard-apple.jpg",
+            ["Trái táo"] = "/images/photos/flashcard-apple.jpg",
             ["🍎"] = "/images/photos/flashcard-apple.jpg",
             ["Cam"] = "/images/photos/flashcard-orange.jpg",
             ["Quả cam"] = "/images/photos/flashcard-orange.jpg",
+            ["Trái cam"] = "/images/photos/flashcard-orange.jpg",
             ["🍊"] = "/images/photos/flashcard-orange.jpg",
             ["Cà rốt"] = "/images/photos/flashcard-carrot.jpg",
+            ["Củ cà rốt"] = "/images/photos/flashcard-carrot.jpg",
+            ["🥕"] = "/images/photos/flashcard-carrot.jpg",
             ["Bắp cải"] = "/images/photos/flashcard-cabbage.jpg",
+            ["Rau bắp cải"] = "/images/photos/flashcard-cabbage.jpg",
+            ["Chuối"] = "/images/photos/banana.jpg",
+            ["Quả chuối"] = "/images/photos/banana.jpg",
+            ["Dâu"] = "/images/pictograms/strawberry.svg",
+            ["Dâu tây"] = "/images/pictograms/strawberry.svg",
+            ["Quả dâu tây"] = "/images/pictograms/strawberry.svg",
+            ["🍓"] = "/images/pictograms/strawberry.svg",
+            ["Trái cây"] = "/images/photos/flashcard-apple.jpg",
+            ["Rau củ"] = "/images/photos/flashcard-carrot.jpg",
+
+            // Animals
             ["Mèo"] = "/images/photos/cat.jpg",
             ["Con mèo"] = "/images/photos/cat.jpg",
+            ["Chú mèo"] = "/images/photos/cat.jpg",
+            ["🐱"] = "/images/photos/cat.jpg",
+            ["Chó"] = "/images/photos/dog.jpg",
+            ["Con chó"] = "/images/photos/dog.jpg",
+            ["Chú chó"] = "/images/photos/dog.jpg",
+            ["🐶"] = "/images/photos/dog.jpg",
             ["Vịt"] = "/images/photos/duck.jpg",
             ["Con vịt"] = "/images/photos/duck.jpg",
+            ["Chú vịt"] = "/images/photos/duck.jpg",
+            ["🦆"] = "/images/photos/duck.jpg",
             ["Cá"] = "/images/photos/fish.jpg",
             ["Con cá"] = "/images/photos/fish.jpg",
             ["Chú cá"] = "/images/photos/fish.jpg",
             ["🐟"] = "/images/photos/fish.jpg",
             ["Tôm"] = "/images/photos/flashcard-shrimp.jpg",
             ["Con tôm"] = "/images/photos/flashcard-shrimp.jpg",
+            ["Chú tôm"] = "/images/photos/flashcard-shrimp.jpg",
+            ["🦐"] = "/images/photos/flashcard-shrimp.jpg",
             ["Gà"] = "/images/photos/chicken.jpg",
             ["Con gà"] = "/images/photos/chicken.jpg",
+            ["Gà con"] = "/images/photos/chicken.jpg",
+            ["🐔"] = "/images/photos/chicken.jpg",
+            ["Ong"] = "/images/photos/flashcard-bee.jpg",
+            ["Con ong"] = "/images/photos/flashcard-bee.jpg",
+            ["Chú ong"] = "/images/photos/flashcard-bee.jpg",
+            ["🐝"] = "/images/photos/flashcard-bee.jpg",
+            ["Bướm"] = "/images/photos/flashcard-butterfly.jpg",
+            ["Con bướm"] = "/images/photos/flashcard-butterfly.jpg",
+            ["Chú bướm"] = "/images/photos/flashcard-butterfly.jpg",
+            ["🦋"] = "/images/photos/flashcard-butterfly.jpg",
+            ["Thỏ"] = "/images/photos/flashcard-rabbit.jpg",
+            ["Con thỏ"] = "/images/photos/flashcard-rabbit.jpg",
+            ["Chú thỏ"] = "/images/photos/flashcard-rabbit.jpg",
+            ["🐰"] = "/images/photos/flashcard-rabbit.jpg",
+            ["Chim"] = "/images/pictograms/bird.svg",
+            ["Con chim"] = "/images/pictograms/bird.svg",
+            ["Chú chim"] = "/images/pictograms/bird.svg",
+            ["Rùa biển"] = "/images/photos/flashcard-sea-turtle.jpg",
+            ["Động vật biển"] = "/images/photos/flashcard-sea-animal.jpg",
+            ["Côn trùng"] = "/images/photos/flashcard-insects.jpg",
+            ["Dưới nước"] = "/images/photos/fish.jpg",
+            ["Trên cạn"] = "/images/photos/cat.jpg",
+
+            // Numbers
+            ["0"] = "/images/photos/flashcard-number-0.svg",
             ["1"] = "/images/photos/flashcard-number-1.jpg",
             ["2"] = "/images/photos/flashcard-number-2.jpg",
             ["3"] = "/images/photos/flashcard-number-3.jpg",
@@ -50,26 +101,32 @@ public static class LearningContentSeed
             ["18"] = "/images/photos/flashcard-number-18.jpg",
             ["19"] = "/images/photos/flashcard-number-19.jpg",
             ["20"] = "/images/photos/flashcard-number-20.jpg",
+
+            // Vietnamese Alphabet (Uppercase & Lowercase)
             ["A"] = "/images/photos/flashcard-letter-a.jpg",
             ["a"] = "/images/photos/flashcard-letter-a.jpg",
+            ["Ă"] = "/images/photos/flashcard-letter-ă.svg",
+            ["ă"] = "/images/photos/flashcard-letter-ă.svg",
+            ["Â"] = "/images/photos/flashcard-letter-â.svg",
+            ["â"] = "/images/photos/flashcard-letter-â.svg",
             ["B"] = "/images/photos/flashcard-letter-b.jpg",
             ["b"] = "/images/photos/flashcard-letter-b.jpg",
             ["C"] = "/images/photos/flashcard-letter-c.jpg",
             ["c"] = "/images/photos/flashcard-letter-c.jpg",
             ["D"] = "/images/photos/flashcard-letter-d.jpg",
             ["d"] = "/images/photos/flashcard-letter-d.jpg",
+            ["Đ"] = "/images/photos/flashcard-letter-đ.svg",
+            ["đ"] = "/images/photos/flashcard-letter-đ.svg",
             ["E"] = "/images/photos/flashcard-letter-e.jpg",
             ["e"] = "/images/photos/flashcard-letter-e.jpg",
-            ["F"] = "/images/photos/flashcard-letter-f.jpg",
-            ["f"] = "/images/photos/flashcard-letter-f.jpg",
+            ["Ê"] = "/images/photos/flashcard-letter-ê.svg",
+            ["ê"] = "/images/photos/flashcard-letter-ê.svg",
             ["G"] = "/images/photos/flashcard-letter-g.jpg",
             ["g"] = "/images/photos/flashcard-letter-g.jpg",
             ["H"] = "/images/photos/flashcard-letter-h.jpg",
             ["h"] = "/images/photos/flashcard-letter-h.jpg",
             ["I"] = "/images/photos/flashcard-letter-i.jpg",
             ["i"] = "/images/photos/flashcard-letter-i.jpg",
-            ["J"] = "/images/photos/flashcard-letter-j.jpg",
-            ["j"] = "/images/photos/flashcard-letter-j.jpg",
             ["K"] = "/images/photos/flashcard-letter-k.jpg",
             ["k"] = "/images/photos/flashcard-letter-k.jpg",
             ["L"] = "/images/photos/flashcard-letter-l.jpg",
@@ -80,6 +137,10 @@ public static class LearningContentSeed
             ["n"] = "/images/photos/flashcard-letter-n.jpg",
             ["O"] = "/images/photos/flashcard-letter-o.jpg",
             ["o"] = "/images/photos/flashcard-letter-o.jpg",
+            ["Ô"] = "/images/photos/flashcard-letter-ô.svg",
+            ["ô"] = "/images/photos/flashcard-letter-ô.svg",
+            ["Ơ"] = "/images/photos/flashcard-letter-ơ.svg",
+            ["ơ"] = "/images/photos/flashcard-letter-ơ.svg",
             ["P"] = "/images/photos/flashcard-letter-p.jpg",
             ["p"] = "/images/photos/flashcard-letter-p.jpg",
             ["Q"] = "/images/photos/flashcard-letter-q.jpg",
@@ -92,25 +153,92 @@ public static class LearningContentSeed
             ["t"] = "/images/photos/flashcard-letter-t.jpg",
             ["U"] = "/images/photos/flashcard-letter-u.jpg",
             ["u"] = "/images/photos/flashcard-letter-u.jpg",
+            ["Ư"] = "/images/photos/flashcard-letter-ư.svg",
+            ["ư"] = "/images/photos/flashcard-letter-ư.svg",
             ["V"] = "/images/photos/flashcard-letter-v.jpg",
             ["v"] = "/images/photos/flashcard-letter-v.jpg",
-            ["W"] = "/images/photos/flashcard-letter-w.jpg",
-            ["w"] = "/images/photos/flashcard-letter-w.jpg",
             ["X"] = "/images/photos/flashcard-letter-x.jpg",
             ["x"] = "/images/photos/flashcard-letter-x.jpg",
             ["Y"] = "/images/photos/flashcard-letter-y.jpg",
             ["y"] = "/images/photos/flashcard-letter-y.jpg",
-            ["Z"] = "/images/photos/flashcard-letter-z.jpg",
-            ["z"] = "/images/photos/flashcard-letter-z.jpg",
-            ["Ong"] = "/images/photos/flashcard-bee.jpg",
-            ["Bướm"] = "/images/photos/flashcard-butterfly.jpg",
-            ["Thỏ"] = "/images/photos/flashcard-rabbit.jpg",
-            ["Con thỏ"] = "/images/photos/flashcard-rabbit.jpg",
-            ["Rùa biển"] = "/images/photos/flashcard-sea-turtle.jpg",
-            ["Động vật biển"] = "/images/photos/flashcard-sea-animal.jpg",
-            ["Côn trùng"] = "/images/photos/flashcard-insects.jpg"
+
+            // Shapes
+            ["Hình tròn"] = "/images/photos/flashcard-shape-circle.svg",
+            ["○"] = "/images/photos/flashcard-shape-circle.svg",
+            ["Hình vuông"] = "/images/photos/flashcard-shape-square.svg",
+            ["□"] = "/images/photos/flashcard-shape-square.svg",
+            ["Hình tam giác"] = "/images/photos/flashcard-shape-triangle.svg",
+            ["△"] = "/images/photos/flashcard-shape-triangle.svg",
+            ["Hình ngôi sao"] = "/images/photos/flashcard-shape-star.svg",
+            ["⭐"] = "/images/photos/flashcard-shape-star.svg",
+            ["★"] = "/images/photos/flashcard-shape-star.svg",
+            ["Hình trái tim"] = "/images/photos/flashcard-shape-heart.svg",
+            ["❤️"] = "/images/photos/flashcard-shape-heart.svg",
+            ["Hình chữ nhật"] = "/images/photos/flashcard-shape-square.svg",
+            ["Hình bầu dục"] = "/images/photos/flashcard-shape-circle.svg",
+            ["Hình thoi"] = "/images/photos/flashcard-shape-square.svg",
+
+            // Vehicles & Transport
+            ["Xe đạp"] = "/images/pictograms/bicycle.svg",
+            ["Ô tô"] = "/images/pictograms/car.svg",
+            ["Xe ô tô"] = "/images/pictograms/car.svg",
+            ["Xe buýt"] = "/images/pictograms/bus.svg",
+            ["Xe buýt trường học"] = "/images/pictograms/bus.svg",
+            ["Máy bay"] = "/images/pictograms/airplane.svg",
+            ["Thuyền"] = "/images/pictograms/sailboat.svg",
+            ["Tàu buồm"] = "/images/pictograms/sailboat.svg",
+            ["Gara"] = "/images/pictograms/house.svg",
+            ["Trên đường"] = "/images/pictograms/car.svg",
+
+            // School & Daily Life Objects
+            ["Bút"] = "/images/pictograms/pencil.svg",
+            ["Bút chì"] = "/images/pictograms/pencil.svg",
+            ["Bút màu"] = "/images/pictograms/artist-palette.svg",
+            ["Vở"] = "/images/pictograms/notebook.svg",
+            ["Quyển vở"] = "/images/pictograms/notebook.svg",
+            ["Sách"] = "/images/pictograms/book.svg",
+            ["Quyển sách"] = "/images/pictograms/book.svg",
+            ["Ba lô"] = "/images/pictograms/backpack.svg",
+            ["Cặp sách"] = "/images/pictograms/backpack.svg",
+            ["Bát"] = "/images/pictograms/bowl.svg",
+            ["Thìa"] = "/images/pictograms/spoon.svg",
+            ["Nồi"] = "/images/pictograms/cooking-pot.svg",
+            ["Bàn chải"] = "/images/pictograms/toothbrush.svg",
+            ["Xà phòng"] = "/images/pictograms/soap.svg",
+            ["Áo"] = "/images/pictograms/shirt.svg",
+            ["Quần"] = "/images/pictograms/pants.svg",
+            ["Giày"] = "/images/pictograms/shoe.svg",
+            ["Tất"] = "/images/pictograms/socks.svg",
+            ["Mũ"] = "/images/pictograms/hat.svg",
+            ["Khăn"] = "/images/pictograms/scarf.svg",
+            ["Áo mưa"] = "/images/pictograms/coat.svg",
+            ["Ô"] = "/images/pictograms/umbrella.svg",
+            ["Chiếc ô"] = "/images/pictograms/umbrella.svg",
+            ["Mũ rộng vành"] = "/images/pictograms/sun-hat.svg",
+            ["Kính râm"] = "/images/pictograms/sunglasses.svg",
+            ["Mũ bảo hiểm"] = "/images/pictograms/helmet.svg",
+            ["Quả bóng"] = "/images/pictograms/ball.svg",
+            ["Đồng hồ"] = "/images/photos/flashcard-letter-đ.svg",
+
+            // Environment & Emotions
+            ["Mặt trời"] = "/images/pictograms/sun.svg",
+            ["Trời nắng"] = "/images/pictograms/sun.svg",
+            ["Ban ngày"] = "/images/pictograms/sun.svg",
+            ["Mặt trăng"] = "/images/pictograms/moon.svg",
+            ["Ban đêm"] = "/images/pictograms/moon.svg",
+            ["Trời mưa"] = "/images/pictograms/umbrella.svg",
+            ["Cây"] = "/images/pictograms/seedling.svg",
+            ["Bông hoa"] = "/images/pictograms/flower.svg",
+            ["🌼"] = "/images/pictograms/flower.svg",
+            ["Học tập"] = "/images/pictograms/notebook.svg",
+            ["Nhà bếp"] = "/images/pictograms/cooking-pot.svg",
+            ["Tổ chim"] = "/images/pictograms/bird.svg",
+            ["Hồ nước"] = "/images/photos/fish.jpg",
+            ["Vườn cà rốt"] = "/images/photos/flashcard-carrot.jpg",
+            ["Tổ ong"] = "/images/photos/flashcard-bee.jpg"
         };
-    private static readonly string[] VietnameseAlphabet =
+
+    public static readonly string[] VietnameseAlphabet =
     [
         "A", "Ă", "Â", "B", "C", "D", "Đ", "E", "Ê", "G", "H", "I", "K", "L", "M",
         "N", "O", "Ô", "Ơ", "P", "Q", "R", "S", "T", "U", "Ư", "V", "X", "Y"
@@ -136,29 +264,29 @@ public static class LearningContentSeed
             }
 
             var now = DateTimeOffset.UtcNow;
+            var payloadJson = definition.PayloadJson;
+
             if (existingSeedItems.TryGetValue(definition.Code, out var existingItem))
             {
                 existingItem.SortOrder = definition.SortOrder;
-                if (definition.InteractionType != InteractionTypes.Tracing)
+                existingItem.Title = definition.Title;
+                existingItem.SkillGroupId = topic.SkillGroupId;
+                existingItem.TopicId = topic.Id;
+                existingItem.Level = definition.Level;
+                existingItem.InteractionType = definition.InteractionType;
+                existingItem.InstructionText = definition.Instruction;
+                existingItem.ContentJson = payloadJson;
+                existingItem.UpdatedAt = now;
+
+                var existingQuestion = existingItem.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+                if (existingQuestion is not null)
                 {
-                    existingItem.Title = definition.Title;
-                    existingItem.SkillGroupId = topic.SkillGroupId;
-                    existingItem.TopicId = topic.Id;
-                    existingItem.Level = definition.Level;
-                    existingItem.InteractionType = definition.InteractionType;
-                    existingItem.InstructionText = definition.Instruction;
-                    existingItem.ContentJson = definition.PayloadJson;
-                    var existingQuestion = existingItem.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-                    if (existingQuestion is not null)
-                    {
-                        ApplyQuestionDefinition(existingQuestion, definition, definition.PayloadJson);
-                    }
+                    ApplyQuestionDefinition(existingQuestion, definition, payloadJson);
                 }
                 continue;
             }
 
             var itemId = Guid.NewGuid();
-            var payloadJson = definition.PayloadJson;
 
             if (definition.InteractionType == InteractionTypes.Tracing)
             {
@@ -274,6 +402,7 @@ public static class LearningContentSeed
             ("visual-counting-groups.png", "/images/lessons/visual-counting-groups.png", "Các nhóm táo, ngôi sao và khối xếp hình để luyện đếm"),
             ("visual-basic-shapes.png", "/images/lessons/visual-basic-shapes.png", "Sáu hình dạng cơ bản nhiều màu"),
             ("visual-road-safety.png", "/images/lessons/visual-road-safety.png", "Bé đội mũ bảo hiểm và chờ qua đường cùng người lớn"),
+            ("soc-nau.svg", "/images/soc-nau.svg", "Linh vật Sóc Nâu Đồng Hành"),
             ("fish.jpg", "/images/photos/fish.jpg", "Cá vàng màu cam trong bể nước"),
             ("orange.jpg", "/images/photos/orange.jpg", "Những quả cam chín màu vàng cam"),
             ("carrot.jpg", "/images/photos/carrot.jpg", "Các củ cà rốt tươi còn nguyên lá"),
@@ -293,37 +422,16 @@ public static class LearningContentSeed
             ("flashcard-sea-turtle.jpg", "/images/photos/flashcard-sea-turtle.jpg", "Thẻ học rùa biển có ảnh và chữ rùa biển"),
             ("flashcard-sea-animal.jpg", "/images/photos/flashcard-sea-animal.jpg", "Thẻ chủ đề động vật biển"),
             ("flashcard-insects.jpg", "/images/photos/flashcard-insects.jpg", "Thẻ chủ đề côn trùng"),
-            ("flashcard-letter-a.jpg", "/images/photos/flashcard-letter-a.jpg", "Thẻ chữ A a với hình quả táo"),
-            ("flashcard-letter-b.jpg", "/images/photos/flashcard-letter-b.jpg", "Thẻ chữ B b với hình quả bóng"),
-            ("flashcard-letter-c.jpg", "/images/photos/flashcard-letter-c.jpg", "Thẻ chữ C c với hình con mèo"),
-            ("flashcard-letter-d.jpg", "/images/photos/flashcard-letter-d.jpg", "Thẻ chữ D d với hình búp bê"),
-            ("flashcard-letter-e.jpg", "/images/photos/flashcard-letter-e.jpg", "Thẻ chữ E e với hình quả trứng"),
-            ("flashcard-letter-f.jpg", "/images/photos/flashcard-letter-f.jpg", "Thẻ chữ F f với hình quạt"),
-            ("flashcard-letter-g.jpg", "/images/photos/flashcard-letter-g.jpg", "Thẻ chữ G g với hình khu vườn"),
-            ("flashcard-letter-h.jpg", "/images/photos/flashcard-letter-h.jpg", "Thẻ chữ H h với hình bàn tay"),
-            ("flashcard-letter-i.jpg", "/images/photos/flashcard-letter-i.jpg", "Thẻ chữ I i với hình băng"),
-            ("flashcard-letter-j.jpg", "/images/photos/flashcard-letter-j.jpg", "Thẻ chữ J j với hình mứt"),
-            ("flashcard-letter-k.jpg", "/images/photos/flashcard-letter-k.jpg", "Thẻ chữ K k với hình chuột túi"),
-            ("flashcard-letter-l.jpg", "/images/photos/flashcard-letter-l.jpg", "Thẻ chữ L l với hình cừu"),
-            ("flashcard-letter-m.jpg", "/images/photos/flashcard-letter-m.jpg", "Thẻ chữ M m với hình nấm"),
-            ("flashcard-letter-n.jpg", "/images/photos/flashcard-letter-n.jpg", "Thẻ chữ N n với hình lưới"),
-            ("flashcard-letter-o.jpg", "/images/photos/flashcard-letter-o.jpg", "Thẻ chữ O o với hình quả cam"),
-            ("flashcard-letter-p.jpg", "/images/photos/flashcard-letter-p.jpg", "Thẻ chữ P p với hình thú cưng"),
-            ("flashcard-letter-q.jpg", "/images/photos/flashcard-letter-q.jpg", "Thẻ chữ Q q với hình chăn"),
-            ("flashcard-letter-r.jpg", "/images/photos/flashcard-letter-r.jpg", "Thẻ chữ R r với hình mưa"),
-            ("flashcard-letter-s.jpg", "/images/photos/flashcard-letter-s.jpg", "Thẻ chữ S s với hình hoa hướng dương"),
-            ("flashcard-letter-t.jpg", "/images/photos/flashcard-letter-t.jpg", "Thẻ chữ T t với hình tàu hỏa"),
-            ("flashcard-letter-u.jpg", "/images/photos/flashcard-letter-u.jpg", "Thẻ chữ U u với hình quần áo lót"),
-            ("flashcard-letter-v.jpg", "/images/photos/flashcard-letter-v.jpg", "Thẻ chữ V v với hình bình hoa"),
-            ("flashcard-letter-w.jpg", "/images/photos/flashcard-letter-w.jpg", "Thẻ chữ W w với hình xe kéo"),
-            ("flashcard-letter-x.jpg", "/images/photos/flashcard-letter-x.jpg", "Thẻ chữ X x với hình phim X-quang"),
-            ("flashcard-letter-y.jpg", "/images/photos/flashcard-letter-y.jpg", "Thẻ chữ Y y với hình yo-yo"),
-            ("flashcard-letter-z.jpg", "/images/photos/flashcard-letter-z.jpg", "Thẻ chữ Z z với hình ngựa vằn")
+            ("flashcard-shape-circle.svg", "/images/photos/flashcard-shape-circle.svg", "Thẻ học Hình tròn"),
+            ("flashcard-shape-square.svg", "/images/photos/flashcard-shape-square.svg", "Thẻ học Hình vuông"),
+            ("flashcard-shape-triangle.svg", "/images/photos/flashcard-shape-triangle.svg", "Thẻ học Hình tam giác"),
+            ("flashcard-shape-star.svg", "/images/photos/flashcard-shape-star.svg", "Thẻ học Hình ngôi sao"),
+            ("flashcard-shape-heart.svg", "/images/photos/flashcard-shape-heart.svg", "Thẻ học Hình trái tim")
         };
-        var numberImages = Enumerable.Range(1, 20)
+        var numberImages = Enumerable.Range(0, 21)
             .Select(number => (
-                $"flashcard-number-{number}.jpg",
-                $"/images/photos/flashcard-number-{number}.jpg",
+                number == 0 ? "flashcard-number-0.svg" : $"flashcard-number-{number}.jpg",
+                number == 0 ? "/images/photos/flashcard-number-0.svg" : $"/images/photos/flashcard-number-{number}.jpg",
                 $"Thẻ học số {number}"));
         var countImages = Enumerable.Range(1, 10)
             .Select(number => (
@@ -343,9 +451,9 @@ public static class LearningContentSeed
                 Id = Guid.NewGuid(),
                 AssetType = "image",
                 FileName = image.Item1,
-                ContentType = Path.GetExtension(image.Item1).Equals(".jpg", StringComparison.OrdinalIgnoreCase)
-                    ? "image/jpeg"
-                    : "image/png",
+                ContentType = Path.GetExtension(image.Item1).Equals(".svg", StringComparison.OrdinalIgnoreCase)
+                    ? "image/svg+xml"
+                    : "image/jpeg",
                 StoragePath = image.Item2,
                 AltText = image.Item3,
                 CreatedAt = DateTimeOffset.UtcNow
@@ -357,6 +465,7 @@ public static class LearningContentSeed
     {
         var lessons = new List<SeedLesson>();
 
+        // 1. Tracing & Letter Learning for all 29 Vietnamese letters
         for (var index = 0; index < VietnameseAlphabet.Length; index++)
         {
             var upper = VietnameseAlphabet[index];
@@ -365,6 +474,7 @@ public static class LearningContentSeed
             lessons.Add(Tracing($"seed-tracing-lower-{index + 1:00}", $"Tô chữ {lower} in thường", "chu-in-thuong", lower, 2));
         }
 
+        // 2. Numbers 0 to 9 Tracing and Recognition
         for (var number = 0; number <= 9; number++)
         {
             lessons.Add(Tracing($"seed-tracing-number-{number}", $"Tô số {number}", "viet-so", number.ToString(), 1));
@@ -372,7 +482,8 @@ public static class LearningContentSeed
             if (choices.Length < 2) choices = [number.ToString(), number == 0 ? "1" : "0"];
             lessons.Add(Choice(
                 $"seed-recognize-number-{number}", $"Nhận biết số {number}", "so-0-9", InteractionTypes.SingleChoice,
-                "Con quan sát và chọn đúng chữ số.", $"Đâu là số {number}?", choices, number.ToString()));
+                "Con quan sát và chọn đúng chữ số.", $"Đâu là số {number}?", choices, number.ToString(),
+                imageUrl: ResolveNumberFlashcardUrl(number.ToString())));
         }
 
         lessons.AddRange(BuildMultiSelectLessons());
@@ -405,7 +516,18 @@ public static class LearningContentSeed
     {
         if (lesson.InteractionType == InteractionTypes.Tracing)
         {
-            return lesson.PayloadJson;
+            var tracingPayload = JsonNode.Parse(lesson.PayloadJson)?.AsObject() ?? new JsonObject();
+            var sym = !string.IsNullOrWhiteSpace(lesson.Symbol) ? lesson.Symbol : ExtractSymbolFromTitle(lesson.Title, lesson.Prompt);
+            tracingPayload["symbol"] = sym;
+            tracingPayload["expectedStrokeCount"] = lesson.ExpectedStrokeCount;
+            tracingPayload["guideMode"] = "outline";
+            var tracingImage = ResolveTracingFlashcardUrl(sym);
+            if (!string.IsNullOrWhiteSpace(tracingImage))
+            {
+                tracingPayload["imageUrl"] = tracingImage;
+                tracingPayload["imageAltText"] = $"Thẻ học {sym}";
+            }
+            return tracingPayload.ToJsonString();
         }
 
         var payload = JsonNode.Parse(lesson.PayloadJson)?.AsObject() ?? new JsonObject();
@@ -438,8 +560,8 @@ public static class LearningContentSeed
             "/images/lessons/visual-counting-groups.png" => "Năm quả táo đỏ cùng các nhóm đồ vật nhiều màu",
             "/images/lessons/visual-basic-shapes.png" => "Sáu hình dạng cơ bản nhiều màu",
             "/images/lessons/visual-road-safety.png" => "Bé đội mũ bảo hiểm và qua đường cùng người lớn",
-            "/images/lessons/story-lost-pencil.png" => "Bạn nhỏ tìm thấy chiếc bút chì bị thất lạc",
-            "/images/lessons/story-rainy-day.png" => "Các bạn nhỏ giúp nhau trong ngày mưa",
+            "/images/lessons/story-wash-hands.png" => "Bé rửa tay sạch bằng xà phòng",
+            "/images/lessons/story-safe-crossing.png" => "Bé đi qua đường an toàn cùng người lớn",
             "/images/lessons/story-sharing.png" => "Hai bạn nhỏ vui vẻ chia sẻ bút màu",
             _ => string.Empty
         };
@@ -496,18 +618,24 @@ public static class LearningContentSeed
 
     private static string ResolveQuestionImageUrl(SeedLesson lesson, JsonObject payload)
     {
-        if (lesson.InteractionType is InteractionTypes.MultiSelect or InteractionTypes.Matching or
-            InteractionTypes.Ordering or InteractionTypes.Classification or InteractionTypes.Comparison)
-        {
-            return string.Empty;
-        }
-
         foreach (var candidate in ResolveQuestionImageCandidates(lesson, payload))
         {
             if (TryResolveObservationPhoto(candidate, out var imageUrl))
             {
                 return imageUrl;
             }
+        }
+
+        // Fallbacks for Letter and Number Lessons
+        if (lesson.TopicCode is "kham-pha-chu" or "chu-in-hoa" or "chu-in-thuong" or "phan-biet-chu")
+        {
+            var letterUrl = ResolveLetterFlashcardUrl(lesson.CorrectAnswer);
+            if (!string.IsNullOrWhiteSpace(letterUrl)) return letterUrl;
+        }
+        if (lesson.TopicCode is "so-0-9" or "so-10-20" or "viet-so" or "thu-tu-so")
+        {
+            var numberUrl = ResolveNumberFlashcardUrl(lesson.CorrectAnswer);
+            if (!string.IsNullOrWhiteSpace(numberUrl)) return numberUrl;
         }
 
         return string.Empty;
@@ -529,7 +657,7 @@ public static class LearningContentSeed
             }
         }
 
-        return string.Empty;
+        return "Hình minh họa bài tập";
     }
 
     private static IEnumerable<string> ResolveQuestionImageCandidates(SeedLesson lesson, JsonObject payload)
@@ -560,7 +688,10 @@ public static class LearningContentSeed
             normalized.StartsWith("Con ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
             normalized.StartsWith("Chú ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
             normalized.StartsWith("Cái ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
-            normalized.StartsWith("Quả ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized
+            normalized.StartsWith("Quả ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
+            normalized.StartsWith("Trái ", StringComparison.OrdinalIgnoreCase) ? normalized[5..] : normalized,
+            normalized.StartsWith("Chiếc ", StringComparison.OrdinalIgnoreCase) ? normalized[6..] : normalized,
+            normalized.StartsWith("Hình ", StringComparison.OrdinalIgnoreCase) ? normalized : $"Hình {normalized}"
         };
 
         foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
@@ -583,34 +714,42 @@ public static class LearningContentSeed
             int.TryParse(fileName[prefix.Length..], out number);
     }
 
-    private static string ResolveLetterFlashcardUrl(string symbol)
+    public static string ResolveLetterFlashcardUrl(string symbol)
     {
-        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length != 1)
+        if (string.IsNullOrWhiteSpace(symbol))
         {
             return string.Empty;
         }
 
-        var letter = char.ToUpperInvariant(symbol[0]);
+        var clean = symbol.Trim();
+        if (ObservationPhotos.TryGetValue(clean, out var url))
+        {
+            return url;
+        }
+
+        var letter = char.ToUpperInvariant(clean[0]);
         return letter is >= 'A' and <= 'Z'
             ? $"/images/photos/flashcard-letter-{char.ToLowerInvariant(letter)}.jpg"
             : string.Empty;
     }
 
-    private static string ResolveNumberFlashcardUrl(string symbol)
+    public static string ResolveNumberFlashcardUrl(string symbol)
     {
-        return int.TryParse(symbol, out var number) && number is >= 1 and <= 20
+        var clean = symbol.Trim();
+        if (clean == "0") return "/images/photos/flashcard-number-0.svg";
+        return int.TryParse(clean, out var number) && number is >= 1 and <= 20
             ? $"/images/photos/flashcard-number-{number}.jpg"
             : string.Empty;
     }
 
-    private static string ResolveCountingFlashcardUrl(int count)
+    public static string ResolveCountingFlashcardUrl(int count)
     {
         return count is >= 1 and <= 10
             ? $"/images/photos/flashcard-count-{count}.jpg"
             : string.Empty;
     }
 
-    private static string ResolveTracingFlashcardUrl(string symbol)
+    public static string ResolveTracingFlashcardUrl(string symbol)
     {
         var numberImageUrl = ResolveNumberFlashcardUrl(symbol);
         return string.IsNullOrWhiteSpace(numberImageUrl)
@@ -643,47 +782,64 @@ public static class LearningContentSeed
         yield return Multi("seed-multi-vowels", "Chọn các chữ nguyên âm", "phan-biet-chu", ["A", "B", "E", "M"], ["A", "E"]);
         yield return Multi("seed-multi-even", "Chọn các số chẵn", "so-0-9", ["1", "2", "3", "4"], ["2", "4"]);
         yield return Multi("seed-multi-focus", "Tìm các hình tròn", "tap-trung", ["Hình tròn đỏ", "Hình vuông xanh", "Hình tròn vàng", "Hình tam giác"], ["Hình tròn đỏ", "Hình tròn vàng"]);
+        yield return Multi("seed-multi-animals-water", "Chọn các con vật sống dưới nước", "con-vat", ["Cá", "Tôm", "Mèo", "Gà"], ["Cá", "Tôm"]);
+        yield return Multi("seed-multi-fruits-red", "Chọn các quả màu đỏ", "phan-loai", ["Táo", "Dâu tây", "Cam", "Bắp cải"], ["Táo", "Dâu tây"]);
+        yield return Multi("seed-multi-school-tools", "Chọn đồ dùng để học tập", "phan-loai", ["Bút", "Vở", "Bát", "Thìa"], ["Bút", "Vở"]);
     }
 
     private static IEnumerable<SeedLesson> BuildListenLessons()
     {
         yield return Listen("seed-listen-cat", "Nghe tiếng con mèo", "con-vat", "Con mèo kêu meo meo.", ["Con mèo", "Con chó", "Con vịt"], "Con mèo");
-        yield return Listen("seed-listen-letter-b", "Nghe và chọn chữ B", "kham-pha-chu", "Đây là chữ Bờ.", ["A", "B", "D"], "B");
-        yield return Listen("seed-listen-rhyme", "Nghe từ có vần an", "am-van", "Từ bàn có vần an.", ["Bàn", "Bé", "Bò"], "Bàn");
+        yield return Listen("seed-listen-dog", "Nghe tiếng con chó", "con-vat", "Con chó kêu gâu gâu.", ["Con chó", "Con mèo", "Con gà"], "Con chó");
+        yield return Listen("seed-listen-duck", "Nghe tiếng con vịt", "con-vat", "Con vịt kêu cạp cạp.", ["Con vịt", "Con chim", "Con gà"], "Con vịt");
+        yield return Listen("seed-listen-letter-b", "Nghe và chọn chữ B", "kham-pha-chu", "Đây là chữ Bờ trong quả bóng.", ["A", "B", "D"], "B");
+        yield return Listen("seed-listen-letter-c", "Nghe và chọn chữ C", "kham-pha-chu", "Đây là chữ Cờ trong con cá.", ["C", "E", "O"], "C");
+        yield return Listen("seed-listen-rhyme", "Nghe từ có vần an", "am-van", "Từ cái bàn có vần an.", ["Bàn", "Bé", "Bò"], "Bàn");
+        yield return Listen("seed-listen-rhyme-2", "Nghe từ có vần am", "am-van", "Quả cam có vần am.", ["Cam", "Cá", "Cây"], "Cam");
     }
 
     private static IEnumerable<SeedLesson> BuildDragLessons()
     {
-        yield return Drag("seed-drag-uppercase", "Kéo chữ hoa đúng", "ghep-hoa-thuong", "Chữ hoa", ["A", "a", "ă"], "A");
+        yield return Drag("seed-drag-uppercase", "Kéo chữ hoa đúng", "ghep-hoa-thuong", "Chữ hoa A", ["A", "a", "ă"], "A");
         yield return Drag("seed-drag-number", "Kéo số vào nhóm ba vật", "ghep-so-luong", "Nhóm có 3 vật", ["2", "3", "4"], "3");
         yield return Drag("seed-drag-position", "Đặt quả bóng vào trong hộp", "vi-tri", "Trong hộp", ["Quả bóng", "Cái bàn", "Đám mây"], "Quả bóng");
+        yield return Drag("seed-drag-vehicle", "Đưa ô tô vào bãi đỗ", "vi-tri", "Bãi đỗ xe", ["Ô tô", "Quả táo", "Con mèo"], "Ô tô");
+        yield return Drag("seed-drag-fruit", "Bỏ táo vào giỏ hoa quả", "phan-loai", "Giỏ trái cây", ["Táo", "Bút", "Cái thìa"], "Táo");
     }
 
     private static IEnumerable<SeedLesson> BuildMatchingLessons()
     {
         yield return Mapping("seed-match-case-1", "Nối chữ hoa với chữ thường", "ghep-hoa-thuong", InteractionTypes.Matching, [("A", "a"), ("B", "b"), ("C", "c")]);
+        yield return Mapping("seed-match-case-2", "Nối chữ hoa với chữ thường 2", "ghep-hoa-thuong", InteractionTypes.Matching, [("D", "d"), ("Đ", "đ"), ("E", "e")]);
         yield return Mapping("seed-match-shape", "Nối hình với tên", "hinh-dang", InteractionTypes.Matching, [("○", "Hình tròn"), ("□", "Hình vuông"), ("△", "Hình tam giác")]);
         yield return Mapping("seed-match-vocabulary", "Nối con vật với tiếng kêu", "von-tu", InteractionTypes.Matching, [("Mèo", "Meo meo"), ("Chó", "Gâu gâu"), ("Vịt", "Cạp cạp")]);
+        yield return Mapping("seed-match-food-animal", "Nối con vật với thức ăn", "con-vat", InteractionTypes.Matching, [("Thỏ", "Cà rốt"), ("Mèo", "Cá"), ("Ong", "Bông hoa")]);
     }
 
     private static IEnumerable<SeedLesson> BuildOrderingLessons()
     {
         yield return Ordering("seed-order-numbers", "Sắp xếp số từ bé đến lớn", "thu-tu-so", ["1", "2", "3", "4"]);
-        yield return Ordering("seed-order-wash", "Các bước rửa tay", "tu-phuc-vu", ["Làm ướt tay", "Lấy xà phòng", "Chà sạch tay", "Xả nước", "Lau khô"]);
+        yield return Ordering("seed-order-numbers-desc", "Sắp xếp số từ lớn về bé", "thu-tu-so", ["4", "3", "2", "1"]);
+        yield return Ordering("seed-order-wash", "Các bước rửa tay đúng cách", "tu-phuc-vu", ["Làm ướt tay", "Lấy xà phòng", "Chà sạch tay", "Xả nước", "Lau khô"]);
         yield return Ordering("seed-order-seed", "Hạt lớn thành cây", "ke-chuyen", ["Gieo hạt", "Tưới nước", "Hạt nảy mầm", "Cây lớn lên"]);
+        yield return Ordering("seed-order-brush-teeth", "Các bước đánh răng", "tu-phuc-vu", ["Lấy kem đánh răng", "Chải sạch răng", "Súc miệng bằng nước"]);
     }
 
     private static IEnumerable<SeedLesson> BuildCountingLessons()
     {
-        yield return Counting("seed-count-3", "Đếm 3 quả táo", "dem-so-luong", "🍎", 3);
-        yield return Counting("seed-count-5", "Đếm 5 ngôi sao", "dem-so-luong", "⭐", 5);
-        yield return Counting("seed-count-7", "Đếm 7 bông hoa", "dem-so-luong", "🌼", 7);
+        yield return Counting("seed-count-3", "Đếm 3 quả táo đỏ", "dem-so-luong", "🍎", 3);
+        yield return Counting("seed-count-5", "Đếm 5 ngôi sao vàng", "dem-so-luong", "⭐", 5);
+        yield return Counting("seed-count-7", "Đếm 7 bông hoa xinh", "dem-so-luong", "🌼", 7);
+        yield return Counting("seed-count-2", "Đếm 2 quả cam", "dem-so-luong", "🍊", 2);
+        yield return Counting("seed-count-4", "Đếm 4 chú cá bơi", "dem-so-luong", "🐟", 4);
     }
 
     private static IEnumerable<SeedLesson> BuildQuantityLessons()
     {
         yield return Quantity("seed-quantity-2", "Tạo 2 quả cam", "tao-so-luong", "🍊", 2);
         yield return Quantity("seed-quantity-4", "Tạo 4 chú cá", "tao-so-luong", "🐟", 4);
+        yield return Quantity("seed-quantity-5", "Tạo 5 quả táo", "tao-so-luong", "🍎", 5);
+        yield return Quantity("seed-quantity-3", "Tạo 3 ngôi sao", "tao-so-luong", "⭐", 3);
         yield return Quantity("seed-quantity-6", "Tạo 6 khối vuông", "tao-so-luong", "■", 6);
     }
 
@@ -692,6 +848,7 @@ public static class LearningContentSeed
         yield return Comparison("seed-compare-more", "Nhóm nào nhiều hơn?", "so-sanh", "🍓", "Rổ đỏ", 5, "Rổ xanh", 3);
         yield return Comparison("seed-compare-less", "Nhóm nào ít hơn?", "so-sanh", "⭐", "Nhóm vàng", 2, "Nhóm xanh", 6, "less");
         yield return Comparison("seed-compare-equal", "Hai nhóm có bằng nhau?", "so-sanh", "●", "Nhóm A", 4, "Nhóm B", 4, "equal");
+        yield return Comparison("seed-compare-animals", "Nhóm nào có nhiều cá hơn?", "so-sanh", "🐟", "Bể trái", 6, "Bể phải", 2);
     }
 
     private static IEnumerable<SeedLesson> BuildClassificationLessons()
@@ -699,19 +856,23 @@ public static class LearningContentSeed
         yield return Mapping("seed-classify-food", "Phân loại rau củ và trái cây", "phan-loai", InteractionTypes.Classification, [("Táo", "Trái cây"), ("Cam", "Trái cây"), ("Cà rốt", "Rau củ"), ("Bắp cải", "Rau củ")]);
         yield return Mapping("seed-classify-animal", "Phân loại con vật", "con-vat", InteractionTypes.Classification, [("Cá", "Dưới nước"), ("Tôm", "Dưới nước"), ("Mèo", "Trên cạn"), ("Gà", "Trên cạn")]);
         yield return Mapping("seed-classify-weather", "Chọn đồ dùng theo thời tiết", "thoi-tiet", InteractionTypes.Classification, [("Áo mưa", "Trời mưa"), ("Ô", "Trời mưa"), ("Mũ rộng vành", "Trời nắng"), ("Kính râm", "Trời nắng")]);
+        yield return Mapping("seed-classify-transport", "Phân loại phương tiện giao thông", "giao-thong", InteractionTypes.Classification, [("Ô tô", "Trên đường"), ("Xe đạp", "Trên đường"), ("Máy bay", "Trên trời"), ("Thuyền", "Dưới nước")]);
     }
 
     private static IEnumerable<SeedLesson> BuildStoryLessons()
     {
-        yield return Story("seed-story-wash", "Câu chuyện rửa tay", "tu-phuc-vu",
+        yield return Story("seed-story-wash", "Câu chuyện rửa tay sạch sẽ", "tu-phuc-vu",
             "Trước khi ăn, Minh làm ướt tay, lấy xà phòng, chà sạch rồi lau khô.",
             "/images/lessons/story-wash-hands.png", "Minh làm gì trước khi ăn?", ["Rửa tay", "Đi ngủ", "Cất sách"], "Rửa tay");
-        yield return Story("seed-story-crossing", "Qua đường an toàn", "an-toan",
+        yield return Story("seed-story-crossing", "Bé qua đường an toàn", "an-toan",
             "Lan đứng trên vỉa hè cùng mẹ. Khi đèn dành cho người đi bộ bật màu xanh, hai mẹ con quan sát rồi đi trên vạch qua đường.",
             "/images/lessons/story-safe-crossing.png", "Khi nào Lan được qua đường?", ["Khi đèn người đi bộ màu xanh", "Khi xe đang chạy", "Khi đèn người đi bộ màu đỏ"], "Khi đèn người đi bộ màu xanh");
         yield return Story("seed-story-sharing", "Bạn bè biết chia sẻ", "cam-xuc",
             "Nam buồn vì quên hộp bút màu. Mai nhận ra điều đó và vui vẻ chia sẻ bút với Nam.",
             "/images/lessons/story-sharing.png", "Mai đã làm gì khi thấy Nam buồn?", ["Chia sẻ bút màu", "Cất hết bút đi", "Bỏ ra ngoài"], "Chia sẻ bút màu");
+        yield return Story("seed-story-traffic", "Đội mũ bảo hiểm khi đi xe máy", "an-toan",
+            "Bố đón An đi học về. An tự giác đội mũ bảo hiểm và cài quai cẩn thận trước khi lên xe.",
+            "/images/lessons/visual-road-safety.png", "An làm gì trước khi lên xe máy?", ["Đội mũ bảo hiểm", "Đứng nhảy nhót", "Cởi giày"], "Đội mũ bảo hiểm");
     }
 
     private static IEnumerable<SeedLesson> BuildCoverageLessons()
@@ -730,22 +891,27 @@ public static class LearningContentSeed
             yield return Tracing($"seed-basic-{code}", $"Tô {title.ToLowerInvariant()}", "net-co-ban", symbol, 1);
         }
 
-        for (var index = 0; index < 20; index++)
+        // Letter Recognition for all 29 Vietnamese letters
+        for (var index = 0; index < VietnameseAlphabet.Length; index++)
         {
             var letter = VietnameseAlphabet[index];
             var previous = VietnameseAlphabet[(index + VietnameseAlphabet.Length - 1) % VietnameseAlphabet.Length];
             var next = VietnameseAlphabet[(index + 1) % VietnameseAlphabet.Length];
             yield return Choice($"seed-letter-recognition-{index + 1:00}", $"Nhận biết chữ {letter}", "kham-pha-chu",
-                InteractionTypes.SingleChoice, "Con nhìn mẫu rồi chọn đúng chữ cái.", $"Đâu là chữ {letter}?", [previous, letter, next], letter);
+                InteractionTypes.SingleChoice, "Con nhìn mẫu rồi chọn đúng chữ cái.", $"Đâu là chữ {letter}?", [previous, letter, next], letter,
+                imageUrl: ResolveLetterFlashcardUrl(letter));
         }
 
-        for (var number = 10; number <= 14; number++)
+        // Numbers 10-20 Recognition
+        for (var number = 10; number <= 20; number++)
         {
             yield return Choice($"seed-recognize-number-{number}", $"Nhận biết số {number}", "so-10-20",
                 InteractionTypes.SingleChoice, "Con quan sát rồi chọn đúng số.", $"Đâu là số {number}?",
-                [(number - 1).ToString(), number.ToString(), (number + 1).ToString()], number.ToString());
+                [(number - 1).ToString(), number.ToString(), (number + 1 > 20 ? 10 : number + 1).ToString()], number.ToString(),
+                imageUrl: ResolveNumberFlashcardUrl(number.ToString()));
         }
 
+        // Quantity and Counting seeds
         foreach (var number in new[] { 0, 1, 3, 5, 7, 8, 9 })
         {
             yield return Quantity($"seed-quantity-{number}", $"Tạo {number} chấm tròn", "tao-so-luong", "●", number);
@@ -770,12 +936,22 @@ public static class LearningContentSeed
         yield return Drag("seed-fine-maze-3", "Đưa xe về gara", "me-cung", "Gara", ["Ô tô", "Táo", "Bút"], "Ô tô");
         yield return Ordering("seed-fine-beads", "Xâu hạt theo bước", "kheo-tay", ["Chọn sợi dây", "Chọn hạt", "Luồn từng hạt", "Buộc hai đầu"]);
 
-        var shapes = new[] { "Hình tròn", "Hình vuông", "Hình tam giác", "Hình chữ nhật", "Hình bầu dục", "Hình thoi" };
+        var shapes = new[] { "Hình tròn", "Hình vuông", "Hình tam giác", "Hình ngôi sao", "Hình trái tim", "Hình chữ nhật" };
         foreach (var shape in shapes)
         {
+            var shapeImg = shape switch
+            {
+                "Hình tròn" => "/images/photos/flashcard-shape-circle.svg",
+                "Hình vuông" => "/images/photos/flashcard-shape-square.svg",
+                "Hình tam giác" => "/images/photos/flashcard-shape-triangle.svg",
+                "Hình ngôi sao" => "/images/photos/flashcard-shape-star.svg",
+                "Hình trái tim" => "/images/photos/flashcard-shape-heart.svg",
+                _ => "/images/photos/flashcard-shape-square.svg"
+            };
             yield return Choice($"seed-shape-{NormalizeSeedCode(shape)}", $"Nhận biết {shape.ToLowerInvariant()}", "hinh-dang",
                 InteractionTypes.SingleChoice, "Con quan sát đặc điểm rồi chọn đúng tên hình.", "Đây là hình gì?",
-                new[] { shape, "Hình tròn", "Hình vuông" }.Distinct().Append("Hình tam giác").Take(3).ToArray(), shape);
+                new[] { shape, "Hình tròn", "Hình vuông" }.Distinct().Append("Hình tam giác").Take(3).ToArray(), shape,
+                imageUrl: shapeImg);
         }
 
         yield return Ordering("seed-logic-pattern-1", "Quy luật đỏ xanh", "quy-luat", ["Đỏ", "Xanh", "Đỏ", "Xanh"]);
@@ -789,29 +965,30 @@ public static class LearningContentSeed
         yield return Multi("seed-memory-colors", "Nhớ hai màu đã thấy", "ghi-nho", ["Đỏ", "Xanh", "Vàng", "Tím"], ["Đỏ", "Vàng"]);
         yield return Mapping("seed-memory-pairs", "Nhớ cặp đồ vật", "ghi-nho", InteractionTypes.Matching, [("Bàn chải", "Kem đánh răng"), ("Bát", "Thìa"), ("Bút", "Vở")]);
 
-        yield return Choice("seed-life-helmet", "Đội mũ bảo hiểm", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn hành động an toàn.", "Khi ngồi trên xe máy, con cần làm gì?", ["Đội mũ bảo hiểm", "Đứng lên", "Đùa nghịch"], "Đội mũ bảo hiểm");
+        yield return Choice("seed-life-helmet", "Đội mũ bảo hiểm khi đi xe máy", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn hành động an toàn.", "Khi ngồi trên xe máy, con cần làm gì?", ["Đội mũ bảo hiểm", "Đứng lên", "Đùa nghịch"], "Đội mũ bảo hiểm",
+            imageUrl: "/images/pictograms/helmet.svg");
         yield return Choice("seed-life-stranger", "Không đi theo người lạ", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn cách xử lý an toàn.", "Người lạ rủ con đi theo, con làm gì?", ["Từ chối và gọi người thân", "Đi theo ngay", "Không nói với ai"], "Từ chối và gọi người thân");
+            "Con chọn cách xử lý an toàn.", "Người lạ rủ con đi theo, con làm gì?", ["Từ chối và gọi người thân", "Đi theo ngay", "Không nói với ai"], "Từ chối và gọi người thân",
+            imageUrl: "/images/pictograms/telephone.svg");
         yield return Choice("seed-life-feeling", "Nói ra cảm xúc", "cam-xuc", InteractionTypes.SingleChoice,
-            "Con chọn cách chia sẻ phù hợp.", "Khi buồn, con nên làm gì?", ["Nói với người con tin tưởng", "Đập đồ", "La hét vào bạn"], "Nói với người con tin tưởng");
+            "Con chọn cách chia sẻ phù hợp.", "Khi buồn, con nên làm gì?", ["Nói với người con tin tưởng", "Đập đồ", "La hét vào bạn"], "Nói với người con tin tưởng",
+            imageUrl: "/images/pictograms/speaking.svg");
 
         yield return Ordering("seed-fine-cut-paper", "Cắt giấy an toàn", "kheo-tay", ["Ngồi ngay ngắn", "Cầm kéo đúng tay", "Cắt theo đường", "Cất kéo"]);
         yield return Ordering("seed-fine-coloring", "Tô màu gọn gàng", "kheo-tay", ["Chọn màu", "Tô từ trong ra ngoài", "Tô kín hình", "Cất bút"]);
         yield return Drag("seed-fine-maze-4", "Đưa thỏ về vườn cà rốt", "me-cung", "Vườn cà rốt", ["Thỏ", "Cá", "Máy bay"], "Thỏ");
         yield return Drag("seed-fine-maze-5", "Đưa chim về tổ", "me-cung", "Tổ chim", ["Chim", "Xe buýt", "Quả bóng"], "Chim");
 
-        yield return Choice("seed-shape-star", "Nhận biết hình ngôi sao", "hinh-dang", InteractionTypes.SingleChoice,
-            "Con quan sát rồi chọn đúng tên hình.", "Hình có năm cánh là hình gì?", ["Hình ngôi sao", "Hình tròn", "Hình vuông"], "Hình ngôi sao");
-        yield return Choice("seed-shape-heart", "Nhận biết hình trái tim", "hinh-dang", InteractionTypes.SingleChoice,
-            "Con quan sát rồi chọn đúng tên hình.", "Đâu là tên của hình trái tim?", ["Hình trái tim", "Hình tam giác", "Hình chữ nhật"], "Hình trái tim");
-
         yield return Choice("seed-logic-different-1", "Tìm vật khác nhóm 1", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm một vật không cùng nhóm.", "Vật nào không phải trái cây?", ["Táo", "Cam", "Bút chì"], "Bút chì");
+            "Con tìm một vật không cùng nhóm.", "Vật nào không phải trái cây?", ["Táo", "Cam", "Bút chì"], "Bút chì",
+            imageUrl: "/images/photos/flashcard-apple.jpg");
         yield return Choice("seed-logic-different-2", "Tìm vật khác nhóm 2", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm một vật không cùng nhóm.", "Vật nào không phải con vật?", ["Mèo", "Gà", "Cái bàn"], "Cái bàn");
+            "Con tìm một vật không cùng nhóm.", "Vật nào không phải con vật?", ["Mèo", "Gà", "Cái bàn"], "Cái bàn",
+            imageUrl: "/images/photos/cat.jpg");
         yield return Choice("seed-logic-different-3", "Tìm vật khác nhóm 3", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm một vật không cùng nhóm.", "Vật nào không dùng để đi lại?", ["Xe đạp", "Ô tô", "Cái bát"], "Cái bát");
+            "Con tìm một vật không cùng nhóm.", "Vật nào không dùng để đi lại?", ["Xe đạp", "Ô tô", "Cái bát"], "Cái bát",
+            imageUrl: "/images/pictograms/bicycle.svg");
         yield return Ordering("seed-logic-pattern-4", "Quy luật tròn vuông", "quy-luat", ["Tròn", "Vuông", "Tròn", "Vuông"]);
         yield return Ordering("seed-logic-pattern-5", "Quy luật cao thấp", "quy-luat", ["Cao", "Thấp", "Cao", "Thấp"]);
         yield return Ordering("seed-logic-pattern-6", "Quy luật một một hai", "quy-luat", ["1", "1", "2", "1", "1", "2"]);
@@ -826,11 +1003,14 @@ public static class LearningContentSeed
         yield return Mapping("seed-memory-pairs-3", "Nhớ cặp nơi chốn", "ghi-nho", InteractionTypes.Matching, [("Cá", "Hồ nước"), ("Chim", "Tổ"), ("Xe", "Gara")]);
 
         yield return Choice("seed-life-electric", "Tránh xa ổ điện", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn hành động an toàn.", "Khi thấy ổ điện, con cần làm gì?", ["Không chạm vào", "Cho tay vào", "Đổ nước lên"], "Không chạm vào");
+            "Con chọn hành động an toàn.", "Khi thấy ổ điện, con cần làm gì?", ["Không chạm vào", "Cho tay vào", "Đổ nước lên"], "Không chạm vào",
+            imageUrl: "/images/pictograms/electric-plug.svg");
         yield return Choice("seed-life-sharing", "Biết chia sẻ đồ chơi", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn cách cư xử thân thiện.", "Bạn muốn chơi cùng, con nên làm gì?", ["Chia sẻ và chơi cùng", "Giấu đồ chơi", "Đẩy bạn ra"], "Chia sẻ và chơi cùng");
+            "Con chọn cách cư xử thân thiện.", "Bạn muốn chơi cùng, con nên làm gì?", ["Chia sẻ và chơi cùng", "Giấu đồ chơi", "Đẩy bạn ra"], "Chia sẻ và chơi cùng",
+            imageUrl: "/images/pictograms/handshake.svg");
         yield return Choice("seed-life-apology", "Biết nói lời xin lỗi", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn lời nói phù hợp.", "Khi vô ý làm bạn đau, con nên nói gì?", ["Mình xin lỗi bạn", "Không phải mình", "Bạn tự chịu"], "Mình xin lỗi bạn");
+            "Con chọn lời nói phù hợp.", "Khi vô ý làm bạn đau, con nên nói gì?", ["Mình xin lỗi bạn", "Không phải mình", "Bạn tự chịu"], "Mình xin lỗi bạn",
+            imageUrl: "/images/pictograms/folded-hands.svg");
 
         yield return Lesson("seed-visual-count-apples", "Đếm táo trong tranh", "dem-so-luong", InteractionTypes.Counting,
             "Con quan sát tranh, chạm từng quả táo rồi chọn số đúng.", "Trong tranh có bao nhiêu quả táo đỏ?",
@@ -857,14 +1037,40 @@ public static class LearningContentSeed
         .ToLowerInvariant()
         .Replace(' ', '-');
 
-    private static SeedLesson Tracing(string code, string title, string topicCode, string symbol, int strokes) =>
-        new(code, title, topicCode, InteractionTypes.Tracing, "Bé vẽ theo đường nét đứt nhé.", $"Bé hãy quan sát cách viết {symbol} nhé!", "{}", string.Empty, "Bắt đầu ở chấm màu cam, đi theo mũi tên và tô chậm trên nét đứt.", symbol, strokes);
+    private static SeedLesson Tracing(string code, string title, string topicCode, string symbol, int strokes)
+    {
+        var tracingImageUrl = ResolveTracingFlashcardUrl(symbol);
+        var payload = JsonSerializer.Serialize(new
+        {
+            symbol,
+            expectedStrokeCount = strokes,
+            guideMode = "outline",
+            imageUrl = tracingImageUrl,
+            imageAltText = string.IsNullOrWhiteSpace(tracingImageUrl) ? "Hình minh họa" : $"Thẻ học {symbol}"
+        });
+        return new(code, title, topicCode, InteractionTypes.Tracing, "Bé vẽ theo đường nét đứt nhé.", $"Bé hãy quan sát cách viết {symbol} nhé!", payload, string.Empty, "Bắt đầu ở chấm màu cam, đi theo mũi tên và tô chậm trên nét đứt.", symbol, strokes);
+    }
+
+    private static string ExtractSymbolFromTitle(string? title, string? prompt = null)
+    {
+        if (!string.IsNullOrWhiteSpace(prompt))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(prompt, @"cách viết\s+([^\s!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success) return match.Groups[1].Value.Trim();
+        }
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(title, @"(chữ số|chữ|số|nét)\s+([^\s!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success) return match.Groups[2].Value.Trim();
+        }
+        return "A";
+    }
 
     private static SeedLesson Choice(string code, string title, string topicCode, string type, string instruction, string prompt, string[] choices, string answer, string speechText = "", string imageUrl = "") =>
         Lesson(code, title, topicCode, type, instruction, prompt, new { choices, targetLabel = string.Empty, audioUrl = string.Empty, speechText, imageUrl }, answer);
 
     private static SeedLesson Multi(string code, string title, string topicCode, string[] choices, string[] answers) =>
-        Lesson(code, title, topicCode, InteractionTypes.MultiSelect, "Con chọn tất cả đáp án đúng rồi bấm Kiểm tra.", "Những đáp án nào phù hợp?", new { choices, correctCount = answers.Length, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', answers.OrderBy(x => x)));
+        Lesson(code, title, topicCode, InteractionTypes.MultiSelect, "Con chọn tất cả đáp án đúng rồi bấm Hoàn thành.", "Những đáp án nào phù hợp?", new { choices, correctCount = answers.Length, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', answers.OrderBy(x => x)));
 
     private static SeedLesson Listen(string code, string title, string topicCode, string speechText, string[] choices, string answer) =>
         Choice(code, title, topicCode, InteractionTypes.ListenAndChoose, "Con bấm Nghe rồi chọn đáp án đúng.", "Con vừa nghe thấy gì?", choices, answer, speechText);

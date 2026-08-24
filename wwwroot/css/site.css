@@ -53,6 +53,23 @@ a {
 .app-brand {
   color: var(--primary-dark);
   font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-avatar {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  vertical-align: middle;
+  margin-right: 4px;
 }
 
 .nav-link {
@@ -67,6 +84,120 @@ a {
 .app-footer {
   padding: 24px 0;
   color: var(--muted);
+  border-top: 1px solid var(--line);
+  background: rgba(255, 253, 247, 0.6);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.footer-avatar {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.footer-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.app-footer-credit {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Landing Mascot & Kids Header Mascot */
+.landing-mascot-img-wrap {
+  margin-bottom: 12px;
+}
+
+.landing-mascot-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.kid-header-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.squirrel-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.squirrel-avatar {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+}
+
+.mascot-welcome-card {
+  display: grid !important;
+  grid-template-columns: 80px minmax(0, 1fr) !important;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  margin: 18px 0 24px;
+}
+
+.mascot-badge-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mascot-greeting-img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  display: block;
+}
+
+.mascot-speech-col {
+  min-width: 0;
+}
+
+.mascot-speech-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.mascot-speech-header strong {
+  font-size: 1.15rem;
+  color: #24465b;
+}
+
+.mascot-speech-col p {
+  margin: 0;
+  color: #3b5f75;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .hero-wrap {
@@ -1141,45 +1272,6 @@ a {
   min-height: auto;
 }
 
-.tracing-guidance-card {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px;
-  align-items: center;
-  gap: 10px;
-  width: min(100%, 720px);
-  margin: 0 auto 12px;
-  border-radius: 8px;
-  background: #ffdf82;
-  padding: 12px 14px;
-  color: #7b4017;
-  box-shadow: 0 8px 18px rgba(139, 82, 25, 0.12);
-}
-
-.tracing-guidance-card > .material-symbols-outlined {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #fff6cf;
-  color: #ff8a00;
-  font-size: 1.35rem;
-}
-
-.tracing-guidance-card strong {
-  font-size: 1.08rem;
-  line-height: 1.25;
-}
-
-.tracing-guidance-audio {
-  width: 42px;
-  height: 42px;
-  min-height: 42px;
-  background: #fff7df;
-  color: #f07135;
-}
-
 .trace-letter {
   position: absolute;
   inset: 0;
@@ -1189,8 +1281,8 @@ a {
   color: transparent;
   font-size: 18rem;
   font-weight: 800;
-  -webkit-text-stroke: 8px rgba(152, 216, 202, 0.52);
-  text-stroke: 8px rgba(152, 216, 202, 0.52);
+  -webkit-text-stroke: 8px #98d8ca;
+  text-stroke: 8px #98d8ca;
   pointer-events: none;
   user-select: none;
 }
@@ -1208,50 +1300,8 @@ a {
   pointer-events: none;
 }
 
-.tracing-guide-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.tracing-guide-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.tracing-guide-path {
-  fill: none;
-  stroke: #ff8a4c;
-  stroke-width: 12;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 12 16;
-  opacity: 0.78;
-}
-
-.tracing-start-halo {
-  fill: #4ee4c0;
-  opacity: 0.26;
-}
-
-.tracing-start-dot {
-  fill: #ff8a4c;
-  stroke: #fff;
-  stroke-width: 6;
-}
-
-.tracing-stroke-label {
-  dominant-baseline: middle;
-  fill: #fff;
-  font-size: 22px;
-  font-weight: 900;
-  paint-order: stroke;
-  stroke: #087757;
-  stroke-linejoin: round;
-  stroke-width: 8px;
-  text-anchor: middle;
+.tracing-preview-start {
+  display: none;
 }
 
 .curriculum-drilldown-link {
@@ -2820,25 +2870,36 @@ a {
   padding: 18px;
 }
 
-.tracing-preview-guidance {
-  margin-top: 14px;
-}
-
 .tracing-preview-board {
   position: relative;
   display: grid;
   place-items: center;
   aspect-ratio: 1;
   max-width: 620px;
-  margin: 14px auto 0;
-  border: 3px solid #bfeef7;
-  border-radius: 16px;
+  margin: 20px auto 0;
+  border: 5px solid #bfeef7;
+  border-radius: 8px;
   background: #fff;
-  overflow: hidden;
 }
 
 .tracing-preview-symbol {
+  color: transparent;
+  font-size: clamp(8rem, 22vw, 18rem);
+  font-weight: 800;
   line-height: 1;
+  -webkit-text-stroke: 8px #98d8ca;
+  text-stroke: 8px #98d8ca;
+}
+
+.tracing-preview-start {
+  position: absolute;
+  top: 16%;
+  left: 50%;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ff9f72;
+  transform: translateX(-50%);
 }
 
 .toggle-row {
@@ -3611,14 +3672,6 @@ a {
   object-fit: contain;
 }
 
-.learning-focus-shell .tracing-reference-zone {
-  padding: 8px;
-}
-
-.learning-focus-shell .tracing-reference-image {
-  max-height: 220px;
-}
-
 .learning-focus-shell .activity-runtime {
   gap: 14px;
   margin-top: 0;
@@ -3739,32 +3792,10 @@ a {
 }
 
 .learning-focus-shell .tracing-board {
-  width: min(58dvh, 100%);
-  margin: 2px auto 42px;
+  width: min(64dvh, 100%);
+  margin: 2px auto 12px;
   border-width: 3px;
   border-radius: 20px;
-  overflow: visible;
-}
-
-.learning-focus-shell .trace-letter {
-  font-size: clamp(9rem, 54vw, 18rem);
-  -webkit-text-stroke-width: clamp(4px, 1.4vw, 8px);
-  text-stroke-width: clamp(4px, 1.4vw, 8px);
-}
-
-.learning-focus-shell .board-actions {
-  right: auto;
-  bottom: -28px;
-  left: 50%;
-  gap: 8px;
-  transform: translateX(-50%);
-}
-
-.learning-focus-shell .board-actions button {
-  width: 48px;
-  height: 48px;
-  border: 1px solid #d7ebe7;
-  box-shadow: 0 6px 14px rgba(23, 61, 77, 0.12);
 }
 
 .tracing-answer-zone .tracing-submit-form {
@@ -3919,43 +3950,6 @@ a {
     font-size: 1.2rem;
   }
 
-  .learning-focus-shell .tracing-board {
-    width: min(52dvh, 100%);
-    margin-bottom: 40px;
-  }
-
-  .tracing-guidance-card {
-    grid-template-columns: 36px minmax(0, 1fr) 38px;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding: 10px;
-  }
-
-  .tracing-guidance-card > .material-symbols-outlined {
-    width: 34px;
-    height: 34px;
-    font-size: 1.15rem;
-  }
-
-  .tracing-guidance-card strong {
-    font-size: 0.98rem;
-  }
-
-  .tracing-guidance-audio {
-    width: 38px;
-    height: 38px;
-    min-height: 38px;
-  }
-
-  .learning-focus-shell .board-actions {
-    bottom: -24px;
-  }
-
-  .learning-focus-shell .board-actions button {
-    width: 44px;
-    height: 44px;
-  }
-
   .learning-result {
     min-height: 380px;
     margin-top: 14px;
@@ -3972,4 +3966,178 @@ a {
     width: 40px;
     height: 40px;
   }
+}
+
+/* Tracing Canvas Overlay & Ghost Guide */
+.tracing-canvas-host {
+  position: relative;
+  width: min(100%, 460px);
+  aspect-ratio: 1;
+  margin: 0 auto 20px;
+  background: #ffffff;
+  border: 4px solid #c8edf8;
+  border-radius: 28px;
+  box-shadow: 0 12px 30px rgba(41, 126, 164, 0.12);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.tracing-corner-flashcard {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 5;
+  width: 96px;
+  height: 124px;
+  padding: 5px;
+  background: #ffffff;
+  border: 2.5px solid #c8edf8;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(41, 126, 164, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.tracing-corner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.trace-letter {
+  display: none !important;
+}
+
+.tracing-guide-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tracing-guide-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tracing-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  cursor: crosshair;
+  touch-action: none;
+  background: transparent;
+}
+
+/* Learning Activity Choice Cards & Audio Button */
+.story-audio-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.activity-audio-button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 28px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #ff944d 0%, #e65c00 100%) !important;
+  color: #ffffff !important;
+  font-family: var(--font-display);
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  border: 0 !important;
+  box-shadow: 0 6px 18px rgba(230, 92, 0, 0.3), inset 0 -4px 0 rgba(0, 0, 0, 0.15) !important;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin: 0 auto;
+}
+
+.activity-audio-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(230, 92, 0, 0.4), inset 0 -4px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.activity-audio-button .audio-btn-icon {
+  font-size: 1.6rem;
+}
+
+.activity-option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  justify-content: center;
+}
+
+.activity-option,
+.activity-drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 12px 18px;
+  border: 2px solid #d8edf5;
+  border-radius: 20px;
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 1.35rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(41, 126, 164, 0.08);
+  transition: all 0.15s ease;
+}
+
+.activity-option:not(.has-answer-visual) {
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+}
+
+.activity-option.selected {
+  border-color: var(--primary);
+  background: #fff5ee;
+  box-shadow: 0 0 0 3px rgba(255, 125, 77, 0.2);
+}
+
+.activity-drop-zone {
+  width: 100%;
+  min-height: 90px;
+  border: 3px dashed #46aee0;
+  border-radius: 24px;
+  background: #f4fbff;
+  color: #126b8d;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.activity-drop-zone .material-symbols-outlined {
+  font-size: 2rem;
+  color: #46aee0;
+}
+
+.answer-photo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.answer-pictogram {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }

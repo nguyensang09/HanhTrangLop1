@@ -5,9 +5,9 @@
 
     static string GetInteractionName(string interactionType) => interactionType switch
     {
-        InteractionTypes.Tracing => "Tô theo nét",
+        InteractionTypes.Tracing => "Tô nét vẽ",
         InteractionTypes.MultiSelect => "Chọn nhiều",
-        InteractionTypes.ListenAndChoose => "Nghe và chọn",
+        InteractionTypes.ListenAndChoose => "Nghe & chọn",
         InteractionTypes.DragDrop => "Kéo thả",
         InteractionTypes.Matching => "Nối cặp",
         InteractionTypes.Ordering => "Sắp xếp",
@@ -15,7 +15,7 @@
         InteractionTypes.QuantityBuilder => "Tạo số lượng",
         InteractionTypes.Comparison => "So sánh",
         InteractionTypes.Classification => "Phân loại",
-        InteractionTypes.StoryChoice => "Nghe truyện",
+        InteractionTypes.StoryChoice => "Nghe kể chuyện",
         _ => "Chọn đáp án"
     };
 
@@ -38,7 +38,7 @@
 
 <section class="kid-screen skill-library-page">
     <div class="kid-topbar skill-library-header">
-        <a class="icon-link" asp-controller="Kids" asp-action="Home" aria-label="Quay lại trang chủ">
+        <a class="icon-link clay-button" asp-controller="Kids" asp-action="Home" aria-label="Quay lại trang chủ">
             <span class="material-symbols-outlined">arrow_back</span>
         </a>
         <div class="skill-library-heading">
@@ -48,22 +48,23 @@
                 <h1>@Model.SkillGroup.Name</h1>
             </div>
         </div>
+        <div class="star-pill clay-button">
+            <span class="material-symbols-outlined star-icon">star</span>
+            <span>@Model.CompletedCount/@Model.Items.Count</span>
+        </div>
     </div>
 
-    <p class="skill-library-description">@Model.SkillGroup.Description</p>
-
-    <div class="soft-card today-progress-card">
-        <div>
-            <strong>@Model.CompletedCount/@Model.Items.Count bài đã hoàn thành</strong>
-            <span>Con chọn một bài mình muốn học nhé.</span>
+    <div class="skill-banner-card clay-card" style="--skill-color:@Model.SkillGroup.Color">
+        <p class="skill-library-description">@Model.SkillGroup.Description</p>
+        <div class="progress-track">
+            <div class="progress-bar-fill" style="width:@progressPercent%; background-color:@Model.SkillGroup.Color"></div>
         </div>
-        <div class="progress-track"><div style="width:@progressPercent%"></div></div>
     </div>
 
     @if (Model.Items.Count == 0)
     {
-        <div class="soft-card empty-state mt-4">
-            <span class="material-symbols-outlined">menu_book</span>
+        <div class="soft-card clay-card empty-state mt-4">
+            <span class="material-symbols-outlined empty-icon">menu_book</span>
             <h2>Nhóm này đang chuẩn bị bài mới</h2>
             <p>Con quay lại sau nhé.</p>
         </div>
@@ -73,7 +74,7 @@
         <div class="learning-library-list">
             @foreach (var row in Model.Items)
             {
-                <article class="soft-card learning-library-item">
+                <article class="soft-card clay-card learning-library-item">
                     <div class="learning-item-symbol" style="--skill-color:@Model.SkillGroup.Color">
                         <span class="material-symbols-outlined">
                             @GetInteractionIcon(row.Item.InteractionType)
@@ -81,24 +82,24 @@
                     </div>
                     <div class="learning-item-copy">
                         <div class="learning-item-meta">
-                            <span>@GetInteractionName(row.Item.InteractionType)</span>
-                            <span>Mức @row.Item.Level</span>
-                            <span>@row.Item.EstimatedMinutes phút</span>
+                            <span class="meta-tag type-tag">@GetInteractionName(row.Item.InteractionType)</span>
+                            <span class="meta-tag level-tag">Mức @row.Item.Level</span>
+                            <span class="meta-tag time-tag">⏱ @row.Item.EstimatedMinutes phút</span>
                         </div>
                         <h2>@row.Item.Title</h2>
                         <p>@row.Item.InstructionText</p>
                         @if (row.LatestStatus == "completed")
                         {
-                            <small class="learning-item-status completed"><span class="material-symbols-outlined">check_circle</span>Đã hoàn thành - @row.StarsEarned sao</small>
+                            <small class="learning-item-status completed"><span class="material-symbols-outlined">check_circle</span> Đã hoàn thành (+@row.StarsEarned sao)</small>
                         }
                         else if (row.LatestStatus == "needs_practice")
                         {
-                            <small class="learning-item-status practice"><span class="material-symbols-outlined">refresh</span>Cùng luyện lại</small>
+                            <small class="learning-item-status practice"><span class="material-symbols-outlined">refresh</span> Cùng luyện lại nhé</small>
                         }
                     </div>
-                    <a class="app-btn app-btn-small" asp-controller="Kids" asp-action="Learn" asp-route-id="@row.Item.Id" asp-route-skillGroupId="@Model.SkillGroup.Id">
-                        <span class="material-symbols-outlined">play_arrow</span>
-                        @(row.LatestStatus is null ? "Vào bài" : "Học lại")
+                    <a class="app-btn app-btn-small clay-button library-action-btn" asp-controller="Kids" asp-action="Learn" asp-route-id="@row.Item.Id" asp-route-skillGroupId="@Model.SkillGroup.Id">
+                        <span class="material-symbols-outlined">@(row.LatestStatus == "completed" ? "replay" : "play_arrow")</span>
+                        <span>@(row.LatestStatus is null ? "Vào bài" : "Học lại")</span>
                     </a>
                 </article>
             }
@@ -107,8 +108,8 @@
 </section>
 
 <nav class="kid-bottom-nav">
-    <a asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span>Trang chủ</a>
-    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span>Bài hôm nay</a>
-    <a asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span>Quà tặng</a>
-    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span>Phụ huynh</a>
+    <a class="active" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span><span>Trang chủ</span></a>
+    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span><span>Bài tập</span></a>
+    <a asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span><span>Quà tặng</span></a>
+    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span><span>Phụ huynh</span></a>
 </nav>
