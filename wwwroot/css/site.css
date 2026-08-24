@@ -7682,3 +7682,126 @@ body.focus-mode-active,
 .admin-btn-danger:hover {
   background: #dc2626;
 }
+
+/* Admin Lesson Preview Banner & Table Actions */
+.admin-preview-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-family: inherit;
+}
+
+.admin-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #38bdf8;
+}
+
+.admin-preview-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: #cbd5e1;
+}
+
+.admin-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.preview-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.preview-tool-btn.primary {
+  background: #ff8542;
+  border-color: #ff8542;
+  color: #ffffff;
+}
+
+.preview-tool-btn.primary:hover {
+  background: #f06a24;
+}
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.mini-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mini-action:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.mini-action.primary-link {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.mini-action.primary-link:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.mini-action.danger-link {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.mini-action.danger-link:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}

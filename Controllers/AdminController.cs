@@ -1,4 +1,5 @@
 using HanhTrangLop1.Data;
+using HanhTrangLop1.Infrastructure;
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -153,6 +154,202 @@ public class AdminController : Controller
         }
 
         return RedirectToEditor(item);
+    }
+
+    [HttpGet("learning-items/{id:guid}/preview")]
+    public async Task<IActionResult> PreviewLearningItem(Guid id)
+    {
+        var item = await _db.LearningItems
+            .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        var model = await BuildAdminPreviewLearnViewModelAsync(item, question);
+        return View("PreviewLearningItem", model);
+    }
+
+    [HttpPost("learning-items/{id:guid}/preview-answer")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviewAnswer(Guid id, SubmitAnswerViewModel answer)
+    {
+        var item = await _db.LearningItems
+            .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        var question = item?.Questions.FirstOrDefault(x => x.Id == answer.QuestionId);
+        if (item is null || question is null)
+        {
+            return NotFound();
+        }
+
+        var correctAnswer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
+        var isCorrect = LearningAnswerEvaluator.IsCorrect(item.InteractionType, answer.AnswerValue, correctAnswer);
+        var feedbackMessage = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
+
+        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, feedbackMessage, isCorrect);
+        return View("PreviewLearningItem", model);
+    }
+
+    [HttpPost("learning-items/{id:guid}/preview-tracing")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviewTracing(Guid id, SubmitTracingViewModel tracing)
+    {
+        var item = await _db.LearningItems
+            .Include(x => x.SkillGroup)
+            .Include(x => x.Topic)
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, "Bé đã hoàn thành bài tô nét xuất sắc!", true);
+        return View("PreviewLearningItem", model);
+    }
+
+    private async Task<LearnViewModel> BuildAdminPreviewLearnViewModelAsync(
+        LearningItem item,
+        Question? question,
+        string? feedbackMessage = null,
+        bool? isCorrect = null)
+    {
+        var payloadSymbol = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", string.Empty);
+        var tracingSymbol = ExtractAdminTracingSymbol(payloadSymbol, item.Title, question?.PromptText);
+        var questionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty);
+        if (string.IsNullOrWhiteSpace(questionImageUrl) && item.InteractionType == InteractionTypes.Tracing)
+        {
+            questionImageUrl = ResolveAdminTracingFlashcardUrl(tracingSymbol);
+        }
+        if (string.IsNullOrWhiteSpace(questionImageUrl) && question is not null)
+        {
+            questionImageUrl = ResolveAdminQuestionImageFromItemMedia(question);
+        }
+
+        var nextItem = await _db.LearningItems
+            .Where(x => x.SkillGroupId == item.SkillGroupId && x.SortOrder > item.SortOrder)
+            .OrderBy(x => x.SortOrder)
+            .FirstOrDefaultAsync();
+
+        return new LearnViewModel
+        {
+            Item = item,
+            ChildProfile = new ChildProfile { Nickname = "Bé Xem Thử (Admin)", SoundEnabled = true },
+            CurrentQuestion = question,
+            Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
+            TracingSymbol = tracingSymbol,
+            TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
+            TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
+            TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
+            TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
+            TracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty),
+            QuestionImageUrl = questionImageUrl,
+            QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
+            TitleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty),
+            QuestionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty),
+            InstructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty),
+            CorrectFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty),
+            RetryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty),
+            FeedbackMessage = feedbackMessage,
+            IsCorrect = isCorrect,
+            NextItemId = nextItem?.Id,
+            ReturnSkillGroupId = item.SkillGroupId
+        };
+    }
+
+    private static string ExtractAdminTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
+    {
+        if (!string.IsNullOrWhiteSpace(payloadSymbol) && !string.Equals(payloadSymbol.Trim(), "A", StringComparison.OrdinalIgnoreCase))
+        {
+            return payloadSymbol.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(promptText))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(promptText, @"cách viết\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups[1].Value.Trim();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(itemTitle))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét)\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                var val = match.Groups[2].Value.Trim();
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    return val;
+                }
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(payloadSymbol) ? "A" : payloadSymbol.Trim();
+    }
+
+    private static string ResolveAdminTracingFlashcardUrl(string symbol)
+    {
+        if (string.Equals(symbol?.Trim(), "0", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/images/photos/flashcard-number-0.svg";
+        }
+        if (int.TryParse(symbol, out var number) && number is >= 1 and <= 20)
+        {
+            return $"/images/photos/flashcard-number-{number}.jpg";
+        }
+
+        var trimmed = symbol?.Trim().ToLowerInvariant() ?? string.Empty;
+        if (trimmed.Length == 1)
+        {
+            var ch = trimmed[0];
+            if (ch is 'ă' or 'â' or 'đ' or 'ê' or 'ô' or 'ơ' or 'ư')
+            {
+                return $"/images/photos/flashcard-letter-{ch}.svg";
+            }
+            if (ch is >= 'a' and <= 'z')
+            {
+                return $"/images/photos/flashcard-letter-{ch}.jpg";
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static string ResolveAdminQuestionImageFromItemMedia(Question question)
+    {
+        var answer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
+        if (string.IsNullOrWhiteSpace(answer) || answer.Contains('|', StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
+        var payload = JsonNode.Parse(question.PayloadJson)?.AsObject();
+        if (payload?["itemMedia"] is not JsonObject itemMedia)
+        {
+            return string.Empty;
+        }
+
+        var match = itemMedia.FirstOrDefault(property =>
+            string.Equals(property.Key, answer.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (match.Value is JsonValue value && value.TryGetValue<string>(out var imageUrl))
+        {
+            return imageUrl;
+        }
+
+        return string.Empty;
     }
 
     [HttpPost("learning-items/generate-missing-audio")]

@@ -134,6 +134,7 @@
                         <td>@item.Questions.Count</td>
                         <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
                         <td class="table-actions">
+                            <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử giao diện bé học">Xem thử</a>
                             @if (item.InteractionType == InteractionTypes.Tracing)
                             {
                                 <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sửa</a>
@@ -143,7 +144,7 @@
                                 <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
                             }
                             <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
-                                <button class="mini-action" type="submit">Đồng bộ voice</button>
+                                <button class="mini-action" type="submit" title="Đồng bộ giọng đọc">Đồng bộ</button>
                             </form>
                             <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
                                 <button class="mini-action danger-link" type="submit">Xóa</button>
