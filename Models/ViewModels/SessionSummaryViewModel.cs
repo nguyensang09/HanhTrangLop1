@@ -8,4 +8,6 @@ public class SessionSummaryViewModel
     public int StarsEarned { get; set; }
     public int NeedsPracticeItems { get; set; }
     public IReadOnlyList<LearningAttempt> Attempts { get; set; } = [];
+    public List<RewardDefinition> NewlyUnlockedRewards { get; set; } = [];
+    public int TotalEarnedBadgesCount { get; set; }
 }

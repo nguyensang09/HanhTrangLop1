@@ -6372,3 +6372,415 @@ body.focus-mode-active,
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }
 }
+
+/* ===================================================
+   KIDS SUMMARY & REWARDS SCREENS (Tổng Kết & Kho Quà)
+   Chuẩn tỷ lệ, ngăn nắp, rực rỡ và chuyên nghiệp
+   =================================================== */
+
+.kid-summary-screen,
+.kid-rewards-screen {
+  max-width: 680px !important;
+  margin: 0 auto !important;
+  padding: 16px 16px 100px !important;
+}
+
+/* Summary Hero Card */
+.summary-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fffbeb 60%, #fef3c7 100%) !important;
+  border: 3px solid #ffffff !important;
+  border-radius: 32px !important;
+  box-shadow: 0 14px 36px rgba(245, 158, 11, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.8) !important;
+  margin-bottom: 22px !important;
+}
+
+.summary-mascot-wrap {
+  width: 105px !important;
+  height: 105px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.summary-mascot-img {
+  width: 100% !important;
+  max-width: 105px !important;
+  height: 105px !important;
+  object-fit: contain !important;
+}
+
+.summary-hero-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.summary-hero-copy h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #92400e;
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.summary-hero-copy p {
+  color: #a16207;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* New Badge Unlocked Card */
+.new-badge-unlocked-card {
+  position: relative;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #f59e0b 100%) !important;
+  border: 3.5px solid #ffffff !important;
+  border-radius: 30px !important;
+  padding: 24px 20px 20px !important;
+  box-shadow: 0 16px 40px rgba(217, 119, 6, 0.25) !important;
+  margin-bottom: 22px !important;
+  text-align: center;
+  animation: pulseTarget 2s infinite ease-in-out;
+}
+
+.new-badge-ribbon {
+  display: inline-block;
+  background: #ffffff;
+  color: #b45309;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  padding: 4px 14px;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 14px;
+}
+
+.new-badges-grid {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.unlocked-badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.unlocked-badge-medal {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #fef3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(180, 83, 9, 0.3);
+  color: #d97706;
+}
+
+.unlocked-badge-medal .material-symbols-outlined {
+  font-size: 2.2rem;
+}
+
+.unlocked-badge-item strong {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #78350f;
+}
+
+.unlocked-badge-item small {
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Stat Grid 3 Cột 1 Hàng Gọn Gàng */
+.summary-stat-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+  margin-bottom: 24px !important;
+}
+
+.summary-stat-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 16px 10px !important;
+  background: #ffffff !important;
+  border: 2.5px solid #f1f5f9 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04) !important;
+  gap: 2px !important;
+}
+
+.summary-stat-card .stat-icon {
+  font-size: 1.8rem;
+  margin-bottom: 2px;
+}
+
+.summary-stat-card.stat-mint { border-color: #a7f3d0 !important; }
+.summary-stat-card.stat-mint .stat-icon { color: #059669; }
+
+.summary-stat-card.stat-amber { border-color: #fde68a !important; }
+.summary-stat-card.stat-amber .stat-icon { color: #d97706; }
+
+.summary-stat-card.stat-coral { border-color: #fed7aa !important; }
+.summary-stat-card.stat-coral .stat-icon { color: #ea580c; }
+
+.summary-stat-card strong {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.summary-stat-card span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Actions Buttons Grid */
+.summary-actions-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  margin-bottom: 28px !important;
+}
+
+.summary-action-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 16px 24px !important;
+  font-size: 1.2rem !important;
+  border-radius: 26px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.summary-action-btn-secondary {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 14px 20px !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  border-radius: 22px !important;
+  text-decoration: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Summary Activities List (At Bottom) */
+.summary-list-card {
+  padding: 22px 20px !important;
+  border-radius: 28px !important;
+  background: #ffffff !important;
+  border: 2px solid #e2e8f0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+}
+
+.summary-list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 16px;
+}
+
+.summary-list-title .material-symbols-outlined {
+  color: #ff7a00;
+  font-size: 1.4rem;
+}
+
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+}
+
+.summary-row.completed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.summary-row.practice {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.summary-row .row-status-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.summary-row.completed .row-status-icon { color: #16a34a; }
+.summary-row.practice .row-status-icon { color: #d97706; }
+
+.summary-row-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-row-body strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.summary-row-body small {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Rewards Collection Grid (/kids/rewards) */
+.rewards-collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.reward-badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 16px 18px !important;
+  border-radius: 28px !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease;
+}
+
+.reward-badge-card.is-unlocked {
+  border: 3px solid #fde68a !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%) !important;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.15) !important;
+}
+
+.reward-badge-card.is-locked {
+  border: 2px dashed #cbd5e1 !important;
+  background: #f8fafc !important;
+  opacity: 0.75;
+}
+
+.badge-medal-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.is-unlocked .badge-medal-wrap {
+  background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(234, 179, 8, 0.4);
+  border: 2.5px solid #ffffff;
+}
+
+.is-locked .badge-medal-wrap {
+  background: #e2e8f0;
+  color: #94a3b8;
+}
+
+.badge-medal-wrap .badge-icon {
+  font-size: 2.2rem;
+}
+
+.badge-status-sparkle {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 1.1rem;
+}
+
+.badge-lock-tag {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 1rem;
+  background: #64748b;
+  color: #ffffff;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.badge-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.badge-rule {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 12px;
+  min-height: 34px;
+}
+
+.badge-earned-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-locked-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}

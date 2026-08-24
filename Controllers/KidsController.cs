@@ -332,12 +332,20 @@ public class KidsController : Controller
         }
 
         var sessionRaw = HttpContext.Session.GetString(SessionKeys.CurrentLearningSessionId);
-        if (!Guid.TryParse(sessionRaw, out var sessionId))
+        LearningSession? session = null;
+        if (Guid.TryParse(sessionRaw, out var sessionId))
         {
-            return RedirectToAction(nameof(Today));
+            session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id);
         }
 
-        var session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id);
+        if (session is null)
+        {
+            session = await _db.LearningSessions
+                .Where(x => x.ChildProfileId == child.Id)
+                .OrderByDescending(x => x.StartedAt)
+                .FirstOrDefaultAsync();
+        }
+
         if (session is null)
         {
             return RedirectToAction(nameof(Today));
@@ -354,14 +362,23 @@ public class KidsController : Controller
             .OrderBy(x => x.StartedAt)
             .ToListAsync();
 
+        var completedCount = attempts.Count(x => x.Status == "completed");
+        var starsEarned = attempts.Sum(x => x.StarsEarned);
+
+        // Luồng cấp huy hiệu tự động khi hoàn thành bài học
+        var newlyUnlocked = await EvaluateAndAwardBadgesAsync(child.Id, session, completedCount, starsEarned);
+        var totalBadges = await _db.ChildRewards.CountAsync(x => x.ChildProfileId == child.Id);
+
         var model = new SessionSummaryViewModel
         {
             ChildProfile = child,
             Session = session,
             Attempts = attempts,
-            CompletedItems = attempts.Count(x => x.Status == "completed"),
+            CompletedItems = completedCount,
             NeedsPracticeItems = attempts.Count(x => x.Status == "needs_practice"),
-            StarsEarned = attempts.Sum(x => x.StarsEarned)
+            StarsEarned = starsEarned,
+            NewlyUnlockedRewards = newlyUnlocked,
+            TotalEarnedBadgesCount = totalBadges
         };
 
         return View(model);
@@ -370,8 +387,126 @@ public class KidsController : Controller
     [HttpGet("rewards")]
     public async Task<IActionResult> Rewards()
     {
-        var rewards = await _db.RewardDefinitions.Where(x => x.IsActive).ToListAsync();
-        return View(rewards);
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null)
+        {
+            return RedirectToAction("Index", "Profiles");
+        }
+
+        await EnsureDefaultRewardsExistAsync();
+
+        var allRewards = await _db.RewardDefinitions
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Code)
+            .ToListAsync();
+
+        var earnedRewards = await _db.ChildRewards
+            .Where(x => x.ChildProfileId == child.Id)
+            .ToDictionaryAsync(x => x.RewardDefinitionId);
+
+        var totalStars = await _db.LearningAttempts
+            .Where(x => x.ChildProfileId == child.Id)
+            .SumAsync(x => x.StarsEarned);
+
+        var model = new KidsRewardsViewModel
+        {
+            ChildProfile = child,
+            TotalStars = totalStars,
+            Badges = allRewards.Select(r => new RewardItemViewModel
+            {
+                Definition = r,
+                IsEarned = earnedRewards.ContainsKey(r.Id),
+                EarnedAt = earnedRewards.TryGetValue(r.Id, out var cr) ? cr.EarnedAt : null
+            }).ToList()
+        };
+
+        return View(model);
+    }
+
+    private async Task EnsureDefaultRewardsExistAsync()
+    {
+        if (await _db.RewardDefinitions.AnyAsync()) return;
+
+        var rewardSeeds = new (string Code, string Name, string Type, string Icon, string Rule)[]
+        {
+            ("badge-first-step", "Bước Chân Đầu Tiên", "badge", "hotel_class", "Hoàn thành bài học đầu tiên"),
+            ("badge-daily-champion", "Chiến Binh Chăm Chỉ", "badge", "military_tech", "Hoàn thành trọn vẹn buổi học hôm nay"),
+            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các chữ cái tiếng Việt"),
+            ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Làm quen các con số và đếm số lượng"),
+            ("badge-logic-explorer", "Thám Tử Thông Minh", "badge", "psychology", "Vượt qua các câu đố tư duy logic"),
+            ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
+            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng")
+        };
+
+        foreach (var (code, name, type, icon, rule) in rewardSeeds)
+        {
+            _db.RewardDefinitions.Add(new RewardDefinition
+            {
+                Id = Guid.NewGuid(),
+                Code = code,
+                Name = name,
+                RewardType = type,
+                IconKey = icon,
+                RuleJson = rule,
+                IsActive = true
+            });
+        }
+        await _db.SaveChangesAsync();
+    }
+
+    private async Task<List<RewardDefinition>> EvaluateAndAwardBadgesAsync(Guid childProfileId, LearningSession session, int completedCount, int starsEarned)
+    {
+        await EnsureDefaultRewardsExistAsync();
+
+        var earnedIds = await _db.ChildRewards
+            .Where(x => x.ChildProfileId == childProfileId)
+            .Select(x => x.RewardDefinitionId)
+            .ToListAsync();
+
+        var allRewards = await _db.RewardDefinitions.ToDictionaryAsync(x => x.Code);
+        var newlyAwarded = new List<RewardDefinition>();
+
+        void TryAward(string code)
+        {
+            if (allRewards.TryGetValue(code, out var reward) && !earnedIds.Contains(reward.Id))
+            {
+                _db.ChildRewards.Add(new ChildReward
+                {
+                    Id = Guid.NewGuid(),
+                    ChildProfileId = childProfileId,
+                    RewardDefinitionId = reward.Id,
+                    EarnedAt = DateTimeOffset.UtcNow
+                });
+                earnedIds.Add(reward.Id);
+                newlyAwarded.Add(reward);
+            }
+        }
+
+        // 1. Bước chân đầu tiên: Hoàn thành ít nhất 1 bài
+        if (completedCount >= 1)
+        {
+            TryAward("badge-first-step");
+        }
+
+        // 2. Chiến binh chăm chỉ: Hoàn thành buổi học
+        if (session.Status == "completed" && completedCount >= 1)
+        {
+            TryAward("badge-daily-champion");
+        }
+
+        // 3. Đại sứ Sóc Nâu: Tổng sao >= 10
+        var totalStars = await _db.LearningAttempts.Where(x => x.ChildProfileId == childProfileId).SumAsync(x => x.StarsEarned);
+        if (totalStars >= 10)
+        {
+            TryAward("badge-super-scholar");
+        }
+
+        if (newlyAwarded.Count > 0)
+        {
+            await _db.SaveChangesAsync();
+        }
+
+        return newlyAwarded;
     }
 
     private Guid? GetSelectedChildProfileId()

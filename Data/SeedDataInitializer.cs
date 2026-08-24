@@ -23,6 +23,7 @@ public static class SeedDataInitializer
         await SeedRolesAsync(roleManager);
         await SeedAdminAsync(userManager, configuration, logger);
         await SeedCurriculumCatalogAsync(db);
+        await SeedRewardsAsync(db);
 
         var createdLessons = await LearningContentSeed.SeedAsync(db);
         if (createdLessons > 0)
@@ -151,5 +152,38 @@ public static class SeedDataInitializer
         await db.SaveChangesAsync();
     }
 
+    private static async Task SeedRewardsAsync(ApplicationDbContext db)
+    {
+        var rewardSeeds = new (string Code, string Name, string Type, string Icon, string Rule)[]
+        {
+            ("badge-first-step", "Bước Chân Đầu Tiên", "badge", "hotel_class", "Hoàn thành bài học đầu tiên"),
+            ("badge-daily-champion", "Chiến Binh Chăm Chỉ", "badge", "military_tech", "Hoàn thành trọn vẹn buổi học hôm nay"),
+            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các chữ cái tiếng Việt"),
+            ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Làm quen các con số và đếm số lượng"),
+            ("badge-logic-explorer", "Thám Tử Thông Minh", "badge", "psychology", "Vượt qua các câu đố tư duy logic"),
+            ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
+            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng")
+        };
 
+        var existing = await db.RewardDefinitions.ToDictionaryAsync(x => x.Code);
+        foreach (var (code, name, type, icon, rule) in rewardSeeds)
+        {
+            if (!existing.TryGetValue(code, out var item))
+            {
+                item = new RewardDefinition
+                {
+                    Id = Guid.NewGuid(),
+                    Code = code
+                };
+                db.RewardDefinitions.Add(item);
+            }
+            item.Name = name;
+            item.RewardType = type;
+            item.IconKey = icon;
+            item.RuleJson = rule;
+            item.IsActive = true;
+        }
+
+        await db.SaveChangesAsync();
+    }
 }

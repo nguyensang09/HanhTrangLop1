@@ -1,32 +1,36 @@
-@model IReadOnlyList<RewardDefinition>
+@model KidsRewardsViewModel
 @{
     ViewData["Title"] = "Quà tặng & Huy hiệu của bé";
+    var earnedCount = Model.Badges.Count(x => x.IsEarned);
+    var totalCount = Model.Badges.Count;
 }
 
 <section class="kid-screen kid-rewards-screen">
     <!-- Topbar -->
-    <div class="kid-topbar">
-        <a class="icon-link clay-button" asp-controller="Kids" asp-action="Home" title="Quay lại">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </a>
-        <div class="kid-topbar-title-wrap">
-            <p class="eyebrow">Bộ sưu tập huy hiệu</p>
-            <h1>Khu vườn của bé 🌳</h1>
+    <div class="kid-topbar home-topbar clay-card">
+        <div class="kid-header-profile">
+            <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Quay lại">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <p class="eyebrow">Bộ sưu tập thành tích</p>
+                <h1>Kho Quà Của Bé 🏆</h1>
+            </div>
         </div>
-        <div class="star-pill clay-button">
-            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
-            <span>@Model.Count quà tặng</span>
+        <div class="star-pill clay-button celebration-pill">
+            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+            <span>@earnedCount/@totalCount huy hiệu</span>
         </div>
     </div>
 
     <!-- Garden Welcome Banner -->
-    <div class="garden-card clay-card">
-        <div class="garden-mascot-col">
-            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="garden-mascot-img pulse-animation" />
+    <div class="summary-hero-card clay-card">
+        <div class="summary-mascot-wrap">
+            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="summary-mascot-img pulse-animation" />
         </div>
-        <div class="garden-copy-col">
-            <h2>Chào mừng bé đến với Khu Vườn Kỳ Diệu! ✨</h2>
-            <p>Mỗi khi chăm chỉ học xong một bài học, bé sẽ được Sóc Nâu tặng thêm những ngôi sao vàng, huy hiệu danh dự và các người bạn nhỏ để trang trí khu vườn thêm rực rỡ.</p>
+        <div class="summary-hero-copy">
+            <h2>Khu Vườn Danh Dự Của Bé! ✨</h2>
+            <p>Bé đã tích lũy được <strong>@Model.TotalStars ngôi sao vàng</strong>. Hãy tiếp tục học đều đặn mỗi ngày cùng Sóc Nâu để mở khóa trọn bộ huy hiệu danh giá nhé!</p>
         </div>
     </div>
 
@@ -34,31 +38,63 @@
     <div class="reward-section-header">
         <h2 class="section-title">
             <span class="material-symbols-outlined title-icon">military_tech</span>
-            Huy hiệu & Vật phẩm đã mở khóa
+            Bảng Huy Hiệu Vinh Danh
         </h2>
+        <span class="section-sub">Hoàn thành bài tập để thắp sáng tất cả huy hiệu</span>
     </div>
 
-    <div class="rewards-grid">
-        @foreach (var reward in Model)
+    <div class="rewards-collection-grid">
+        @foreach (var badge in Model.Badges)
         {
-            <div class="reward-tile clay-card">
-                <div class="reward-medal-badge">
-                    <span class="material-symbols-outlined reward-icon">@reward.IconKey</span>
+            <div class="reward-badge-card clay-card @(badge.IsEarned ? "is-unlocked" : "is-locked")">
+                <div class="badge-medal-wrap">
+                    <span class="material-symbols-outlined badge-icon">@badge.Definition.IconKey</span>
+                    @if (badge.IsEarned)
+                    {
+                        <span class="badge-status-sparkle">✨</span>
+                    }
+                    else
+                    {
+                        <span class="badge-lock-tag material-symbols-outlined">lock</span>
+                    }
                 </div>
-                <strong class="reward-name">@reward.Name</strong>
-                <span class="reward-type-tag">@reward.RewardType</span>
-                <span class="reward-stars-earned">
-                    <span class="material-symbols-outlined mini-star" style="font-variation-settings: 'FILL' 1;">star</span> Đã đạt
-                </span>
+                <strong class="badge-name">@badge.Definition.Name</strong>
+                <p class="badge-rule">@badge.Definition.RuleJson</p>
+                @if (badge.IsEarned)
+                {
+                    <span class="badge-earned-pill">
+                        <span class="material-symbols-outlined mini-star">check_circle</span>
+                        <span>Đã đạt</span>
+                    </span>
+                }
+                else
+                {
+                    <span class="badge-locked-pill">
+                        <span class="material-symbols-outlined mini-star">lock</span>
+                        <span>Chưa mở</span>
+                    </span>
+                }
             </div>
         }
     </div>
 </section>
 
-<!-- Bottom Nav -->
+<!-- Bottom Navigation for Kids -->
 <nav class="kid-bottom-nav">
-    <a asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span><span>Trang chủ</span></a>
-    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span><span>Bài tập</span></a>
-    <a class="active" asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span><span>Quà tặng</span></a>
-    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span><span>Phụ huynh</span></a>
+    <a asp-controller="Kids" asp-action="Home">
+        <span class="material-symbols-outlined">home</span>
+        <span>Trang chủ</span>
+    </a>
+    <a asp-controller="Kids" asp-action="Today">
+        <span class="material-symbols-outlined">edit_square</span>
+        <span>Bài tập</span>
+    </a>
+    <a class="active" asp-controller="Kids" asp-action="Rewards">
+        <span class="material-symbols-outlined">emoji_events</span>
+        <span>Quà tặng</span>
+    </a>
+    <a asp-controller="Parent" asp-action="Dashboard">
+        <span class="material-symbols-outlined">family_restroom</span>
+        <span>Phụ huynh</span>
+    </a>
 </nav>
