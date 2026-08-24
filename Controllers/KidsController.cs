@@ -6,6 +6,7 @@ using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace HanhTrangLop1.Controllers;
 
@@ -407,19 +408,30 @@ public class KidsController : Controller
         string? feedbackMessage = null,
         bool? isCorrect = null)
     {
+        var tracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A");
+        var questionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty);
+        if (string.IsNullOrWhiteSpace(questionImageUrl) && item.InteractionType == InteractionTypes.Tracing)
+        {
+            questionImageUrl = ResolveTracingFlashcardUrl(tracingSymbol);
+        }
+        if (string.IsNullOrWhiteSpace(questionImageUrl) && question is not null)
+        {
+            questionImageUrl = ResolveQuestionImageFromItemMedia(question);
+        }
+
         return new LearnViewModel
         {
             Item = item,
             ChildProfile = child,
             CurrentQuestion = question,
             Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
-            TracingSymbol = question is null ? "A" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", "A"),
+            TracingSymbol = tracingSymbol,
             TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
             TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
             TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
             TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
             TracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty),
-            QuestionImageUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageUrl", string.Empty),
+            QuestionImageUrl = questionImageUrl,
             QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
             TitleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty),
             QuestionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty),
@@ -431,6 +443,75 @@ public class KidsController : Controller
             NextItemId = await FindNextItemIdAsync(item, skillGroupId),
             ReturnSkillGroupId = skillGroupId
         };
+    }
+
+    private static string ResolveLetterFlashcardUrl(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length != 1)
+        {
+            return string.Empty;
+        }
+
+        var letter = char.ToUpperInvariant(symbol[0]);
+        return letter is >= 'A' and <= 'Z'
+            ? $"/images/photos/flashcard-letter-{char.ToLowerInvariant(letter)}.jpg"
+            : string.Empty;
+    }
+
+    private static string ResolveNumberFlashcardUrl(string symbol)
+    {
+        return int.TryParse(symbol, out var number) && number is >= 1 and <= 20
+            ? $"/images/photos/flashcard-number-{number}.jpg"
+            : string.Empty;
+    }
+
+    private static string ResolveTracingFlashcardUrl(string symbol)
+    {
+        var numberImageUrl = ResolveNumberFlashcardUrl(symbol);
+        return string.IsNullOrWhiteSpace(numberImageUrl)
+            ? ResolveLetterFlashcardUrl(symbol)
+            : numberImageUrl;
+    }
+
+    private static string ResolveQuestionImageFromItemMedia(Question question)
+    {
+        var answer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
+        if (string.IsNullOrWhiteSpace(answer) || answer.Contains('|', StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
+        var payload = JsonNode.Parse(question.PayloadJson)?.AsObject();
+        if (payload?["itemMedia"] is not JsonObject itemMedia)
+        {
+            return string.Empty;
+        }
+
+        foreach (var key in ResolveMediaKeys(answer))
+        {
+            var match = itemMedia.FirstOrDefault(property =>
+                string.Equals(property.Key, key, StringComparison.OrdinalIgnoreCase));
+            if (match.Value is JsonValue value && value.TryGetValue<string>(out var imageUrl))
+            {
+                return imageUrl;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static IEnumerable<string> ResolveMediaKeys(string text)
+    {
+        var normalized = text.Trim();
+        yield return normalized;
+
+        foreach (var prefix in new[] { "Con ", "Chú ", "Cái ", "Quả " })
+        {
+            if (normalized.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                yield return normalized[prefix.Length..];
+            }
+        }
     }
 
     private async Task<Guid?> FindNextItemIdAsync(LearningItem currentItem, Guid? skillGroupId)

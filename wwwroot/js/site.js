@@ -731,21 +731,25 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
     const symbolInput = form.querySelector("[data-tracing-symbol-input]");
     const symbolPreview = form.querySelector("[data-tracing-preview-symbol]");
     const guideMode = form.querySelector("[data-tracing-guide-mode]");
-    const startToggle = form.querySelector("[data-tracing-start-toggle]");
-    const startPoint = form.querySelector("[data-tracing-preview-start]");
+    const guidePreview = form.querySelector("[data-tracing-preview-guide]");
 
     const updateTracingPreview = () => {
+        const symbol = symbolInput?.value.trim() || "?";
         if (symbolPreview) {
-            symbolPreview.textContent = symbolInput?.value.trim() || "?";
+            symbolPreview.textContent = symbol;
             symbolPreview.hidden = guideMode?.value === "free";
         }
-        if (startPoint) {
-            startPoint.hidden = !startToggle?.checked;
+        if (guidePreview) {
+            guidePreview.hidden = guideMode?.value === "free";
+            if (guideMode?.value === "free") {
+                guidePreview.replaceChildren();
+            } else {
+                window.tracingGuides?.renderTracingGuide(guidePreview, symbol);
+            }
         }
     };
 
     symbolInput?.addEventListener("input", updateTracingPreview);
     guideMode?.addEventListener("change", updateTracingPreview);
-    startToggle?.addEventListener("change", updateTracingPreview);
     updateTracingPreview();
 });

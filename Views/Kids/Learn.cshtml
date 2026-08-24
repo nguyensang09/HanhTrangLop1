@@ -85,7 +85,20 @@
                     <h2>@(Model.CurrentQuestion?.PromptText ?? Model.Item.InstructionText)</h2>
                 </div>
             </div>
+            @if (!string.IsNullOrWhiteSpace(Model.QuestionImageUrl))
+            {
+                <div class="lesson-content-zone tracing-reference-zone">
+                    <img class="story-image lesson-support-image tracing-reference-image" src="@Model.QuestionImageUrl" alt="@Model.QuestionImageAltText" />
+                </div>
+            }
             <div class="lesson-answer-zone tracing-answer-zone">
+                <div class="tracing-guidance-card">
+                    <span class="material-symbols-outlined" aria-hidden="true">draw</span>
+                    <strong>Bé vẽ theo đường nét đứt nhé!</strong>
+                    <button class="learning-voice-button tracing-guidance-audio" type="button" title="Nghe hướng dẫn" data-learning-replay="question">
+                        <span class="material-symbols-outlined">volume_up</span>
+                    </button>
+                </div>
                 <div class="tracing-board tracing-canvas-host"
                      data-tracing-min-points="@Model.TracingMinPoints"
                      data-tracing-expected-strokes="@Model.TracingExpectedStrokeCount"
@@ -95,10 +108,7 @@
                     {
                         <div class="trace-letter outline-guide">@Model.TracingSymbol</div>
                     }
-                    @if (Model.TracingShowStartPoint)
-                    {
-                        <div class="trace-start"></div>
-                    }
+                    <div class="tracing-guide-overlay" aria-hidden="true"></div>
                     <canvas class="tracing-canvas" width="720" height="720" aria-label="Bảng tô nét"></canvas>
                     <div class="board-actions">
                         @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))

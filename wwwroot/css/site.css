@@ -1141,6 +1141,45 @@ a {
   min-height: auto;
 }
 
+.tracing-guidance-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 720px);
+  margin: 0 auto 12px;
+  border-radius: 8px;
+  background: #ffdf82;
+  padding: 12px 14px;
+  color: #7b4017;
+  box-shadow: 0 8px 18px rgba(139, 82, 25, 0.12);
+}
+
+.tracing-guidance-card > .material-symbols-outlined {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #fff6cf;
+  color: #ff8a00;
+  font-size: 1.35rem;
+}
+
+.tracing-guidance-card strong {
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.tracing-guidance-audio {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  background: #fff7df;
+  color: #f07135;
+}
+
 .trace-letter {
   position: absolute;
   inset: 0;
@@ -1150,8 +1189,8 @@ a {
   color: transparent;
   font-size: 18rem;
   font-weight: 800;
-  -webkit-text-stroke: 8px #98d8ca;
-  text-stroke: 8px #98d8ca;
+  -webkit-text-stroke: 8px rgba(152, 216, 202, 0.52);
+  text-stroke: 8px rgba(152, 216, 202, 0.52);
   pointer-events: none;
   user-select: none;
 }
@@ -1169,8 +1208,50 @@ a {
   pointer-events: none;
 }
 
-.tracing-preview-start {
-  display: none;
+.tracing-guide-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tracing-guide-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tracing-guide-path {
+  fill: none;
+  stroke: #ff8a4c;
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 12 16;
+  opacity: 0.78;
+}
+
+.tracing-start-halo {
+  fill: #4ee4c0;
+  opacity: 0.26;
+}
+
+.tracing-start-dot {
+  fill: #ff8a4c;
+  stroke: #fff;
+  stroke-width: 6;
+}
+
+.tracing-stroke-label {
+  dominant-baseline: middle;
+  fill: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: #087757;
+  stroke-linejoin: round;
+  stroke-width: 8px;
+  text-anchor: middle;
 }
 
 .curriculum-drilldown-link {
@@ -2739,36 +2820,25 @@ a {
   padding: 18px;
 }
 
+.tracing-preview-guidance {
+  margin-top: 14px;
+}
+
 .tracing-preview-board {
   position: relative;
   display: grid;
   place-items: center;
   aspect-ratio: 1;
   max-width: 620px;
-  margin: 20px auto 0;
-  border: 5px solid #bfeef7;
-  border-radius: 8px;
+  margin: 14px auto 0;
+  border: 3px solid #bfeef7;
+  border-radius: 16px;
   background: #fff;
+  overflow: hidden;
 }
 
 .tracing-preview-symbol {
-  color: transparent;
-  font-size: clamp(8rem, 22vw, 18rem);
-  font-weight: 800;
   line-height: 1;
-  -webkit-text-stroke: 8px #98d8ca;
-  text-stroke: 8px #98d8ca;
-}
-
-.tracing-preview-start {
-  position: absolute;
-  top: 16%;
-  left: 50%;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #ff9f72;
-  transform: translateX(-50%);
 }
 
 .toggle-row {
@@ -3541,6 +3611,14 @@ a {
   object-fit: contain;
 }
 
+.learning-focus-shell .tracing-reference-zone {
+  padding: 8px;
+}
+
+.learning-focus-shell .tracing-reference-image {
+  max-height: 220px;
+}
+
 .learning-focus-shell .activity-runtime {
   gap: 14px;
   margin-top: 0;
@@ -3661,10 +3739,32 @@ a {
 }
 
 .learning-focus-shell .tracing-board {
-  width: min(64dvh, 100%);
-  margin: 2px auto 12px;
+  width: min(58dvh, 100%);
+  margin: 2px auto 42px;
   border-width: 3px;
   border-radius: 20px;
+  overflow: visible;
+}
+
+.learning-focus-shell .trace-letter {
+  font-size: clamp(9rem, 54vw, 18rem);
+  -webkit-text-stroke-width: clamp(4px, 1.4vw, 8px);
+  text-stroke-width: clamp(4px, 1.4vw, 8px);
+}
+
+.learning-focus-shell .board-actions {
+  right: auto;
+  bottom: -28px;
+  left: 50%;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.learning-focus-shell .board-actions button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #d7ebe7;
+  box-shadow: 0 6px 14px rgba(23, 61, 77, 0.12);
 }
 
 .tracing-answer-zone .tracing-submit-form {
@@ -3817,6 +3917,43 @@ a {
 
   .learning-focus-shell .comparison-group span {
     font-size: 1.2rem;
+  }
+
+  .learning-focus-shell .tracing-board {
+    width: min(52dvh, 100%);
+    margin-bottom: 40px;
+  }
+
+  .tracing-guidance-card {
+    grid-template-columns: 36px minmax(0, 1fr) 38px;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+
+  .tracing-guidance-card > .material-symbols-outlined {
+    width: 34px;
+    height: 34px;
+    font-size: 1.15rem;
+  }
+
+  .tracing-guidance-card strong {
+    font-size: 0.98rem;
+  }
+
+  .tracing-guidance-audio {
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  .learning-focus-shell .board-actions {
+    bottom: -24px;
+  }
+
+  .learning-focus-shell .board-actions button {
+    width: 44px;
+    height: 44px;
   }
 
   .learning-result {

@@ -16,6 +16,7 @@
   const statusText = form.querySelector(".tracing-status");
   const minPoints = Number(host.dataset.tracingMinPoints || 20);
   const expectedStrokeCount = Number(host.dataset.tracingExpectedStrokes || 1);
+  const tracingSymbol = String(host.dataset.tracingSymbol || "").trim();
 
   const state = {
     drawing: false,
@@ -77,7 +78,7 @@
     const totalLength = state.strokes.reduce((total, stroke) => total + measureLength(stroke), 0);
 
     return {
-      source: "tracing_canvas_v1",
+      source: "tracing_canvas_v2",
       strokeCount: state.strokes.length,
       expectedStrokeCount,
       totalPoints,
@@ -164,5 +165,7 @@
   canvas.addEventListener("pointermove", continueStroke);
   canvas.addEventListener("pointerup", finishStroke);
   canvas.addEventListener("pointercancel", finishStroke);
+
+  window.tracingGuides?.renderTracingGuide(host.querySelector(".tracing-guide-overlay"), tracingSymbol);
   syncForm();
 })();

@@ -982,7 +982,7 @@ public class AdminController : Controller
             templateId,
             guideMode,
             expectedStrokeCount = model.ExpectedStrokeCount,
-            showStartPoint = false,
+            showStartPoint = true,
             audioUrl = Clean(model.AudioUrl)
         });
 
@@ -1001,7 +1001,7 @@ public class AdminController : Controller
         {
             guideMode,
             expectedStrokeCount = model.ExpectedStrokeCount,
-            showStartPoint = false
+            showStartPoint = true
         });
 
         item ??= new LearningItem

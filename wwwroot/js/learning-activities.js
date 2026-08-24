@@ -126,7 +126,6 @@
     const decorateButton = (button, text) => {
         const value = String(text ?? "");
         const normalized = value.trim().toLocaleLowerCase("vi-VN");
-        const pictogram = resolvePictogram(value);
         const mediaUrl = resolveItemMedia(value);
         const shape = shapeClasses.get(normalized);
         const color = colorValues.get(normalized);
@@ -137,14 +136,6 @@
             image.src = mediaUrl;
             image.alt = value;
             button.classList.add("has-answer-visual", "has-answer-photo");
-            button.append(image);
-        } else if (pictogram) {
-            const image = document.createElement("img");
-            image.className = "answer-pictogram";
-            image.src = `${pictogramPath}${pictogram}`;
-            image.alt = "";
-            image.setAttribute("aria-hidden", "true");
-            button.classList.add("has-answer-visual");
             button.append(image);
         } else if (shape || color) {
             const visual = document.createElement("span");

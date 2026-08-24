@@ -10,16 +10,105 @@ public static class LearningContentSeed
     private static readonly IReadOnlyDictionary<string, string> ObservationPhotos =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Táo"] = "/images/photos/apple.jpg",
-            ["Cam"] = "/images/photos/orange.jpg",
-            ["Cà rốt"] = "/images/photos/carrot.jpg",
-            ["Bắp cải"] = "/images/photos/cabbage.jpg",
+            ["Táo"] = "/images/photos/flashcard-apple.jpg",
+            ["Quả táo"] = "/images/photos/flashcard-apple.jpg",
+            ["🍎"] = "/images/photos/flashcard-apple.jpg",
+            ["Cam"] = "/images/photos/flashcard-orange.jpg",
+            ["Quả cam"] = "/images/photos/flashcard-orange.jpg",
+            ["🍊"] = "/images/photos/flashcard-orange.jpg",
+            ["Cà rốt"] = "/images/photos/flashcard-carrot.jpg",
+            ["Bắp cải"] = "/images/photos/flashcard-cabbage.jpg",
             ["Mèo"] = "/images/photos/cat.jpg",
-            ["Chó"] = "/images/photos/dog.jpg",
+            ["Con mèo"] = "/images/photos/cat.jpg",
             ["Vịt"] = "/images/photos/duck.jpg",
+            ["Con vịt"] = "/images/photos/duck.jpg",
             ["Cá"] = "/images/photos/fish.jpg",
-            ["Tôm"] = "/images/photos/shrimp.jpg",
-            ["Gà"] = "/images/photos/chicken.jpg"
+            ["Con cá"] = "/images/photos/fish.jpg",
+            ["Chú cá"] = "/images/photos/fish.jpg",
+            ["🐟"] = "/images/photos/fish.jpg",
+            ["Tôm"] = "/images/photos/flashcard-shrimp.jpg",
+            ["Con tôm"] = "/images/photos/flashcard-shrimp.jpg",
+            ["Gà"] = "/images/photos/chicken.jpg",
+            ["Con gà"] = "/images/photos/chicken.jpg",
+            ["1"] = "/images/photos/flashcard-number-1.jpg",
+            ["2"] = "/images/photos/flashcard-number-2.jpg",
+            ["3"] = "/images/photos/flashcard-number-3.jpg",
+            ["4"] = "/images/photos/flashcard-number-4.jpg",
+            ["5"] = "/images/photos/flashcard-number-5.jpg",
+            ["6"] = "/images/photos/flashcard-number-6.jpg",
+            ["7"] = "/images/photos/flashcard-number-7.jpg",
+            ["8"] = "/images/photos/flashcard-number-8.jpg",
+            ["9"] = "/images/photos/flashcard-number-9.jpg",
+            ["10"] = "/images/photos/flashcard-number-10.jpg",
+            ["11"] = "/images/photos/flashcard-number-11.jpg",
+            ["12"] = "/images/photos/flashcard-number-12.jpg",
+            ["13"] = "/images/photos/flashcard-number-13.jpg",
+            ["14"] = "/images/photos/flashcard-number-14.jpg",
+            ["15"] = "/images/photos/flashcard-number-15.jpg",
+            ["16"] = "/images/photos/flashcard-number-16.jpg",
+            ["17"] = "/images/photos/flashcard-number-17.jpg",
+            ["18"] = "/images/photos/flashcard-number-18.jpg",
+            ["19"] = "/images/photos/flashcard-number-19.jpg",
+            ["20"] = "/images/photos/flashcard-number-20.jpg",
+            ["A"] = "/images/photos/flashcard-letter-a.jpg",
+            ["a"] = "/images/photos/flashcard-letter-a.jpg",
+            ["B"] = "/images/photos/flashcard-letter-b.jpg",
+            ["b"] = "/images/photos/flashcard-letter-b.jpg",
+            ["C"] = "/images/photos/flashcard-letter-c.jpg",
+            ["c"] = "/images/photos/flashcard-letter-c.jpg",
+            ["D"] = "/images/photos/flashcard-letter-d.jpg",
+            ["d"] = "/images/photos/flashcard-letter-d.jpg",
+            ["E"] = "/images/photos/flashcard-letter-e.jpg",
+            ["e"] = "/images/photos/flashcard-letter-e.jpg",
+            ["F"] = "/images/photos/flashcard-letter-f.jpg",
+            ["f"] = "/images/photos/flashcard-letter-f.jpg",
+            ["G"] = "/images/photos/flashcard-letter-g.jpg",
+            ["g"] = "/images/photos/flashcard-letter-g.jpg",
+            ["H"] = "/images/photos/flashcard-letter-h.jpg",
+            ["h"] = "/images/photos/flashcard-letter-h.jpg",
+            ["I"] = "/images/photos/flashcard-letter-i.jpg",
+            ["i"] = "/images/photos/flashcard-letter-i.jpg",
+            ["J"] = "/images/photos/flashcard-letter-j.jpg",
+            ["j"] = "/images/photos/flashcard-letter-j.jpg",
+            ["K"] = "/images/photos/flashcard-letter-k.jpg",
+            ["k"] = "/images/photos/flashcard-letter-k.jpg",
+            ["L"] = "/images/photos/flashcard-letter-l.jpg",
+            ["l"] = "/images/photos/flashcard-letter-l.jpg",
+            ["M"] = "/images/photos/flashcard-letter-m.jpg",
+            ["m"] = "/images/photos/flashcard-letter-m.jpg",
+            ["N"] = "/images/photos/flashcard-letter-n.jpg",
+            ["n"] = "/images/photos/flashcard-letter-n.jpg",
+            ["O"] = "/images/photos/flashcard-letter-o.jpg",
+            ["o"] = "/images/photos/flashcard-letter-o.jpg",
+            ["P"] = "/images/photos/flashcard-letter-p.jpg",
+            ["p"] = "/images/photos/flashcard-letter-p.jpg",
+            ["Q"] = "/images/photos/flashcard-letter-q.jpg",
+            ["q"] = "/images/photos/flashcard-letter-q.jpg",
+            ["R"] = "/images/photos/flashcard-letter-r.jpg",
+            ["r"] = "/images/photos/flashcard-letter-r.jpg",
+            ["S"] = "/images/photos/flashcard-letter-s.jpg",
+            ["s"] = "/images/photos/flashcard-letter-s.jpg",
+            ["T"] = "/images/photos/flashcard-letter-t.jpg",
+            ["t"] = "/images/photos/flashcard-letter-t.jpg",
+            ["U"] = "/images/photos/flashcard-letter-u.jpg",
+            ["u"] = "/images/photos/flashcard-letter-u.jpg",
+            ["V"] = "/images/photos/flashcard-letter-v.jpg",
+            ["v"] = "/images/photos/flashcard-letter-v.jpg",
+            ["W"] = "/images/photos/flashcard-letter-w.jpg",
+            ["w"] = "/images/photos/flashcard-letter-w.jpg",
+            ["X"] = "/images/photos/flashcard-letter-x.jpg",
+            ["x"] = "/images/photos/flashcard-letter-x.jpg",
+            ["Y"] = "/images/photos/flashcard-letter-y.jpg",
+            ["y"] = "/images/photos/flashcard-letter-y.jpg",
+            ["Z"] = "/images/photos/flashcard-letter-z.jpg",
+            ["z"] = "/images/photos/flashcard-letter-z.jpg",
+            ["Ong"] = "/images/photos/flashcard-bee.jpg",
+            ["Bướm"] = "/images/photos/flashcard-butterfly.jpg",
+            ["Thỏ"] = "/images/photos/flashcard-rabbit.jpg",
+            ["Con thỏ"] = "/images/photos/flashcard-rabbit.jpg",
+            ["Rùa biển"] = "/images/photos/flashcard-sea-turtle.jpg",
+            ["Động vật biển"] = "/images/photos/flashcard-sea-animal.jpg",
+            ["Côn trùng"] = "/images/photos/flashcard-insects.jpg"
         };
     private static readonly string[] VietnameseAlphabet =
     [
@@ -74,14 +163,19 @@ public static class LearningContentSeed
             if (definition.InteractionType == InteractionTypes.Tracing)
             {
                 var templateId = Guid.NewGuid();
+                var tracingImageUrl = ResolveTracingFlashcardUrl(definition.Symbol);
                 payloadJson = JsonSerializer.Serialize(new
                 {
                     symbol = definition.Symbol,
                     templateId,
                     guideMode = "outline",
                     expectedStrokeCount = definition.ExpectedStrokeCount,
-                    showStartPoint = false,
-                    audioUrl = string.Empty
+                    showStartPoint = true,
+                    audioUrl = string.Empty,
+                    imageUrl = tracingImageUrl,
+                    imageAltText = string.IsNullOrWhiteSpace(tracingImageUrl)
+                        ? string.Empty
+                        : $"Thẻ học {definition.Symbol}"
                 });
                 db.TracingTemplates.Add(new TracingTemplate
                 {
@@ -96,7 +190,7 @@ public static class LearningContentSeed
                     {
                         guideMode = "outline",
                         expectedStrokeCount = definition.ExpectedStrokeCount,
-                        showStartPoint = false
+                        showStartPoint = true
                     }),
                     CreatedAt = now
                 });
@@ -180,8 +274,6 @@ public static class LearningContentSeed
             ("visual-counting-groups.png", "/images/lessons/visual-counting-groups.png", "Các nhóm táo, ngôi sao và khối xếp hình để luyện đếm"),
             ("visual-basic-shapes.png", "/images/lessons/visual-basic-shapes.png", "Sáu hình dạng cơ bản nhiều màu"),
             ("visual-road-safety.png", "/images/lessons/visual-road-safety.png", "Bé đội mũ bảo hiểm và chờ qua đường cùng người lớn"),
-            ("apple.jpg", "/images/photos/apple.jpg", "Một quả táo đỏ chụp rõ trên nền sáng"),
-            ("dog.jpg", "/images/photos/dog.jpg", "Chó cứu hộ màu đen nhìn nghiêng"),
             ("fish.jpg", "/images/photos/fish.jpg", "Cá vàng màu cam trong bể nước"),
             ("orange.jpg", "/images/photos/orange.jpg", "Những quả cam chín màu vàng cam"),
             ("carrot.jpg", "/images/photos/carrot.jpg", "Các củ cà rốt tươi còn nguyên lá"),
@@ -189,14 +281,62 @@ public static class LearningContentSeed
             ("cat.jpg", "/images/photos/cat.jpg", "Mèo màu vàng nhìn thẳng"),
             ("duck.jpg", "/images/photos/duck.jpg", "Vịt đang đi trên mặt đất"),
             ("shrimp.jpg", "/images/photos/shrimp.jpg", "Tôm nhỏ màu đỏ trên lá xanh"),
-            ("chicken.jpg", "/images/photos/chicken.jpg", "Gà mái nhìn nghiêng rõ đầu và thân")
+            ("chicken.jpg", "/images/photos/chicken.jpg", "Gà mái nhìn nghiêng rõ đầu và thân"),
+            ("flashcard-apple.jpg", "/images/photos/flashcard-apple.jpg", "Thẻ học quả táo có ảnh và chữ táo"),
+            ("flashcard-orange.jpg", "/images/photos/flashcard-orange.jpg", "Thẻ học quả cam có ảnh và chữ cam"),
+            ("flashcard-carrot.jpg", "/images/photos/flashcard-carrot.jpg", "Thẻ học củ cà rốt có ảnh và chữ cà rốt"),
+            ("flashcard-cabbage.jpg", "/images/photos/flashcard-cabbage.jpg", "Thẻ học bắp cải có ảnh và chữ bắp cải"),
+            ("flashcard-bee.jpg", "/images/photos/flashcard-bee.jpg", "Thẻ học con ong có ảnh và chữ ong"),
+            ("flashcard-butterfly.jpg", "/images/photos/flashcard-butterfly.jpg", "Thẻ học con bướm có ảnh và chữ bướm"),
+            ("flashcard-rabbit.jpg", "/images/photos/flashcard-rabbit.jpg", "Thẻ học con thỏ có ảnh và chữ thỏ"),
+            ("flashcard-shrimp.jpg", "/images/photos/flashcard-shrimp.jpg", "Thẻ học con tôm có ảnh và chữ tôm"),
+            ("flashcard-sea-turtle.jpg", "/images/photos/flashcard-sea-turtle.jpg", "Thẻ học rùa biển có ảnh và chữ rùa biển"),
+            ("flashcard-sea-animal.jpg", "/images/photos/flashcard-sea-animal.jpg", "Thẻ chủ đề động vật biển"),
+            ("flashcard-insects.jpg", "/images/photos/flashcard-insects.jpg", "Thẻ chủ đề côn trùng"),
+            ("flashcard-letter-a.jpg", "/images/photos/flashcard-letter-a.jpg", "Thẻ chữ A a với hình quả táo"),
+            ("flashcard-letter-b.jpg", "/images/photos/flashcard-letter-b.jpg", "Thẻ chữ B b với hình quả bóng"),
+            ("flashcard-letter-c.jpg", "/images/photos/flashcard-letter-c.jpg", "Thẻ chữ C c với hình con mèo"),
+            ("flashcard-letter-d.jpg", "/images/photos/flashcard-letter-d.jpg", "Thẻ chữ D d với hình búp bê"),
+            ("flashcard-letter-e.jpg", "/images/photos/flashcard-letter-e.jpg", "Thẻ chữ E e với hình quả trứng"),
+            ("flashcard-letter-f.jpg", "/images/photos/flashcard-letter-f.jpg", "Thẻ chữ F f với hình quạt"),
+            ("flashcard-letter-g.jpg", "/images/photos/flashcard-letter-g.jpg", "Thẻ chữ G g với hình khu vườn"),
+            ("flashcard-letter-h.jpg", "/images/photos/flashcard-letter-h.jpg", "Thẻ chữ H h với hình bàn tay"),
+            ("flashcard-letter-i.jpg", "/images/photos/flashcard-letter-i.jpg", "Thẻ chữ I i với hình băng"),
+            ("flashcard-letter-j.jpg", "/images/photos/flashcard-letter-j.jpg", "Thẻ chữ J j với hình mứt"),
+            ("flashcard-letter-k.jpg", "/images/photos/flashcard-letter-k.jpg", "Thẻ chữ K k với hình chuột túi"),
+            ("flashcard-letter-l.jpg", "/images/photos/flashcard-letter-l.jpg", "Thẻ chữ L l với hình cừu"),
+            ("flashcard-letter-m.jpg", "/images/photos/flashcard-letter-m.jpg", "Thẻ chữ M m với hình nấm"),
+            ("flashcard-letter-n.jpg", "/images/photos/flashcard-letter-n.jpg", "Thẻ chữ N n với hình lưới"),
+            ("flashcard-letter-o.jpg", "/images/photos/flashcard-letter-o.jpg", "Thẻ chữ O o với hình quả cam"),
+            ("flashcard-letter-p.jpg", "/images/photos/flashcard-letter-p.jpg", "Thẻ chữ P p với hình thú cưng"),
+            ("flashcard-letter-q.jpg", "/images/photos/flashcard-letter-q.jpg", "Thẻ chữ Q q với hình chăn"),
+            ("flashcard-letter-r.jpg", "/images/photos/flashcard-letter-r.jpg", "Thẻ chữ R r với hình mưa"),
+            ("flashcard-letter-s.jpg", "/images/photos/flashcard-letter-s.jpg", "Thẻ chữ S s với hình hoa hướng dương"),
+            ("flashcard-letter-t.jpg", "/images/photos/flashcard-letter-t.jpg", "Thẻ chữ T t với hình tàu hỏa"),
+            ("flashcard-letter-u.jpg", "/images/photos/flashcard-letter-u.jpg", "Thẻ chữ U u với hình quần áo lót"),
+            ("flashcard-letter-v.jpg", "/images/photos/flashcard-letter-v.jpg", "Thẻ chữ V v với hình bình hoa"),
+            ("flashcard-letter-w.jpg", "/images/photos/flashcard-letter-w.jpg", "Thẻ chữ W w với hình xe kéo"),
+            ("flashcard-letter-x.jpg", "/images/photos/flashcard-letter-x.jpg", "Thẻ chữ X x với hình phim X-quang"),
+            ("flashcard-letter-y.jpg", "/images/photos/flashcard-letter-y.jpg", "Thẻ chữ Y y với hình yo-yo"),
+            ("flashcard-letter-z.jpg", "/images/photos/flashcard-letter-z.jpg", "Thẻ chữ Z z với hình ngựa vằn")
         };
+        var numberImages = Enumerable.Range(1, 20)
+            .Select(number => (
+                $"flashcard-number-{number}.jpg",
+                $"/images/photos/flashcard-number-{number}.jpg",
+                $"Thẻ học số {number}"));
+        var countImages = Enumerable.Range(1, 10)
+            .Select(number => (
+                $"flashcard-count-{number}.jpg",
+                $"/images/photos/flashcard-count-{number}.jpg",
+                $"Thẻ đếm số lượng {number} với nhóm đồ vật trực quan"));
+        var allImages = images.Concat(numberImages).Concat(countImages);
         var existingPaths = await db.MediaAssets.AsNoTracking()
             .Where(x => x.AssetType == "image")
             .Select(x => x.StoragePath)
             .ToHashSetAsync();
 
-        foreach (var image in images.Where(x => !existingPaths.Contains(x.Item2)))
+        foreach (var image in allImages.Where(x => !existingPaths.Contains(x.Item2)))
         {
             db.MediaAssets.Add(new MediaAsset
             {
@@ -284,6 +424,15 @@ public static class LearningContentSeed
         }
 
         var currentImage = payload["imageUrl"]?.GetValue<string>() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(currentImage))
+        {
+            currentImage = ResolveQuestionImageUrl(lesson, payload);
+            if (!string.IsNullOrWhiteSpace(currentImage))
+            {
+                payload["imageUrl"] = currentImage;
+            }
+        }
+
         var imageAltText = currentImage switch
         {
             "/images/lessons/visual-counting-groups.png" => "Năm quả táo đỏ cùng các nhóm đồ vật nhiều màu",
@@ -294,6 +443,20 @@ public static class LearningContentSeed
             "/images/lessons/story-sharing.png" => "Hai bạn nhỏ vui vẻ chia sẻ bút màu",
             _ => string.Empty
         };
+        if (string.IsNullOrWhiteSpace(imageAltText) &&
+            TryReadNumberFlashcard(currentImage, "flashcard-count-", out var countNumber))
+        {
+            imageAltText = $"Thẻ đếm số lượng {countNumber} với nhóm đồ vật trực quan";
+        }
+        if (string.IsNullOrWhiteSpace(imageAltText) &&
+            TryReadNumberFlashcard(currentImage, "flashcard-number-", out var flashcardNumber))
+        {
+            imageAltText = $"Thẻ học số {flashcardNumber}";
+        }
+        if (string.IsNullOrWhiteSpace(imageAltText))
+        {
+            imageAltText = ResolveQuestionImageAltText(lesson, payload, currentImage);
+        }
         payload["imageAltText"] = imageAltText;
 
         var lessonValues = CollectStringValues(payload).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -329,6 +492,130 @@ public static class LearningContentSeed
                 yield return child;
             }
         }
+    }
+
+    private static string ResolveQuestionImageUrl(SeedLesson lesson, JsonObject payload)
+    {
+        if (lesson.InteractionType is InteractionTypes.MultiSelect or InteractionTypes.Matching or
+            InteractionTypes.Ordering or InteractionTypes.Classification or InteractionTypes.Comparison)
+        {
+            return string.Empty;
+        }
+
+        foreach (var candidate in ResolveQuestionImageCandidates(lesson, payload))
+        {
+            if (TryResolveObservationPhoto(candidate, out var imageUrl))
+            {
+                return imageUrl;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static string ResolveQuestionImageAltText(SeedLesson lesson, JsonObject payload, string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return string.Empty;
+        }
+
+        foreach (var candidate in ResolveQuestionImageCandidates(lesson, payload))
+        {
+            if (TryResolveObservationPhoto(candidate, out var candidateImageUrl) &&
+                string.Equals(candidateImageUrl, imageUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"Thẻ minh họa {candidate}";
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static IEnumerable<string> ResolveQuestionImageCandidates(SeedLesson lesson, JsonObject payload)
+    {
+        yield return lesson.CorrectAnswer;
+
+        foreach (var key in new[] { "targetLabel", "focusVisual", "objectSymbol" })
+        {
+            if (payload[key] is JsonValue value && value.TryGetValue<string>(out var text))
+            {
+                yield return text;
+            }
+        }
+    }
+
+    private static bool TryResolveObservationPhoto(string text, out string imageUrl)
+    {
+        imageUrl = string.Empty;
+        var normalized = text.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return false;
+        }
+
+        var candidates = new[]
+        {
+            normalized,
+            normalized.StartsWith("Con ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
+            normalized.StartsWith("Chú ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
+            normalized.StartsWith("Cái ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized,
+            normalized.StartsWith("Quả ", StringComparison.OrdinalIgnoreCase) ? normalized[4..] : normalized
+        };
+
+        foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (ObservationPhotos.TryGetValue(candidate, out var resolvedImageUrl))
+            {
+                imageUrl = resolvedImageUrl;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadNumberFlashcard(string imageUrl, string prefix, out int number)
+    {
+        number = 0;
+        var fileName = Path.GetFileNameWithoutExtension(imageUrl);
+        return fileName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+            int.TryParse(fileName[prefix.Length..], out number);
+    }
+
+    private static string ResolveLetterFlashcardUrl(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length != 1)
+        {
+            return string.Empty;
+        }
+
+        var letter = char.ToUpperInvariant(symbol[0]);
+        return letter is >= 'A' and <= 'Z'
+            ? $"/images/photos/flashcard-letter-{char.ToLowerInvariant(letter)}.jpg"
+            : string.Empty;
+    }
+
+    private static string ResolveNumberFlashcardUrl(string symbol)
+    {
+        return int.TryParse(symbol, out var number) && number is >= 1 and <= 20
+            ? $"/images/photos/flashcard-number-{number}.jpg"
+            : string.Empty;
+    }
+
+    private static string ResolveCountingFlashcardUrl(int count)
+    {
+        return count is >= 1 and <= 10
+            ? $"/images/photos/flashcard-count-{count}.jpg"
+            : string.Empty;
+    }
+
+    private static string ResolveTracingFlashcardUrl(string symbol)
+    {
+        var numberImageUrl = ResolveNumberFlashcardUrl(symbol);
+        return string.IsNullOrWhiteSpace(numberImageUrl)
+            ? ResolveLetterFlashcardUrl(symbol)
+            : numberImageUrl;
     }
 
     private static int ResolvePedagogicalOrder(string code, int fallbackOrder)
@@ -571,7 +858,7 @@ public static class LearningContentSeed
         .Replace(' ', '-');
 
     private static SeedLesson Tracing(string code, string title, string topicCode, string symbol, int strokes) =>
-        new(code, title, topicCode, InteractionTypes.Tracing, "Con tô theo đường viền từ điểm bắt đầu.", $"Con hãy tô ký tự {symbol}.", "{}", string.Empty, "Bắt đầu ở điểm màu cam và tô chậm theo đường viền.", symbol, strokes);
+        new(code, title, topicCode, InteractionTypes.Tracing, "Bé vẽ theo đường nét đứt nhé.", $"Bé hãy quan sát cách viết {symbol} nhé!", "{}", string.Empty, "Bắt đầu ở chấm màu cam, đi theo mũi tên và tô chậm trên nét đứt.", symbol, strokes);
 
     private static SeedLesson Choice(string code, string title, string topicCode, string type, string instruction, string prompt, string[] choices, string answer, string speechText = "", string imageUrl = "") =>
         Lesson(code, title, topicCode, type, instruction, prompt, new { choices, targetLabel = string.Empty, audioUrl = string.Empty, speechText, imageUrl }, answer);
@@ -601,10 +888,10 @@ public static class LearningContentSeed
         Lesson(code, title, topicCode, InteractionTypes.Ordering, "Con dùng các nút mũi tên để sắp xếp đúng thứ tự.", "Thứ tự đúng là gì?", new { items, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', items));
 
     private static SeedLesson Counting(string code, string title, string topicCode, string symbol, int count) =>
-        Lesson(code, title, topicCode, InteractionTypes.Counting, "Con chạm từng đồ vật để đếm rồi chọn số đúng.", "Có bao nhiêu đồ vật?", new { choices = new[] { Math.Max(0, count - 1).ToString(), count.ToString(), (count + 1).ToString() }, objectSymbol = symbol, targetCount = count, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
+        Lesson(code, title, topicCode, InteractionTypes.Counting, "Con chạm từng đồ vật để đếm rồi chọn số đúng.", "Có bao nhiêu đồ vật?", new { choices = new[] { Math.Max(0, count - 1).ToString(), count.ToString(), (count + 1).ToString() }, objectSymbol = symbol, targetCount = count, imageUrl = ResolveCountingFlashcardUrl(count), audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
 
     private static SeedLesson Quantity(string code, string title, string topicCode, string symbol, int count) =>
-        Lesson(code, title, topicCode, InteractionTypes.QuantityBuilder, "Con thêm hoặc bớt đồ vật để tạo đúng số lượng.", $"Hãy tạo {count} đồ vật.", new { objectSymbol = symbol, targetCount = count, maxItems = count + 3, targetLabel = "Số lượng đã tạo", imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
+        Lesson(code, title, topicCode, InteractionTypes.QuantityBuilder, "Con thêm hoặc bớt đồ vật để tạo đúng số lượng.", $"Hãy tạo {count} đồ vật.", new { objectSymbol = symbol, targetCount = count, maxItems = count + 3, targetLabel = "Số lượng đã tạo", imageUrl = ResolveCountingFlashcardUrl(count), audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
 
     private static SeedLesson Comparison(string code, string title, string topicCode, string symbol, string leftLabel, int leftCount, string rightLabel, int rightCount, string comparisonMode = "more")
     {
