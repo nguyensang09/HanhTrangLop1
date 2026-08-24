@@ -3,26 +3,28 @@
     ViewData["Title"] = "Quản lý Phụ huynh & Bé";
 }
 
-<section class="container dashboard-wrap">
-    @if (TempData["SuccessMessage"] is string msg)
-    {
-        <div class="feedback-band success">
-            <span class="material-symbols-outlined">check_circle</span>
-            <strong>@msg</strong>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] is string errMsg)
-    {
-        <div class="feedback-band error">
-            <span class="material-symbols-outlined">error</span>
-            <strong>@errMsg</strong>
-        </div>
-    }
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        @if (TempData["SuccessMessage"] is string msg)
+        {
+            <div class="feedback-band success">
+                <span class="material-symbols-outlined">check_circle</span>
+                <strong>@msg</strong>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] is string errMsg)
+        {
+            <div class="feedback-band error">
+                <span class="material-symbols-outlined">error</span>
+                <strong>@errMsg</strong>
+            </div>
+        }
 
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Quản trị hệ thống</p>
-            <h1>Quản lý Phụ huynh & Hồ sơ Bé</h1>
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Quản trị hệ thống</p>
+                <h1>Quản lý Phụ huynh & Hồ sơ Bé</h1>
         </div>
         <div class="hero-actions">
             <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
@@ -114,43 +116,45 @@
 
                         @if (parent.Children.Count > 0)
                         {
-                            <table class="app-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nickname</th>
-                                        <th>Độ tuổi</th>
-                                        <th>Thời lượng</th>
-                                        <th>Tiến độ</th>
-                                        <th>Huy hiệu</th>
-                                        <th>Hoạt động gần nhất</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var child in parent.Children)
-                                    {
+                            <div class="table-responsive">
+                                <table class="app-table">
+                                    <thead>
                                         <tr>
-                                            <td>
-                                                <strong>@child.Nickname</strong>
-                                            </td>
-                                            <td>@(child.BirthYear.HasValue ? $"{DateTime.Now.Year - child.BirthYear.Value} tuổi" : "Mầm non")</td>
-                                            <td>@child.DailyLearningMinutes phút/ngày</td>
-                                            <td>
-                                                <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
-                                                <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
-                                            </td>
-                                            <td>@child.BadgesCount 🏆</td>
-                                            <td>@(child.LastActiveAt.HasValue ? child.LastActiveAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa học")</td>
-                                            <td>
-                                                <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
-                                                    <span class="material-symbols-outlined">visibility</span>
-                                                    Chi tiết & Xóa rác
-                                                </a>
-                                            </td>
+                                            <th>Nickname</th>
+                                            <th>Độ tuổi</th>
+                                            <th>Thời lượng</th>
+                                            <th>Tiến độ</th>
+                                            <th>Huy hiệu</th>
+                                            <th>Hoạt động gần nhất</th>
+                                            <th>Thao tác</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var child in parent.Children)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@child.Nickname</strong>
+                                                </td>
+                                                <td>@(child.BirthYear.HasValue ? $"{DateTime.Now.Year - child.BirthYear.Value} tuổi" : "Mầm non")</td>
+                                                <td>@child.DailyLearningMinutes phút/ngày</td>
+                                                <td>
+                                                    <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
+                                                    <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
+                                                </td>
+                                                <td>@child.BadgesCount 🏆</td>
+                                                <td>@(child.LastActiveAt.HasValue ? child.LastActiveAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa học")</td>
+                                                <td>
+                                                    <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
+                                                        <span class="material-symbols-outlined">visibility</span>
+                                                        Chi tiết & Xóa rác
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                         else
                         {
@@ -169,37 +173,40 @@
             <div class="panel-heading">
                 <h2>Hồ sơ bé Khách / Chưa đăng nhập (@Model.GuestChildren.Count bé)</h2>
             </div>
-            <table class="app-table">
-                <thead>
-                    <tr>
-                        <th>Nickname</th>
-                        <th>Thời lượng</th>
-                        <th>Tiến độ</th>
-                        <th>Huy hiệu</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var child in Model.GuestChildren)
-                    {
+            <div class="table-responsive">
+                <table class="app-table">
+                    <thead>
                         <tr>
-                            <td><strong>@child.Nickname</strong></td>
-                            <td>@child.DailyLearningMinutes phút/ngày</td>
-                            <td>
-                                <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
-                                <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
-                            </td>
-                            <td>@child.BadgesCount 🏆</td>
-                            <td>
-                                <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
-                                    <span class="material-symbols-outlined">visibility</span>
-                                    Chi tiết & Dọn rác
-                                </a>
-                            </td>
+                            <th>Nickname</th>
+                            <th>Thời lượng</th>
+                            <th>Tiến độ</th>
+                            <th>Huy hiệu</th>
+                            <th>Thao tác</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var child in Model.GuestChildren)
+                        {
+                            <tr>
+                                <td><strong>@child.Nickname</strong></td>
+                                <td>@child.DailyLearningMinutes phút/ngày</td>
+                                <td>
+                                    <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
+                                    <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
+                                </td>
+                                <td>@child.BadgesCount 🏆</td>
+                                <td>
+                                    <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                        Chi tiết & Dọn rác
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
+    </main>
 </section>

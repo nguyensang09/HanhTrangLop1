@@ -3,19 +3,21 @@
     ViewData["Title"] = $"Chi tiết học tập - {Model.Child.Nickname}";
 }
 
-<section class="container dashboard-wrap">
-    @if (TempData["SuccessMessage"] is string msg)
-    {
-        <div class="feedback-band success">
-            <span class="material-symbols-outlined">check_circle</span>
-            <strong>@msg</strong>
-        </div>
-    }
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        @if (TempData["SuccessMessage"] is string msg)
+        {
+            <div class="feedback-band success">
+                <span class="material-symbols-outlined">check_circle</span>
+                <strong>@msg</strong>
+            </div>
+        }
 
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Quản trị hồ sơ bé</p>
-            <h1>Bé @Model.Child.Nickname</h1>
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Quản trị hồ sơ bé</p>
+                <h1>Bé @Model.Child.Nickname</h1>
         </div>
         <div class="hero-actions">
             <a class="app-btn app-btn-muted app-btn-small" asp-action="ParentsAndKids">
@@ -92,35 +94,37 @@
             <div class="panel-heading">
                 <h2>Tiến độ theo nhóm kỹ năng</h2>
             </div>
-            <table class="app-table">
-                <thead>
-                    <tr>
-                        <th>Nhóm kỹ năng</th>
-                        <th>Độ thành thạo</th>
-                        <th>Đã hoàn thành</th>
-                        <th>Cần luyện thêm</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var sp in Model.SkillProgresses)
-                    {
-                        var percent = (int)(sp.MasteryLevel * 100);
+            <div class="table-responsive">
+                <table class="app-table">
+                    <thead>
                         <tr>
-                            <td><strong>@(sp.SkillGroup?.Name ?? "Nhóm kỹ năng")</strong></td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div class="progress-track" style="width: 120px; height: 10px;">
-                                        <div class="progress-bar-fill" style="width:@percent%"></div>
-                                    </div>
-                                    <span>@percent%</span>
-                                </div>
-                            </td>
-                            <td><span class="status-chip status-published">@sp.CompletedItems bài</span></td>
-                            <td><span class="status-chip status-draft">@sp.NeedsPracticeItems bài</span></td>
+                            <th>Nhóm kỹ năng</th>
+                            <th>Độ thành thạo</th>
+                            <th>Đã hoàn thành</th>
+                            <th>Cần luyện thêm</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var sp in Model.SkillProgresses)
+                        {
+                            var percent = (int)(sp.MasteryLevel * 100);
+                            <tr>
+                                <td><strong>@(sp.SkillGroup?.Name ?? "Nhóm kỹ năng")</strong></td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="progress-track" style="width: 120px; height: 10px;">
+                                            <div class="progress-bar-fill" style="width:@percent%"></div>
+                                        </div>
+                                        <span>@percent%</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-chip status-published">@sp.CompletedItems bài</span></td>
+                                <td><span class="status-chip status-draft">@sp.NeedsPracticeItems bài</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 
@@ -154,39 +158,42 @@
 
         @if (Model.RecentAttempts.Count > 0)
         {
-            <table class="app-table">
-                <thead>
-                    <tr>
-                        <th>Thời gian</th>
-                        <th>Bài học</th>
-                        <th>Nhóm kỹ năng</th>
-                        <th>Kết quả</th>
-                        <th>Số sao</th>
-                        <th>Thời lượng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var att in Model.RecentAttempts)
-                    {
+            <div class="table-responsive">
+                <table class="app-table">
+                    <thead>
                         <tr>
-                            <td>@att.StartedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td><strong>@(att.LearningItem?.Title ?? "Bài tập")</strong></td>
-                            <td>@(att.LearningItem?.SkillGroup?.Name ?? "—")</td>
-                            <td>
-                                <span class="status-chip @(att.Status == "completed" ? "status-published" : "status-draft")">
-                                    @(att.Status == "completed" ? "Đạt chuẩn" : "Cần luyện lại")
-                                </span>
-                            </td>
-                            <td>+@att.StarsEarned ⭐</td>
-                            <td>@att.DurationSeconds giây</td>
+                            <th>Thời gian</th>
+                            <th>Bài học</th>
+                            <th>Nhóm kỹ năng</th>
+                            <th>Kết quả</th>
+                            <th>Số sao</th>
+                            <th>Thời lượng</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var att in Model.RecentAttempts)
+                        {
+                            <tr>
+                                <td>@att.StartedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><strong>@(att.LearningItem?.Title ?? "Bài tập")</strong></td>
+                                <td>@(att.LearningItem?.SkillGroup?.Name ?? "—")</td>
+                                <td>
+                                    <span class="status-chip @(att.Status == "completed" ? "status-published" : "status-draft")">
+                                        @(att.Status == "completed" ? "Đạt chuẩn" : "Cần luyện lại")
+                                    </span>
+                                </td>
+                                <td>+@att.StarsEarned ⭐</td>
+                                <td>@att.DurationSeconds giây</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
         else
         {
             <p>Bé chưa có lịch sử làm bài tập nào.</p>
         }
     </div>
+    </main>
 </section>

@@ -4,11 +4,13 @@
     var topicCount = Model.SkillGroups.Sum(x => x.Topics.Count);
 }
 
-<section class="container dashboard-wrap">
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Danh mục hệ thống</p>
-            <h1>Cấu trúc chương trình</h1>
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Danh mục hệ thống</p>
+                <h1>Cấu trúc chương trình</h1>
         </div>
         <div class="dashboard-actions">
             <a class="app-btn app-btn-small" asp-action="CreateChoice">
@@ -77,4 +79,5 @@
             </section>
         }
     </div>
+    </main>
 </section>

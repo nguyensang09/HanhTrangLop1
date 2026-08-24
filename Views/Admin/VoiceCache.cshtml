@@ -30,18 +30,20 @@
     };
 }
 
-<section class="container dashboard-wrap">
-    @if (TempData["AdminMessage"] is string message)
-    {
-        <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
-    }
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        @if (TempData["AdminMessage"] is string message)
+        {
+            <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
+        }
 
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Thư viện âm thanh riêng</p>
-            <h1>Kiểm soát voice</h1>
-            <p class="empty-note">@totalCount mục, @missingCount mục chưa có file. Đang hiển thị @Model.Count / @filteredCount mục.</p>
-        </div>
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Thư viện âm thanh riêng</p>
+                <h1>Kiểm soát voice</h1>
+                <p class="empty-note">@totalCount mục, @missingCount mục chưa có file. Đang hiển thị @Model.Count / @filteredCount mục.</p>
+            </div>
         <div class="hero-actions">
             <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
                 <button class="app-btn app-btn-small" type="submit">
@@ -232,4 +234,5 @@
             </nav>
         }
     </div>
+    </main>
 </section>

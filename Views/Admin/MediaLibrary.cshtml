@@ -3,39 +3,42 @@
     ViewData["Title"] = "Thư viện hình ảnh";
 }
 
-<section class="container dashboard-wrap">
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Tài nguyên nội dung</p>
-            <h1>Thư viện hình ảnh</h1>
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Tài nguyên nội dung</p>
+                <h1>Thư viện hình ảnh</h1>
+            </div>
+            <div class="hero-actions">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
+                    <span class="material-symbols-outlined">graphic_eq</span>
+                    Kiểm soát voice
+                </a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Dashboard
+                </a>
+            </div>
         </div>
-        <div class="hero-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
-                <span class="material-symbols-outlined">graphic_eq</span>
-                Kiểm soát voice
-            </a>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Dashboard
-            </a>
-        </div>
-    </div>
 
-    <div class="media-library-section">
-        <h2>Hình ảnh</h2>
-        @if (!Model.Images.Any())
-        {
-            <p class="empty-note">Chưa có hình. Tải hình khi tạo bài để thêm vào thư viện.</p>
-        }
-        <div class="media-library-grid">
-            @foreach (var asset in Model.Images)
+        <div class="media-library-section">
+            <h2>Hình ảnh</h2>
+            @if (!Model.Images.Any())
             {
-                <article class="media-asset-card">
-                    <img src="@asset.StoragePath" alt="@(asset.AltText ?? asset.FileName)" />
-                    <strong>@asset.FileName</strong>
-                    <small>@asset.StoragePath</small>
-                </article>
+                <p class="empty-note">Chưa có hình. Tải hình khi tạo bài để thêm vào thư viện.</p>
             }
+            <div class="media-library-grid">
+                @foreach (var asset in Model.Images)
+                {
+                    <article class="media-asset-card">
+                        <img src="@asset.StoragePath" alt="@(asset.AltText ?? asset.FileName)" />
+                        <strong>@asset.FileName</strong>
+                        <small>@asset.StoragePath</small>
+                    </article>
+                }
+            </div>
         </div>
-    </div>
+    </main>
 </section>

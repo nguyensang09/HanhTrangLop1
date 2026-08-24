@@ -10,10 +10,12 @@
     var imageAssetsJson = ViewBag.ImageAssetsJson as string ?? "[]";
 }
 
-<section class="activity-builder-page">
-    <script type="application/json" data-voice-cache-json>@Html.Raw(voiceCacheJson)</script>
-    <script type="application/json" data-image-assets-json>@Html.Raw(imageAssetsJson)</script>
-    <div class="builder-topbar">
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main activity-builder-page">
+        <script type="application/json" data-voice-cache-json>@Html.Raw(voiceCacheJson)</script>
+        <script type="application/json" data-image-assets-json>@Html.Raw(imageAssetsJson)</script>
+        <div class="builder-topbar">
         <div>
             <p class="eyebrow">Quản trị nội dung</p>
             <h1>@(Model.Id.HasValue ? "Sửa bài học" : "Trình tạo bài học")</h1>
@@ -307,6 +309,7 @@
     {
         <partial name="_LearningItemWorkflow" model="@(new LearningItemWorkflowViewModel { Id = Model.Id.Value, Status = Model.Status, IsCompatible = Model.IsCompatible })" />
     }
+    </main>
 </section>
 
 @section Scripts {

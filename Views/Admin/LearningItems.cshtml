@@ -3,15 +3,17 @@
     ViewData["Title"] = "Kho nội dung";
 }
 
-<section class="container dashboard-wrap">
-    @if (TempData["AdminMessage"] is string message)
-    {
-        <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
-    }
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Quản trị nội dung</p>
-            <h1>Kho bài học</h1>
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        @if (TempData["AdminMessage"] is string message)
+        {
+            <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
+        }
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Quản trị nội dung</p>
+                <h1>Kho bài học</h1>
         </div>
         <div class="hero-actions">
             <a class="app-btn app-btn-muted app-btn-small" asp-action="Catalogs">
@@ -94,53 +96,64 @@
                 <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô nét</option>
             </select>
         </div>
-        <button class="app-btn app-btn-small" type="submit">Lọc</button>
+        <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <button class="app-btn app-btn-small" type="submit">
+                <span class="material-symbols-outlined">filter_alt</span>
+                Lọc
+            </button>
+            @if (Model.SkillGroupId.HasValue || !string.IsNullOrWhiteSpace(Model.Status) || Model.TopicId.HasValue || !string.IsNullOrWhiteSpace(Model.InteractionType))
+            {
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Xóa lọc</a>
+            }
+        </div>
     </form>
 
     <div class="soft-card report-panel mt-4">
-        <table class="app-table admin-content-table">
-            <thead>
-            <tr>
-                <th>Tên bài</th>
-                <th>Nhóm</th>
-                <th>Dạng</th>
-                <th>Thứ tự</th>
-                <th>Câu hỏi</th>
-                <th>Trạng thái</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model.Items)
-            {
-                var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
+        <div class="table-responsive">
+            <table class="app-table admin-content-table">
+                <thead>
                 <tr>
-                    <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
-                    <td>@item.SkillGroup?.Name</td>
-                    <td>@ActivityTemplateCatalog.GetDisplayName(item.InteractionType) @if (!isCompatible) { <span class="status-chip status-warning">Cần chuẩn hóa</span> }</td>
-                    <td>@item.SortOrder</td>
-                    <td>@item.Questions.Count</td>
-                    <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
-                    <td class="table-actions">
-                        @if (item.InteractionType == InteractionTypes.Tracing)
-                        {
-                            <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sửa</a>
-                        }
-                        else
-                        {
-                            <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
-                        }
-                        <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
-                            <button class="mini-action" type="submit">Đồng bộ voice</button>
-                        </form>
-                        <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
-                            <button class="mini-action danger-link" type="submit">Xóa</button>
-                        </form>
-                    </td>
+                    <th>Tên bài</th>
+                    <th>Nhóm</th>
+                    <th>Dạng</th>
+                    <th>Thứ tự</th>
+                    <th>Câu hỏi</th>
+                    <th>Trạng thái</th>
+                    <th></th>
                 </tr>
-            }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
+                    <tr>
+                        <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
+                        <td>@item.SkillGroup?.Name</td>
+                        <td>@ActivityTemplateCatalog.GetDisplayName(item.InteractionType) @if (!isCompatible) { <span class="status-chip status-warning">Cần chuẩn hóa</span> }</td>
+                        <td>@item.SortOrder</td>
+                        <td>@item.Questions.Count</td>
+                        <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
+                        <td class="table-actions">
+                            @if (item.InteractionType == InteractionTypes.Tracing)
+                            {
+                                <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sửa</a>
+                            }
+                            else
+                            {
+                                <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
+                            }
+                            <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
+                                <button class="mini-action" type="submit">Đồng bộ voice</button>
+                            </form>
+                            <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
+                                <button class="mini-action danger-link" type="submit">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 
     @if (Model.TotalPages > 1)
@@ -158,4 +171,5 @@
                aria-label="Trang sau"><span class="material-symbols-outlined">chevron_right</span></a>
         </nav>
     }
+    </main>
 </section>

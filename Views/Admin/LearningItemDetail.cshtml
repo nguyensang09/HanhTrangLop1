@@ -4,11 +4,13 @@
     var isCompatible = ActivityTemplateCatalog.IsItemAllowed(Model);
 }
 
-<section class="container dashboard-wrap">
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Chi tiết bài học</p>
-            <h1>@Model.Title</h1>
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Chi tiết bài học</p>
+                <h1>@Model.Title</h1>
         </div>
         <div class="dashboard-actions">
             <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
@@ -85,4 +87,5 @@
             }
         </div>
     </div>
+    </main>
 </section>

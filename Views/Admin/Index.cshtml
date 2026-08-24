@@ -4,21 +4,7 @@
 }
 
 <section class="admin-layout">
-    <aside class="admin-side">
-        <div class="squirrel-face small">
-            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="admin-brand-icon" />
-            <span>Quản trị viên</span>
-        </div>
-        <h1>Quản trị hệ thống</h1>
-        <a class="active" asp-action="Index"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
-        <a asp-action="ParentsAndKids"><span class="material-symbols-outlined">family_restroom</span>Phụ huynh & Bé</a>
-        <a asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho nội dung</a>
-        <a asp-action="Catalogs"><span class="material-symbols-outlined">account_tree</span>Cấu trúc chương trình</a>
-        <a asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện hình ảnh</a>
-        <a asp-action="VoiceCache"><span class="material-symbols-outlined">graphic_eq</span>Kiểm soát voice</a>
-        <a asp-action="CreateChoice"><span class="material-symbols-outlined">add_circle</span>Tạo bài tương tác</a>
-        <a asp-action="CreateTracing"><span class="material-symbols-outlined">draw</span>Tạo bài tô nét</a>
-    </aside>
+    <partial name="_AdminSidebar" />
     <main class="admin-main">
         <div class="dashboard-header">
             <div>

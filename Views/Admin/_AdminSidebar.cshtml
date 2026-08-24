@@ -1,0 +1,44 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<aside class="admin-side">
+    <div class="admin-brand-wrap">
+        <a asp-controller="Admin" asp-action="Index" class="admin-brand-link" title="Trang Quản trị Sóc Nâu">
+            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Quản trị" class="admin-brand-avatar" />
+        </a>
+    </div>
+
+    <a class="@(currentAction == "Index" ? "active" : "")" asp-controller="Admin" asp-action="Index">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Dashboard</span>
+    </a>
+    <a class="@(currentAction == "ParentsAndKids" || currentAction == "ChildDetail" ? "active" : "")" asp-controller="Admin" asp-action="ParentsAndKids">
+        <span class="material-symbols-outlined">family_restroom</span>
+        <span>Phụ huynh & Bé</span>
+    </a>
+    <a class="@(currentAction == "LearningItems" || currentAction == "LearningItemDetail" || currentAction == "EditLearningItem" ? "active" : "")" asp-controller="Admin" asp-action="LearningItems">
+        <span class="material-symbols-outlined">library_books</span>
+        <span>Kho nội dung</span>
+    </a>
+    <a class="@(currentAction == "Catalogs" ? "active" : "")" asp-controller="Admin" asp-action="Catalogs">
+        <span class="material-symbols-outlined">account_tree</span>
+        <span>Cấu trúc chương trình</span>
+    </a>
+    <a class="@(currentAction == "MediaLibrary" ? "active" : "")" asp-controller="Admin" asp-action="MediaLibrary">
+        <span class="material-symbols-outlined">perm_media</span>
+        <span>Thư viện hình ảnh</span>
+    </a>
+    <a class="@(currentAction == "VoiceCache" ? "active" : "")" asp-controller="Admin" asp-action="VoiceCache">
+        <span class="material-symbols-outlined">graphic_eq</span>
+        <span>Kiểm soát voice</span>
+    </a>
+    <a class="@(currentAction == "CreateChoice" ? "active" : "")" asp-controller="Admin" asp-action="CreateChoice">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Tạo bài tương tác</span>
+    </a>
+    <a class="@(currentAction == "CreateTracing" ? "active" : "")" asp-controller="Admin" asp-action="CreateTracing">
+        <span class="material-symbols-outlined">draw</span>
+        <span>Tạo bài tô nét</span>
+    </a>
+</aside>

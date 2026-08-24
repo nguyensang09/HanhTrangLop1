@@ -268,20 +268,28 @@ public static class LearningContentSeed
 
             if (existingSeedItems.TryGetValue(definition.Code, out var existingItem))
             {
-                existingItem.SortOrder = definition.SortOrder;
-                existingItem.Title = definition.Title;
-                existingItem.SkillGroupId = topic.SkillGroupId;
-                existingItem.TopicId = topic.Id;
-                existingItem.Level = definition.Level;
-                existingItem.InteractionType = definition.InteractionType;
-                existingItem.InstructionText = definition.Instruction;
-                existingItem.ContentJson = payloadJson;
-                existingItem.UpdatedAt = now;
+                var changed = false;
+                if (existingItem.SortOrder != definition.SortOrder) { existingItem.SortOrder = definition.SortOrder; changed = true; }
+                if (existingItem.Title != definition.Title) { existingItem.Title = definition.Title; changed = true; }
+                if (existingItem.SkillGroupId != topic.SkillGroupId) { existingItem.SkillGroupId = topic.SkillGroupId; changed = true; }
+                if (existingItem.TopicId != topic.Id) { existingItem.TopicId = topic.Id; changed = true; }
+                if (existingItem.Level != definition.Level) { existingItem.Level = definition.Level; changed = true; }
+                if (existingItem.InteractionType != definition.InteractionType) { existingItem.InteractionType = definition.InteractionType; changed = true; }
+                if (existingItem.InstructionText != definition.Instruction) { existingItem.InstructionText = definition.Instruction; changed = true; }
+                if (existingItem.ContentJson != payloadJson) { existingItem.ContentJson = payloadJson; changed = true; }
 
                 var existingQuestion = existingItem.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
                 if (existingQuestion is not null)
                 {
-                    ApplyQuestionDefinition(existingQuestion, definition, payloadJson);
+                    if (ApplyQuestionDefinition(existingQuestion, definition, payloadJson))
+                    {
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    existingItem.UpdatedAt = now;
                 }
                 continue;
             }
@@ -376,20 +384,22 @@ public static class LearningContentSeed
         return createdCount;
     }
 
-    private static void ApplyQuestionDefinition(Question question, SeedLesson definition, string payloadJson)
+    private static bool ApplyQuestionDefinition(Question question, SeedLesson definition, string payloadJson)
     {
-        question.PromptText = definition.Prompt;
-        question.QuestionType = definition.InteractionType;
-        question.PayloadJson = payloadJson;
-        question.CorrectAnswerJson = definition.InteractionType == InteractionTypes.Tracing
+        var changed = false;
+        if (question.PromptText != definition.Prompt) { question.PromptText = definition.Prompt; changed = true; }
+        if (question.QuestionType != definition.InteractionType) { question.QuestionType = definition.InteractionType; changed = true; }
+        if (question.PayloadJson != payloadJson) { question.PayloadJson = payloadJson; changed = true; }
+
+        var expectedAnswerJson = definition.InteractionType == InteractionTypes.Tracing
             ? JsonSerializer.Serialize(new { minPoints = 20, expectedStrokeCount = definition.ExpectedStrokeCount })
             : JsonSerializer.Serialize(new { value = definition.CorrectAnswer });
-        question.HintJson = JsonSerializer.Serialize(new { level1 = definition.Hint });
-        question.FeedbackJson = JsonSerializer.Serialize(new
-        {
-            correct = "Giỏi lắm, con đã hoàn thành đúng!",
-            retry = "Chưa đúng rồi. Con quan sát kỹ và thử lại nhé."
-        });
+        if (question.CorrectAnswerJson != expectedAnswerJson) { question.CorrectAnswerJson = expectedAnswerJson; changed = true; }
+
+        var expectedHintJson = JsonSerializer.Serialize(new { level1 = definition.Hint });
+        if (question.HintJson != expectedHintJson) { question.HintJson = expectedHintJson; changed = true; }
+
+        return changed;
     }
 
     private static async Task SeedStoryImagesAsync(ApplicationDbContext db)
@@ -1073,6 +1083,95 @@ public static class LearningContentSeed
         yield return Choice("seed-shape-find-square", "Đồ vật hình vuông", "hinh-dang", InteractionTypes.SingleChoice,
             "Con chọn đồ vật có bốn cạnh bằng nhau.", "Đồ vật nào có dạng hình vuông?", ["Cái khăn vuông", "Quả trứng", "Bánh xe"], "Cái khăn vuông",
             imageUrl: "/images/photos/flashcard-shape-square.svg");
+        yield return Choice("seed-shape-find-triangle", "Đồ vật hình tam giác", "hinh-dang", InteractionTypes.SingleChoice,
+            "Con chọn đồ vật có dạng hình tam giác.", "Biển báo giao thông có dạng hình gì?", ["Hình tam giác", "Hình tròn", "Hình vuông"], "Hình tam giác",
+            imageUrl: "/images/photos/flashcard-shape-triangle.svg");
+
+        // 5. Chữ số và Toán học (Số 10-20, Thứ tự, Tách gộp, Cộng bớt)
+        yield return Choice("seed-math-num-10", "Nhận biết số 10", "so-10-20", InteractionTypes.SingleChoice,
+            "Con quan sát và chọn số mười.", "Đâu là số 10?", ["10", "1", "0"], "10",
+            imageUrl: "/images/photos/flashcard-number-10.jpg");
+        yield return Choice("seed-math-order-after-5", "Số liền sau số 5", "thu-tu-so", InteractionTypes.SingleChoice,
+            "Con tìm số đứng ngay sau số năm.", "Số nào đứng liền sau số 5?", ["6", "4", "3"], "6");
+        yield return Choice("seed-math-order-before-8", "Số liền trước số 8", "thu-tu-so", InteractionTypes.SingleChoice,
+            "Con tìm số đứng ngay trước số tám.", "Số nào đứng liền trước số 8?", ["7", "9", "6"], "7");
+        yield return Choice("seed-math-split-combine-4", "Tách gộp 4 quả táo", "tach-gop", InteractionTypes.SingleChoice,
+            "Con quan sát cách tách bốn quả táo.", "Bốn quả táo có thể tách thành hai nhóm nào?", ["2 quả và 2 quả", "1 quả và 5 quả", "3 quả và 3 quả"], "2 quả và 2 quả",
+            imageUrl: "/images/photos/flashcard-apple.jpg");
+        yield return Choice("seed-math-add-simple", "Bé làm phép tính thêm", "cong-bot", InteractionTypes.SingleChoice,
+            "Có hai quả bóng, thêm một quả bóng nữa là mấy quả bóng?", "Có 2 quả bóng, thêm 1 quả bóng là mấy quả bóng?", ["3 quả bóng", "1 quả bóng", "4 quả bóng"], "3 quả bóng",
+            imageUrl: "/images/pictograms/ball.svg");
+        yield return Choice("seed-math-subtract-simple", "Bé làm phép tính bớt", "cong-bot", InteractionTypes.SingleChoice,
+            "Có ba quả cam, ăn mất một quả thì còn mấy quả?", "Có 3 quả cam, bớt 1 quả thì còn lại mấy quả?", ["2 quả cam", "4 quả cam", "1 quả cam"], "2 quả cam",
+            imageUrl: "/images/photos/flashcard-orange.jpg");
+
+        // 6. Tư duy logic (Quy luật, Ghép bóng, Tìm khác biệt)
+        yield return Choice("seed-logic-find-different", "Tìm con vật sống dưới nước", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm con vật khác biệt với các con còn lại.", "Con vật nào sống dưới nước?", ["Con cá", "Con mèo", "Con chó"], "Con cá",
+            imageUrl: "/images/photos/fish.jpg");
+        yield return Choice("seed-logic-find-fly", "Tìm loài vật biết bay", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm loài vật có cánh biết bay lượn.", "Loài vật nào biết bay trên trời?", ["Con chim", "Con tôm", "Con thỏ"], "Con chim",
+            imageUrl: "/images/pictograms/bird.svg");
+        yield return Ordering("seed-logic-color-pattern", "Quy luật màu sắc đỏ vàng", "quy-luat",
+            ["Đỏ", "Vàng", "Đỏ", "Vàng"]);
+        yield return Mapping("seed-logic-match-shadow", "Ghép con vật và đặc điểm", "ghep-bong", InteractionTypes.Matching,
+            [("Con mèo", "Thích bắt chuột"), ("Con chó", "Trông giữ nhà"), ("Con vịt", "Biết bơi lội")]);
+
+        // 7. Kỹ năng sống & An toàn
+        yield return Choice("seed-life-helmet", "Đội mũ bảo hiểm khi đi xe", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn trang bị an toàn khi ngồi xe máy.", "Khi ngồi trên xe máy cùng bố mẹ, bé cần đội gì?", ["Mũ bảo hiểm", "Mũ len", "Mũ bơi"], "Mũ bảo hiểm",
+            imageUrl: "/images/pictograms/helmet.svg");
+        yield return Choice("seed-life-traffic-light", "Tuân thủ đèn giao thông", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn hành động đúng theo tín hiệu đèn.", "Khi đèn giao thông màu đỏ sáng lên, người đi đường phải làm gì?", ["Dừng lại", "Chạy nhanh qua", "Bấm còi"], "Dừng lại",
+            imageUrl: "/images/pictograms/car.svg");
+        yield return Choice("seed-life-sharp-objects", "An toàn với vật sắc nhọn", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn cách xử lý an toàn.", "Khi thấy dao kéo hoặc vật sắc nhọn, con nên làm gì?", ["Không tự ý nghịch", "Lấy ra chơi đồ hàng", "Cầm chạy nhảy"], "Không tự ý nghịch",
+            imageUrl: "/images/pictograms/cooking-pot.svg");
+        yield return Choice("seed-life-wash-hands", "Rửa tay sạch bằng xà phòng", "tu-phuc-vu", InteractionTypes.SingleChoice,
+            "Con chọn thời điểm cần rửa tay.", "Bé nên rửa tay sạch bằng xà phòng khi nào?", ["Trước khi ăn và sau khi đi vệ sinh", "Chỉ khi bị mẹ nhắc", "Không cần rửa"], "Trước khi ăn và sau khi đi vệ sinh",
+            imageUrl: "/images/pictograms/soap.svg");
+        yield return Choice("seed-life-greeting-school", "Lời chào khi đến trường", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn lời chào lễ phép khi đến lớp.", "Khi đến trường gặp cô giáo, bé nói gì?", ["Con chào cô ạ!", "Tớ đến rồi", "Không nói gì"], "Con chào cô ạ!",
+            imageUrl: "/images/pictograms/speaking.svg");
+        yield return Choice("seed-life-say-thanks", "Lời cảm ơn khi nhận quà", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn lời nói lễ phép khi nhận quà.", "Khi được ông bà tặng quà, bé nói gì?", ["Con cảm ơn ông bà ạ!", "Cho con thêm cái nữa", "Cầm lấy rồi đi ngay"], "Con cảm ơn ông bà ạ!",
+            imageUrl: "/images/pictograms/folded-hands.svg");
+
+        // 8. Tiền tập đọc, Ngôn ngữ & Kể chuyện
+        yield return Choice("seed-lang-body-parts", "Nhận biết các giác quan", "von-tu", InteractionTypes.SingleChoice,
+            "Con chọn bộ phận dùng để nhìn ngắm.", "Bộ phận nào trên khuôn mặt giúp bé nhìn thấy vạn vật?", ["Đôi mắt", "Đôi tai", "Cái mũi"], "Đôi mắt",
+            imageUrl: "/images/pictograms/flower.svg");
+        yield return Choice("seed-lang-sound-b", "Tiếng có âm B", "am-van", InteractionTypes.SingleChoice,
+            "Con lắng nghe và tìm từ bắt đầu bằng âm B.", "Từ nào dưới đây bắt đầu bằng âm B?", ["Bút chì", "Cái kéo", "Quyển vở"], "Bút chì",
+            imageUrl: "/images/pictograms/pencil.svg");
+        yield return Choice("seed-lang-sound-c", "Tiếng có âm C", "am-van", InteractionTypes.SingleChoice,
+            "Con tìm từ bắt đầu bằng âm C.", "Từ nào dưới đây bắt đầu bằng âm C?", ["Con cá", "Quả táo", "Bông hoa"], "Con cá",
+            imageUrl: "/images/photos/fish.jpg");
+        yield return Story("seed-lang-story-tortoise", "Chuyện Rùa và Thỏ", "ke-chuyen",
+            "Thỏ cậy mình chạy nhanh nên mải chơi, còn Rùa kiên trì từng bước và đã về đích trước.",
+            "/images/photos/flashcard-rabbit.jpg",
+            "Trong cuộc thi chạy, vì sao chú Rùa lại chiến thắng chú Thỏ?",
+            ["Rùa kiên trì, chăm chỉ", "Rùa chạy nhanh hơn Thỏ", "Thỏ nhường cho Rùa"], "Rùa kiên trì, chăm chỉ");
+
+        // 9. Vị trí & Kích thước trong không gian
+        yield return Choice("seed-space-up-down", "Vị trí trên và dưới", "vi-tri", InteractionTypes.SingleChoice,
+            "Con quan sát vị trí của chú chim và cây xanh.", "Chú chim đang đậu ở đâu?", ["Trên cành cây", "Dưới mặt đất", "Trong hồ nước"], "Trên cành cây",
+            imageUrl: "/images/pictograms/bird.svg");
+        yield return Choice("seed-space-size-compare", "So sánh lớn hơn và nhỏ hơn", "kich-thuoc", InteractionTypes.SingleChoice,
+            "Con so sánh kích thước của hai con vật.", "Con voi như thế nào so với con chuột?", ["To lớn hơn", "Nhỏ bé hơn", "Bằng nhau"], "To lớn hơn",
+            imageUrl: "/images/photos/cat.jpg");
+
+        // 10. Khám phá thế giới
+        yield return Mapping("seed-world-animals-habitat", "Môi trường sống của động vật", "con-vat", InteractionTypes.Classification,
+            [("Con cá", "Dưới nước"), ("Con tôm", "Dưới nước"), ("Con mèo", "Trên cạn"), ("Con chó", "Trên cạn")]);
+        yield return Mapping("seed-world-vehicles-transport", "Phương tiện và đường đi", "giao-thong", InteractionTypes.Matching,
+            [("Ô tô", "Đường bộ"), ("Tàu buồm", "Đường thủy"), ("Máy bay", "Đường hàng không")]);
+        yield return Choice("seed-world-plant-roots", "Bộ phận hút nước của cây", "cay-co", InteractionTypes.SingleChoice,
+            "Con chọn bộ phận dưới lòng đất của cây.", "Bộ phận nào nằm dưới đất hút chất dinh dưỡng cho cây?", ["Rễ cây", "Lá cây", "Bông hoa"], "Rễ cây",
+            imageUrl: "/images/pictograms/seedling.svg");
+        yield return Choice("seed-world-day-night", "Bầu trời ban ngày và ban đêm", "thoi-tiet", InteractionTypes.SingleChoice,
+            "Con quan sát hiện tượng tự nhiên.", "Khi ban đêm đến, bé nhìn thấy gì trên bầu trời?", ["Mặt trăng và các vì sao", "Mặt trời rực rỡ", "Cầu vồng bảy sắc"], "Mặt trăng và các vì sao",
+            imageUrl: "/images/pictograms/moon.svg");
     }
 
     private static string NormalizeSeedCode(string value) => value

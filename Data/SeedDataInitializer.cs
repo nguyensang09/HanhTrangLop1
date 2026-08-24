@@ -29,17 +29,16 @@ public static class SeedDataInitializer
         if (createdLessons > 0)
         {
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
-        }
-
-        await LegacyLearningItemNormalizer.NormalizeAsync(db, logger);
-        var voiceResult = await voiceLibrary.EnsureVoiceRowsAndRelinkAsync();
-        if (voiceResult.LegacyAudioRowsBackfilled > 0 || voiceResult.LearningItemsUpdated > 0)
-        {
-            logger.LogInformation(
-                "Đã đồng bộ voice cho dữ liệu cũ: backfill {BackfilledCount} audio, quét {ScannedCount} bài, cập nhật {UpdatedCount} bài.",
-                voiceResult.LegacyAudioRowsBackfilled,
-                voiceResult.LearningItemsScanned,
-                voiceResult.LearningItemsUpdated);
+            await LegacyLearningItemNormalizer.NormalizeAsync(db, logger);
+            var voiceResult = await voiceLibrary.EnsureVoiceRowsAndRelinkAsync();
+            if (voiceResult.LegacyAudioRowsBackfilled > 0 || voiceResult.LearningItemsUpdated > 0)
+            {
+                logger.LogInformation(
+                    "Đã đồng bộ voice cho dữ liệu mới: backfill {BackfilledCount} audio, quét {ScannedCount} bài, cập nhật {UpdatedCount} bài.",
+                    voiceResult.LegacyAudioRowsBackfilled,
+                    voiceResult.LearningItemsScanned,
+                    voiceResult.LearningItemsUpdated);
+            }
         }
     }
 
@@ -83,18 +82,19 @@ public static class SeedDataInitializer
         IConfiguration configuration,
         ILogger logger)
     {
+        var username = configuration["SeedAdmin:Username"] ?? "admin";
         var email = configuration["SeedAdmin:Email"] ?? "admin@hanhtranglop1.local";
-        var password = configuration["SeedAdmin:Password"] ?? "Admin@123456";
+        var password = configuration["SeedAdmin:Password"] ?? "admin@123";
 
-        var admin = await userManager.FindByEmailAsync(email);
+        var admin = await userManager.FindByNameAsync(username) ?? await userManager.FindByEmailAsync(email);
         if (admin is null)
         {
             admin = new ApplicationUser
             {
-                UserName = email,
+                UserName = username,
                 Email = email,
                 EmailConfirmed = true,
-                DisplayName = "Quản trị Hành Trang Lớp 1"
+                DisplayName = "Quản trị viên"
             };
 
             var result = await userManager.CreateAsync(admin, password);
@@ -103,6 +103,25 @@ public static class SeedDataInitializer
                 var errors = string.Join("; ", result.Errors.Select(x => x.Description));
                 logger.LogWarning("Không tạo được tài khoản quản trị nền tảng: {Errors}", errors);
                 return;
+            }
+        }
+        else
+        {
+            if (admin.UserName != username)
+            {
+                admin.UserName = username;
+                await userManager.UpdateAsync(admin);
+            }
+
+            var passwordCheck = await userManager.CheckPasswordAsync(admin, password);
+            if (!passwordCheck)
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(admin);
+                var resetResult = await userManager.ResetPasswordAsync(admin, token, password);
+                if (!resetResult.Succeeded)
+                {
+                    logger.LogWarning("Không reset được mật khẩu admin: {Errors}", string.Join("; ", resetResult.Errors.Select(x => x.Description)));
+                }
             }
         }
 

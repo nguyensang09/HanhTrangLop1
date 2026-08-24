@@ -5,11 +5,13 @@
     var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
 }
 
-<section class="container dashboard-wrap tracing-builder-page">
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Biên tập bài tô nét</p>
-            <h1>@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")</h1>
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        <div class="dashboard-header">
+            <div>
+                <p class="eyebrow">Biên tập bài tô nét</p>
+                <h1>@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")</h1>
         </div>
         <div class="dashboard-actions">
             <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện hình ảnh</a>
@@ -113,6 +115,7 @@
     {
         <partial name="_LearningItemWorkflow" model="@(new LearningItemWorkflowViewModel { Id = Model.Id.Value, Status = Model.Status, IsCompatible = Model.IsCompatible })" />
     }
+    </main>
 </section>
 
 @section Scripts {
