@@ -114,9 +114,12 @@
     const decorateButton = (button, text, forceIcon = "") => {
         const value = String(text ?? "");
         const normalized = value.trim().toLocaleLowerCase("vi-VN");
-        const mediaUrl = resolveItemMedia(value);
-        const pictogram = resolvePictogram(value);
+        const isLetterOrDigit = isSingleSymbol(value) && !pictograms.has(normalized);
+        const shouldHideOptionPhoto = (type === "single_choice" || type === "listen_choose" || type === "multi_select") && isLetterOrDigit;
+        const mediaUrl = shouldHideOptionPhoto ? "" : resolveItemMedia(value);
+        const pictogram = shouldHideOptionPhoto ? "" : resolvePictogram(value);
         const shape = shapeClasses.get(normalized);
+        const color = colorValues.get(normalized);
         button.replaceChildren();
 
         if (mediaUrl) {
@@ -152,6 +155,7 @@
 
         const label = document.createElement("span");
         label.className = "answer-label";
+        if (value.trim().length > 4) label.classList.add("long-label");
         label.textContent = value;
         button.append(label);
     };
@@ -311,8 +315,13 @@
         let dragGhost = null;
 
         const dropValue = (value) => {
+            if (!value) return;
             activeValue = value;
             playAnswerAudio(value);
+            source.querySelectorAll("button").forEach((btn) => {
+                const labelText = (btn.querySelector(".answer-label")?.textContent || btn.textContent || "").trim();
+                btn.classList.toggle("selected", labelText === value.trim());
+            });
             decorateButton(target, value);
             target.classList.add("filled");
             setAnswer(value, true, true, 1000);
@@ -379,6 +388,10 @@
         const pairs = payload.pairs || [];
         const mappings = {};
         let selectedLeft = "";
+        let isDraggingLine = false;
+        let dragSourceBtn = null;
+        let currentPointerPos = null;
+
         const board = document.createElement("div");
         board.className = "matching-board";
         const lines = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -393,6 +406,8 @@
         const drawLines = () => {
             lines.replaceChildren();
             const boardRect = board.getBoundingClientRect();
+
+            // 1. Draw established connections
             Object.entries(mappings).forEach(([left, right], index) => {
                 const leftButton = [...leftColumn.children].find((item) => item.dataset.value === left);
                 const rightButton = [...rightColumn.children].find((item) => item.dataset.value === right);
@@ -420,49 +435,131 @@
                     });
                 lines.append(line, start, end);
             });
+
+            // 2. Draw live dragging line following pointer
+            if (isDraggingLine && dragSourceBtn && currentPointerPos) {
+                const srcRect = dragSourceBtn.getBoundingClientRect();
+                const startX = srcRect.right - boardRect.left;
+                const startY = srcRect.top + srcRect.height / 2 - boardRect.top;
+                const endX = currentPointerPos.x - boardRect.left;
+                const endY = currentPointerPos.y - boardRect.top;
+
+                const liveLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                liveLine.setAttribute("x1", String(startX));
+                liveLine.setAttribute("y1", String(startY));
+                liveLine.setAttribute("x2", String(endX));
+                liveLine.setAttribute("y2", String(endY));
+                liveLine.setAttribute("stroke", "#ff7d4d");
+                liveLine.setAttribute("stroke-width", "6");
+                liveLine.setAttribute("stroke-linecap", "round");
+                liveLine.setAttribute("stroke-dasharray", "6,6");
+
+                const liveStart = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                liveStart.setAttribute("cx", String(startX));
+                liveStart.setAttribute("cy", String(startY));
+                liveStart.setAttribute("r", "9");
+                liveStart.setAttribute("fill", "#ff7d4d");
+
+                const liveEnd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                liveEnd.setAttribute("cx", String(endX));
+                liveEnd.setAttribute("cy", String(endY));
+                liveEnd.setAttribute("r", "8");
+                liveEnd.setAttribute("fill", "#ff7d4d");
+
+                lines.append(liveLine, liveStart, liveEnd);
+            }
+        };
+
+        const connectPair = (leftVal, rightVal) => {
+            if (!leftVal || !rightVal) return;
+            playAnswerAudio(rightVal);
+            Object.entries(mappings).forEach(([left, mappedRight]) => {
+                if (mappedRight === rightVal && left !== leftVal) delete mappings[left];
+            });
+            mappings[leftVal] = rightVal;
+            leftColumn.querySelectorAll("button").forEach((item) => {
+                item.classList.toggle("matched", Object.hasOwn(mappings, item.dataset.value));
+                item.classList.remove("selected");
+            });
+            rightColumn.querySelectorAll("button").forEach((item) => {
+                item.classList.toggle("matched", Object.values(mappings).includes(item.dataset.value));
+                item.classList.remove("target-hover", "target-ready");
+            });
+            selectedLeft = "";
+            isDraggingLine = false;
+            dragSourceBtn = null;
+            currentPointerPos = null;
+            setAnswer(canonicalMappings(mappings), Object.keys(mappings).length === pairs.length);
+            requestAnimationFrame(drawLines);
         };
 
         pairs.forEach((pair, index) => {
             const button = createButton(pair.left, "activity-option clay-button matching-item");
             button.dataset.value = pair.left;
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
-            button.addEventListener("click", () => {
+
+            // Drag to Connect Pointer Handlers
+            button.addEventListener("pointerdown", (event) => {
+                event.preventDefault();
                 playAnswerAudio(pair.left);
                 selectedLeft = pair.left;
+                isDraggingLine = true;
+                dragSourceBtn = button;
+                currentPointerPos = { x: event.clientX, y: event.clientY };
                 leftColumn.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 button.classList.add("selected");
                 rightColumn.querySelectorAll("button").forEach((item) => item.classList.add("target-ready"));
+                button.setPointerCapture(event.pointerId);
+                requestAnimationFrame(drawLines);
             });
+
+            button.addEventListener("pointermove", (event) => {
+                if (!isDraggingLine) return;
+                currentPointerPos = { x: event.clientX, y: event.clientY };
+                const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest(".matching-right .matching-item");
+                rightColumn.querySelectorAll("button").forEach((item) => {
+                    item.classList.toggle("target-hover", item === dropTarget);
+                });
+                requestAnimationFrame(drawLines);
+            });
+
+            button.addEventListener("pointerup", (event) => {
+                if (!isDraggingLine) return;
+                const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest(".matching-right .matching-item");
+                if (dropTarget && selectedLeft) {
+                    connectPair(selectedLeft, dropTarget.dataset.value);
+                } else {
+                    isDraggingLine = false;
+                    dragSourceBtn = null;
+                    currentPointerPos = null;
+                    rightColumn.querySelectorAll("button").forEach((item) => item.classList.remove("target-hover"));
+                    requestAnimationFrame(drawLines);
+                }
+            });
+
+            button.addEventListener("pointercancel", () => {
+                isDraggingLine = false;
+                dragSourceBtn = null;
+                currentPointerPos = null;
+                requestAnimationFrame(drawLines);
+            });
+
             leftColumn.append(button);
         });
 
         rights.forEach((right, index) => {
-            // If right option looks like sound/onomatopoeia, add a speech bubble icon so heights are balanced
             const isSoundText = /^(meo|gâu|cạp|chíp|ò ó|reng|cục)/i.test(right.trim());
             const button = createButton(right, "activity-option clay-button matching-item", isSoundText ? "volume_up" : "");
             button.dataset.value = right;
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
+
             button.addEventListener("click", () => {
                 if (!selectedLeft) return;
-                playAnswerAudio(right);
-                Object.entries(mappings).forEach(([left, mappedRight]) => {
-                    if (mappedRight === right && left !== selectedLeft) delete mappings[left];
-                });
-                mappings[selectedLeft] = right;
-                leftColumn.querySelectorAll("button").forEach((item) => {
-                    item.classList.toggle("matched", Object.hasOwn(mappings, item.dataset.value));
-                    item.classList.remove("selected");
-                });
-                rightColumn.querySelectorAll("button").forEach((item) => {
-                    item.classList.toggle("matched", Object.values(mappings).includes(item.dataset.value));
-                });
-                selectedLeft = "";
-                rightColumn.querySelectorAll("button").forEach((item) => item.classList.remove("target-ready"));
-                setAnswer(canonicalMappings(mappings), Object.keys(mappings).length === pairs.length);
-                requestAnimationFrame(drawLines);
+                connectPair(selectedLeft, right);
             });
             rightColumn.append(button);
         });
+
         board.append(lines, leftColumn, rightColumn);
         runtime.append(board);
         window.addEventListener("resize", drawLines, {passive: true});
@@ -495,17 +592,47 @@
                 const value = document.createElement("div");
                 value.className = "ordering-value-wrap ordering-value";
                 value.dataset.rawItem = item;
-                // Avoid duplicate label in ordering
-                decorateButton(value, item);
+                const itemClean = String(item || "").trim();
+                const pictogram = resolvePictogram(itemClean);
+                if (pictogram) {
+                    const img = document.createElement("img");
+                    img.className = "ordering-pictogram";
+                    img.src = `${pictogramPath}${pictogram}`;
+                    img.alt = itemClean;
+                    value.append(img);
+                }
+                const label = document.createElement("span");
+                label.className = "ordering-label";
+                label.textContent = itemClean;
+                value.append(label);
 
-                const up = createButton("↑", "ordering-control clay-button");
-                const down = createButton("↓", "ordering-control clay-button");
+                const actions = document.createElement("div");
+                actions.className = "ordering-actions";
+
+                const up = document.createElement("button");
+                up.type = "button";
+                up.className = "ordering-control ordering-up clay-button";
+                up.innerHTML = '<span class="material-symbols-outlined">arrow_upward</span>';
                 up.disabled = index === 0;
-                down.disabled = index === items.length - 1;
                 up.setAttribute("aria-label", `Đưa ${item} lên`);
+                up.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    moveItem(index, index - 1);
+                });
+
+                const down = document.createElement("button");
+                down.type = "button";
+                down.className = "ordering-control ordering-down clay-button";
+                down.innerHTML = '<span class="material-symbols-outlined">arrow_downward</span>';
+                down.disabled = index === items.length - 1;
                 down.setAttribute("aria-label", `Đưa ${item} xuống`);
-                up.addEventListener("click", () => moveItem(index, index - 1));
-                down.addEventListener("click", () => moveItem(index, index + 1));
+                down.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    moveItem(index, index + 1);
+                });
+
+                actions.append(up, down);
+
                 row.addEventListener("click", (event) => {
                     if (event.target.closest(".ordering-control")) return;
                     playAnswerAudio(item);
@@ -515,7 +642,7 @@
                 row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
                 row.addEventListener("drop", (event) => { event.preventDefault(); moveItem(draggingIndex, index); });
                 row.addEventListener("dragend", () => { draggingIndex = -1; row.classList.remove("dragging"); });
-                row.append(badge, value, up, down);
+                row.append(badge, value, actions);
                 list.append(row);
             });
             sync();
@@ -562,20 +689,43 @@
         let count = 0;
         const target = document.createElement("div");
         target.className = "quantity-target clay-card";
-        const counter = document.createElement("strong");
+        const counter = document.createElement("div");
+        counter.className = "quantity-counter-badge";
         const objects = document.createElement("div");
         objects.className = "quantity-objects";
         const update = () => {
-            counter.textContent = `${payload.targetLabel || "Đã tạo"}: ${count} / ${payload.targetCount}`;
+            counter.textContent = `${payload.targetLabel || "Số lượng đã tạo"}: ${count} / ${payload.targetCount}`;
             appendRepeatedVisuals(objects, payload.objectSymbol || "●", count);
             setAnswer(String(count), count > 0);
         };
-        const add = createButton(`+ Thêm (${payload.objectSymbol || "●"})`, "activity-option clay-button");
-        const remove = createButton("- Bớt một", "activity-option clay-button app-btn-muted");
-        add.addEventListener("click", () => { if (count < Number(payload.maxItems || 20)) { count += 1; speak(String(count)); } update(); });
-        remove.addEventListener("click", () => { if (count > 0) { count -= 1; speak(String(count)); } update(); });
+
         const controls = document.createElement("div");
         controls.className = "quantity-controls";
+
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "quantity-btn quantity-btn-add clay-button";
+        add.innerHTML = '<span class="material-symbols-outlined">add_circle</span><span>Thêm một</span>';
+        add.addEventListener("click", () => {
+            if (count < Number(payload.maxItems || 20)) {
+                count += 1;
+                speak(String(count));
+            }
+            update();
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "quantity-btn quantity-btn-remove clay-button";
+        remove.innerHTML = '<span class="material-symbols-outlined">remove_circle</span><span>Bớt một</span>';
+        remove.addEventListener("click", () => {
+            if (count > 0) {
+                count -= 1;
+                speak(String(count));
+            }
+            update();
+        });
+
         controls.append(add, remove);
         target.append(counter, objects);
         runtime.append(target, controls);
@@ -613,13 +763,88 @@
         const mappings = payload.mappings || [];
         const answers = {};
         let selectedItem = "";
-        
+        let dragGhost = null;
+
+        const assignItemToCategory = (itemName, categoryName) => {
+            if (!itemName || !categoryName) return;
+            playAnswerAudio(categoryName);
+            answers[itemName] = categoryName;
+
+            // Update Source item status
+            const itemButton = [...source.children].find((item) => item.dataset.itemName === itemName);
+            if (itemButton) {
+                itemButton.classList.add("matched");
+                itemButton.classList.remove("selected");
+            }
+
+            // Remove from other category trays if previously assigned
+            categories.querySelectorAll(".classification-chip").forEach((chip) => {
+                if (chip.dataset.assignedItem === itemName) chip.remove();
+            });
+
+            // Add to this category tray
+            const targetZone = [...categories.children].find((z) => z.dataset.categoryName === categoryName);
+            if (targetZone) {
+                const tray = targetZone.querySelector(".classification-zone-tray");
+                const emptyHint = targetZone.querySelector(".classification-tray-hint");
+                if (emptyHint) emptyHint.style.display = "none";
+                const chip = document.createElement("div");
+                chip.className = "classification-chip clay-card";
+                chip.dataset.assignedItem = itemName;
+                decorateButton(chip, itemName);
+                tray.append(chip);
+            }
+
+            selectedItem = "";
+            source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.remove("ready", "drop-hover"));
+            setAnswer(canonicalMappings(answers), Object.keys(answers).length === mappings.length);
+        };
+
+        const movePointerDrag = (event) => {
+            if (!dragGhost) return;
+            event.preventDefault();
+            dragGhost.style.left = `${event.clientX}px`;
+            dragGhost.style.top = `${event.clientY}px`;
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            const zone = dropTarget?.closest?.(".classification-zone");
+            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.toggle("drop-hover", z === zone));
+        };
+
+        const finishPointerDrag = (event) => {
+            if (!dragGhost) return;
+            event.preventDefault();
+            dragGhost.remove();
+            dragGhost = null;
+            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
+            const zone = dropTarget?.closest?.(".classification-zone");
+            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.remove("drop-hover"));
+            if (zone?.dataset?.categoryName && selectedItem) {
+                assignItemToCategory(selectedItem, zone.dataset.categoryName);
+            }
+        };
+
+        const startPointerDrag = (event, itemText, button) => {
+            if (event.pointerType === "mouse") return;
+            event.preventDefault();
+            selectedItem = itemText;
+            source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.add("ready"));
+            dragGhost = button.cloneNode(true);
+            dragGhost.classList.add("drag-ghost");
+            document.body.append(dragGhost);
+            button.setPointerCapture(event.pointerId);
+            movePointerDrag(event);
+        };
+
         // 1. Source Items Row
         const source = document.createElement("div");
         source.className = "activity-option-grid classification-source-grid";
         mappings.forEach((mapping, index) => {
-            const button = createButton(mapping.left, "activity-option classification-source-item clay-button");
+            const button = createButton(mapping.left, "activity-option classification-source-item draggable-option clay-button");
             button.dataset.itemName = mapping.left;
+            button.draggable = true;
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
             button.addEventListener("click", () => {
                 playAnswerAudio(mapping.left);
@@ -628,16 +853,25 @@
                 button.classList.add("selected");
                 categories.querySelectorAll(".classification-zone").forEach((zone) => zone.classList.add("ready"));
             });
+            button.addEventListener("dragstart", (event) => {
+                selectedItem = mapping.left;
+                event.dataTransfer.setData("text/plain", mapping.left);
+            });
+            button.addEventListener("pointerdown", (event) => startPointerDrag(event, mapping.left, button));
+            button.addEventListener("pointermove", movePointerDrag);
+            button.addEventListener("pointerup", finishPointerDrag);
+            button.addEventListener("pointercancel", finishPointerDrag);
             source.append(button);
         });
 
-        // 2. Categories Drop Bins/Trays (Clean, NO duplicate item icons)
+        // 2. Categories Drop Bins/Trays
         const categories = document.createElement("div");
         categories.className = "classification-zones";
         
         (payload.categories || []).forEach((category, categoryIndex) => {
             const zone = document.createElement("div");
             zone.className = "classification-zone clay-card";
+            zone.dataset.categoryName = category;
             const categoryColor = activityColors[categoryIndex % activityColors.length];
             zone.style.setProperty("--category-color", categoryColor);
 
@@ -658,42 +892,25 @@
 
             const emptyHint = document.createElement("span");
             emptyHint.className = "classification-tray-hint";
-            emptyHint.textContent = "Chạm vào đây để xếp";
+            emptyHint.textContent = "Kéo hoặc chạm vào đây để xếp";
             tray.append(emptyHint);
 
             zone.append(header, tray);
 
             zone.addEventListener("click", () => {
-                if (!selectedItem) return;
-                playAnswerAudio(category);
-                answers[selectedItem] = category;
-
-                // Update Source item status
-                const itemButton = [...source.children].find((item) => item.dataset.itemName === selectedItem);
-                if (itemButton) {
-                    itemButton.classList.add("matched");
-                    itemButton.classList.remove("selected");
-                }
-
-                // Remove from other category trays if previously assigned
-                categories.querySelectorAll(".classification-chip").forEach((chip) => {
-                    if (chip.dataset.assignedItem === selectedItem) chip.remove();
-                });
-
-                // Add to this category tray
-                const chip = document.createElement("div");
-                chip.className = "classification-chip clay-card";
-                chip.dataset.assignedItem = selectedItem;
-                decorateButton(chip, selectedItem);
-
-                // Hide empty hint if tray has chips
-                emptyHint.style.display = "none";
-                tray.append(chip);
-
-                selectedItem = "";
-                source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.remove("ready"));
-                setAnswer(canonicalMappings(answers), Object.keys(answers).length === mappings.length);
+                if (selectedItem) assignItemToCategory(selectedItem, category);
+            });
+            zone.addEventListener("dragover", (event) => {
+                event.preventDefault();
+                zone.classList.add("drop-hover");
+            });
+            zone.addEventListener("dragleave", () => {
+                zone.classList.remove("drop-hover");
+            });
+            zone.addEventListener("drop", (event) => {
+                event.preventDefault();
+                const dropped = event.dataTransfer.getData("text/plain") || selectedItem;
+                assignItemToCategory(dropped, category);
             });
 
             categories.append(zone);
@@ -717,7 +934,7 @@
             
             const labelSpan = document.createElement("span");
             labelSpan.className = "audio-btn-label";
-            labelSpan.textContent = type === "story_choice" ? "Bấm vào đây để nghe câu chuyện" : "Bấm vào đây để nghe âm thanh";
+            labelSpan.textContent = type === "story_choice" ? "Nghe câu chuyện" : "Nghe âm thanh";
             
             audioButton.append(speakerIcon, labelSpan);
             audioButton.addEventListener("click", playPromptAudio);

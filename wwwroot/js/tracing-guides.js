@@ -18,8 +18,55 @@
   ];
 
   function guideStrokesFor(symbol) {
-    const normalized = normalizeSymbol(symbol);
+    const raw = String(symbol || "").trim();
+    const normalized = normalizeSymbol(raw);
+    const textLower = normalized.toLowerCase();
     const upper = normalized.toUpperCase();
+
+    // 1. Kiểm tra nhanh theo tên nét tiếng Việt hoặc ký hiệu đặc biệt
+    if (textLower.includes("ngang") || raw === "─" || raw === "-") {
+      return [["M", 180, 365, "L", 540, 365]];
+    }
+    if (textLower.includes("xien trai") || textLower.includes("xientrai") || raw === "/") {
+      return [["M", 490, 170, "L", 230, 565]];
+    }
+    if (textLower.includes("xien phai") || textLower.includes("xienphai") || raw === "\\") {
+      return [["M", 230, 170, "L", 490, 565]];
+    }
+    if (textLower.includes("cong kin") || textLower.includes("vong") || raw === "○") {
+      return [["M", 360, 170, "C", 220, 170, 200, 560, 360, 560, "C", 520, 560, 500, 170, 360, 170]];
+    }
+    if (textLower.includes("cong trai") || textLower.includes("cong ho phai") || raw === "(") {
+      return [["M", 480, 210, "C", 380, 150, 240, 220, 240, 365, "C", 240, 510, 380, 580, 480, 520]];
+    }
+    if (textLower.includes("cong phai") || textLower.includes("cong ho trai") || raw === ")") {
+      return [["M", 240, 210, "C", 340, 150, 480, 220, 480, 365, "C", 480, 510, 340, 580, 240, 520]];
+    }
+    if (textLower.includes("moc hai dau") || textLower.includes("moc 2 dau")) {
+      return [["M", 240, 240, "C", 260, 170, 360, 170, 360, 365, "C", 360, 565, 460, 565, 480, 490]];
+    }
+    if (textLower.includes("moc xuoi") || (raw === "J" && !guides["J"])) {
+      return [["M", 250, 230, "C", 270, 170, 390, 170, 390, 250, "L", 390, 565]];
+    }
+    if (textLower.includes("moc nguoc")) {
+      return [["M", 330, 170, "L", 330, 485, "C", 330, 575, 470, 575, 470, 485]];
+    }
+    if (textLower.includes("khuyet tren") || raw === "ℓ") {
+      return [["M", 330, 365, "L", 430, 200, "C", 470, 140, 370, 130, 360, 200, "L", 360, 565]];
+    }
+    if (textLower.includes("khuyet duoi") || raw === "ɟ") {
+      return [["M", 360, 170, "L", 360, 510, "C", 360, 640, 250, 630, 270, 540, "L", 450, 365]];
+    }
+    if (textLower.includes("that") || raw === "∞") {
+      return [["M", 300, 170, "L", 300, 565], ["M", 300, 390, "C", 420, 330, 460, 410, 390, 440, "L", 480, 565]];
+    }
+    if (textLower.includes("luon") || raw === "~") {
+      return [["M", 200, 365, "C", 280, 310, 340, 420, 420, 365, "C", 470, 330, 510, 350, 540, 365]];
+    }
+    if (textLower.includes("doc") || textLower.includes("so") || raw === "│" || raw === "|") {
+      return [["M", 360, 170, "L", 360, 565]];
+    }
+
     const guides = {
       "0": [["M", 360, 165, "C", 240, 165, 195, 260, 195, 370, "C", 195, 500, 255, 565, 360, 565, "C", 465, 565, 525, 500, 525, 370, "C", 525, 260, 480, 165, 360, 165]],
       "1": [["M", 280, 250, "L", 360, 170, "L", 360, 570]],
@@ -40,6 +87,7 @@
       "G": [["M", 495, 230, "C", 425, 160, 315, 155, 245, 225, "C", 165, 305, 185, 485, 285, 545, "C", 365, 590, 495, 540, 495, 450, "L", 495, 395, "L", 395, 395]],
       "H": [["M", 240, 165, "L", 240, 575], ["M", 480, 165, "L", 480, 575], ["M", 240, 365, "L", 480, 365]],
       "I": [["M", 360, 165, "L", 360, 575]],
+      "J": [["M", 460, 165, "L", 460, 470, "C", 460, 585, 260, 585, 260, 470]],
       "K": [["M", 245, 165, "L", 245, 575], ["M", 495, 165, "L", 250, 370], ["M", 250, 370, "L", 505, 575]],
       "L": [["M", 265, 165, "L", 265, 575, "L", 505, 575]],
       "M": [["M", 215, 575, "L", 215, 165, "L", 360, 420, "L", 505, 165, "L", 505, 575]],

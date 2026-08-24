@@ -529,7 +529,7 @@ public class KidsController : Controller
 
         if (!string.IsNullOrWhiteSpace(promptText))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(promptText, @"cách viết\s+([^\s!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var match = System.Text.RegularExpressions.Regex.Match(promptText, @"cách viết\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             if (match.Success)
             {
                 return match.Groups[1].Value.Trim();
@@ -538,7 +538,7 @@ public class KidsController : Controller
 
         if (!string.IsNullOrWhiteSpace(itemTitle))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét)\s+([^\s!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét)\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             if (match.Success)
             {
                 var val = match.Groups[2].Value.Trim();
