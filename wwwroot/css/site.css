@@ -1351,13 +1351,32 @@ a {
 }
 
 .tracing-status.ready {
-  color: #087757;
+  color: #059669;
+  font-size: 1.05rem;
+}
+
+.tracing-status.warning {
+  color: #ea580c;
 }
 
 .tracing-submit-button:disabled {
   background: #e8e5dd;
   box-shadow: none;
   color: #afa79d;
+}
+
+.celebration-btn-secondary {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 2px solid #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.celebration-btn-secondary:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+  transform: translateY(-2px);
 }
 
 .choice-board {
@@ -4534,44 +4553,69 @@ a {
   }
 }
 
-/* Tracing Canvas Overlay & Ghost Guide */
-.tracing-canvas-host {
-  position: relative;
-  width: min(100%, 460px);
-  aspect-ratio: 1;
-  margin: 0 auto 20px;
-  background: #ffffff;
-  border: 4px solid #c8edf8;
-  border-radius: 28px;
-  box-shadow: 0 12px 30px rgba(41, 126, 164, 0.12);
-  overflow: hidden;
-  touch-action: none;
+/* Tracing Canvas Layout & Full-Immersion Notebook Board */
+body.focus-mode-active:has(.interaction-tracing) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+body.focus-mode-active:has(.interaction-tracing) .app-page {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
+  width: 100% !important;
+  max-width: 980px !important;
+  min-height: 100dvh !important;
+  margin: 0 auto !important;
+  padding: 6px 8px 14px !important;
+  box-sizing: border-box !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-common-zone {
+  margin-bottom: 6px !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar {
+  padding: 6px 14px !important;
+  border-radius: 18px !important;
+  margin-bottom: 6px !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .choice-board,
+.choice-board.tracing-lesson-layout {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  width: 100% !important;
+}
+
+.tracing-answer-zone {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.tracing-board.tracing-canvas-host {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  aspect-ratio: 920 / 1200 !important;
+  margin: 0 auto 8px !important;
+  background: #ffffff !important;
+  border: 2px solid #86efac !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+  touch-action: none !important;
 }
 
 .tracing-corner-flashcard {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 5;
-  width: 96px;
-  height: 124px;
-  padding: 5px;
-  background: #ffffff;
-  border: 2.5px solid #c8edf8;
-  border-radius: 16px;
-  box-shadow: 0 6px 18px rgba(41, 126, 164, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  transition: transform 0.2s ease;
-}
-
-.tracing-corner-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 12px;
+  display: none !important;
 }
 
 .trace-letter {
@@ -4599,6 +4643,60 @@ a {
   width: 100%;
   height: 100%;
   z-index: 2;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.tracing-bottom-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+}
+
+.tracing-controls-bar {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.tracing-controls-bar .clay-button {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+  border: 2px solid #cbd5e1 !important;
+  padding: 0 !important;
+}
+
+.tracing-controls-bar .clay-button:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+.tracing-submit-form {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.tracing-submit-button {
+  flex: 1 !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  border-radius: 16px !important;
+  margin: 0 !important;
+}
   cursor: crosshair;
   touch-action: none;
   background: transparent;

@@ -17,7 +17,7 @@
     { color: "#8e24aa", dark: "#4a148c", name: "purple" }
   ];
 
-  function guideStrokesFor(symbol) {
+  function getBaseStrokesFor(symbol) {
     const raw = String(symbol || "").trim();
     const normalized = normalizeSymbol(raw);
     const textLower = normalized.toLowerCase();
@@ -45,7 +45,7 @@
     if (textLower.includes("moc hai dau") || textLower.includes("moc 2 dau")) {
       return [["M", 240, 240, "C", 260, 170, 360, 170, 360, 365, "C", 360, 565, 460, 565, 480, 490]];
     }
-    if (textLower.includes("moc xuoi") || (raw === "J" && !guides["J"])) {
+    if (textLower.includes("moc xuoi")) {
       return [["M", 250, 230, "C", 270, 170, 390, 170, 390, 250, "L", 390, 565]];
     }
     if (textLower.includes("moc nguoc")) {
@@ -121,6 +121,7 @@
       "g": [["M", 450, 320, "C", 400, 255, 255, 275, 235, 410, "C", 215, 535, 385, 560, 450, 450], ["M", 450, 315, "L", 450, 575, "C", 435, 655, 280, 655, 250, 595]],
       "h": [["M", 245, 165, "L", 245, 555], ["M", 245, 395, "C", 320, 280, 475, 300, 475, 555]],
       "i": [["M", 360, 315, "L", 360, 555], ["M", 360, 210, "L", 360, 218]],
+      "j": [["M", 360, 315, "L", 360, 560, "C", 360, 650, 240, 650, 240, 560], ["M", 360, 210, "L", 360, 218]],
       "k": [["M", 250, 165, "L", 250, 555], ["M", 465, 305, "L", 255, 430, "L", 480, 555]],
       "l": [["M", 360, 165, "L", 360, 555]],
       "m": [["M", 195, 555, "L", 195, 315], ["M", 195, 400, "C", 250, 285, 340, 310, 340, 555], ["M", 340, 400, "C", 395, 285, 495, 310, 495, 555]],
@@ -140,6 +141,58 @@
       "y": [["M", 235, 315, "L", 360, 555], ["M", 480, 315, "L", 360, 595, "C", 325, 655, 250, 650, 225, 605]]
     };
 
+    // Multi-row Creative Tracing Story (Ảnh 2: Rùa và Dâu tây / Quả lê 3 hàng)
+    if (textLower.includes("luon song") || textLower.includes("wave") || textLower.includes("rua") || raw === "wave-turtle-strawberry") {
+      return [
+        // Hàng 1: Sóng đều đặn (Rùa -> Dâu tây)
+        ["M", 130, 170, "C", 165, 90, 205, 90, 240, 170, "C", 275, 250, 315, 250, 350, 170, "C", 385, 90, 425, 90, 460, 170, "C", 495, 250, 535, 250, 570, 170, "L", 600, 170],
+        // Hàng 2: Sóng nhấp nhô cao thấp
+        ["M", 130, 340, "C", 160, 250, 190, 250, 220, 340, "C", 240, 390, 260, 390, 280, 340, "C", 310, 250, 340, 250, 370, 340, "C", 390, 390, 410, 390, 430, 340, "C", 460, 250, 490, 250, 520, 340, "C", 540, 390, 560, 390, 580, 340, "L", 600, 340],
+        // Hàng 3: Sóng lượn nghiêng (Rùa -> Quả lê)
+        ["M", 130, 510, "C", 175, 430, 215, 430, 260, 510, "C", 305, 430, 345, 430, 390, 510, "C", 435, 430, 475, 430, 520, 510, "L", 600, 510]
+      ];
+    }
+    if (textLower.includes("ziczac") || textLower.includes("rang cua") || textLower.includes("gap khuc")) {
+      return [
+        ["M", 100, 240, "L", 180, 120, "L", 260, 240, "L", 340, 120, "L", 420, 240, "L", 500, 120, "L", 580, 240],
+        ["M", 100, 480, "L", 180, 360, "L", 260, 480, "L", 340, 360, "L", 420, 480, "L", 500, 360, "L", 580, 480]
+      ];
+    }
+    if (textLower.includes("mua") || textLower.includes("rain") || raw === "rain-clouds") {
+      return [
+        ["M", 180, 280, "L", 180, 580],
+        ["M", 280, 280, "L", 280, 600],
+        ["M", 380, 280, "L", 380, 590],
+        ["M", 480, 280, "L", 480, 570],
+        ["M", 570, 280, "L", 570, 600]
+      ];
+    }
+    if (textLower.includes("cuu") || textLower.includes("sheep")) {
+      return [
+        ["M", 360, 240, "C", 310, 210, 270, 260, 280, 310, "C", 240, 340, 240, 420, 290, 450, "C", 290, 520, 340, 580, 410, 580, "C", 460, 580, 510, 520, 500, 450, "C", 550, 410, 540, 330, 500, 300, "C", 500, 230, 430, 210, 360, 240]
+      ];
+    }
+    if (textLower.includes("kien") || textLower.includes("ant")) {
+      return [
+        ["M", 200, 360, "C", 200, 310, 280, 310, 280, 360, "C", 280, 410, 200, 410, 200, 360],
+        ["M", 280, 360, "C", 280, 320, 380, 320, 380, 360, "C", 380, 400, 280, 400, 280, 360],
+        ["M", 380, 360, "C", 380, 290, 540, 290, 540, 360, "C", 540, 430, 380, 430, 380, 360]
+      ];
+    }
+    if (textLower.includes("doi") || textLower.includes("bat")) {
+      return [
+        ["M", 360, 310, "C", 310, 210, 160, 180, 140, 310, "C", 210, 330, 270, 380, 320, 430],
+        ["M", 360, 310, "C", 410, 210, 560, 180, 580, 310, "C", 510, 330, 450, 380, 400, 430],
+        ["M", 330, 310, "L", 330, 470, "C", 330, 520, 390, 520, 390, 470, "L", 390, 310]
+      ];
+    }
+    if (textLower.includes("non") || textLower.includes("hat")) {
+      return [
+        ["M", 230, 440, "L", 270, 210, "L", 450, 210, "L", 490, 440],
+        ["M", 160, 440, "C", 160, 490, 560, 490, 560, 440, "C", 560, 410, 160, 410, 160, 440]
+      ];
+    }
+
     if (guides[raw]) {
       return guides[raw];
     }
@@ -150,7 +203,177 @@
       return guides[normalized];
     }
 
+    // Fallback single line
     return [["M", 360, 160, "L", 360, 575]];
+  }
+
+  function transformCommands(commands, scale, targetCenterX, targetBaselineY, baseCenterX = 360, baseBaselineY = 605) {
+    const res = [];
+    let i = 0;
+    while (i < commands.length) {
+      const cmd = commands[i];
+      res.push(cmd);
+      i += 1;
+      if (cmd === "M" || cmd === "L") {
+        const x = commands[i];
+        const y = commands[i + 1];
+        res.push(Math.round((x - baseCenterX) * scale + targetCenterX));
+        res.push(Math.round((y - baseBaselineY) * scale + targetBaselineY));
+        i += 2;
+      } else if (cmd === "C") {
+        const x1 = commands[i], y1 = commands[i + 1];
+        const x2 = commands[i + 2], y2 = commands[i + 3];
+        const x3 = commands[i + 4], y3 = commands[i + 5];
+        res.push(Math.round((x1 - baseCenterX) * scale + targetCenterX));
+        res.push(Math.round((y1 - baseBaselineY) * scale + targetBaselineY));
+        res.push(Math.round((x2 - baseCenterX) * scale + targetCenterX));
+        res.push(Math.round((y2 - baseBaselineY) * scale + targetBaselineY));
+        res.push(Math.round((x3 - baseCenterX) * scale + targetCenterX));
+        res.push(Math.round((y3 - baseBaselineY) * scale + targetBaselineY));
+        i += 6;
+      } else if (cmd === "Q") {
+        const x1 = commands[i], y1 = commands[i + 1];
+        const x2 = commands[i + 2], y2 = commands[i + 3];
+        res.push(Math.round((x1 - baseCenterX) * scale + targetCenterX));
+        res.push(Math.round((y1 - baseBaselineY) * scale + targetBaselineY));
+        res.push(Math.round((x2 - baseCenterX) * scale + targetCenterX));
+        res.push(Math.round((y2 - baseBaselineY) * scale + targetBaselineY));
+        i += 4;
+      } else if (typeof cmd === "number") {
+        res.push(cmd);
+      }
+    }
+    return res;
+  }
+
+  function generateWorksheetStrokes(baseStrokes) {
+    const allStrokes = [];
+
+    // Tầng 1: Chữ Siêu To Khổng Lồ (Hero Letter) ở trên cùng (baseline = 250, không bị cắt dấu)
+    // 1. Chữ Siêu To Khổng Lồ (cx: 260, scale = 0.43, height ~ 220px)
+    baseStrokes.forEach((stroke, strokeIdx) => {
+      allStrokes.push({
+        commands: transformCommands(stroke, 0.43, 260, 250),
+        tier: "bold",
+        ghostWidth: 38,
+        corridorWidth: 30,
+        centerlineWidth: 4.5,
+        dashArray: "8,8",
+        corridorRadius: 38,
+        penWidth: 22,
+        showBadge: true,
+        badgeLabel: String(strokeIdx + 1)
+      });
+    });
+
+    // 2. Chữ Lớn bên cạnh ở Tầng 1 (cx: 680, scale = 0.35, baseline = 250)
+    baseStrokes.forEach((stroke) => {
+      allStrokes.push({
+        commands: transformCommands(stroke, 0.35, 680, 250),
+        tier: "bold",
+        ghostWidth: 28,
+        corridorWidth: 22,
+        centerlineWidth: 3.6,
+        dashArray: "7,7",
+        corridorRadius: 28,
+        penWidth: 16,
+        showBadge: false
+      });
+    });
+
+    // Tầng 2 - Hàng 2 (Ô Ly Cỡ Lớn Vừa - 4 chữ rộng rãi, baseline = 480, scale = 0.32)
+    [130, 350, 570, 790].forEach((cx) => {
+      baseStrokes.forEach((stroke) => {
+        allStrokes.push({
+          commands: transformCommands(stroke, 0.32, cx, 480),
+          tier: "medium",
+          ghostWidth: 22,
+          corridorWidth: 17,
+          centerlineWidth: 3.0,
+          dashArray: "6,6",
+          corridorRadius: 22,
+          penWidth: 13,
+          showBadge: false
+        });
+      });
+    });
+
+    // Tầng 3 - Hàng 3 (Ô Ly Cỡ Vừa Lớp 1 - 5 chữ, baseline = 710, scale = 0.27)
+    [100, 280, 460, 640, 820].forEach((cx) => {
+      baseStrokes.forEach((stroke) => {
+        allStrokes.push({
+          commands: transformCommands(stroke, 0.27, cx, 710),
+          tier: "medium",
+          ghostWidth: 18,
+          corridorWidth: 14,
+          centerlineWidth: 2.6,
+          dashArray: "5,5",
+          corridorRadius: 19,
+          penWidth: 11,
+          showBadge: false
+        });
+      });
+    });
+
+    // Tầng 4 - Hàng 4 (Ô Ly Hạ Cỡ Chữ - 6 chữ, baseline = 940, scale = 0.22)
+    [90, 238, 386, 534, 682, 830].forEach((cx) => {
+      baseStrokes.forEach((stroke) => {
+        allStrokes.push({
+          commands: transformCommands(stroke, 0.22, cx, 940),
+          tier: "fine",
+          ghostWidth: 14,
+          corridorWidth: 10,
+          centerlineWidth: 2.0,
+          dashArray: "4,4",
+          corridorRadius: 16,
+          penWidth: 8,
+          showBadge: false
+        });
+      });
+    });
+
+    // Tầng 5 - Hàng 5 (Ô Ly Hạ Cỡ Chữ Nét Mảnh - 6 chữ, baseline = 1170, scale = 0.22)
+    [90, 238, 386, 534, 682, 830].forEach((cx) => {
+      baseStrokes.forEach((stroke) => {
+        allStrokes.push({
+          commands: transformCommands(stroke, 0.22, cx, 1170),
+          tier: "fine",
+          ghostWidth: 14,
+          corridorWidth: 10,
+          centerlineWidth: 2.0,
+          dashArray: "4,4",
+          corridorRadius: 16,
+          penWidth: 8,
+          showBadge: false
+        });
+      });
+    });
+
+    return allStrokes;
+  }
+
+  function guideStrokesFor(symbol) {
+    const rawStrokes = getBaseStrokesFor(symbol);
+    const raw = String(symbol || "").trim().toLowerCase();
+
+    // If it's already a multi-row creative story pattern (lượn sóng, ziczac, mưa, viền thú), return directly
+    if (raw.includes("luon") || raw.includes("wave") || raw.includes("ziczac") || raw.includes("mua") || raw.includes("rain") || raw.includes("cuu") || raw.includes("kien") || raw.includes("doi") || raw.includes("non")) {
+      return rawStrokes.map((cmds, idx) => ({
+        commands: cmds,
+        tier: "creative",
+        ghostWidth: 34,
+        corridorWidth: 28,
+        centerlineWidth: 4.5,
+        dashArray: "8,8",
+        corridorRadius: 30,
+        penWidth: 16,
+        showBadge: idx === 0,
+        badgeLabel: "1"
+      }));
+    }
+
+    // Otherwise, generate the full 5-row multi-tier Grade 1 handwriting worksheet (Ảnh 1)
+    return generateWorksheetStrokes(rawStrokes);
   }
 
   function pathData(commands) {
@@ -170,145 +393,237 @@
     return element;
   }
 
+  function extractCheckpoints(svgElement) {
+    const checkpoints = [];
+    if (!svgElement) return checkpoints;
+
+    const paths = svgElement.querySelectorAll("path.tracing-guide-centerline");
+    paths.forEach((path, strokeIndex) => {
+      const length = path.getTotalLength();
+      if (!length || isNaN(length)) return;
+      const step = Number(path.dataset.step || 8);
+      const corridorRadius = Number(path.dataset.corridorRadius || 18);
+      const penWidth = Number(path.dataset.penWidth || 8);
+      const count = Math.max(3, Math.floor(length / step));
+      for (let i = 0; i <= count; i += 1) {
+        const pt = path.getPointAtLength((i / count) * length);
+        checkpoints.push({
+          x: Math.round(pt.x),
+          y: Math.round(pt.y),
+          strokeIndex,
+          corridorRadius,
+          penWidth,
+          covered: false
+        });
+      }
+    });
+    return checkpoints;
+  }
+
   function renderTracingGuide(target, symbol) {
     if (!target) return;
 
-    const strokes = guideStrokesFor(symbol);
+    const strokeDefs = guideStrokesFor(symbol);
+    const raw = String(symbol || "").trim().toLowerCase();
+    const isCreative = raw.includes("luon") || raw.includes("wave") || raw.includes("ziczac") || raw.includes("mua") || raw.includes("rain") || raw.includes("cuu") || raw.includes("kien") || raw.includes("doi") || raw.includes("non");
+
     const svg = document.createElementNS(namespace, "svg");
-    svg.setAttribute("viewBox", "0 0 720 720");
+    svg.setAttribute("viewBox", "0 0 920 1200");
     svg.classList.add("tracing-guide-svg");
 
     const defs = appendSvgElement(svg, "defs");
 
-    // 1. Notebook Dotted Reference Lines (top, mid, bottom)
+    // 1. Background Grid & Ô Ly
     const gridLayer = appendSvgElement(svg, "g", { class: "notebook-grid-lines" });
-    [170, 365, 565].forEach((y) => {
-      appendSvgElement(gridLayer, "line", {
-        x1: "50",
-        y1: String(y),
-        x2: "670",
-        y2: String(y),
-        stroke: "#e4e3db",
-        "stroke-width": "3",
-        "stroke-dasharray": "12,12",
-        "stroke-linecap": "round"
+
+    if (isCreative) {
+      // 3 horizontal guide bands for wave/creative stories
+      [220, 560, 900].forEach((y) => {
+        appendSvgElement(gridLayer, "line", {
+          x1: "20",
+          y1: String(y),
+          x2: "900",
+          y2: String(y),
+          stroke: "#cbd5e1",
+          "stroke-width": "1.5",
+          "stroke-dasharray": "6,6"
+        });
       });
-    });
+
+      // Mascot & item decorations for wave story (Ảnh 2)
+      if (raw.includes("luon") || raw.includes("wave") || raw.includes("rua")) {
+        appendSvgElement(gridLayer, "text", { x: "40", y: "235", "font-size": "44px" }, "🐢");
+        appendSvgElement(gridLayer, "text", { x: "840", y: "235", "font-size": "44px" }, "🍓");
+        appendSvgElement(gridLayer, "text", { x: "840", y: "575", "font-size": "44px" }, "🐢");
+        appendSvgElement(gridLayer, "text", { x: "40", y: "915", "font-size": "44px" }, "🐢");
+        appendSvgElement(gridLayer, "text", { x: "840", y: "915", "font-size": "44px" }, "🍐");
+      }
+    } else {
+      // Standard Grade 1 Notebook 4-Grid Ô Ly (Ảnh 1)
+      // Tầng 1: Hero Header Box (h = 250)
+      appendSvgElement(gridLayer, "rect", {
+        x: "6",
+        y: "10",
+        width: "908",
+        height: "250",
+        fill: "#f8fafc",
+        rx: "12",
+        stroke: "#e2e8f0",
+        "stroke-width": "1.5"
+      });
+      [10, 72, 135, 197, 260].forEach((y) => {
+        appendSvgElement(gridLayer, "line", {
+          x1: "6",
+          y1: String(y),
+          x2: "914",
+          y2: String(y),
+          stroke: "#e2e8f0",
+          "stroke-width": "0.8"
+        });
+      });
+
+      // Tầng 2, 3, 4, 5: 4-grid Ô Ly Boxes
+      const rowBoxes = [
+        { y: 280, h: 210, lines: [280, 332, 385, 437, 490] },
+        { y: 510, h: 210, lines: [510, 562, 615, 667, 720] },
+        { y: 740, h: 210, lines: [740, 792, 845, 897, 950] },
+        { y: 970, h: 210, lines: [970, 1022, 1075, 1127, 1180] }
+      ];
+
+      rowBoxes.forEach(box => {
+        appendSvgElement(gridLayer, "rect", {
+          x: "6",
+          y: String(box.y),
+          width: "908",
+          height: String(box.h),
+          fill: "#f0fdf4",
+          rx: "10",
+          stroke: "#86efac",
+          "stroke-width": "1.5"
+        });
+
+        box.lines.forEach((ly, idx) => {
+          appendSvgElement(gridLayer, "line", {
+            x1: "6",
+            y1: String(ly),
+            x2: "914",
+            y2: String(ly),
+            stroke: idx === 4 ? "#16a34a" : "#bbf7d0",
+            "stroke-width": idx === 4 ? "2.0" : "0.8"
+          });
+        });
+
+        for (let x = 24; x < 914; x += 26) {
+          appendSvgElement(gridLayer, "line", {
+            x1: String(x),
+            y1: String(box.y),
+            x2: String(x),
+            y2: String(box.y + box.h),
+            stroke: "#dcfce7",
+            "stroke-width": "0.6"
+          });
+        }
+      });
+    }
 
     const guideLayer = appendSvgElement(svg, "g", { class: "tracing-guide-layer" });
 
-    // 2. Thick Ghost Background Stroke (Clear, light-grey track as in sample images)
-    strokes.forEach((commands) => {
+    // 2. Ghost Background Strokes with Tiered Widths
+    strokeDefs.forEach((def) => {
       appendSvgElement(guideLayer, "path", {
-        d: pathData(commands),
+        d: pathData(def.commands),
         fill: "none",
-        stroke: "#f0eee6",
-        "stroke-width": "54",
+        stroke: "#e2e8f0",
+        "stroke-width": String(def.ghostWidth),
         "stroke-linecap": "round",
         "stroke-linejoin": "round"
       });
     });
 
-    // 3. Colored Guided Stroke Overlay with numbers and arrows (Like Image 2 & 3)
-    strokes.forEach((commands, index) => {
+    // 3. Colored Guided Stroke Overlay with Tiered Widths
+    strokeDefs.forEach((def, index) => {
       const palette = strokePalette[index % strokePalette.length];
       const markerId = `tracing-arrow-${index}-${Math.random().toString(36).slice(2)}`;
       
+      const markerScale = def.tier === "bold" ? 14 : (def.tier === "medium" ? 10 : 8);
       const marker = appendSvgElement(defs, "marker", {
         id: markerId,
-        viewBox: "0 0 12 12",
-        refX: "9",
-        refY: "6",
-        markerWidth: "22",
-        markerHeight: "22",
+        viewBox: "0 0 10 10",
+        refX: "7",
+        refY: "5",
+        markerWidth: String(markerScale),
+        markerHeight: String(markerScale),
         markerUnits: "userSpaceOnUse",
         orient: "auto"
       });
       appendSvgElement(marker, "path", {
-        d: "M 1 2 L 9 6 L 1 10 L 3 6 Z",
+        d: "M 1 2 L 7 5 L 1 8 L 3 5 Z",
         fill: palette.dark
       });
 
-      // Translucent colored stroke segment
+      // Translucent colored stroke corridor
       appendSvgElement(guideLayer, "path", {
-        d: pathData(commands),
+        d: pathData(def.commands),
         fill: "none",
         stroke: palette.color,
-        "stroke-width": "42",
+        "stroke-width": String(def.corridorWidth),
         "stroke-linecap": "round",
         "stroke-linejoin": "round",
-        opacity: "0.4"
+        opacity: "0.35"
       });
 
       // Animated dotted centerline with direction arrow
       const centerPath = appendSvgElement(guideLayer, "path", {
-        d: pathData(commands),
+        d: pathData(def.commands),
+        class: "tracing-guide-centerline",
+        "data-corridor-radius": String(def.corridorRadius),
+        "data-pen-width": String(def.penWidth),
+        "data-step": def.tier === "bold" ? "12" : (def.tier === "medium" ? "8" : "6"),
         fill: "none",
         stroke: "#ffffff",
-        "stroke-width": "8",
+        "stroke-width": String(def.centerlineWidth),
         "stroke-linecap": "round",
-        "stroke-dasharray": "14,14",
+        "stroke-dasharray": def.dashArray,
         "marker-end": `url(#${markerId})`
       });
 
-      // Start Circle Badge with Stroke Number (1, 2, 3...)
-      const startPoint = pathPoint(centerPath, 0);
-      
-      // Pulse halo
-      appendSvgElement(guideLayer, "circle", {
-        cx: String(startPoint.x),
-        cy: String(startPoint.y),
-        r: "28",
-        fill: palette.color,
-        opacity: "0.28"
-      });
-
-      // Main Badge
-      appendSvgElement(guideLayer, "circle", {
-        cx: String(startPoint.x),
-        cy: String(startPoint.y),
-        r: "19",
-        fill: palette.color,
-        stroke: "#ffffff",
-        "stroke-width": "3.5"
-      });
-
-      // Number label inside badge
-      const numLabel = appendSvgElement(guideLayer, "text", {
-        x: String(startPoint.x),
-        y: String(startPoint.y + 7),
-        "text-anchor": "middle",
-        "font-family": "'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif",
-        "font-size": "21px",
-        "font-weight": "900",
-        fill: "#ffffff"
-      }, String(index + 1));
-
-      // Touch hand guide at stroke 1 start
-      if (index === 0) {
-        const handGroup = appendSvgElement(guideLayer, "g", {
-          transform: `translate(${startPoint.x + 18}, ${startPoint.y - 18})`,
-          class: "touch-hand-guide"
+      // Start Badge with Stroke Number (for bold top row)
+      if (def.showBadge) {
+        const startPoint = pathPoint(centerPath, 0);
+        
+        appendSvgElement(guideLayer, "circle", {
+          cx: String(startPoint.x),
+          cy: String(startPoint.y),
+          r: "12",
+          fill: palette.color,
+          stroke: "#ffffff",
+          "stroke-width": "2"
         });
-        appendSvgElement(handGroup, "circle", {
-          cx: "0",
-          cy: "0",
-          r: "16",
-          fill: "#51fac1",
-          "fill-opacity": "0.45"
-        });
-        appendSvgElement(handGroup, "text", {
-          x: "-9",
-          y: "7",
-          "font-family": "'Material Symbols Outlined'",
-          "font-size": "18px",
-          fill: "#007152"
-        }, "touch_app");
+
+        appendSvgElement(guideLayer, "text", {
+          x: String(startPoint.x),
+          y: String(startPoint.y + 4.5),
+          "text-anchor": "middle",
+          "font-family": "'Plus Jakarta Sans', 'Be Vietnam Pro', sans-serif",
+          "font-size": "11px",
+          "font-weight": "900",
+          fill: "#ffffff"
+        }, def.badgeLabel || "1");
       }
     });
 
     target.replaceChildren(svg);
+    target._guideCheckpoints = extractCheckpoints(svg);
   }
 
-  window.tracingGuides = { renderTracingGuide, guideStrokesFor };
+  function getGuideCheckpoints(target) {
+    if (!target) return [];
+    if (target._guideCheckpoints && target._guideCheckpoints.length) {
+      return target._guideCheckpoints;
+    }
+    const svg = target.querySelector("svg");
+    return extractCheckpoints(svg);
+  }
+
+  window.tracingGuides = { renderTracingGuide, guideStrokesFor, getGuideCheckpoints, strokePalette };
 })();

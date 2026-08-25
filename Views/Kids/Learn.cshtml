@@ -100,10 +100,20 @@
             <div class="celebration-actions">
                 @if (Model.FromTracing)
                 {
-                    <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Tracing">
-                        <span class="material-symbols-outlined">draw</span>
-                        <span>Chọn chữ khác để tô</span>
-                    </a>
+                    @if (Model.NextItemId.HasValue)
+                    {
+                        <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Learn" asp-route-id="@Model.NextItemId" asp-route-fromTracing="true">
+                            <span>Sang bài tiếp theo</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Tracing">
+                            <span class="material-symbols-outlined">draw</span>
+                            <span>Hoàn thành chuyên mục</span>
+                        </a>
+                    }
                 }
                 else if (Model.NextItemId.HasValue)
                 {
@@ -144,7 +154,6 @@
             </button>
         </div>
     }
-
     @if (Model.IsCorrect != true && Model.Item.InteractionType == InteractionTypes.Tracing)
     {
         <div class="choice-board tracing-lesson-layout interaction-tracing">
@@ -154,31 +163,26 @@
                      data-tracing-expected-strokes="@Model.TracingExpectedStrokeCount"
                      data-tracing-audio-url="@Model.TracingAudioUrl"
                      data-tracing-symbol="@Model.TracingSymbol">
-                    @if (!string.IsNullOrWhiteSpace(Model.QuestionImageUrl))
-                    {
-                        <div class="tracing-corner-flashcard" title="Thẻ mẫu: @Model.QuestionImageAltText">
-                            <img class="tracing-corner-image" src="@Model.QuestionImageUrl" alt="@Model.QuestionImageAltText" />
-                        </div>
-                    }
                     <div class="tracing-guide-overlay" aria-hidden="true"></div>
-                    <canvas class="tracing-canvas" width="720" height="720" aria-label="Bảng tô nét"></canvas>
-                    <div class="board-actions">
-                        @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))
-                        {
-                            <button class="tracing-audio clay-button" type="button" title="Nghe hướng dẫn"><span class="material-symbols-outlined">volume_up</span></button>
-                        }
-                        <button class="tracing-undo clay-button" type="button" title="Hoàn tác nét vẽ"><span class="material-symbols-outlined">undo</span></button>
-                        <button class="tracing-clear clay-button" type="button" title="Xóa toàn bộ để vẽ lại"><span class="material-symbols-outlined">delete</span></button>
-                    </div>
+                    <canvas class="tracing-canvas" width="920" height="1200" aria-label="Bảng tô nét"></canvas>
                 </div>
                 <form class="tracing-submit-form" asp-controller="Kids" asp-action="CompleteTracing" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" asp-route-fromTracing="@Model.FromTracing" method="post">
                     <input class="tracing-strokes-input" type="hidden" name="StrokeDataJson" value="[]" />
                     <input class="tracing-metrics-input" type="hidden" name="MetricsJson" value="{}" />
-                    <p class="tracing-status" aria-live="polite">Bé tô theo nét hướng dẫn ở trên nhé.</p>
-                    <button class="app-btn app-btn-wide tracing-submit-button clay-button" type="submit" disabled>
-                        <span class="material-symbols-outlined">check_circle</span>
-                        <span>Hoàn thành bài tô</span>
-                    </button>
+                    <div class="tracing-bottom-bar">
+                        <div class="board-actions tracing-controls-bar">
+                            @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))
+                            {
+                                <button class="tracing-audio clay-button" type="button" title="Nghe hướng dẫn"><span class="material-symbols-outlined">volume_up</span></button>
+                            }
+                            <button class="tracing-undo clay-button" type="button" title="Hoàn tác nét vẽ"><span class="material-symbols-outlined">undo</span></button>
+                            <button class="tracing-clear clay-button" type="button" title="Xóa toàn bộ để vẽ lại"><span class="material-symbols-outlined">delete</span></button>
+                        </div>
+                        <button class="app-btn tracing-submit-button clay-button" type="submit" disabled>
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span>Hoàn thành bài tô</span>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

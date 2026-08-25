@@ -832,6 +832,31 @@ public class KidsController : Controller
         return await _todayLessonService.FindNextItemIdAsync(session, currentItemId);
     }
 
+    private async Task<Guid?> FindNextTracingItemIdAsync(Guid currentItemId)
+    {
+        var currentItem = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == currentItemId);
+        if (currentItem is null)
+        {
+            return null;
+        }
+
+        var allTracingItems = await _db.LearningItems
+            .Where(x => x.InteractionType == InteractionTypes.Tracing && x.Status == ContentStatus.Published)
+            .OrderBy(x => x.TopicId == currentItem.TopicId ? 0 : 1)
+            .ThenBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .Select(x => x.Id)
+            .ToListAsync();
+
+        var index = allTracingItems.IndexOf(currentItemId);
+        if (index >= 0 && index + 1 < allTracingItems.Count)
+        {
+            return allTracingItems[index + 1];
+        }
+
+        return null;
+    }
+
     private async Task<LearnViewModel> BuildLearnViewModelAsync(
         LearningItem item,
         Question? question,
@@ -874,7 +899,9 @@ public class KidsController : Controller
             RetryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty),
             FeedbackMessage = feedbackMessage,
             IsCorrect = isCorrect,
-            NextItemId = fromTracing ? null : await FindNextItemIdAsync(item, skillGroupId),
+            NextItemId = fromTracing
+                ? await FindNextTracingItemIdAsync(item.Id)
+                : await FindNextItemIdAsync(item, skillGroupId),
             ReturnSkillGroupId = skillGroupId,
             FromTracing = fromTracing
         };
