@@ -11,13 +11,15 @@ public class KidsHomeViewModel
 public class KidsTracingHubViewModel
 {
     public ChildProfile? ChildProfile { get; set; }
-    public int TotalCount => BasicStrokes.Count + UppercaseLetters.Count + LowercaseLetters.Count + Numbers.Count;
+    public int TotalCount => BasicStrokes.Count + PictureTraces.Count + UppercaseLetters.Count + LowercaseLetters.Count + Numbers.Count;
     public int CompletedCount => BasicStrokes.Count(x => x.IsCompleted) +
+                                 PictureTraces.Count(x => x.IsCompleted) +
                                  UppercaseLetters.Count(x => x.IsCompleted) +
                                  LowercaseLetters.Count(x => x.IsCompleted) +
                                  Numbers.Count(x => x.IsCompleted);
 
     public IReadOnlyList<KidsTracingItemViewModel> BasicStrokes { get; set; } = [];
+    public IReadOnlyList<KidsTracingItemViewModel> PictureTraces { get; set; } = [];
     public IReadOnlyList<KidsTracingItemViewModel> UppercaseLetters { get; set; } = [];
     public IReadOnlyList<KidsTracingItemViewModel> LowercaseLetters { get; set; } = [];
     public IReadOnlyList<KidsTracingItemViewModel> Numbers { get; set; } = [];

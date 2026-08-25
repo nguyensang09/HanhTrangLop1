@@ -360,7 +360,20 @@ public class AdminController : Controller
 
         if (!string.IsNullOrWhiteSpace(itemTitle))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét)\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (itemTitle.Contains("tranh", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("phong cảnh", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("đồ dùng", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("mèo", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("cá heo", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("ô che mưa", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("hình học", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("táo", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("tàu hỏa", StringComparison.OrdinalIgnoreCase))
+            {
+                return itemTitle.Trim();
+            }
+
+            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét|hình)\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             if (match.Success)
             {
                 var val = match.Groups[2].Value.Trim();

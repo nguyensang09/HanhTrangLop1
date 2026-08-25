@@ -57,11 +57,12 @@ public static class CurriculumCatalog
             Topic("aaaaaaaa-8888-8888-8888-888888888882", "tap-trung", "Tập trung", 2),
             Topic("aaaaaaaa-8888-8888-8888-888888888883", "lam-theo-yeu-cau", "Làm theo yêu cầu", 3)),
 
-        Group("99999999-9999-9999-9999-999999999999", "van-dong-tinh", "Vận động tinh", "Đi nét, mê cung, nối điểm và thao tác khéo léo.", "gesture", "#e97852", 9,
+        Group("99999999-9999-9999-9999-999999999999", "van-dong-tinh", "Vận động tinh", "Đi nét, tô tranh tạo hình, mê cung, nối điểm và thao tác khéo léo.", "gesture", "#e97852", 9,
             Topic("aaaaaaaa-9999-9999-9999-999999999991", "net-co-ban", "Nét cơ bản", 1),
-            Topic("aaaaaaaa-9999-9999-9999-999999999992", "noi-diem", "Nối điểm", 2),
-            Topic("aaaaaaaa-9999-9999-9999-999999999993", "me-cung", "Mê cung", 3),
-            Topic("aaaaaaaa-9999-9999-9999-999999999994", "kheo-tay", "Khéo tay", 4)),
+            Topic("aaaaaaaa-9999-9999-9999-999999999995", "tao-hinh", "Tô tranh tạo hình", 2),
+            Topic("aaaaaaaa-9999-9999-9999-999999999992", "noi-diem", "Nối điểm", 3),
+            Topic("aaaaaaaa-9999-9999-9999-999999999993", "me-cung", "Mê cung", 4),
+            Topic("aaaaaaaa-9999-9999-9999-999999999994", "kheo-tay", "Khéo tay", 5)),
 
         Group("10101010-1010-1010-1010-101010101010", "kham-pha", "Khám phá thế giới", "Con vật, cây cối, thời tiết, giao thông và môi trường.", "rocket_launch", "#db5fa5", 10,
             Topic("aaaaaaaa-1010-1010-1010-101010101011", "con-vat", "Con vật", 1),

@@ -63,8 +63,13 @@
         </button>
         <button type="button" class="tracing-tab-btn clay-button" data-tab="basic">
             <span class="material-symbols-outlined">draw</span>
-            <span>Nét cơ bản & Tạo hình</span>
+            <span>Nét cơ bản</span>
             <span class="tab-badge">@Model.BasicStrokes.Count</span>
+        </button>
+        <button type="button" class="tracing-tab-btn clay-button" data-tab="picture">
+            <span class="material-symbols-outlined">palette</span>
+            <span>Tô tranh tạo hình</span>
+            <span class="tab-badge">@Model.PictureTraces.Count</span>
         </button>
         <button type="button" class="tracing-tab-btn clay-button" data-tab="upper">
             <span class="material-symbols-outlined">match_case</span>
@@ -89,8 +94,8 @@
             <div class="section-title-wrap">
                 <span class="material-symbols-outlined section-icon" style="color: #ff7a00;">draw</span>
                 <div>
-                    <h2>Luyện Nét Cơ Bản</h2>
-                    <p>Khởi đầu các nét sổ, nét ngang, nét xiên, nét móc, nét cong...</p>
+                    <h2>Luyện Nét Cơ Bản Lớp 1</h2>
+                    <p>Khởi đầu các nét sổ, nét ngang, nét xiên, nét móc, nét cong, nét khuyết...</p>
                 </div>
             </div>
             <span class="section-count-badge">@Model.BasicStrokes.Count(x => x.IsCompleted)/@Model.BasicStrokes.Count bài</span>
@@ -121,6 +126,72 @@
                             <span class="tracing-action-hint">
                                 <span class="material-symbols-outlined">edit</span>
                                 <span>Bé tập tô</span>
+                            </span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- 2. Tô tranh tạo hình & Nghệ thuật -->
+    <div class="tracing-section-block" data-section="picture">
+        <div class="tracing-section-header">
+            <div class="section-title-wrap">
+                <span class="material-symbols-outlined section-icon" style="color: #db2777;">palette</span>
+                <div>
+                    <h2>Tô Tranh & Tạo Hình Nghệ Thuật</h2>
+                    <p>Khám phá thế giới phong cảnh, con vật, đồ dùng và hình học qua nét vẽ</p>
+                </div>
+            </div>
+            <span class="section-count-badge">@Model.PictureTraces.Count(x => x.IsCompleted)/@Model.PictureTraces.Count tranh</span>
+        </div>
+        <div class="tracing-card-grid">
+            @foreach (var picture in Model.PictureTraces)
+            {
+                var iconEmoji = picture.Symbol switch
+                {
+                    "phong-canh" => "🏞️",
+                    "do-dung" => "🎒",
+                    "hinh-hoc" => "⭐",
+                    "meo-con" => "🐱",
+                    "ca-heo" => "🐬",
+                    "o-che-mua" => "☂️",
+                    "trai-tao" => "🍎",
+                    "tau-hoa" => "🚂",
+                    "chu-tho" => "🐰",
+                    "ong-vang" => "🐝",
+                    "may-bay" => "✈️",
+                    "thuyen" => "⛵",
+                    "cau-vong" => "🌈",
+                    "chu-buom" => "🦋",
+                    "khung-long" => "🦕",
+                    "ten-lua" => "🚀",
+                    _ => "🎨"
+                };
+                <a class="tracing-card clay-card @(picture.IsCompleted ? "is-completed" : "")"
+                   asp-controller="Kids"
+                   asp-action="Learn"
+                   asp-route-id="@picture.Item.Id"
+                   asp-route-fromTracing="true"
+                   title="@picture.Title">
+                    <div class="tracing-symbol-box stroke-box" style="background: linear-gradient(135deg, #fdf2f8, #fce7f3);">
+                        <span class="tracing-symbol-char" style="font-size: 2.2rem;">@iconEmoji</span>
+                    </div>
+                    <div class="tracing-card-info">
+                        <strong>@picture.Title</strong>
+                        @if (picture.IsCompleted)
+                        {
+                            <span class="tracing-star-badge">
+                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span>Đã hoàn thành</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="tracing-action-hint">
+                                <span class="material-symbols-outlined">brush</span>
+                                <span>Bé tô tranh</span>
                             </span>
                         }
                     </div>

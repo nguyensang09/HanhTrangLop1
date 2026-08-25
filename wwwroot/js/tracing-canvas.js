@@ -201,17 +201,19 @@
   }
 
   function startStroke(event) {
-    event.preventDefault();
     const pt = pointFromEvent(event);
     const cps = getCheckpoints();
     const match = findClosestCheckpoint(pt, cps);
 
-    // Strict boundary: Only start stroke if pointer is inside the stroke corridor!
+    // If touching outside guideline corridor, allow natural page scrolling on iPad/touch devices!
     if (!match.inCorridor) {
       state.drawing = false;
       return;
     }
 
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     pt.penWidth = match.penWidth;
     state.drawing = true;
     state.currentStroke = [pt];
@@ -284,6 +286,11 @@
   canvas.addEventListener("pointermove", continueStroke);
   canvas.addEventListener("pointerup", finishStroke);
   canvas.addEventListener("pointercancel", finishStroke);
+
+  // Allow trackpad / mouse wheel to scroll page over canvas
+  canvas.addEventListener("wheel", function (event) {
+    window.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
+  }, { passive: true });
 
   syncForm();
 })();

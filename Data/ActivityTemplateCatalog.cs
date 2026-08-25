@@ -66,6 +66,7 @@ public static class ActivityTemplateCatalog
             ["lam-theo-yeu-cau"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.DragDrop),
 
             ["net-co-ban"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.Matching),
+            ["tao-hinh"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.Matching),
             ["noi-diem"] = RuleWithTracing(InteractionTypes.DragDrop, InteractionTypes.Matching),
             ["me-cung"] = Rule(InteractionTypes.DragDrop, InteractionTypes.Ordering),
             ["kheo-tay"] = Rule(InteractionTypes.Ordering, InteractionTypes.DragDrop, InteractionTypes.SingleChoice, InteractionTypes.Matching),

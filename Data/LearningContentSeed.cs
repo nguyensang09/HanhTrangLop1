@@ -317,9 +317,10 @@ public static class LearningContentSeed
                 {
                     Id = templateId,
                     SymbolType = definition.TopicCode == "viet-so" ? "number" :
-                        definition.TopicCode == "chu-in-thuong" ? "lowercase" : "uppercase",
-                    Symbol = definition.Symbol,
-                    DisplayName = definition.Title,
+                        definition.TopicCode == "chu-in-thuong" ? "lowercase" :
+                        definition.TopicCode == "net-co-ban" ? "stroke" : "uppercase",
+                    Symbol = definition.Symbol.Length > 10 ? definition.Symbol[..10] : definition.Symbol,
+                    DisplayName = definition.Title.Length > 100 ? definition.Title[..100] : definition.Title,
                     CanvasWidth = 720,
                     CanvasHeight = 720,
                     GuideJson = JsonSerializer.Serialize(new
@@ -901,6 +902,31 @@ public static class LearningContentSeed
             yield return Tracing($"seed-basic-{code}", $"Tô {title.ToLowerInvariant()}", "net-co-ban", symbol, 1);
         }
 
+        // Picture & Scene Tracing with rich object combinations (Thiên nhiên, Đồ dùng, Động vật, Hình học)
+        var pictureTracingLessons = new[]
+        {
+            ("tranh-phong-canh", "Tô tranh phong cảnh: Mặt trời, ngôi nhà và cây thông", "phong-canh", 5),
+            ("tranh-do-dung", "Tô tranh đồ dùng học tập: Balo, bút chì và số 5", "do-dung", 5),
+            ("tranh-hinh-hoc", "Tô tranh ngôi sao, trái tim và hình học kỳ diệu", "hinh-hoc", 4),
+            ("tranh-meo-con", "Tô tranh chú mèo con dễ thương", "meo-con", 4),
+            ("tranh-ca-heo", "Tô tranh cá heo tung tăng bơi lội", "ca-heo", 4),
+            ("tranh-o-che-mua", "Tô tranh chiếc ô che mưa và chú ếch con", "o-che-mua", 4),
+            ("tranh-trai-tao", "Tô tranh quả táo ngọt và chú sâu nhỏ", "trai-tao", 4),
+            ("tranh-tau-hoa", "Tô tranh đoàn tàu hỏa tí hon", "tau-hoa", 4),
+            ("tranh-chu-tho", "Tô tranh chú thỏ trắng và củ cà rốt", "chu-tho", 4),
+            ("tranh-ong-vang", "Tô tranh chú ong chăm chỉ và hoa hướng dương", "ong-vang", 4),
+            ("tranh-may-bay", "Tô tranh chiếc máy bay trên bầu trời", "may-bay", 4),
+            ("tranh-thuyen", "Tô tranh thuyền buồm lướt sóng biển", "thuyen", 4),
+            ("tranh-cau-vong", "Tô tranh cầu vồng rực rỡ và lâu đài cổ tích", "cau-vong", 4),
+            ("tranh-chu-buom", "Tô tranh cánh bướm xinh bên vườn hoa", "chu-buom", 4),
+            ("tranh-khung-long", "Tô tranh chú khủng long tí hon", "khung-long", 4),
+            ("tranh-ten-lua", "Tô tranh tàu vũ trụ và các vì sao", "ten-lua", 4)
+        };
+        foreach (var (code, title, symbol, strokes) in pictureTracingLessons)
+        {
+            yield return Tracing($"seed-picture-{code}", title, "tao-hinh", symbol, strokes);
+        }
+
         // Letter Recognition for all 29 Vietnamese letters
         for (var index = 0; index < VietnameseAlphabet.Length; index++)
         {
@@ -1189,7 +1215,16 @@ public static class LearningContentSeed
             imageUrl = tracingImageUrl,
             imageAltText = string.IsNullOrWhiteSpace(tracingImageUrl) ? "Hình minh họa" : $"Thẻ học {symbol}"
         });
-        return new(code, title, topicCode, InteractionTypes.Tracing, "Bé vẽ theo đường nét đứt nhé.", $"Bé hãy quan sát cách viết {symbol} nhé!", payload, string.Empty, "Bắt đầu ở chấm màu cam, đi theo mũi tên và tô chậm trên nét đứt.", symbol, strokes);
+        var isPicture = symbol.Contains("phong-canh") || symbol.Contains("do-dung") || symbol.Contains("meo-con") ||
+                        symbol.Contains("ca-heo") || symbol.Contains("o-che-mua") || symbol.Contains("hinh-hoc") ||
+                        symbol.Contains("trai-tao") || symbol.Contains("tau-hoa") || code.Contains("picture") || title.Contains("tranh", StringComparison.OrdinalIgnoreCase);
+        var prompt = isPicture
+            ? "Bé hãy quan sát bức tranh và tô theo các nét đứt nhé! ✨"
+            : $"Bé hãy quan sát cách viết {symbol} nhé!";
+        var instruction = isPicture
+            ? "Bé hãy tô theo các nét đứt để hoàn thành bức tranh nhé."
+            : "Bé vẽ theo đường nét đứt nhé.";
+        return new(code, title, topicCode, InteractionTypes.Tracing, instruction, prompt, payload, string.Empty, "Bắt đầu ở chấm màu cam, đi theo mũi tên và tô chậm trên nét đứt.", symbol, strokes);
     }
 
     private static string ExtractSymbolFromTitle(string? title, string? prompt = null)

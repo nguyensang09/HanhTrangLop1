@@ -189,6 +189,7 @@ public class KidsController : Controller
             );
 
         var basicStrokes = new List<KidsTracingItemViewModel>();
+        var pictureTraces = new List<KidsTracingItemViewModel>();
         var upperLetters = new List<KidsTracingItemViewModel>();
         var lowerLetters = new List<KidsTracingItemViewModel>();
         var numbers = new List<KidsTracingItemViewModel>();
@@ -205,8 +206,29 @@ public class KidsController : Controller
 
             var topicCode = item.Topic?.Code?.ToLowerInvariant() ?? string.Empty;
             var titleLower = item.Title.ToLowerInvariant();
+            var symbolLower = symbol.ToLowerInvariant();
 
-            if (topicCode.Contains("net") || titleLower.Contains("nét"))
+            var isPicture = topicCode.Contains("tao-hinh") || topicCode.Contains("tranh") ||
+                            titleLower.Contains("tranh") || titleLower.Contains("tạo hình") ||
+                            symbolLower.Contains("phong-canh") || symbolLower.Contains("do-dung") ||
+                            symbolLower.Contains("meo-con") || symbolLower.Contains("ca-heo") ||
+                            symbolLower.Contains("o-che-mua") || symbolLower.Contains("hinh-hoc") ||
+                            symbolLower.Contains("trai-tao") || symbolLower.Contains("tau-hoa") ||
+                            item.Code.Contains("picture");
+
+            if (isPicture)
+            {
+                pictureTraces.Add(new KidsTracingItemViewModel
+                {
+                    Item = item,
+                    Symbol = symbol,
+                    Title = item.Title,
+                    CategoryCode = "picture",
+                    IsCompleted = isCompleted,
+                    StarsEarned = starsEarned
+                });
+            }
+            else if (topicCode.Contains("net") || titleLower.Contains("nét"))
             {
                 basicStrokes.Add(new KidsTracingItemViewModel
                 {
@@ -260,6 +282,7 @@ public class KidsController : Controller
         {
             ChildProfile = child,
             BasicStrokes = basicStrokes,
+            PictureTraces = pictureTraces,
             UppercaseLetters = upperLetters,
             LowercaseLetters = lowerLetters,
             Numbers = numbers,
@@ -916,7 +939,20 @@ public class KidsController : Controller
 
         if (!string.IsNullOrWhiteSpace(itemTitle))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(?:chữ số|chữ|số|nét)\s+([A-Za-zÀ-ỹ0-9\s]+?)(?:\s+in\s+hoa|\s+in\s+thường|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (itemTitle.Contains("tranh", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("phong cảnh", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("đồ dùng", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("mèo", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("cá heo", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("ô che mưa", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("hình học", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("táo", StringComparison.OrdinalIgnoreCase) ||
+                itemTitle.Contains("tàu hỏa", StringComparison.OrdinalIgnoreCase))
+            {
+                return itemTitle.Trim();
+            }
+
+            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(?:chữ số|chữ|số|nét|hình)\s+([A-Za-zÀ-ỹ0-9\s]+?)(?:\s+in\s+hoa|\s+in\s+thường|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             if (match.Success)
             {
                 var val = match.Groups[1].Value.Trim();
