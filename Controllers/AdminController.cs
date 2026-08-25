@@ -89,7 +89,7 @@ public class AdminController : Controller
     }
 
     [HttpGet("learning-items")]
-    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, int page = 1)
+    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search)
     {
         var query = _db.LearningItems
             .Include(x => x.SkillGroup)
@@ -117,28 +117,102 @@ public class AdminController : Controller
             query = query.Where(x => x.TopicId == topicId.Value);
         }
 
-        const int pageSize = 25;
-        var totalItems = await query.CountAsync();
-        page = Math.Clamp(page, 1, Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize)));
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var keyword = search.Trim();
+            query = query.Where(x => x.Title.Contains(keyword) ||
+                                     (x.Topic != null && x.Topic.Name.Contains(keyword)) ||
+                                     (x.Topic != null && x.Topic.Code.Contains(keyword)) ||
+                                     (x.SkillGroup != null && x.SkillGroup.Name.Contains(keyword)));
+        }
+
+        var allSkillGroups = await _db.SkillGroups.OrderBy(x => x.SortOrder).ToListAsync();
+        var allTopics = await _db.Topics.OrderBy(x => x.SortOrder).ToListAsync();
+
+        var items = await query
+            .OrderBy(x => x.SkillGroup!.SortOrder)
+            .ThenBy(x => x.Topic!.SortOrder)
+            .ThenBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .ToListAsync();
+
+        var hasFilter = !string.IsNullOrWhiteSpace(status) ||
+                        !string.IsNullOrWhiteSpace(interactionType) ||
+                        skillGroupId.HasValue ||
+                        topicId.HasValue ||
+                        !string.IsNullOrWhiteSpace(search);
+
+        var filteredGroups = allSkillGroups
+            .Where(g => !skillGroupId.HasValue || g.Id == skillGroupId.Value)
+            .ToList();
+
+        var filteredTopics = allTopics
+            .Where(t => (!skillGroupId.HasValue || t.SkillGroupId == skillGroupId.Value) &&
+                        (!topicId.HasValue || t.Id == topicId.Value))
+            .ToList();
+
+        var treeGroups = new List<AdminLearningGroupTreeItem>();
+        foreach (var group in filteredGroups)
+        {
+            var groupItems = items.Where(x => x.SkillGroupId == group.Id).ToList();
+            var groupTopics = filteredTopics.Where(t => t.SkillGroupId == group.Id).ToList();
+
+            // When a filter is active and specific group was not locked, hide empty group branches
+            if (hasFilter && !skillGroupId.HasValue && groupItems.Count == 0)
+            {
+                continue;
+            }
+
+            var topicTreeItems = new List<AdminLearningTopicTreeItem>();
+            foreach (var topic in groupTopics)
+            {
+                var topicItems = groupItems.Where(x => x.TopicId == topic.Id).ToList();
+                if (hasFilter && !topicId.HasValue && topicItems.Count == 0)
+                {
+                    continue;
+                }
+
+                var allowedTemplates = ActivityTemplateCatalog.ForTopic(topic.Code).InteractionTypes
+                    .Select(ActivityTemplateCatalog.Find)
+                    .OfType<ActivityTemplateDefinition>()
+                    .ToList();
+                var allowsTracing = ActivityTemplateCatalog.ForTopic(topic.Code).AllowsTracing;
+
+                topicTreeItems.Add(new AdminLearningTopicTreeItem
+                {
+                    Topic = topic,
+                    LearningItemCount = topicItems.Count,
+                    Items = topicItems,
+                    AllowedTemplates = allowedTemplates,
+                    AllowsTracing = allowsTracing
+                });
+            }
+
+            var directItems = groupItems.Where(x => !x.TopicId.HasValue).ToList();
+
+            treeGroups.Add(new AdminLearningGroupTreeItem
+            {
+                SkillGroup = group,
+                LearningItemCount = groupItems.Count,
+                Topics = topicTreeItems,
+                DirectItems = directItems
+            });
+        }
+
         var model = new AdminLearningItemListViewModel
         {
+            Search = search,
             Status = status,
             InteractionType = interactionType,
             SkillGroupId = skillGroupId,
             TopicId = topicId,
-            SkillGroups = await _db.SkillGroups.OrderBy(x => x.SortOrder).ToListAsync(),
-            Topics = await _db.Topics.OrderBy(x => x.SortOrder).ToListAsync(),
-            Items = await query
-                .OrderBy(x => x.SkillGroup!.SortOrder)
-                .ThenBy(x => x.Topic!.SortOrder)
-                .ThenBy(x => x.SortOrder)
-                .ThenBy(x => x.Title)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(),
-            Page = page,
-            PageSize = pageSize,
-            TotalItems = totalItems
+            SkillGroups = allSkillGroups,
+            Topics = allTopics,
+            Items = items,
+            TreeGroups = treeGroups,
+            TotalGroups = treeGroups.Count,
+            TotalTopics = treeGroups.Sum(g => g.Topics.Count),
+            TotalItems = items.Count
         };
 
         return View(model);
@@ -354,7 +428,7 @@ public class AdminController : Controller
 
     [HttpPost("learning-items/generate-missing-audio")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GenerateMissingLearningItemsAudio(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, int page = 1)
+    public async Task<IActionResult> GenerateMissingLearningItemsAudio(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search)
     {
         var query = _db.LearningItems
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
@@ -378,6 +452,15 @@ public class AdminController : Controller
         if (topicId.HasValue)
         {
             query = query.Where(x => x.TopicId == topicId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var keyword = search.Trim();
+            query = query.Where(x => x.Title.Contains(keyword) ||
+                                     (x.Topic != null && x.Topic.Name.Contains(keyword)) ||
+                                     (x.Topic != null && x.Topic.Code.Contains(keyword)) ||
+                                     (x.SkillGroup != null && x.SkillGroup.Name.Contains(keyword)));
         }
 
         var items = await query
@@ -407,7 +490,7 @@ public class AdminController : Controller
             catch (DbUpdateException ex)
             {
                 TempData["AdminMessage"] = $"Không thể lưu rà soát voice: {GetInnermostMessage(ex)}";
-                return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
+                return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, search });
             }
         }
 
@@ -420,7 +503,7 @@ public class AdminController : Controller
             TempData["AdminMessage"] = "Đã rà soát voice. Chưa có file nào để gắn thêm; hãy vào Kiểm soát voice để tải file cho mục còn thiếu.";
         }
 
-        return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, page });
+        return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, search });
     }
 
     [HttpPost("learning-items/{id:guid}/generate-audio")]

@@ -55,18 +55,34 @@
         </button>
     </div> *@
 
-    <!-- Nút Bắt Đầu Bài Học Hôm Nay 3D -->
-    <a class="hero-mission-card clay-button" asp-controller="Kids" asp-action="Today">
-        <div class="hero-mission-icon-wrap">
-            <span class="material-symbols-outlined hero-play-icon">play_circle</span>
-        </div>
-        <div class="hero-mission-content">
-            <span class="hero-mission-badge">Mục tiêu hôm nay ✨</span>
-            <strong>Bắt đầu bài học ngay</strong>
-            <small>Chỉ 10 - 15 phút mỗi ngày cùng Sóc Nâu</small>
-        </div>
-        <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
-    </a>
+    <!-- Các Lối Vào Bài Học Chính 3D -->
+    <div class="home-hero-actions-row">
+        <!-- Nút Bắt Đầu Bài Học Hôm Nay 3D -->
+        <a class="hero-mission-card clay-button" asp-controller="Kids" asp-action="Today">
+            <div class="hero-mission-icon-wrap">
+                <span class="material-symbols-outlined hero-play-icon">play_circle</span>
+            </div>
+            <div class="hero-mission-content">
+                <span class="hero-mission-badge">Mục tiêu hôm nay ✨</span>
+                <strong>Bắt đầu bài học ngay</strong>
+                <small>Chỉ 10 - 15 phút mỗi ngày cùng Sóc Nâu</small>
+            </div>
+            <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
+        </a>
+
+        <!-- Nút Góc Bé Tập Tô & Luyện Nét 3D -->
+        <a class="hero-mission-card tracing-mission-card clay-button" asp-controller="Kids" asp-action="Tracing">
+            <div class="hero-mission-icon-wrap tracing-icon-wrap">
+                <span class="material-symbols-outlined hero-play-icon">draw</span>
+            </div>
+            <div class="hero-mission-content">
+                <span class="hero-mission-badge tracing-badge">Mở tự do 100% 🎨</span>
+                <strong>Góc Bé Tập Tô</strong>
+                <small>Luyện 29 chữ cái, chữ số & nét vẽ cơ bản</small>
+            </div>
+            <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
+        </a>
+    </div>
 
     <!-- Lưới Khám Phá Các Nhóm Kỹ Năng Đa Dạng Sắc Màu -->
     <div class="skill-section-header">

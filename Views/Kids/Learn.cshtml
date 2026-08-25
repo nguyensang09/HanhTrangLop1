@@ -35,7 +35,11 @@
     <!-- Topbar Focus Mode (1 Tiêu đề chính + 1 Nút nghe) -->
     <header class="learning-common-zone">
         <div class="learning-focus-topbar">
-            @if (Model.ReturnSkillGroupId.HasValue)
+            @if (Model.FromTracing)
+            {
+                <a class="icon-link learning-back-btn clay-button" asp-controller="Kids" asp-action="Tracing" title="Quay lại Góc Tập Tô"><span class="material-symbols-outlined">arrow_back</span></a>
+            }
+            else if (Model.ReturnSkillGroupId.HasValue)
             {
                 <a class="icon-link learning-back-btn clay-button" asp-controller="Kids" asp-action="Skill" asp-route-id="@Model.ReturnSkillGroupId" title="Quay lại"><span class="material-symbols-outlined">arrow_back</span></a>
             }
@@ -54,7 +58,14 @@
     {
         <!-- Màn Hình Chúc Mừng Bé Trả Lời Đúng - RỰC RỠ & SINH ĐỘNG -->
         <div class="answer-celebration-card clay-card" role="status">
-            @if (Model.ReturnSkillGroupId.HasValue)
+            @if (Model.FromTracing)
+            {
+                <a class="celebration-map-corner-btn clay-button" asp-controller="Kids" asp-action="Tracing" title="Về Góc Tập Tô">
+                    <span class="material-symbols-outlined">draw</span>
+                    <span>Tập tô</span>
+                </a>
+            }
+            else if (Model.ReturnSkillGroupId.HasValue)
             {
                 <!-- Nút Bản Đồ Bài Học Tách Biệt Ở Góc Phải -->
                 <a class="celebration-map-corner-btn clay-button" asp-controller="Kids" asp-action="Skill" asp-route-id="@Model.ReturnSkillGroupId" title="Về bản đồ bài học">
@@ -79,7 +90,7 @@
             </div>
 
             <h2 class="celebration-title">Xuất Sắc Quá! 🎉</h2>
-            <p class="celebration-message">@(string.IsNullOrWhiteSpace(Model.FeedbackMessage) ? "Bé đã trả lời rất chính xác, tiếp tục phát huy nhé!" : Model.FeedbackMessage)</p>
+            <p class="celebration-message">@(string.IsNullOrWhiteSpace(Model.FeedbackMessage) ? "Bé đã hoàn thành bài rất xuất sắc, tiếp tục phát huy nhé!" : Model.FeedbackMessage)</p>
 
             <div class="celebration-reward-pill">
                 <span class="material-symbols-outlined star-icon">stars</span>
@@ -87,7 +98,14 @@
             </div>
 
             <div class="celebration-actions">
-                @if (Model.NextItemId.HasValue)
+                @if (Model.FromTracing)
+                {
+                    <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Tracing">
+                        <span class="material-symbols-outlined">draw</span>
+                        <span>Chọn chữ khác để tô</span>
+                    </a>
+                }
+                else if (Model.NextItemId.HasValue)
                 {
                     <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Learn" asp-route-id="@Model.NextItemId" asp-route-skillGroupId="@Model.ReturnSkillGroupId">
                         <span>Sang bài tiếp theo</span>
@@ -153,7 +171,7 @@
                         <button class="tracing-clear clay-button" type="button" title="Xóa toàn bộ để vẽ lại"><span class="material-symbols-outlined">delete</span></button>
                     </div>
                 </div>
-                <form class="tracing-submit-form" asp-controller="Kids" asp-action="CompleteTracing" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" method="post">
+                <form class="tracing-submit-form" asp-controller="Kids" asp-action="CompleteTracing" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" asp-route-fromTracing="@Model.FromTracing" method="post">
                     <input class="tracing-strokes-input" type="hidden" name="StrokeDataJson" value="[]" />
                     <input class="tracing-metrics-input" type="hidden" name="MetricsJson" value="{}" />
                     <p class="tracing-status" aria-live="polite">Bé tô theo nét hướng dẫn ở trên nhé.</p>
@@ -210,6 +228,7 @@
 
 @section Scripts {
     <script src="~/js/learning-voice.js" asp-append-version="true"></script>
+    <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
     <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
     <script src="~/js/learning-activities.js" asp-append-version="true"></script>
 }

@@ -6213,86 +6213,104 @@ body.focus-mode-active,
   font-size: 1.1rem;
 }
 
-/* Hero Mission Card (Bắt đầu bài học hôm nay) */
+/* Hero Mission Card (Bắt đầu bài học hôm nay & Góc tập tô) */
 .hero-mission-card {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 24px !important;
-  background: linear-gradient(135deg, #fb923c 0%, #ea580c 50%, #c2410c 100%) !important;
-  border: 3.5px solid #ffffff !important;
-  border-radius: 30px !important;
-  box-shadow: 0 16px 36px rgba(234, 88, 12, 0.4), inset 0 -5px 0 rgba(0, 0, 0, 0.2), inset 0 3px 0 rgba(255, 255, 255, 0.4) !important;
+  padding: 18px 20px !important;
+  background: #ffffff !important;
+  border: 2px solid #fed7aa !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.06), inset 0 1px 0 #ffffff !important;
   text-decoration: none !important;
-  color: #ffffff !important;
-  margin-bottom: 28px !important;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  color: #0f172a !important;
+  margin-bottom: 0 !important;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 .hero-mission-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 20px 42px rgba(234, 88, 12, 0.5), inset 0 -5px 0 rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-3px) scale(1.015);
+  border-color: #fdba74 !important;
+  box-shadow: 0 14px 28px rgba(234, 88, 12, 0.12) !important;
 }
 
 .hero-mission-card:active {
-  transform: translateY(2px) scale(0.98);
+  transform: translateY(1px) scale(0.99);
 }
 
 .hero-mission-icon-wrap {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+  border: 1.5px solid #fdba74;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.1);
 }
 
 .hero-play-icon {
-  font-size: 2.8rem;
-  color: #ffffff;
-  animation: pulseGoal 1.5s infinite ease-in-out;
+  font-size: 2rem;
+  color: #ea580c;
 }
 
 .hero-mission-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .hero-mission-badge {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #ffedd5;
-  background: rgba(0, 0, 0, 0.15);
-  padding: 2px 10px;
-  border-radius: 12px;
+  letter-spacing: 0.4px;
+  color: #c2410c;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  padding: 2px 8px;
+  border-radius: 8px;
   width: fit-content;
 }
 
 .hero-mission-content strong {
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1.2;
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
 }
 
 .hero-mission-content small {
-  color: #ffedd5;
-  font-size: 0.85rem;
+  color: #64748b;
+  font-size: 0.84rem;
   font-weight: 600;
+  line-height: 1.3;
 }
 
 .hero-mission-arrow {
-  font-size: 1.8rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff7ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #ea580c;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.hero-mission-card:hover .hero-mission-arrow {
+  background: #ea580c;
   color: #ffffff;
-  opacity: 0.85;
+  transform: translateX(3px);
 }
 
 /* Skills Category Tiles with Thematic Differentiation */
@@ -7805,3 +7823,863 @@ body.focus-mode-active,
   color: #ffffff;
   border-color: #dc2626;
 }
+
+/* ==========================================================================
+   Admin Learning Content Tree View (Kho nội dung dạng Cây thư mục)
+   ========================================================================== */
+
+.learning-filter-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  align-items: flex-end;
+  background: #ffffff;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.learning-filter-form .search-field {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .learning-filter-form .search-field {
+    grid-column: 1 / -1;
+  }
+}
+
+.learning-filter-form .search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.learning-filter-form .search-input-wrap .search-icon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+  font-size: 1.25rem;
+}
+
+.learning-filter-form .search-input-wrap input {
+  padding-left: 38px;
+}
+
+.learning-filter-form .filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.tree-control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 20px 0 16px;
+  padding: 6px 2px;
+}
+
+.tree-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.tree-summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  color: #475569;
+}
+
+.tree-summary-chip .material-symbols-outlined {
+  font-size: 1.15rem;
+  color: #64748b;
+}
+
+.tree-summary-chip strong {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.tree-summary-chip.highlight {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.tree-summary-chip.highlight .material-symbols-outlined {
+  color: #2563eb;
+}
+
+.tree-summary-chip.highlight strong {
+  color: #1e40af;
+}
+
+.active-filter-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.active-filter-indicator .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.tree-expand-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.learning-tree-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Tree Level 1: Group Card */
+.tree-group-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 6px solid var(--group-color, #2563eb);
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.tree-group-card:hover {
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.09);
+}
+
+.tree-group-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.tree-group-header:hover {
+  background: #f8fafc;
+}
+
+.tree-group-card.is-expanded > .tree-group-header {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tree-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.tree-toggle-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.tree-chevron {
+  font-size: 1.3rem;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tree-group-card.is-expanded > .tree-group-header .tree-chevron,
+.tree-topic-item.is-expanded > .tree-topic-header .tree-chevron {
+  transform: rotate(90deg);
+}
+
+.tree-group-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--group-color, #2563eb) 12%, #ffffff);
+  color: var(--group-color, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tree-group-icon {
+  font-size: 1.5rem;
+}
+
+.tree-group-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-group-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tree-group-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.tree-group-desc {
+  margin: 3px 0 0;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.tree-count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.tree-count-badge.group-count {
+  background: color-mix(in srgb, var(--group-color, #2563eb) 14%, #ffffff);
+  color: var(--group-color, #2563eb);
+  border: 1px solid color-mix(in srgb, var(--group-color, #2563eb) 25%, transparent);
+}
+
+.tree-group-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tree-group-body {
+  display: none;
+  padding: 16px 20px 20px;
+  background: #fdfdfd;
+}
+
+.tree-group-card.is-expanded > .tree-group-body {
+  display: block;
+  animation: treeFadeSlideDown 0.2s ease-out;
+}
+
+.tree-topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Tree Level 2: Topic Item */
+.tree-topic-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.15s ease;
+}
+
+.tree-topic-item:hover {
+  border-color: #cbd5e1;
+}
+
+.tree-topic-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.tree-topic-header:hover {
+  background: #f8fafc;
+}
+
+.tree-topic-item.is-expanded > .tree-topic-header {
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tree-toggle-btn.small-toggle {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.tree-toggle-btn.small-toggle .tree-chevron {
+  font-size: 1.1rem;
+}
+
+.tree-topic-icon-wrap {
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tree-topic-icon {
+  font-size: 1.35rem;
+}
+
+.tree-topic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tree-topic-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tree-topic-code {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: monospace;
+  color: #475569;
+}
+
+.tree-topic-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.tree-count-badge.topic-count {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.tree-topic-meta {
+  margin-top: 4px;
+}
+
+.topic-templates-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.template-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.template-chip .material-symbols-outlined {
+  font-size: 0.95rem;
+}
+
+.template-chip.tracing {
+  background: #fdf4ff;
+  border-color: #f5d0fe;
+  color: #a21caf;
+}
+
+.tree-topic-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tree-topic-body {
+  display: none;
+  padding: 12px 16px 16px;
+  background: #ffffff;
+}
+
+.tree-topic-item.is-expanded > .tree-topic-body {
+  display: block;
+  animation: treeFadeSlideDown 0.18s ease-out;
+}
+
+.tree-empty-topic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Tree Level 3: Learning Items Table */
+.tree-items-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.tree-items-table thead th {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tree-items-table tbody td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.tree-items-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tree-items-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.sort-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.lesson-title-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lesson-name {
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.lesson-name:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.template-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.questions-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.questions-count .material-symbols-outlined {
+  font-size: 1rem;
+  color: #94a3b8;
+}
+
+.empty-tree-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px dashed #cbd5e1;
+}
+
+.empty-tree-state .empty-icon {
+  font-size: 3.5rem;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.empty-tree-state h3 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.empty-tree-state p {
+  margin: 0 0 16px;
+  color: #64748b;
+  max-width: 480px;
+}
+
+@keyframes treeFadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Kids Tracing Hub (Góc Bé Tập Tô & Luyện Nét)
+   ========================================================================== */
+
+.home-hero-actions-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tracing-mission-card {
+  border-color: #e9d5ff !important;
+  box-shadow: 0 8px 20px rgba(147, 51, 234, 0.06), inset 0 1px 0 #ffffff !important;
+}
+
+.tracing-mission-card:hover {
+  border-color: #d8b4fe !important;
+  box-shadow: 0 14px 28px rgba(147, 51, 234, 0.12) !important;
+}
+
+.tracing-mission-card .hero-mission-icon-wrap {
+  background: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%) !important;
+  border: 1.5px solid #d8b4fe !important;
+  box-shadow: 0 4px 10px rgba(147, 51, 234, 0.1) !important;
+}
+
+.tracing-mission-card .hero-play-icon {
+  color: #9333ea !important;
+}
+
+.tracing-mission-card .hero-mission-badge {
+  background: #faf5ff !important;
+  color: #7e22ce !important;
+  border-color: #e9d5ff !important;
+}
+
+.tracing-mission-card .hero-mission-arrow {
+  background: #faf5ff !important;
+  color: #9333ea !important;
+}
+
+.tracing-mission-card:hover .hero-mission-arrow {
+  background: #9333ea !important;
+  color: #ffffff !important;
+}
+
+.tracing-hub-screen {
+  padding-bottom: 40px;
+}
+
+.tracing-progress-card {
+  margin-bottom: 20px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 16px 20px;
+}
+
+.tracing-tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.tracing-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #475569;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.tracing-tab-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+.tracing-tab-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.28);
+}
+
+.tracing-tab-btn .tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.tracing-tab-btn.active .tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.tracing-section-block {
+  margin-bottom: 32px;
+}
+
+.tracing-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.tracing-section-header .section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tracing-section-header .section-icon {
+  font-size: 2rem;
+}
+
+.tracing-section-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.tracing-section-header p {
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.section-count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.tracing-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.tracing-card-grid.letter-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.tracing-card-grid.number-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.tracing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 16px 12px;
+  background: #ffffff;
+  border: 2.5px solid #e2e8f0;
+  border-radius: 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+}
+
+.tracing-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: #38bdf8;
+  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.15);
+}
+
+.tracing-card.is-completed {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.tracing-card.is-completed:hover {
+  border-color: #22c55e;
+  box-shadow: 0 12px 28px rgba(34, 197, 94, 0.16);
+}
+
+.tracing-symbol-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-family: var(--font-display, "Outfit", sans-serif);
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.tracing-card:hover .tracing-symbol-box {
+  transform: scale(1.08);
+}
+
+.tracing-symbol-box.stroke-box {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: #ea580c;
+  border: 2px solid #fed7aa;
+}
+
+.tracing-symbol-box.letter-box {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  color: #0284c7;
+  border: 2px solid #bae6fd;
+}
+
+.tracing-symbol-box.letter-box.lower-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: #16a34a;
+  border: 2px solid #bbf7d0;
+}
+
+.tracing-symbol-box.number-box {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  color: #9333ea;
+  border: 2px solid #e9d5ff;
+}
+
+.tracing-card-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.tracing-card-info strong {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.tracing-star-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #fef9c3;
+  color: #854d0e;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tracing-star-badge .star-icon {
+  font-size: 0.95rem;
+  color: #eab308;
+}
+
+.tracing-action-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.tracing-action-hint .material-symbols-outlined {
+  font-size: 0.95rem;
+}
+
+

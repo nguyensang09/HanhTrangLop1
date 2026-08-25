@@ -154,8 +154,123 @@ public class KidsController : Controller
         return View(model);
     }
 
+    [HttpGet("tracing")]
+    [HttpGet("tap-to")]
+    public async Task<IActionResult> Tracing(string? tab = "all")
+    {
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null)
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("CreateProfile", "Parent");
+            }
+            return RedirectToAction("Index", "Profiles");
+        }
+
+        var tracingItems = await _db.LearningItems
+            .Include(x => x.Topic)
+            .Include(x => x.SkillGroup)
+            .Include(x => x.Questions)
+            .Where(x => x.InteractionType == InteractionTypes.Tracing && x.Status == ContentStatus.Published)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .ToListAsync();
+
+        var attempts = await _db.LearningAttempts
+            .Where(x => x.ChildProfileId == child.Id)
+            .ToListAsync();
+
+        var attemptLookup = attempts
+            .GroupBy(x => x.LearningItemId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderByDescending(a => a.StartedAt).First()
+            );
+
+        var basicStrokes = new List<KidsTracingItemViewModel>();
+        var upperLetters = new List<KidsTracingItemViewModel>();
+        var lowerLetters = new List<KidsTracingItemViewModel>();
+        var numbers = new List<KidsTracingItemViewModel>();
+
+        foreach (var item in tracingItems)
+        {
+            var question = item.Questions.FirstOrDefault();
+            var payloadSymbol = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", string.Empty);
+            var symbol = ExtractTracingSymbol(payloadSymbol, item.Title, question?.PromptText);
+
+            var attempt = attemptLookup.GetValueOrDefault(item.Id);
+            var isCompleted = attempt?.Status == "completed";
+            var starsEarned = attempt?.StarsEarned ?? (isCompleted ? 2 : 0);
+
+            var topicCode = item.Topic?.Code?.ToLowerInvariant() ?? string.Empty;
+            var titleLower = item.Title.ToLowerInvariant();
+
+            if (topicCode.Contains("net") || titleLower.Contains("nét"))
+            {
+                basicStrokes.Add(new KidsTracingItemViewModel
+                {
+                    Item = item,
+                    Symbol = symbol,
+                    Title = item.Title,
+                    CategoryCode = "basic",
+                    IsCompleted = isCompleted,
+                    StarsEarned = starsEarned
+                });
+            }
+            else if (topicCode.Contains("viet-so") || topicCode.Contains("so") || titleLower.Contains("tô số") || int.TryParse(symbol, out _))
+            {
+                numbers.Add(new KidsTracingItemViewModel
+                {
+                    Item = item,
+                    Symbol = symbol,
+                    Title = item.Title,
+                    CategoryCode = "number",
+                    IsCompleted = isCompleted,
+                    StarsEarned = starsEarned
+                });
+            }
+            else if (topicCode.Contains("chu-in-thuong") || titleLower.Contains("in thường") || (symbol.Length == 1 && char.IsLower(symbol[0])))
+            {
+                lowerLetters.Add(new KidsTracingItemViewModel
+                {
+                    Item = item,
+                    Symbol = symbol,
+                    Title = item.Title,
+                    CategoryCode = "lower",
+                    IsCompleted = isCompleted,
+                    StarsEarned = starsEarned
+                });
+            }
+            else
+            {
+                upperLetters.Add(new KidsTracingItemViewModel
+                {
+                    Item = item,
+                    Symbol = symbol,
+                    Title = item.Title,
+                    CategoryCode = "upper",
+                    IsCompleted = isCompleted,
+                    StarsEarned = starsEarned
+                });
+            }
+        }
+
+        var model = new KidsTracingHubViewModel
+        {
+            ChildProfile = child,
+            BasicStrokes = basicStrokes,
+            UppercaseLetters = upperLetters,
+            LowercaseLetters = lowerLetters,
+            Numbers = numbers,
+            ActiveTab = string.IsNullOrWhiteSpace(tab) ? "all" : tab.ToLowerInvariant()
+        };
+
+        return View(model);
+    }
+
     [HttpGet("learn/{id:guid}")]
-    public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId)
+    public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId, bool fromTracing = false)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -178,7 +293,7 @@ public class KidsController : Controller
         }
 
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-        if (!skillGroupId.HasValue)
+        if (!skillGroupId.HasValue && !fromTracing)
         {
             var activeSession = await GetCurrentLearningSessionAsync(child, id);
             HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, activeSession.Id.ToString());
@@ -188,7 +303,8 @@ public class KidsController : Controller
             item,
             question,
             child,
-            skillGroupId));
+            skillGroupId,
+            fromTracing: fromTracing));
     }
 
     [HttpPost("learn/{id:guid}/answer")]
@@ -262,7 +378,7 @@ public class KidsController : Controller
 
     [HttpPost("learn/{id:guid}/complete-tracing")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CompleteTracing(Guid id, SubmitTracingViewModel tracing, Guid? skillGroupId)
+    public async Task<IActionResult> CompleteTracing(Guid id, SubmitTracingViewModel tracing, Guid? skillGroupId, bool fromTracing = false)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -330,7 +446,8 @@ public class KidsController : Controller
             child,
             skillGroupId,
             feedback,
-            true));
+            true,
+            fromTracing: fromTracing));
     }
 
     [HttpGet("summary")]
@@ -721,7 +838,8 @@ public class KidsController : Controller
         ChildProfile? child,
         Guid? skillGroupId,
         string? feedbackMessage = null,
-        bool? isCorrect = null)
+        bool? isCorrect = null,
+        bool fromTracing = false)
     {
         var payloadSymbol = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", string.Empty);
         var tracingSymbol = ExtractTracingSymbol(payloadSymbol, item.Title, question?.PromptText);
@@ -756,33 +874,25 @@ public class KidsController : Controller
             RetryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty),
             FeedbackMessage = feedbackMessage,
             IsCorrect = isCorrect,
-            NextItemId = await FindNextItemIdAsync(item, skillGroupId),
-            ReturnSkillGroupId = skillGroupId
+            NextItemId = fromTracing ? null : await FindNextItemIdAsync(item, skillGroupId),
+            ReturnSkillGroupId = skillGroupId,
+            FromTracing = fromTracing
         };
     }
 
     private static string ExtractTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
     {
-        if (!string.IsNullOrWhiteSpace(payloadSymbol) && !string.Equals(payloadSymbol.Trim(), "A", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(payloadSymbol))
         {
             return payloadSymbol.Trim();
         }
 
-        if (!string.IsNullOrWhiteSpace(promptText))
-        {
-            var match = System.Text.RegularExpressions.Regex.Match(promptText, @"cách viết\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (match.Success)
-            {
-                return match.Groups[1].Value.Trim();
-            }
-        }
-
         if (!string.IsNullOrWhiteSpace(itemTitle))
         {
-            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(chữ số|chữ|số|nét)\s+([^!.,?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var match = System.Text.RegularExpressions.Regex.Match(itemTitle, @"(?:chữ số|chữ|số|nét)\s+([A-Za-zÀ-ỹ0-9\s]+?)(?:\s+in\s+hoa|\s+in\s+thường|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
             if (match.Success)
             {
-                var val = match.Groups[2].Value.Trim();
+                var val = match.Groups[1].Value.Trim();
                 if (!string.IsNullOrWhiteSpace(val))
                 {
                     return val;
@@ -790,7 +900,16 @@ public class KidsController : Controller
             }
         }
 
-        return string.IsNullOrWhiteSpace(payloadSymbol) ? "A" : payloadSymbol.Trim();
+        if (!string.IsNullOrWhiteSpace(promptText))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(promptText, @"cách viết\s+([A-Za-zÀ-ỹ0-9]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Groups[1].Value.Trim();
+            }
+        }
+
+        return "A";
     }
 
     private static string ResolveLetterFlashcardUrl(string symbol)

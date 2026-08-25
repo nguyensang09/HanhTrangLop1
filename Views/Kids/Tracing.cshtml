@@ -1,0 +1,295 @@
+@model KidsTracingHubViewModel
+@{
+    ViewData["Title"] = "Góc Bé Tập Tô & Luyện Nét";
+    var percent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
+
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
+}
+
+<section class="kid-screen tracing-hub-screen">
+    <!-- Topbar -->
+    <div class="kid-topbar home-topbar clay-card">
+        <div class="kid-header-profile">
+            <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Về trang chủ">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div class="squirrel-avatar-wrap">
+                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Ảnh bé" class="squirrel-avatar" />
+            </div>
+            <div>
+                <p class="eyebrow">Vở Luyện Nét & Chữ</p>
+                <h1>Góc Bé Tập Tô 🎨</h1>
+            </div>
+        </div>
+        <div class="star-pill clay-button celebration-pill">
+            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+            <span>@Model.CompletedCount/@Model.TotalCount chữ đã tô</span>
+        </div>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="soft-card clay-card tracing-progress-card">
+        <div class="progress-info-row">
+            <div class="progress-stats">
+                <span class="progress-count-pill">Bé đã hoàn thành @Model.CompletedCount/@Model.TotalCount bài tô nét</span>
+                <span class="progress-time-hint">✨ Bé chọn bất kỳ chữ hay số nào bên dưới để luyện nét nhé!</span>
+            </div>
+            <span class="progress-percent-label">@percent%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-bar-fill" style="width:@percent%"></div>
+        </div>
+    </div>
+
+    <!-- Navigation Filter Tabs -->
+    <div class="tracing-tab-bar">
+        <button type="button" class="tracing-tab-btn clay-button active" data-tab="all">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <span>Tất cả</span>
+            <span class="tab-badge">@Model.TotalCount</span>
+        </button>
+        <button type="button" class="tracing-tab-btn clay-button" data-tab="basic">
+            <span class="material-symbols-outlined">draw</span>
+            <span>Nét cơ bản</span>
+            <span class="tab-badge">@Model.BasicStrokes.Count</span>
+        </button>
+        <button type="button" class="tracing-tab-btn clay-button" data-tab="upper">
+            <span class="material-symbols-outlined">match_case</span>
+            <span>Chữ in hoa</span>
+            <span class="tab-badge">@Model.UppercaseLetters.Count</span>
+        </button>
+        <button type="button" class="tracing-tab-btn clay-button" data-tab="lower">
+            <span class="material-symbols-outlined">spellcheck</span>
+            <span>Chữ in thường</span>
+            <span class="tab-badge">@Model.LowercaseLetters.Count</span>
+        </button>
+        <button type="button" class="tracing-tab-btn clay-button" data-tab="number">
+            <span class="material-symbols-outlined">pin</span>
+            <span>Chữ số (0–9)</span>
+            <span class="tab-badge">@Model.Numbers.Count</span>
+        </button>
+    </div>
+
+    <!-- 1. Nét cơ bản -->
+    <div class="tracing-section-block" data-section="basic">
+        <div class="tracing-section-header">
+            <div class="section-title-wrap">
+                <span class="material-symbols-outlined section-icon" style="color: #ff7a00;">draw</span>
+                <div>
+                    <h2>Luyện Nét Cơ Bản</h2>
+                    <p>Khởi đầu các nét sổ, nét ngang, nét xiên, nét móc, nét cong...</p>
+                </div>
+            </div>
+            <span class="section-count-badge">@Model.BasicStrokes.Count(x => x.IsCompleted)/@Model.BasicStrokes.Count bài</span>
+        </div>
+        <div class="tracing-card-grid">
+            @foreach (var stroke in Model.BasicStrokes)
+            {
+                <a class="tracing-card clay-card @(stroke.IsCompleted ? "is-completed" : "")"
+                   asp-controller="Kids"
+                   asp-action="Learn"
+                   asp-route-id="@stroke.Item.Id"
+                   asp-route-fromTracing="true"
+                   title="@stroke.Title">
+                    <div class="tracing-symbol-box stroke-box">
+                        <span class="tracing-symbol-char">@stroke.Symbol</span>
+                    </div>
+                    <div class="tracing-card-info">
+                        <strong>@stroke.Title</strong>
+                        @if (stroke.IsCompleted)
+                        {
+                            <span class="tracing-star-badge">
+                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span>Đã tô xong</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="tracing-action-hint">
+                                <span class="material-symbols-outlined">edit</span>
+                                <span>Bé tập tô</span>
+                            </span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- 2. Chữ cái in hoa -->
+    <div class="tracing-section-block" data-section="upper">
+        <div class="tracing-section-header">
+            <div class="section-title-wrap">
+                <span class="material-symbols-outlined section-icon" style="color: #0284c7;">match_case</span>
+                <div>
+                    <h2>Bảng 29 Chữ Cái In Hoa</h2>
+                    <p>Khám phá cách viết chuẩn 29 chữ cái Tiếng Việt in hoa</p>
+                </div>
+            </div>
+            <span class="section-count-badge">@Model.UppercaseLetters.Count(x => x.IsCompleted)/@Model.UppercaseLetters.Count chữ</span>
+        </div>
+        <div class="tracing-card-grid letter-grid">
+            @foreach (var letter in Model.UppercaseLetters)
+            {
+                <a class="tracing-card letter-card clay-card @(letter.IsCompleted ? "is-completed" : "")"
+                   asp-controller="Kids"
+                   asp-action="Learn"
+                   asp-route-id="@letter.Item.Id"
+                   asp-route-fromTracing="true"
+                   title="@letter.Title">
+                    <div class="tracing-symbol-box letter-box">
+                        <span class="tracing-symbol-char">@letter.Symbol</span>
+                    </div>
+                    <div class="tracing-card-info">
+                        <strong>Chữ @letter.Symbol</strong>
+                        @if (letter.IsCompleted)
+                        {
+                            <span class="tracing-star-badge">
+                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span>Đã tô</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="tracing-action-hint">
+                                <span class="material-symbols-outlined">play_circle</span>
+                                <span>Tập tô</span>
+                            </span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- 3. Chữ cái in thường -->
+    <div class="tracing-section-block" data-section="lower">
+        <div class="tracing-section-header">
+            <div class="section-title-wrap">
+                <span class="material-symbols-outlined section-icon" style="color: #10b981;">spellcheck</span>
+                <div>
+                    <h2>Bảng 29 Chữ Cái In Thường</h2>
+                    <p>Luyện nét mềm mại cho 29 chữ cái in thường</p>
+                </div>
+            </div>
+            <span class="section-count-badge">@Model.LowercaseLetters.Count(x => x.IsCompleted)/@Model.LowercaseLetters.Count chữ</span>
+        </div>
+        <div class="tracing-card-grid letter-grid">
+            @foreach (var letter in Model.LowercaseLetters)
+            {
+                <a class="tracing-card letter-card clay-card @(letter.IsCompleted ? "is-completed" : "")"
+                   asp-controller="Kids"
+                   asp-action="Learn"
+                   asp-route-id="@letter.Item.Id"
+                   asp-route-fromTracing="true"
+                   title="@letter.Title">
+                    <div class="tracing-symbol-box letter-box lower-box">
+                        <span class="tracing-symbol-char">@letter.Symbol</span>
+                    </div>
+                    <div class="tracing-card-info">
+                        <strong>Chữ @letter.Symbol</strong>
+                        @if (letter.IsCompleted)
+                        {
+                            <span class="tracing-star-badge">
+                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span>Đã tô</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="tracing-action-hint">
+                                <span class="material-symbols-outlined">play_circle</span>
+                                <span>Tập tô</span>
+                            </span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- 4. Chữ số 0 - 9 -->
+    <div class="tracing-section-block" data-section="number">
+        <div class="tracing-section-header">
+            <div class="section-title-wrap">
+                <span class="material-symbols-outlined section-icon" style="color: #8b5cf6;">pin</span>
+                <div>
+                    <h2>Tập Viết Chữ Số (0 – 9)</h2>
+                    <p>Làm quen các chữ số toán học đầu tiên</p>
+                </div>
+            </div>
+            <span class="section-count-badge">@Model.Numbers.Count(x => x.IsCompleted)/@Model.Numbers.Count số</span>
+        </div>
+        <div class="tracing-card-grid number-grid">
+            @foreach (var number in Model.Numbers)
+            {
+                <a class="tracing-card number-card clay-card @(number.IsCompleted ? "is-completed" : "")"
+                   asp-controller="Kids"
+                   asp-action="Learn"
+                   asp-route-id="@number.Item.Id"
+                   asp-route-fromTracing="true"
+                   title="@number.Title">
+                    <div class="tracing-symbol-box number-box">
+                        <span class="tracing-symbol-char">@number.Symbol</span>
+                    </div>
+                    <div class="tracing-card-info">
+                        <strong>Số @number.Symbol</strong>
+                        @if (number.IsCompleted)
+                        {
+                            <span class="tracing-star-badge">
+                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span>Đã tô</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="tracing-action-hint">
+                                <span class="material-symbols-outlined">play_circle</span>
+                                <span>Tập tô</span>
+                            </span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tabButtons = document.querySelectorAll(".tracing-tab-btn");
+    const sections = document.querySelectorAll(".tracing-section-block");
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener("click", function () {
+            tabButtons.forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+            const selectedTab = this.getAttribute("data-tab");
+            sections.forEach(sec => {
+                const secType = sec.getAttribute("data-section");
+                if (selectedTab === "all" || secType === selectedTab) {
+                    sec.style.display = "";
+                } else {
+                    sec.style.display = "none";
+                }
+            });
+        });
+    });
+});
+</script>
+}

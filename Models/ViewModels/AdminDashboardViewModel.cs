@@ -21,6 +21,7 @@ public class AdminDashboardViewModel
 
 public class AdminLearningItemListViewModel
 {
+    public string? Search { get; set; }
     public string? Status { get; set; }
     public string? InteractionType { get; set; }
     public Guid? SkillGroupId { get; set; }
@@ -28,10 +29,31 @@ public class AdminLearningItemListViewModel
     public IReadOnlyList<SkillGroup> SkillGroups { get; set; } = [];
     public IReadOnlyList<Topic> Topics { get; set; } = [];
     public IReadOnlyList<LearningItem> Items { get; set; } = [];
+    public IReadOnlyList<AdminLearningGroupTreeItem> TreeGroups { get; set; } = [];
+    public int TotalGroups { get; set; }
+    public int TotalTopics { get; set; }
+    public int TotalItems { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 25;
-    public int TotalItems { get; set; }
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
+    public bool HasActiveFilter => !string.IsNullOrWhiteSpace(Search) || !string.IsNullOrWhiteSpace(Status) || !string.IsNullOrWhiteSpace(InteractionType) || SkillGroupId.HasValue || TopicId.HasValue;
+}
+
+public class AdminLearningGroupTreeItem
+{
+    public SkillGroup SkillGroup { get; set; } = new();
+    public int LearningItemCount { get; set; }
+    public IReadOnlyList<AdminLearningTopicTreeItem> Topics { get; set; } = [];
+    public IReadOnlyList<LearningItem> DirectItems { get; set; } = [];
+}
+
+public class AdminLearningTopicTreeItem
+{
+    public Topic Topic { get; set; } = new();
+    public int LearningItemCount { get; set; }
+    public IReadOnlyList<LearningItem> Items { get; set; } = [];
+    public IReadOnlyList<ActivityTemplateDefinition> AllowedTemplates { get; set; } = [];
+    public bool AllowsTracing { get; set; }
 }
 
 public class EditLearningItemViewModel

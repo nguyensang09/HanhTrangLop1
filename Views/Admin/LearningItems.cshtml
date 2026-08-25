@@ -14,163 +14,532 @@
             <div>
                 <p class="eyebrow">Quản trị nội dung</p>
                 <h1>Kho bài học</h1>
+            </div>
+            <div class="hero-actions">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="Catalogs">
+                    <span class="material-symbols-outlined">account_tree</span>
+                    Cấu trúc chương trình
+                </a>
+                <a class="app-btn app-btn-small" asp-action="CreateChoice" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
+                    <span class="material-symbols-outlined">add</span>
+                    Tạo bài tương tác
+                </a>
+                <a class="app-btn app-btn-small" asp-action="CreateTracing" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
+                    <span class="material-symbols-outlined">draw</span>
+                    Tạo bài tô nét
+                </a>
+                <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
+                    <input type="hidden" name="status" value="@Model.Status" />
+                    <input type="hidden" name="interactionType" value="@Model.InteractionType" />
+                    <input type="hidden" name="skillGroupId" value="@Model.SkillGroupId" />
+                    <input type="hidden" name="topicId" value="@Model.TopicId" />
+                    <input type="hidden" name="search" value="@Model.Search" />
+                    <button class="app-btn app-btn-muted app-btn-small" type="submit">
+                        <span class="material-symbols-outlined">record_voice_over</span>
+                        Rà soát voice
+                    </button>
+                </form>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
+                    <span class="material-symbols-outlined">graphic_eq</span>
+                    Kiểm soát voice
+                </a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
+            </div>
         </div>
-        <div class="hero-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="Catalogs">
-                <span class="material-symbols-outlined">account_tree</span>
-                Cấu trúc chương trình
-            </a>
-            <a class="app-btn app-btn-small" asp-action="CreateChoice" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
-                <span class="material-symbols-outlined">add</span>
-                Tạo bài tương tác
-            </a>
-            <a class="app-btn app-btn-small" asp-action="CreateTracing" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
-                <span class="material-symbols-outlined">draw</span>
-                Tạo bài tô nét
-            </a>
-            <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
-                <input type="hidden" name="status" value="@Model.Status" />
-                <input type="hidden" name="interactionType" value="@Model.InteractionType" />
-                <input type="hidden" name="skillGroupId" value="@Model.SkillGroupId" />
-                <input type="hidden" name="topicId" value="@Model.TopicId" />
-                <input type="hidden" name="page" value="@Model.Page" />
-                <button class="app-btn app-btn-muted app-btn-small" type="submit">
-                    <span class="material-symbols-outlined">record_voice_over</span>
-                    Rà soát voice
-                </button>
-            </form>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
-                <span class="material-symbols-outlined">graphic_eq</span>
-                Kiểm soát voice
-            </a>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
-        </div>
-    </div>
 
-    <form class="soft-card admin-filter" asp-action="LearningItems" method="get">
-        <div>
-            <label for="skillGroupId">Nhóm kỹ năng</label>
-            <select id="skillGroupId" name="skillGroupId" class="form-control">
-                <option value="">Tất cả</option>
-                @foreach (var group in Model.SkillGroups)
+        <form class="soft-card admin-filter learning-filter-form" asp-action="LearningItems" method="get" id="learningFilterForm">
+            <div class="filter-field search-field">
+                <label for="search">Tìm kiếm bài học</label>
+                <div class="search-input-wrap">
+                    <span class="material-symbols-outlined search-icon">search</span>
+                    <input type="text" id="search" name="search" class="form-control" value="@Model.Search" placeholder="Nhập tên bài, mã chủ đề..." />
+                </div>
+            </div>
+            <div class="filter-field">
+                <label for="skillGroupId">Nhóm kỹ năng</label>
+                <select id="skillGroupId" name="skillGroupId" class="form-control">
+                    <option value="">Tất cả nhóm</option>
+                    @foreach (var group in Model.SkillGroups)
+                    {
+                        <option value="@group.Id" selected="@(Model.SkillGroupId == group.Id)">@group.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="topicId">Chủ đề</label>
+                <select id="topicId" name="topicId" class="form-control">
+                    <option value="">Tất cả chủ đề</option>
+                    @foreach (var topic in Model.Topics)
+                    {
+                        <option value="@topic.Id" data-group-id="@topic.SkillGroupId" selected="@(Model.TopicId == topic.Id)">@topic.Name (@topic.Code)</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">Tất cả</option>
+                    <option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option>
+                    <option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option>
+                    <option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option>
+                    <option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="interactionType">Dạng bài</label>
+                <select id="interactionType" name="interactionType" class="form-control">
+                    <option value="">Tất cả dạng</option>
+                    <option value="@InteractionTypes.SingleChoice" selected="@(Model.InteractionType == InteractionTypes.SingleChoice)">Chọn đáp án</option>
+                    <option value="@InteractionTypes.MultiSelect" selected="@(Model.InteractionType == InteractionTypes.MultiSelect)">Chọn nhiều</option>
+                    <option value="@InteractionTypes.ListenAndChoose" selected="@(Model.InteractionType == InteractionTypes.ListenAndChoose)">Nghe - chọn</option>
+                    <option value="@InteractionTypes.DragDrop" selected="@(Model.InteractionType == InteractionTypes.DragDrop)">Kéo - thả</option>
+                    <option value="@InteractionTypes.Matching" selected="@(Model.InteractionType == InteractionTypes.Matching)">Nối cặp</option>
+                    <option value="@InteractionTypes.Ordering" selected="@(Model.InteractionType == InteractionTypes.Ordering)">Sắp xếp</option>
+                    <option value="@InteractionTypes.Counting" selected="@(Model.InteractionType == InteractionTypes.Counting)">Đếm đồ vật</option>
+                    <option value="@InteractionTypes.QuantityBuilder" selected="@(Model.InteractionType == InteractionTypes.QuantityBuilder)">Tạo số lượng</option>
+                    <option value="@InteractionTypes.Comparison" selected="@(Model.InteractionType == InteractionTypes.Comparison)">So sánh</option>
+                    <option value="@InteractionTypes.Classification" selected="@(Model.InteractionType == InteractionTypes.Classification)">Phân loại</option>
+                    <option value="@InteractionTypes.StoryChoice" selected="@(Model.InteractionType == InteractionTypes.StoryChoice)">Nghe truyện</option>
+                    <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô nét</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="app-btn app-btn-small" type="submit">
+                    <span class="material-symbols-outlined">filter_alt</span>
+                    Lọc
+                </button>
+                @if (Model.HasActiveFilter)
                 {
-                    <option value="@group.Id" selected="@(Model.SkillGroupId == group.Id)">@group.Name</option>
+                    <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems" title="Xóa tất cả điều kiện lọc">
+                        <span class="material-symbols-outlined">clear_all</span>
+                        Xóa lọc
+                    </a>
                 }
-            </select>
-        </div>
-        <div>
-            <label for="status">Trạng thái</label>
-            <select id="status" name="status" class="form-control">
-                <option value="">Tất cả</option>
-                <option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option>
-                <option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option>
-                <option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option>
-                <option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option>
-            </select>
-        </div>
-        <div>
-            <label for="topicId">Chủ đề</label>
-            <select id="topicId" name="topicId" class="form-control">
-                <option value="">Tất cả</option>
-                @foreach (var topic in Model.Topics.Where(x => !Model.SkillGroupId.HasValue || x.SkillGroupId == Model.SkillGroupId))
+            </div>
+        </form>
+
+        <div class="tree-control-bar">
+            <div class="tree-summary-chips">
+                <div class="tree-summary-chip">
+                    <span class="material-symbols-outlined">category</span>
+                    <strong>@Model.TotalGroups</strong>
+                    <span>Nhóm kỹ năng</span>
+                </div>
+                <div class="tree-summary-chip">
+                    <span class="material-symbols-outlined">folder</span>
+                    <strong>@Model.TotalTopics</strong>
+                    <span>Chủ đề</span>
+                </div>
+                <div class="tree-summary-chip highlight">
+                    <span class="material-symbols-outlined">auto_stories</span>
+                    <strong>@Model.TotalItems</strong>
+                    <span>Bài học</span>
+                </div>
+                @if (Model.HasActiveFilter)
                 {
-                    <option value="@topic.Id" selected="@(Model.TopicId == topic.Id)">@topic.Name</option>
+                    <span class="active-filter-indicator">
+                        <span class="material-symbols-outlined">info</span>
+                        Đang lọc kết quả
+                    </span>
                 }
-            </select>
+            </div>
+            <div class="tree-expand-buttons">
+                <button type="button" class="app-btn app-btn-muted app-btn-small" id="btnExpandAll" title="Mở rộng toàn bộ cây thư mục">
+                    <span class="material-symbols-outlined">unfold_more</span>
+                    Mở rộng tất cả
+                </button>
+                <button type="button" class="app-btn app-btn-muted app-btn-small" id="btnCollapseAll" title="Thu gọn toàn bộ cây thư mục">
+                    <span class="material-symbols-outlined">unfold_less</span>
+                    Thu gọn tất cả
+                </button>
+            </div>
         </div>
-        <div>
-            <label for="interactionType">Dạng bài</label>
-            <select id="interactionType" name="interactionType" class="form-control">
-                <option value="">Tất cả</option>
-                <option value="@InteractionTypes.SingleChoice" selected="@(Model.InteractionType == InteractionTypes.SingleChoice)">Chọn đáp án</option>
-                <option value="@InteractionTypes.MultiSelect" selected="@(Model.InteractionType == InteractionTypes.MultiSelect)">Chọn nhiều</option>
-                <option value="@InteractionTypes.ListenAndChoose" selected="@(Model.InteractionType == InteractionTypes.ListenAndChoose)">Nghe - chọn</option>
-                <option value="@InteractionTypes.DragDrop" selected="@(Model.InteractionType == InteractionTypes.DragDrop)">Kéo - thả</option>
-                <option value="@InteractionTypes.Matching" selected="@(Model.InteractionType == InteractionTypes.Matching)">Nối cặp</option>
-                <option value="@InteractionTypes.Ordering" selected="@(Model.InteractionType == InteractionTypes.Ordering)">Sắp xếp</option>
-                <option value="@InteractionTypes.Counting" selected="@(Model.InteractionType == InteractionTypes.Counting)">Đếm đồ vật</option>
-                <option value="@InteractionTypes.QuantityBuilder" selected="@(Model.InteractionType == InteractionTypes.QuantityBuilder)">Tạo số lượng</option>
-                <option value="@InteractionTypes.Comparison" selected="@(Model.InteractionType == InteractionTypes.Comparison)">So sánh</option>
-                <option value="@InteractionTypes.Classification" selected="@(Model.InteractionType == InteractionTypes.Classification)">Phân loại</option>
-                <option value="@InteractionTypes.StoryChoice" selected="@(Model.InteractionType == InteractionTypes.StoryChoice)">Nghe truyện</option>
-                <option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô nét</option>
-            </select>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: flex-end;">
-            <button class="app-btn app-btn-small" type="submit">
-                <span class="material-symbols-outlined">filter_alt</span>
-                Lọc
-            </button>
-            @if (Model.SkillGroupId.HasValue || !string.IsNullOrWhiteSpace(Model.Status) || Model.TopicId.HasValue || !string.IsNullOrWhiteSpace(Model.InteractionType))
+
+        <div class="learning-tree-container" id="learningTreeRoot">
+            @if (Model.TreeGroups.Count == 0)
             {
-                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Xóa lọc</a>
+                <div class="soft-card empty-tree-state">
+                    <span class="material-symbols-outlined empty-icon">folder_off</span>
+                    <h3>Không tìm thấy bài học phù hợp</h3>
+                    <p>Không có bài học nào khớp với điều kiện lọc hiện tại. Vui lòng thử thay đổi tiêu chí lọc hoặc xóa bộ lọc.</p>
+                    @if (Model.HasActiveFilter)
+                    {
+                        <a class="app-btn app-btn-small" asp-action="LearningItems">
+                            <span class="material-symbols-outlined">restart_alt</span>
+                            Xóa bộ lọc
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                @foreach (var groupItem in Model.TreeGroups)
+                {
+                    var groupColor = string.IsNullOrWhiteSpace(groupItem.SkillGroup.Color) ? "#2563eb" : groupItem.SkillGroup.Color;
+                    <div class="tree-group-card @(Model.HasActiveFilter ? "is-expanded" : "")" style="--group-color: @groupColor;" data-group-node>
+                        <header class="tree-group-header" data-toggle-trigger>
+                            <button type="button" class="tree-toggle-btn" aria-label="Đóng mở nhóm" title="Đóng / Mở nhóm">
+                                <span class="material-symbols-outlined tree-chevron">chevron_right</span>
+                            </button>
+                            <div class="tree-group-icon-wrap">
+                                <span class="material-symbols-outlined tree-group-icon">@groupItem.SkillGroup.IconKey</span>
+                            </div>
+                            <div class="tree-group-info">
+                                <div class="tree-group-title-row">
+                                    <h2 class="tree-group-title">@groupItem.SkillGroup.Name</h2>
+                                    <span class="tree-count-badge group-count">@groupItem.LearningItemCount bài</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(groupItem.SkillGroup.Description))
+                                {
+                                    <p class="tree-group-desc">@groupItem.SkillGroup.Description</p>
+                                }
+                            </div>
+                            <div class="tree-group-actions" onclick="event.stopPropagation();">
+                                <a class="app-btn app-btn-muted app-btn-small" asp-action="CreateChoice" asp-route-skillGroupId="@groupItem.SkillGroup.Id" title="Tạo bài tương tác cho @groupItem.SkillGroup.Name">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Tạo bài
+                                </a>
+                            </div>
+                        </header>
+
+                        <div class="tree-group-body">
+                            <div class="tree-topics-list">
+                                @foreach (var topicItem in groupItem.Topics)
+                                {
+                                    <div class="tree-topic-item @(Model.HasActiveFilter && topicItem.LearningItemCount > 0 ? "is-expanded" : "")" data-topic-node>
+                                        <header class="tree-topic-header" data-toggle-trigger>
+                                            <button type="button" class="tree-toggle-btn small-toggle" aria-label="Đóng mở chủ đề" title="Đóng / Mở chủ đề">
+                                                <span class="material-symbols-outlined tree-chevron">chevron_right</span>
+                                            </button>
+                                            <div class="tree-topic-icon-wrap">
+                                                <span class="material-symbols-outlined tree-topic-icon">@(topicItem.LearningItemCount > 0 ? "folder_open" : "folder")</span>
+                                            </div>
+                                            <div class="tree-topic-info">
+                                                <div class="tree-topic-title-row">
+                                                    <span class="tree-topic-code">@topicItem.Topic.Code</span>
+                                                    <h3 class="tree-topic-title">@topicItem.Topic.Name</h3>
+                                                    <span class="tree-count-badge topic-count">@topicItem.LearningItemCount bài</span>
+                                                </div>
+                                                <div class="tree-topic-meta">
+                                                    @if (topicItem.AllowedTemplates.Any())
+                                                    {
+                                                        <div class="topic-templates-chips">
+                                                            @foreach (var template in topicItem.AllowedTemplates)
+                                                            {
+                                                                <span class="template-chip" title="Dạng: @template.Name">
+                                                                    <span class="material-symbols-outlined">@template.IconKey</span>
+                                                                    @template.Name
+                                                                </span>
+                                                            }
+                                                            @if (topicItem.AllowsTracing)
+                                                            {
+                                                                <span class="template-chip tracing" title="Dạng: Tô nét">
+                                                                    <span class="material-symbols-outlined">draw</span>
+                                                                    Tô nét
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="tree-topic-actions" onclick="event.stopPropagation();">
+                                                <a class="icon-button" asp-action="CreateChoice" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" title="Tạo bài cho @topicItem.Topic.Name">
+                                                    <span class="material-symbols-outlined">add_circle</span>
+                                                </a>
+                                                @if (topicItem.AllowsTracing)
+                                                {
+                                                    <a class="icon-button" asp-action="CreateTracing" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" title="Tạo bài tô nét">
+                                                        <span class="material-symbols-outlined">draw</span>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </header>
+
+                                        <div class="tree-topic-body">
+                                            @if (topicItem.Items.Count == 0)
+                                            {
+                                                <div class="tree-empty-topic">
+                                                    <span class="material-symbols-outlined">info</span>
+                                                    <span>Chưa có bài học nào trong chủ đề này.</span>
+                                                    <a asp-action="CreateChoice" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" class="primary-link">Tạo bài ngay</a>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="table-responsive">
+                                                    <table class="app-table tree-items-table">
+                                                        <thead>
+                                                        <tr>
+                                                            <th style="width: 60px;">STT</th>
+                                                            <th>Tên bài học</th>
+                                                            <th>Dạng bài</th>
+                                                            <th>Số câu hỏi</th>
+                                                            <th>Trạng thái</th>
+                                                            <th style="width: 220px; text-align: right;">Thao tác</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        @foreach (var item in topicItem.Items)
+                                                        {
+                                                            var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
+                                                            <tr>
+                                                                <td>
+                                                                    <span class="sort-badge">#@item.SortOrder</span>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="lesson-title-cell">
+                                                                        <a class="table-link lesson-name" asp-action="LearningItemDetail" asp-route-id="@item.Id" title="Xem chi tiết bài học">
+                                                                            @item.Title
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="template-badge">
+                                                                        @ActivityTemplateCatalog.GetDisplayName(item.InteractionType)
+                                                                    </span>
+                                                                    @if (!isCompatible)
+                                                                    {
+                                                                        <span class="status-chip status-warning" title="Dạng bài cần điều chỉnh cho phù hợp chủ đề">Cần chuẩn hóa</span>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    <span class="questions-count">
+                                                                        <span class="material-symbols-outlined">help_outline</span>
+                                                                        @item.Questions.Count câu
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span>
+                                                                </td>
+                                                                <td class="table-actions">
+                                                                    <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử giao diện bé học">
+                                                                        <span class="material-symbols-outlined">visibility</span>
+                                                                        Xem thử
+                                                                    </a>
+                                                                    @if (item.InteractionType == InteractionTypes.Tracing)
+                                                                    {
+                                                                        <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id" title="Chỉnh sửa bài học">
+                                                                            <span class="material-symbols-outlined">edit</span>
+                                                                            Sửa
+                                                                        </a>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id" title="Chỉnh sửa bài học">
+                                                                            <span class="material-symbols-outlined">edit</span>
+                                                                            Sửa
+                                                                        </a>
+                                                                    }
+                                                                    <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
+                                                                        <button class="mini-action" type="submit" title="Đồng bộ giọng đọc">
+                                                                            <span class="material-symbols-outlined">graphic_eq</span>
+                                                                        </button>
+                                                                    </form>
+                                                                    <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
+                                                                        <button class="mini-action danger-link" type="submit" title="Xóa bài học">
+                                                                            <span class="material-symbols-outlined">delete</span>
+                                                                        </button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (groupItem.DirectItems.Count > 0)
+                                {
+                                    <div class="tree-topic-item @(Model.HasActiveFilter ? "is-expanded" : "")" data-topic-node>
+                                        <header class="tree-topic-header direct-topic-header" data-toggle-trigger>
+                                            <button type="button" class="tree-toggle-btn small-toggle" aria-label="Đóng mở" title="Đóng / Mở">
+                                                <span class="material-symbols-outlined tree-chevron">chevron_right</span>
+                                            </button>
+                                            <div class="tree-topic-icon-wrap">
+                                                <span class="material-symbols-outlined tree-topic-icon">folder_special</span>
+                                            </div>
+                                            <div class="tree-topic-info">
+                                                <div class="tree-topic-title-row">
+                                                    <h3 class="tree-topic-title">Chủ đề chung / Chưa phân loại</h3>
+                                                    <span class="tree-count-badge topic-count">@groupItem.DirectItems.Count bài</span>
+                                                </div>
+                                            </div>
+                                        </header>
+
+                                        <div class="tree-topic-body">
+                                            <div class="table-responsive">
+                                                <table class="app-table tree-items-table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th style="width: 60px;">STT</th>
+                                                        <th>Tên bài học</th>
+                                                        <th>Dạng bài</th>
+                                                        <th>Số câu hỏi</th>
+                                                        <th>Trạng thái</th>
+                                                        <th style="width: 220px; text-align: right;">Thao tác</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    @foreach (var item in groupItem.DirectItems)
+                                                    {
+                                                        var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
+                                                        <tr>
+                                                            <td>
+                                                                <span class="sort-badge">#@item.SortOrder</span>
+                                                            </td>
+                                                            <td>
+                                                                <div class="lesson-title-cell">
+                                                                    <a class="table-link lesson-name" asp-action="LearningItemDetail" asp-route-id="@item.Id">
+                                                                        @item.Title
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <span class="template-badge">
+                                                                    @ActivityTemplateCatalog.GetDisplayName(item.InteractionType)
+                                                                </span>
+                                                                @if (!isCompatible)
+                                                                {
+                                                                    <span class="status-chip status-warning">Cần chuẩn hóa</span>
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                <span class="questions-count">
+                                                                    <span class="material-symbols-outlined">help_outline</span>
+                                                                    @item.Questions.Count câu
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span>
+                                                            </td>
+                                                            <td class="table-actions">
+                                                                <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử" target="_blank">
+                                                                    <span class="material-symbols-outlined">visibility</span>
+                                                                    Xem thử
+                                                                </a>
+                                                                @if (item.InteractionType == InteractionTypes.Tracing)
+                                                                {
+                                                                    <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">
+                                                                        <span class="material-symbols-outlined">edit</span>
+                                                                        Sửa
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">
+                                                                        <span class="material-symbols-outlined">edit</span>
+                                                                        Sửa
+                                                                    </a>
+                                                                }
+                                                                <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
+                                                                    <button class="mini-action" type="submit" title="Đồng bộ giọng đọc">
+                                                                        <span class="material-symbols-outlined">graphic_eq</span>
+                                                                    </button>
+                                                                </form>
+                                                                <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
+                                                                    <button class="mini-action danger-link" type="submit" title="Xóa bài học">
+                                                                        <span class="material-symbols-outlined">delete</span>
+                                                                    </button>
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
             }
         </div>
-    </form>
-
-    <div class="soft-card report-panel mt-4">
-        <div class="table-responsive">
-            <table class="app-table admin-content-table">
-                <thead>
-                <tr>
-                    <th>Tên bài</th>
-                    <th>Nhóm</th>
-                    <th>Dạng</th>
-                    <th>Thứ tự</th>
-                    <th>Câu hỏi</th>
-                    <th>Trạng thái</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var item in Model.Items)
-                {
-                    var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
-                    <tr>
-                        <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
-                        <td>@item.SkillGroup?.Name</td>
-                        <td>@ActivityTemplateCatalog.GetDisplayName(item.InteractionType) @if (!isCompatible) { <span class="status-chip status-warning">Cần chuẩn hóa</span> }</td>
-                        <td>@item.SortOrder</td>
-                        <td>@item.Questions.Count</td>
-                        <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
-                        <td class="table-actions">
-                            <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử giao diện bé học">Xem thử</a>
-                            @if (item.InteractionType == InteractionTypes.Tracing)
-                            {
-                                <a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id">Sửa</a>
-                            }
-                            else
-                            {
-                                <a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id">Sửa</a>
-                            }
-                            <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
-                                <button class="mini-action" type="submit" title="Đồng bộ giọng đọc">Đồng bộ</button>
-                            </form>
-                            <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
-                                <button class="mini-action danger-link" type="submit">Xóa</button>
-                            </form>
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    @if (Model.TotalPages > 1)
-    {
-        <nav class="admin-pagination" aria-label="Phân trang kho bài học">
-            <a class="icon-button @(Model.Page == 1 ? "disabled" : "")"
-               asp-action="LearningItems" asp-route-page="@(Model.Page - 1)" asp-route-status="@Model.Status"
-               asp-route-interactionType="@Model.InteractionType" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId"
-               aria-label="Trang trước"><span class="material-symbols-outlined">chevron_left</span></a>
-            <strong>Trang @Model.Page / @Model.TotalPages</strong>
-            <span>@Model.TotalItems bài học</span>
-            <a class="icon-button @(Model.Page == Model.TotalPages ? "disabled" : "")"
-               asp-action="LearningItems" asp-route-page="@(Model.Page + 1)" asp-route-status="@Model.Status"
-               asp-route-interactionType="@Model.InteractionType" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId"
-               aria-label="Trang sau"><span class="material-symbols-outlined">chevron_right</span></a>
-        </nav>
-    }
     </main>
 </section>
+
+@section Scripts {
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. Cascade Topic dropdown based on SkillGroup dropdown
+    const skillGroupSelect = document.getElementById("skillGroupId");
+    const topicSelect = document.getElementById("topicId");
+
+    function updateTopicDropdown() {
+        if (!skillGroupSelect || !topicSelect) return;
+        const selectedGroupId = skillGroupSelect.value;
+        const topicOptions = topicSelect.querySelectorAll("option[data-group-id]");
+
+        let currentTopicMatched = false;
+        topicOptions.forEach(opt => {
+            const optGroupId = opt.getAttribute("data-group-id");
+            if (!selectedGroupId || optGroupId === selectedGroupId) {
+                opt.style.display = "";
+                if (opt.selected) currentTopicMatched = true;
+            } else {
+                opt.style.display = "none";
+                if (opt.selected) opt.selected = false;
+            }
+        });
+
+        if (!currentTopicMatched && topicSelect.value !== "") {
+            // Keep default "Tất cả chủ đề" if current topic doesn't belong to group
+            const defaultOpt = topicSelect.querySelector("option[value='']");
+            if (defaultOpt) defaultOpt.selected = true;
+        }
+    }
+
+    if (skillGroupSelect) {
+        skillGroupSelect.addEventListener("change", updateTopicDropdown);
+        updateTopicDropdown();
+    }
+
+    // 2. Tree toggle logic (Group and Topic nodes)
+    const treeContainer = document.getElementById("learningTreeRoot");
+    if (treeContainer) {
+        treeContainer.addEventListener("click", function (e) {
+            const trigger = e.target.closest("[data-toggle-trigger]");
+            if (!trigger) return;
+
+            // Check if clicking inside an interactive action button
+            if (e.target.closest("a, button:not(.tree-toggle-btn), form, input, select")) {
+                return;
+            }
+
+            const groupNode = trigger.closest("[data-group-node]");
+            const topicNode = trigger.closest("[data-topic-node]");
+
+            if (topicNode && trigger.classList.contains("tree-topic-header")) {
+                topicNode.classList.toggle("is-expanded");
+            } else if (groupNode && trigger.classList.contains("tree-group-header")) {
+                groupNode.classList.toggle("is-expanded");
+            }
+        });
+    }
+
+    // 3. Expand All / Collapse All buttons
+    const btnExpandAll = document.getElementById("btnExpandAll");
+    const btnCollapseAll = document.getElementById("btnCollapseAll");
+
+    if (btnExpandAll) {
+        btnExpandAll.addEventListener("click", function () {
+            document.querySelectorAll(".tree-group-card, .tree-topic-item").forEach(node => {
+                node.classList.add("is-expanded");
+            });
+        });
+    }
+
+    if (btnCollapseAll) {
+        btnCollapseAll.addEventListener("click", function () {
+            document.querySelectorAll(".tree-group-card, .tree-topic-item").forEach(node => {
+                node.classList.remove("is-expanded");
+            });
+        });
+    }
+});
+</script>
+}

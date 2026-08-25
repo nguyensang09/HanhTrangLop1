@@ -26,6 +26,7 @@ public class LearnViewModel
     public bool? IsCorrect { get; set; }
     public Guid? NextItemId { get; set; }
     public Guid? ReturnSkillGroupId { get; set; }
+    public bool FromTracing { get; set; }
 }
 
 public class ChoiceOptionViewModel
