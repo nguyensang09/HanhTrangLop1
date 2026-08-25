@@ -7,7 +7,7 @@ namespace HanhTrangLop1.Data;
 
 public static class LegacyLearningItemNormalizer
 {
-    public static async Task<int> NormalizeAsync(ApplicationDbContext db, ILogger logger)
+    public static async Task<int> NormalizeAsync(ApplicationDbContext db, ILogger? logger = null)
     {
         var items = await db.LearningItems
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
@@ -27,7 +27,7 @@ public static class LegacyLearningItemNormalizer
         if (updated > 0)
         {
             await db.SaveChangesAsync();
-            logger.LogInformation("Đã chuẩn hóa dữ liệu cũ cho {UpdatedCount} bài học.", updated);
+            logger?.LogInformation("Đã chuẩn hóa dữ liệu cũ cho {UpdatedCount} bài học.", updated);
         }
 
         return updated;

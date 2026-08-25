@@ -839,9 +839,10 @@ a {
   width: 72px;
   height: 64px;
   border: 2px solid color-mix(in srgb, var(--option-color, #29b6a6) 42%, white);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 2px;
   box-shadow: 0 3px 10px rgba(23, 61, 77, 0.14);
 }
 

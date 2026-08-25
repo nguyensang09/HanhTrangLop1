@@ -117,7 +117,7 @@
         const isLetterOrDigit = isSingleSymbol(value) && !pictograms.has(normalized);
         const shouldHideOptionPhoto = (type === "single_choice" || type === "listen_choose" || type === "multi_select") && isLetterOrDigit;
         const mediaUrl = shouldHideOptionPhoto ? "" : resolveItemMedia(value);
-        const pictogram = shouldHideOptionPhoto ? "" : resolvePictogram(value);
+        const pictogram = shouldHideOptionPhoto || type === "story_choice" ? "" : resolvePictogram(value);
         const shape = shapeClasses.get(normalized);
         const color = colorValues.get(normalized);
         button.replaceChildren();

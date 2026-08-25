@@ -44,7 +44,8 @@ public static class CurriculumCatalog
             Topic("aaaaaaaa-6666-6666-6666-666666666661", "von-tu", "Mở rộng vốn từ", 1),
             Topic("aaaaaaaa-6666-6666-6666-666666666662", "nghe-hieu", "Nghe hiểu", 2),
             Topic("aaaaaaaa-6666-6666-6666-666666666663", "ke-chuyen", "Kể chuyện", 3),
-            Topic("aaaaaaaa-6666-6666-6666-666666666664", "am-van", "Làm quen âm và vần", 4)),
+            Topic("aaaaaaaa-6666-6666-6666-666666666664", "am-van", "Làm quen âm và vần", 4),
+            Topic("aaaaaaaa-6666-6666-6666-666666666665", "doc-hieu", "Đọc hiểu câu chuyện", 5)),
 
         Group("77777777-7777-7777-7777-777777777777", "hinh-dang-khong-gian", "Hình dạng và không gian", "Hình học cơ bản, vị trí, kích thước và định hướng.", "category", "#43b7a5", 7,
             Topic("aaaaaaaa-7777-7777-7777-777777777771", "hinh-dang", "Nhận biết hình dạng", 1),

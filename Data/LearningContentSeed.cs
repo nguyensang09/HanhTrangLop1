@@ -437,7 +437,18 @@ public static class LearningContentSeed
             ("flashcard-shape-square.svg", "/images/photos/flashcard-shape-square.svg", "Thẻ học Hình vuông"),
             ("flashcard-shape-triangle.svg", "/images/photos/flashcard-shape-triangle.svg", "Thẻ học Hình tam giác"),
             ("flashcard-shape-star.svg", "/images/photos/flashcard-shape-star.svg", "Thẻ học Hình ngôi sao"),
-            ("flashcard-shape-heart.svg", "/images/photos/flashcard-shape-heart.svg", "Thẻ học Hình trái tim")
+            ("flashcard-shape-heart.svg", "/images/photos/flashcard-shape-heart.svg", "Thẻ học Hình trái tim"),
+            ("story-gau-mat-ong.jpg", "/images/lessons/doc-hieu/story-gau-mat-ong.jpg", "Truyện Chú gấu và mật ong"),
+            ("story-cao-chiec-khan.jpg", "/images/lessons/doc-hieu/story-cao-chiec-khan.jpg", "Truyện Cáo nhỏ và chiếc khăn"),
+            ("story-chiec-o-vang.jpg", "/images/lessons/doc-hieu/story-chiec-o-vang.jpg", "Truyện Chiếc ô màu vàng"),
+            ("story-soc-hat-de.jpg", "/images/lessons/doc-hieu/story-soc-hat-de.jpg", "Truyện Chú sóc và hạt dẻ"),
+            ("story-chim-non-tap-bay.jpg", "/images/lessons/doc-hieu/story-chim-non-tap-bay.jpg", "Truyện Chú chim non tập bay"),
+            ("story-rua-dong-suoi.jpg", "/images/lessons/doc-hieu/story-rua-dong-suoi.jpg", "Truyện Rùa nhỏ và dòng suối"),
+            ("story-chiec-hop-bi-mat.jpg", "/images/lessons/doc-hieu/story-chiec-hop-bi-mat.jpg", "Truyện Chiếc hộp bí mật"),
+            ("story-nhim-qua-tao.jpg", "/images/lessons/doc-hieu/story-nhim-qua-tao.jpg", "Truyện Chú nhím và quả táo"),
+            ("story-tho-cu-ca-rot.jpg", "/images/lessons/doc-hieu/story-tho-cu-ca-rot.jpg", "Truyện Chú thỏ và củ cà rốt"),
+            ("story-chiec-thuyen-giay.jpg", "/images/lessons/doc-hieu/story-chiec-thuyen-giay.jpg", "Truyện Chiếc thuyền giấy"),
+            ("story-tho-con-ca-rot.jpg", "/images/lessons/doc-hieu/story-tho-con-ca-rot.jpg", "Truyện Thỏ con và cà rốt")
         };
         var numberImages = Enumerable.Range(0, 21)
             .Select(number => (
@@ -507,6 +518,7 @@ public static class LearningContentSeed
         lessons.AddRange(BuildComparisonLessons());
         lessons.AddRange(BuildClassificationLessons());
         lessons.AddRange(BuildStoryLessons());
+        lessons.AddRange(BuildReadingComprehensionLessons());
         lessons.AddRange(BuildCoverageLessons());
 
         var topicOrders = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -592,15 +604,18 @@ public static class LearningContentSeed
         }
         payload["imageAltText"] = imageAltText;
 
-        var lessonValues = CollectStringValues(payload).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var itemMedia = new JsonObject();
-        foreach (var photo in ObservationPhotos.Where(photo => lessonValues.Contains(photo.Key)))
+        if (payload["itemMedia"] is null && lesson.TopicCode != "doc-hieu")
         {
-            itemMedia[photo.Key] = photo.Value;
-        }
-        if (itemMedia.Count > 0)
-        {
-            payload["itemMedia"] = itemMedia;
+            var lessonValues = CollectStringValues(payload).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var itemMedia = new JsonObject();
+            foreach (var photo in ObservationPhotos.Where(photo => lessonValues.Contains(photo.Key)))
+            {
+                itemMedia[photo.Key] = photo.Value;
+            }
+            if (itemMedia.Count > 0)
+            {
+                payload["itemMedia"] = itemMedia;
+            }
         }
         return payload.ToJsonString();
     }
@@ -790,100 +805,350 @@ public static class LearningContentSeed
 
     private static IEnumerable<SeedLesson> BuildMultiSelectLessons()
     {
+        // 1. Chữ cái & Âm vần
         yield return Multi("seed-multi-vowels", "Chọn các chữ nguyên âm", "phan-biet-chu", ["A", "B", "E", "M"], ["A", "E"]);
-        yield return Multi("seed-multi-even", "Chọn các số chẵn", "so-0-9", ["1", "2", "3", "4"], ["2", "4"]);
-        yield return Multi("seed-multi-focus", "Tìm các hình tròn", "tap-trung", ["Hình tròn đỏ", "Hình vuông xanh", "Hình tròn vàng", "Hình tam giác"], ["Hình tròn đỏ", "Hình tròn vàng"]);
-        yield return Multi("seed-multi-animals-water", "Chọn các con vật sống dưới nước", "con-vat", ["Cá", "Tôm", "Mèo", "Gà"], ["Cá", "Tôm"]);
-        yield return Multi("seed-multi-fruits-red", "Chọn các quả màu đỏ", "phan-loai", ["Táo", "Dâu tây", "Cam", "Bắp cải"], ["Táo", "Dâu tây"]);
-        yield return Multi("seed-multi-school-tools", "Chọn đồ dùng để học tập", "phan-loai", ["Bút", "Vở", "Bát", "Thìa"], ["Bút", "Vở"]);
+        yield return Multi("seed-multi-hat-letters", "Chọn các chữ cái có dấu mũ", "phan-biet-chu", ["Â", "A", "Ê", "E", "Ô"], ["Â", "Ê", "Ô"]);
+        yield return Multi("seed-multi-horn-letters", "Chọn các chữ cái có dấu râu", "phan-biet-chu", ["Ơ", "O", "Ư", "U"], ["Ơ", "Ư"]);
+        yield return Multi("seed-multi-curved-letters", "Chọn các chữ có nét cong kín", "phan-biet-chu", ["O", "Ô", "Ơ", "I", "T"], ["O", "Ô", "Ơ"]);
+
+        // 2. Chữ số & Toán học
+        yield return Multi("seed-multi-even", "Chọn các số chẵn", "so-0-9", ["1", "2", "3", "4", "6"], ["2", "4", "6"]);
+        yield return Multi("seed-multi-odd", "Chọn các số lẻ", "so-0-9", ["1", "3", "4", "5", "8"], ["1", "3", "5"]);
+        yield return Multi("seed-multi-greater-5", "Chọn các số lớn hơn 5", "so-0-9", ["6", "8", "2", "9", "3"], ["6", "8", "9"]);
+        yield return Multi("seed-multi-less-4", "Chọn các số nhỏ hơn 4", "so-0-9", ["1", "2", "3", "5", "7"], ["1", "2", "3"]);
+        yield return Multi("seed-multi-sum-5", "Chọn hai số có tổng bằng 5", "tach-gop", ["2", "3", "4", "1"], ["2", "3"]);
+
+        // 3. Hình học & Quan sát
+        yield return Multi("seed-multi-focus-circles", "Tìm tất cả các hình tròn", "hinh-dang", ["Hình tròn đỏ", "Hình vuông xanh", "Hình tròn vàng", "Hình tam giác"], ["Hình tròn đỏ", "Hình tròn vàng"]);
+        yield return Multi("seed-multi-focus-triangles", "Tìm tất cả các hình tam giác", "hinh-dang", ["Hình tam giác xanh", "Hình tam giác vàng", "Hình vuông", "Hình tròn"], ["Hình tam giác xanh", "Hình tam giác vàng"]);
+        yield return Multi("seed-multi-focus-stars", "Tìm các ngôi sao lấp lánh", "tap-trung", ["Ngôi sao vàng", "Ngôi sao đỏ", "Mặt trăng", "Đám mây"], ["Ngôi sao vàng", "Ngôi sao đỏ"]);
+
+        // 4. Phân loại & Thế giới quanh bé
+        yield return Multi("seed-multi-animals-water", "Chọn các con vật sống dưới nước", "con-vat", ["Cá", "Tôm", "Mèo", "Gà", "Cua"], ["Cá", "Tôm", "Cua"]);
+        yield return Multi("seed-multi-animals-fly", "Chọn các loài vật biết bay", "con-vat", ["Chim", "Ong", "Bướm", "Chó", "Cá"], ["Chim", "Ong", "Bướm"]);
+        yield return Multi("seed-multi-animals-4legs", "Chọn các con vật có 4 chân", "con-vat", ["Mèo", "Chó", "Thỏ", "Gà", "Vịt"], ["Mèo", "Chó", "Thỏ"]);
+        yield return Multi("seed-multi-fruits-red", "Chọn các quả có màu đỏ", "phan-loai", ["Táo", "Dâu tây", "Dưa hấu", "Cam", "Bắp cải"], ["Táo", "Dâu tây", "Dưa hấu"]);
+        yield return Multi("seed-multi-fruits-yellow", "Chọn các quả có màu vàng", "phan-loai", ["Chuối", "Xoài", "Táo đỏ", "Dưa hấu"], ["Chuối", "Xoài"]);
+        yield return Multi("seed-multi-school-tools", "Chọn đồ dùng để học tập", "phan-loai", ["Bút", "Vở", "Cặp sách", "Bát", "Thìa"], ["Bút", "Vở", "Cặp sách"]);
+        yield return Multi("seed-multi-kitchen-tools", "Chọn đồ dùng trong nhà bếp", "phan-loai", ["Nồi", "Chảo", "Bát", "Thìa", "Bút chì"], ["Nồi", "Chảo", "Bát", "Thìa"]);
+
+        // 5. Kỹ năng sống & Thói quen tốt
+        yield return Multi("seed-multi-safety-actions", "Chọn các hành động an toàn khi ở nhà", "an-toan", ["Tránh xa ổ điện", "Không nghịch dao kéo", "Tự bật bếp gas", "Nghịch nước sôi"], ["Tránh xa ổ điện", "Không nghịch dao kéo"]);
+        yield return Multi("seed-multi-good-habits", "Chọn các thói quen tốt mỗi ngày", "tu-phuc-vu", ["Đánh răng mỗi sáng", "Rửa tay trước khi ăn", "Thức khuya xem điện thoại", "Vứt rác bừa bãi"], ["Đánh răng mỗi sáng", "Rửa tay trước khi ăn"]);
+        yield return Multi("seed-multi-summer-clothes", "Chọn trang phục mùa hè mát mẻ", "thoi-tiet", ["Áo phông", "Quần đùi", "Mũ rộng vành", "Áo len dày", "Khăn quàng cổ"], ["Áo phông", "Quần đùi", "Mũ rộng vành"]);
     }
 
     private static IEnumerable<SeedLesson> BuildListenLessons()
     {
+        // 1. Nhận biết tiếng kêu động vật
         yield return Listen("seed-listen-cat", "Nghe tiếng con mèo", "con-vat", "Con mèo kêu meo meo.", ["Con mèo", "Con chó", "Con vịt"], "Con mèo");
         yield return Listen("seed-listen-dog", "Nghe tiếng con chó", "con-vat", "Con chó kêu gâu gâu.", ["Con chó", "Con mèo", "Con gà"], "Con chó");
         yield return Listen("seed-listen-duck", "Nghe tiếng con vịt", "con-vat", "Con vịt kêu cạp cạp.", ["Con vịt", "Con chim", "Con gà"], "Con vịt");
+        yield return Listen("seed-listen-rooster", "Nghe tiếng gà trống", "con-vat", "Con gà trống gáy ò ó o.", ["Gà trống", "Con vịt", "Con chim"], "Gà trống");
+        yield return Listen("seed-listen-frog", "Nghe tiếng chú ếch", "con-vat", "Chú ếch kêu ộp ộp bên bờ ao.", ["Chú ếch", "Con mèo", "Con chó"], "Chú ếch");
+        yield return Listen("seed-listen-bird", "Nghe tiếng chim hót", "con-vat", "Chú chim nhỏ hót líu lo trên cành cây.", ["Con chim", "Con vịt", "Con gà"], "Con chim");
+        yield return Listen("seed-listen-bee", "Nghe tiếng ong bay", "con-vat", "Chú ong bay vo ve đi tìm mật hoa.", ["Chú ong", "Con bướm", "Con cá"], "Chú ong");
+        yield return Listen("seed-listen-cow", "Nghe tiếng chú bò", "con-vat", "Chú bò kêu ụ bò trên đồng cỏ.", ["Chú bò", "Con mèo", "Con chó"], "Chú bò");
+
+        // 2. Nhận biết âm chữ cái
+        yield return Listen("seed-listen-letter-a", "Nghe và chọn chữ A", "kham-pha-chu", "Đây là chữ A trong quả táo.", ["A", "B", "C"], "A");
         yield return Listen("seed-listen-letter-b", "Nghe và chọn chữ B", "kham-pha-chu", "Đây là chữ Bờ trong quả bóng.", ["A", "B", "D"], "B");
         yield return Listen("seed-listen-letter-c", "Nghe và chọn chữ C", "kham-pha-chu", "Đây là chữ Cờ trong con cá.", ["C", "E", "O"], "C");
+        yield return Listen("seed-listen-letter-d", "Nghe và chọn chữ D", "kham-pha-chu", "Đây là chữ Dờ trong quả dưa.", ["D", "Đ", "B"], "D");
+        yield return Listen("seed-listen-letter-dd", "Nghe và chọn chữ Đ", "kham-pha-chu", "Đây là chữ Đờ trong chiếc đồng hồ.", ["Đ", "D", "B"], "Đ");
+        yield return Listen("seed-listen-letter-e", "Nghe và chọn chữ E", "kham-pha-chu", "Đây là chữ E trong em bé.", ["E", "Ê", "A"], "E");
+        yield return Listen("seed-listen-letter-ee", "Nghe và chọn chữ Ê", "kham-pha-chu", "Đây là chữ Ê trong cái ghế.", ["Ê", "E", "O"], "Ê");
+        yield return Listen("seed-listen-letter-m", "Nghe và chọn chữ M", "kham-pha-chu", "Đây là chữ Mờ trong con mèo.", ["M", "N", "H"], "M");
+        yield return Listen("seed-listen-letter-n", "Nghe và chọn chữ N", "kham-pha-chu", "Đây là chữ Nờ trong nụ hoa.", ["N", "M", "L"], "N");
+        yield return Listen("seed-listen-letter-o", "Nghe và chọn chữ O", "kham-pha-chu", "Đây là chữ O tròn như quả trứng gà.", ["O", "Ô", "Ơ"], "O");
+
+        // 3. Nhận biết âm vần
         yield return Listen("seed-listen-rhyme", "Nghe từ có vần an", "am-van", "Từ cái bàn có vần an.", ["Bàn", "Bé", "Bò"], "Bàn");
         yield return Listen("seed-listen-rhyme-2", "Nghe từ có vần am", "am-van", "Quả cam có vần am.", ["Cam", "Cá", "Cây"], "Cam");
+        yield return Listen("seed-listen-rhyme-ap", "Nghe từ có vần ap", "am-van", "Chiếc cặp sách có vần ap.", ["Cặp", "Cá", "Cơm"], "Cặp");
+        yield return Listen("seed-listen-rhyme-oc", "Nghe từ có vần oc", "am-van", "Chú con cóc có vần oc.", ["Cóc", "Cá", "Cua"], "Cóc");
+        yield return Listen("seed-listen-rhyme-en", "Nghe từ có vần en", "am-van", "Ngọn đèn sáng có vần en.", ["Đèn", "Đá", "Đi"], "Đèn");
     }
 
     private static IEnumerable<SeedLesson> BuildDragLessons()
     {
-        yield return Drag("seed-drag-uppercase", "Kéo chữ hoa đúng", "ghep-hoa-thuong", "Chữ hoa A", ["A", "a", "ă"], "A");
-        yield return Drag("seed-drag-number", "Kéo số vào nhóm ba vật", "ghep-so-luong", "Nhóm có 3 vật", ["2", "3", "4"], "3");
-        yield return Drag("seed-drag-position", "Đặt quả bóng vào trong hộp", "vi-tri", "Trong hộp", ["Quả bóng", "Cái bàn", "Đám mây"], "Quả bóng");
-        yield return Drag("seed-drag-vehicle", "Đưa ô tô vào bãi đỗ", "vi-tri", "Bãi đỗ xe", ["Ô tô", "Quả táo", "Con mèo"], "Ô tô");
+        // 1. Ghép chữ hoa - thường
+        yield return Drag("seed-drag-uppercase-a", "Kéo chữ hoa A đúng", "ghep-hoa-thuong", "Chữ hoa A", ["A", "a", "ă"], "A");
+        yield return Drag("seed-drag-uppercase-b", "Kéo chữ hoa B đúng", "ghep-hoa-thuong", "Chữ hoa B", ["B", "b", "d"], "B");
+        yield return Drag("seed-drag-uppercase-c", "Kéo chữ hoa C đúng", "ghep-hoa-thuong", "Chữ hoa C", ["C", "c", "o"], "C");
+        yield return Drag("seed-drag-uppercase-d", "Kéo chữ hoa D đúng", "ghep-hoa-thuong", "Chữ hoa D", ["D", "d", "đ"], "D");
+        yield return Drag("seed-drag-uppercase-m", "Kéo chữ hoa M đúng", "ghep-hoa-thuong", "Chữ hoa M", ["M", "m", "n"], "M");
+
+        // 2. Ghép số với số lượng
+        yield return Drag("seed-drag-number-2", "Kéo số vào nhóm hai quả cam", "ghep-so-luong", "Nhóm có 2 vật", ["1", "2", "3"], "2");
+        yield return Drag("seed-drag-number-3", "Kéo số vào nhóm ba vật", "ghep-so-luong", "Nhóm có 3 vật", ["2", "3", "4"], "3");
+        yield return Drag("seed-drag-number-5", "Kéo số vào nhóm năm ngôi sao", "ghep-so-luong", "Nhóm có 5 vật", ["4", "5", "6"], "5");
+        yield return Drag("seed-drag-number-4", "Kéo số vào nhóm bốn chú cá", "ghep-so-luong", "Nhóm có 4 vật", ["3", "4", "5"], "4");
+
+        // 3. Vị trí & Không gian
+        yield return Drag("seed-drag-position-in", "Đặt quả bóng vào trong hộp", "vi-tri", "Trong hộp", ["Quả bóng", "Cái bàn", "Đám mây"], "Quả bóng");
+        yield return Drag("seed-drag-position-on", "Đặt quyển sách lên trên bàn", "vi-tri", "Trên bàn", ["Quyển sách", "Chiếc ô", "Quả táo"], "Quyển sách");
+        yield return Drag("seed-drag-position-under", "Đặt đôi giày dưới gầm giường", "vi-tri", "Dưới gầm giường", ["Đôi giày", "Cái mũ", "Bông hoa"], "Đôi giày");
+
+        // 4. Phương tiện & Nơi đỗ
+        yield return Drag("seed-drag-vehicle-garage", "Đưa ô tô vào bãi đỗ", "vi-tri", "Bãi đỗ xe", ["Ô tô", "Quả táo", "Con mèo"], "Ô tô");
+        yield return Drag("seed-drag-vehicle-airport", "Đưa máy bay về sân bay", "giao-thong", "Sân bay", ["Máy bay", "Thuyền", "Xe đạp"], "Máy bay");
+        yield return Drag("seed-drag-vehicle-port", "Đưa thuyền buồm về bến cảng", "giao-thong", "Bến cảng", ["Thuyền buồm", "Ô tô", "Xe buýt"], "Thuyền buồm");
+
+        // 5. Phân loại đồ vật & Thức ăn
         yield return Drag("seed-drag-fruit", "Bỏ táo vào giỏ hoa quả", "phan-loai", "Giỏ trái cây", ["Táo", "Bút", "Cái thìa"], "Táo");
+        yield return Drag("seed-drag-veggie", "Bỏ cà rốt vào rổ rau củ", "phan-loai", "Rổ rau củ", ["Cà rốt", "Cặp sách", "Cái bát"], "Cà rốt");
+        yield return Drag("seed-drag-school-tool", "Bỏ bút chì vào hộp bút", "phan-loai", "Hộp bút", ["Bút chì", "Nồi canh", "Quả bóng"], "Bút chì");
+
+        // 6. Con vật & Tổ ấm
+        yield return Drag("seed-drag-bird-nest", "Đưa chim con về tổ", "con-vat", "Tổ chim trên cây", ["Chim non", "Cá vàng", "Con thỏ"], "Chim non");
+        yield return Drag("seed-drag-fish-water", "Đưa cá vàng về hồ nước", "con-vat", "Hồ nước trong xanh", ["Cá vàng", "Mèo con", "Gà con"], "Cá vàng");
+        yield return Drag("seed-drag-rabbit-burrow", "Đưa chú thỏ về hang cỏ", "con-vat", "Hang thỏ", ["Chú thỏ", "Con vịt", "Máy bay"], "Chú thỏ");
     }
 
     private static IEnumerable<SeedLesson> BuildMatchingLessons()
     {
-        yield return Mapping("seed-match-case-1", "Nối chữ hoa với chữ thường", "ghep-hoa-thuong", InteractionTypes.Matching, [("A", "a"), ("B", "b"), ("C", "c")]);
+        // 1. Chữ hoa - chữ thường
+        yield return Mapping("seed-match-case-1", "Nối chữ hoa với chữ thường 1", "ghep-hoa-thuong", InteractionTypes.Matching, [("A", "a"), ("B", "b"), ("C", "c")]);
         yield return Mapping("seed-match-case-2", "Nối chữ hoa với chữ thường 2", "ghep-hoa-thuong", InteractionTypes.Matching, [("D", "d"), ("Đ", "đ"), ("E", "e")]);
-        yield return Mapping("seed-match-shape", "Nối hình với tên", "hinh-dang", InteractionTypes.Matching, [("○", "Hình tròn"), ("□", "Hình vuông"), ("△", "Hình tam giác")]);
+        yield return Mapping("seed-match-case-3", "Nối chữ hoa với chữ thường 3", "ghep-hoa-thuong", InteractionTypes.Matching, [("G", "g"), ("H", "h"), ("I", "i")]);
+        yield return Mapping("seed-match-case-4", "Nối chữ hoa với chữ thường 4", "ghep-hoa-thuong", InteractionTypes.Matching, [("M", "m"), ("N", "n"), ("O", "o")]);
+        yield return Mapping("seed-match-case-5", "Nối chữ hoa với chữ thường 5", "ghep-hoa-thuong", InteractionTypes.Matching, [("U", "u"), ("Ư", "ư"), ("V", "v")]);
+
+        // 2. Hình khối & Màu sắc
+        yield return Mapping("seed-match-shape-1", "Nối hình cơ bản với tên gọi", "hinh-dang", InteractionTypes.Matching, [("○", "Hình tròn"), ("□", "Hình vuông"), ("△", "Hình tam giác")]);
+        yield return Mapping("seed-match-shape-2", "Nối hình trang trí với tên gọi", "hinh-dang", InteractionTypes.Matching, [("⭐", "Hình ngôi sao"), ("❤️", "Hình trái tim"), ("■", "Hình vuông")]);
+
+        // 3. Con vật & Tiếng kêu & Thức ăn
         yield return Mapping("seed-match-vocabulary", "Nối con vật với tiếng kêu", "von-tu", InteractionTypes.Matching, [("Mèo", "Meo meo"), ("Chó", "Gâu gâu"), ("Vịt", "Cạp cạp")]);
-        yield return Mapping("seed-match-food-animal", "Nối con vật với thức ăn", "con-vat", InteractionTypes.Matching, [("Thỏ", "Cà rốt"), ("Mèo", "Cá"), ("Ong", "Bông hoa")]);
+        yield return Mapping("seed-match-food-animal", "Nối con vật với thức ăn yêu thích", "con-vat", InteractionTypes.Matching, [("Thỏ", "Cà rốt"), ("Mèo", "Cá"), ("Ong", "Bông hoa")]);
+        yield return Mapping("seed-match-food-animal-2", "Nối thức ăn cho các loài vật", "con-vat", InteractionTypes.Matching, [("Gà", "Hạt thóc"), ("Khỉ", "Quả chuối"), ("Bò", "Cỏ tươi")]);
+        yield return Mapping("seed-match-mother-baby", "Nối mẹ và con yêu", "con-vat", InteractionTypes.Matching, [("Gà mẹ", "Gà con"), ("Mèo mẹ", "Mèo con"), ("Vịt mẹ", "Vịt con")]);
+        yield return Mapping("seed-match-animal-home", "Nối con vật với ngôi nhà của mình", "con-vat", InteractionTypes.Matching, [("Chim", "Tổ cây"), ("Cá", "Hồ nước"), ("Ong", "Tổ ong")]);
+
+        // 4. Đồ dùng ghép đôi
+        yield return Mapping("seed-match-pair-tools", "Nối các cặp đồ vật quen thuộc", "phan-loai", InteractionTypes.Matching, [("Bàn chải", "Kem đánh răng"), ("Bút", "Vở"), ("Bát", "Thìa")]);
+        yield return Mapping("seed-match-pair-clothes", "Nối các trang phục đi cùng nhau", "thoi-tiet", InteractionTypes.Matching, [("Áo", "Quần"), ("Giày", "Tất"), ("Mũ", "Khăn")]);
+
+        // 5. Biển báo & Đèn giao thông
+        yield return Mapping("seed-match-traffic-light", "Nối tín hiệu đèn giao thông", "an-toan", InteractionTypes.Matching, [("Đèn đỏ", "Dừng lại"), ("Đèn xanh", "Được đi"), ("Đèn vàng", "Đi chậm")]);
+
+        // 6. Số lượng & Chữ số
+        yield return Mapping("seed-match-quantity-1to3", "Nối số với số lượng chấm tròn", "ghep-so-luong", InteractionTypes.Matching, [("1", "●"), ("2", "●●"), ("3", "●●●")]);
+        yield return Mapping("seed-match-quantity-4to6", "Nối số với số lượng quả táo", "ghep-so-luong", InteractionTypes.Matching, [("4", "🍎🍎🍎🍎"), ("5", "🍎🍎🍎🍎🍎"), ("6", "🍎🍎🍎🍎🍎🍎")]);
     }
 
     private static IEnumerable<SeedLesson> BuildOrderingLessons()
     {
-        yield return Ordering("seed-order-numbers", "Sắp xếp số từ bé đến lớn", "thu-tu-so", ["1", "2", "3", "4"]);
-        yield return Ordering("seed-order-numbers-desc", "Sắp xếp số từ lớn về bé", "thu-tu-so", ["4", "3", "2", "1"]);
+        // 1. Thứ tự số học
+        yield return Ordering("seed-order-numbers", "Sắp xếp số từ bé đến lớn (1-4)", "thu-tu-so", ["1", "2", "3", "4"]);
+        yield return Ordering("seed-order-numbers-5to8", "Sắp xếp số từ bé đến lớn (5-8)", "thu-tu-so", ["5", "6", "7", "8"]);
+        yield return Ordering("seed-order-numbers-7to10", "Sắp xếp số từ bé đến lớn (7-10)", "thu-tu-so", ["7", "8", "9", "10"]);
+        yield return Ordering("seed-order-numbers-desc", "Sắp xếp số từ lớn về bé (4-1)", "thu-tu-so", ["4", "3", "2", "1"]);
+        yield return Ordering("seed-order-numbers-desc-8to5", "Sắp xếp số từ lớn về bé (8-5)", "thu-tu-so", ["8", "7", "6", "5"]);
+        yield return Ordering("seed-order-numbers-desc-10to7", "Sắp xếp số từ lớn về bé (10-7)", "thu-tu-so", ["10", "9", "8", "7"]);
+
+        // 2. Vệ sinh cá nhân & Thói quen tự phục vụ
         yield return Ordering("seed-order-wash", "Các bước rửa tay đúng cách", "tu-phuc-vu", ["Làm ướt tay", "Lấy xà phòng", "Chà sạch tay", "Xả nước", "Lau khô"]);
-        yield return Ordering("seed-order-seed", "Hạt lớn thành cây", "ke-chuyen", ["Gieo hạt", "Tưới nước", "Hạt nảy mầm", "Cây lớn lên"]);
-        yield return Ordering("seed-order-brush-teeth", "Các bước đánh răng", "tu-phuc-vu", ["Lấy kem đánh răng", "Chải sạch răng", "Súc miệng bằng nước"]);
+        yield return Ordering("seed-order-brush-teeth", "Các bước đánh răng đúng cách", "tu-phuc-vu", ["Lấy kem đánh răng", "Chải mặt ngoài", "Chải mặt trong", "Súc miệng sạch"]);
+        yield return Ordering("seed-order-morning-routine", "Thứ tự các việc buổi sáng", "tu-phuc-vu", ["Thức dậy", "Đánh răng", "Ăn sáng", "Đi học"]);
+        yield return Ordering("seed-order-bedtime-routine", "Thứ tự các việc trước khi đi ngủ", "tu-phuc-vu", ["Đánh răng", "Mặc đồ ngủ", "Nghe đọc truyện", "Đi ngủ"]);
+        yield return Ordering("seed-order-put-shoes", "Các bước xỏ giày đi học", "tu-phuc-vu", ["Xỏ chân vào giày", "Kéo gót giày", "Dán quai giày ngay ngắn"]);
+        yield return Ordering("seed-order-pack-backpack", "Chuẩn bị cặp sách đến trường", "tu-phuc-vu", ["Xếp sách vở", "Đặt hộp bút", "Kéo khóa cặp", "Đeo ba lô"]);
+
+        // 3. Vòng đời phát triển tự nhiên
+        yield return Ordering("seed-order-seed", "Hạt nảy mầm lớn thành cây", "ke-chuyen", ["Gieo hạt", "Tưới nước", "Hạt nảy mầm", "Cây lớn lên"]);
+        yield return Ordering("seed-order-frog", "Vòng đời của chú ếch", "ke-chuyen", ["Trứng ếch", "Nòng nọc", "Ếch con có đuôi", "Chú ếch trưởng thành"]);
+        yield return Ordering("seed-order-butterfly", "Vòng đời của chú bướm xinh", "ke-chuyen", ["Trứng bướm", "Sâu bướm", "Chiếc kén", "Bướm xinh bay lượn"]);
+        yield return Ordering("seed-order-chicken", "Quả trứng nở thành chú gà con", "ke-chuyen", ["Gà ấp trứng", "Trứng nứt vỏ", "Gà con chui ra", "Gà con theo mẹ"]);
+
+        // 4. An toàn & Khéo tay
+        yield return Ordering("seed-order-cross-road", "Các bước qua đường an toàn", "an-toan", ["Đứng trên vỉa hè", "Quan sát hai bên", "Chờ đèn xanh bật", "Đi cùng người lớn"]);
+        yield return Ordering("seed-order-peel-banana", "Các bước bóc quả chuối ăn", "kheo-tay", ["Cầm cuống chuối", "Bóc vỏ nhẹ nhàng", "Ăn chuối", "Bỏ vỏ vào thùng rác"]);
     }
 
     private static IEnumerable<SeedLesson> BuildCountingLessons()
     {
+        yield return Counting("seed-count-1", "Đếm 1 quả dưa hấu", "dem-so-luong", "🍉", 1);
+        yield return Counting("seed-count-2", "Đếm 2 quả cam mọng nước", "dem-so-luong", "🍊", 2);
         yield return Counting("seed-count-3", "Đếm 3 quả táo đỏ", "dem-so-luong", "🍎", 3);
-        yield return Counting("seed-count-5", "Đếm 5 ngôi sao vàng", "dem-so-luong", "⭐", 5);
-        yield return Counting("seed-count-7", "Đếm 7 bông hoa xinh", "dem-so-luong", "🌼", 7);
-        yield return Counting("seed-count-2", "Đếm 2 quả cam", "dem-so-luong", "🍊", 2);
-        yield return Counting("seed-count-4", "Đếm 4 chú cá bơi", "dem-so-luong", "🐟", 4);
+        yield return Counting("seed-count-4", "Đếm 4 chú cá bơi lội", "dem-so-luong", "🐟", 4);
+        yield return Counting("seed-count-5", "Đếm 5 ngôi sao vàng lấp lánh", "dem-so-luong", "⭐", 5);
+        yield return Counting("seed-count-6", "Đếm 6 quả dâu tây ngọt lịm", "dem-so-luong", "🍓", 6);
+        yield return Counting("seed-count-7", "Đếm 7 bông hoa xinh tươi", "dem-so-luong", "🌼", 7);
+        yield return Counting("seed-count-8", "Đếm 8 chú bướm rực rỡ", "dem-so-luong", "🦋", 8);
+        yield return Counting("seed-count-9", "Đếm 9 quả bóng bay", "dem-so-luong", "🎈", 9);
+        yield return Counting("seed-count-10", "Đếm 10 trái tim yêu thương", "dem-so-luong", "❤️", 10);
     }
 
     private static IEnumerable<SeedLesson> BuildQuantityLessons()
     {
+        yield return Quantity("seed-quantity-1", "Tạo 1 quả dưa hấu", "tao-so-luong", "🍉", 1);
         yield return Quantity("seed-quantity-2", "Tạo 2 quả cam", "tao-so-luong", "🍊", 2);
-        yield return Quantity("seed-quantity-4", "Tạo 4 chú cá", "tao-so-luong", "🐟", 4);
-        yield return Quantity("seed-quantity-5", "Tạo 5 quả táo", "tao-so-luong", "🍎", 5);
         yield return Quantity("seed-quantity-3", "Tạo 3 ngôi sao", "tao-so-luong", "⭐", 3);
+        yield return Quantity("seed-quantity-4", "Tạo 4 chú cá", "tao-so-luong", "🐟", 4);
+        yield return Quantity("seed-quantity-5", "Tạo 5 quả táo đỏ", "tao-so-luong", "🍎", 5);
         yield return Quantity("seed-quantity-6", "Tạo 6 khối vuông", "tao-so-luong", "■", 6);
+        yield return Quantity("seed-quantity-7", "Tạo 7 bông hoa", "tao-so-luong", "🌼", 7);
+        yield return Quantity("seed-quantity-8", "Tạo 8 quả dâu tây", "tao-so-luong", "🍓", 8);
+        yield return Quantity("seed-quantity-9", "Tạo 9 quả bóng", "tao-so-luong", "🎈", 9);
+        yield return Quantity("seed-quantity-10", "Tạo 10 chấm tròn", "tao-so-luong", "●", 10);
     }
 
     private static IEnumerable<SeedLesson> BuildComparisonLessons()
     {
-        yield return Comparison("seed-compare-more", "Nhóm nào nhiều hơn?", "so-sanh", "🍓", "Rổ đỏ", 5, "Rổ xanh", 3);
-        yield return Comparison("seed-compare-less", "Nhóm nào ít hơn?", "so-sanh", "⭐", "Nhóm vàng", 2, "Nhóm xanh", 6, "less");
-        yield return Comparison("seed-compare-equal", "Hai nhóm có bằng nhau?", "so-sanh", "●", "Nhóm A", 4, "Nhóm B", 4, "equal");
-        yield return Comparison("seed-compare-animals", "Nhóm nào có nhiều cá hơn?", "so-sanh", "🐟", "Bể trái", 6, "Bể phải", 2);
+        yield return Comparison("seed-compare-more", "Nhóm nào có nhiều dâu tây hơn?", "so-sanh", "🍓", "Rổ đỏ", 5, "Rổ xanh", 3, "more");
+        yield return Comparison("seed-compare-more-apples", "Đĩa nào có nhiều táo hơn?", "so-sanh", "🍎", "Đĩa trái", 7, "Đĩa phải", 4, "more");
+        yield return Comparison("seed-compare-more-stars", "Bầu trời nào có nhiều sao hơn?", "so-sanh", "⭐", "Trời đêm A", 8, "Trời đêm B", 5, "more");
+        yield return Comparison("seed-compare-less", "Nhóm nào có ít ngôi sao hơn?", "so-sanh", "⭐", "Nhóm vàng", 2, "Nhóm xanh", 6, "less");
+        yield return Comparison("seed-compare-less-oranges", "Rổ nào có ít cam hơn?", "so-sanh", "🍊", "Rổ A", 3, "Rổ B", 6, "less");
+        yield return Comparison("seed-compare-less-fish", "Bể nào có ít cá bơi hơn?", "so-sanh", "🐟", "Bể trái", 2, "Bể phải", 5, "less");
+        yield return Comparison("seed-compare-equal", "Hai nhóm có bằng nhau không?", "so-sanh", "●", "Nhóm A", 4, "Nhóm B", 4, "equal");
+        yield return Comparison("seed-compare-equal-hearts", "Hai hộp quà có số trái tim bằng nhau?", "so-sanh", "❤️", "Hộp A", 5, "Hộp B", 5, "equal");
+        yield return Comparison("seed-compare-animals", "Bể nào có nhiều cá hơn?", "so-sanh", "🐟", "Bể trái", 6, "Bể phải", 2, "more");
+        yield return Comparison("seed-compare-flowers", "Vườn hoa nào có nhiều hoa hơn?", "so-sanh", "🌼", "Vườn A", 8, "Vườn B", 4, "more");
     }
 
     private static IEnumerable<SeedLesson> BuildClassificationLessons()
     {
+        // 1. Thực phẩm & Dinh dưỡng
         yield return Mapping("seed-classify-food", "Phân loại rau củ và trái cây", "phan-loai", InteractionTypes.Classification, [("Táo", "Trái cây"), ("Cam", "Trái cây"), ("Cà rốt", "Rau củ"), ("Bắp cải", "Rau củ")]);
-        yield return Mapping("seed-classify-animal", "Phân loại con vật", "con-vat", InteractionTypes.Classification, [("Cá", "Dưới nước"), ("Tôm", "Dưới nước"), ("Mèo", "Trên cạn"), ("Gà", "Trên cạn")]);
-        yield return Mapping("seed-classify-weather", "Chọn đồ dùng theo thời tiết", "thoi-tiet", InteractionTypes.Classification, [("Áo mưa", "Trời mưa"), ("Ô", "Trời mưa"), ("Mũ rộng vành", "Trời nắng"), ("Kính râm", "Trời nắng")]);
-        yield return Mapping("seed-classify-transport", "Phân loại phương tiện giao thông", "giao-thong", InteractionTypes.Classification, [("Ô tô", "Trên đường"), ("Xe đạp", "Trên đường"), ("Máy bay", "Trên trời"), ("Thuyền", "Dưới nước")]);
+        yield return Mapping("seed-classify-food-2", "Phân loại đồ ăn và thức uống", "phan-loai", InteractionTypes.Classification, [("Bánh mì", "Đồ ăn"), ("Cơm", "Đồ ăn"), ("Sữa tươi", "Thức uống"), ("Nước cam", "Thức uống")]);
+
+        // 2. Động vật & Môi trường
+        yield return Mapping("seed-classify-animal", "Phân loại con vật trên cạn và dưới nước", "con-vat", InteractionTypes.Classification, [("Cá", "Dưới nước"), ("Tôm", "Dưới nước"), ("Mèo", "Trên cạn"), ("Gà", "Trên cạn")]);
+        yield return Mapping("seed-classify-animal-2", "Phân loại chim bay và thú nuôi", "con-vat", InteractionTypes.Classification, [("Chim sẻ", "Biết bay"), ("Bồ câu", "Biết bay"), ("Chó cưng", "Thú nuôi"), ("Mèo con", "Thú nuôi")]);
+
+        // 3. Thời tiết & Trang phục
+        yield return Mapping("seed-classify-weather", "Chọn đồ dùng theo thời tiết nắng mưa", "thoi-tiet", InteractionTypes.Classification, [("Áo mưa", "Trời mưa"), ("Ô", "Trời mưa"), ("Mũ rộng vành", "Trời nắng"), ("Kính râm", "Trời nắng")]);
+        yield return Mapping("seed-classify-season", "Trang phục mùa hè và mùa đông", "thoi-tiet", InteractionTypes.Classification, [("Áo phông", "Mùa hè"), ("Quần đùi", "Mùa hè"), ("Áo khoác len", "Mùa đông"), ("Khăn quàng", "Mùa đông")]);
+
+        // 4. Phương tiện giao thông
+        yield return Mapping("seed-classify-transport", "Phân loại phương tiện giao thông đường bộ và đường khác", "giao-thong", InteractionTypes.Classification, [("Ô tô", "Trên đường"), ("Xe đạp", "Trên đường"), ("Máy bay", "Trên trời"), ("Thuyền", "Dưới nước")]);
+
+        // 5. Đồ dùng trong gia đình
+        yield return Mapping("seed-classify-house-tools", "Phân loại đồ dùng học tập và nhà bếp", "phan-loai", InteractionTypes.Classification, [("Bút chì", "Học tập"), ("Quyển vở", "Học tập"), ("Nồi canh", "Nhà bếp"), ("Cái chảo", "Nhà bếp")]);
+
+        // 6. Tính chất & Cảm giác
+        yield return Mapping("seed-classify-soft-hard", "Phân loại đồ vật mềm và cứng", "phan-loai", InteractionTypes.Classification, [("Chiếc gối", "Mềm mại"), ("Bông gòn", "Mềm mại"), ("Viên đá", "Cứng cáp"), ("Cục gạch", "Cứng cáp")]);
+        yield return Mapping("seed-classify-hot-cold", "Phân loại đồ nóng và đồ lạnh", "phan-loai", InteractionTypes.Classification, [("Kem dâu", "Lạnh"), ("Viên đá lạnh", "Lạnh"), ("Bát súp nóng", "Nóng"), ("Ly trà ấm", "Nóng")]);
     }
 
     private static IEnumerable<SeedLesson> BuildStoryLessons()
     {
         yield return Story("seed-story-wash", "Câu chuyện rửa tay sạch sẽ", "tu-phuc-vu",
-            "Trước khi ăn, Minh làm ướt tay, lấy xà phòng, chà sạch rồi lau khô.",
-            "/images/lessons/story-wash-hands.png", "Minh làm gì trước khi ăn?", ["Rửa tay", "Đi ngủ", "Cất sách"], "Rửa tay");
+            "Trước khi ăn cơm, bạn Minh luôn nhớ làm ướt tay, xoa xà phòng chà sạch mu bàn tay và các kẽ ngón tay, sau đó rửa lại bằng nước sạch rồi lau khô.",
+            "/images/lessons/story-wash-hands.png", "Minh làm gì trước khi ngồi vào bàn ăn cơm?", ["Rửa tay sạch với xà phòng", "Đi ngủ ngay", "Cất sách vở"], "Rửa tay sạch với xà phòng");
         yield return Story("seed-story-crossing", "Bé qua đường an toàn", "an-toan",
-            "Lan đứng trên vỉa hè cùng mẹ. Khi đèn dành cho người đi bộ bật màu xanh, hai mẹ con quan sát rồi đi trên vạch qua đường.",
-            "/images/lessons/story-safe-crossing.png", "Khi nào Lan được qua đường?", ["Khi đèn người đi bộ màu xanh", "Khi xe đang chạy", "Khi đèn người đi bộ màu đỏ"], "Khi đèn người đi bộ màu xanh");
-        yield return Story("seed-story-sharing", "Bạn bè biết chia sẻ", "cam-xuc",
-            "Nam buồn vì quên hộp bút màu. Mai nhận ra điều đó và vui vẻ chia sẻ bút với Nam.",
-            "/images/lessons/story-sharing.png", "Mai đã làm gì khi thấy Nam buồn?", ["Chia sẻ bút màu", "Cất hết bút đi", "Bỏ ra ngoài"], "Chia sẻ bút màu");
+            "Lan đứng trên vỉa hè nắm chặt tay mẹ. Khi đèn tín hiệu cho người đi bộ chuyển sang màu xanh, hai mẹ con quan sát xe rồi đi trên vạch sơn trắng.",
+            "/images/lessons/story-safe-crossing.png", "Khi nào bé Lan và mẹ mới bước qua đường?", ["Khi đèn người đi bộ màu xanh", "Khi xe cộ đang chạy nhanh", "Khi đèn người đi bộ màu đỏ"], "Khi đèn người đi bộ màu xanh");
+        yield return Story("seed-story-sharing", "Bạn bè biết sẻ chia", "cam-xuc",
+            "Trong giờ vẽ tranh, Nam buồn vì để quên hộp bút sáp ở nhà. Thấy bạn buồn, Mai liền vui vẻ chia sẻ hộp màu của mình để hai bạn cùng vẽ tranh.",
+            "/images/lessons/story-sharing.png", "Bạn Mai đã làm gì khi thấy bạn Nam buồn?", ["Chia sẻ bút màu cho bạn mượn", "Cất hết bút đi", "Cười chê bạn"], "Chia sẻ bút màu cho bạn mượn");
         yield return Story("seed-story-traffic", "Đội mũ bảo hiểm khi đi xe máy", "an-toan",
-            "Bố đón An đi học về. An tự giác đội mũ bảo hiểm và cài quai cẩn thận trước khi lên xe.",
-            "/images/lessons/visual-road-safety.png", "An làm gì trước khi lên xe máy?", ["Đội mũ bảo hiểm", "Đứng nhảy nhót", "Cởi giày"], "Đội mũ bảo hiểm");
+            "Bố đón An tan học về. An tự giác cầm mũ bảo hiểm của mình, đội lên đầu và nhờ bố cài quai chắc chắn trước khi lên xe máy.",
+            "/images/lessons/visual-road-safety.png", "An làm việc gì trước khi lên xe máy cùng bố?", ["Đội mũ bảo hiểm an toàn", "Đứng nhảy nhót đùa nghịch", "Cởi giày vứt đi"], "Đội mũ bảo hiểm an toàn");
+        yield return Story("seed-story-rabbit-turtle", "Chuyện Rùa và Thỏ", "ke-chuyen",
+            "Trong cuộc thi chạy, Thỏ cậy mình nhanh nhẹn nên mải đuổi bướm hái hoa và ngủ quên. Rùa tuy đi chậm nhưng kiên trì, chăm chỉ bước từng bước nên đã về đích trước.",
+            "/images/photos/flashcard-rabbit.jpg", "Vì sao bạn Rùa lại chiến thắng trong cuộc thi chạy?", ["Rùa kiên trì và chăm chỉ", "Rùa chạy nhanh hơn Thỏ", "Thỏ nhường giải cho Rùa"], "Rùa kiên trì và chăm chỉ");
+        yield return Story("seed-story-kind-bear", "Bác Gấu đen và hai chú Thỏ", "giao-tiep",
+            "Đêm mưa gió lạnh buốt, bác Gấu đen ướt sũng đến gõ cửa xin trú nhờ. Thỏ Nâu và Thỏ Trắng đã vui vẻ mời bác Gấu vào nhà, đốt lửa sưởi ấm và mời bác ăn cà rốt ngọt.",
+            "/images/photos/flashcard-carrot.jpg", "Hai chú Thỏ đã làm gì khi bác Gấu đen đến xin trú mưa?", ["Mời bác vào sưởi ấm và cho ăn", "Đóng chặt cửa đuổi bác đi", "Chạy trốn khỏi nhà"], "Mời bác vào sưởi ấm và cho ăn");
+        yield return Story("seed-story-ant-grasshopper", "Kiến chăm chỉ và Ve sầu", "ke-chuyen",
+            "Suốt mùa hè ấm áp, đàn Kiến chăm chỉ tìm thức ăn mang về tổ dự trữ. Chú Ve sầu chỉ mải ca hát cả ngày. Đến mùa đông lạnh giá, Kiến có đồ ăn no ấm còn Ve sầu đói run rẩy.",
+            "/images/photos/flashcard-insects.jpg", "Bài học rút ra từ câu chuyện đàn Kiến và Ve sầu là gì?", ["Chăm chỉ lao động, biết lo xa", "Chỉ nên mải chơi ca hát", "Không cần giúp đỡ ai"], "Chăm chỉ lao động, biết lo xa");
+    }
+
+    private static IEnumerable<SeedLesson> BuildReadingComprehensionLessons()
+    {
+        // 1. Chú gấu và mật ong
+        const string gauSpeech = "Một buổi sáng đẹp trời, chú gấu nâu đi dạo trong rừng và ngửi thấy mùi thơm ngọt ngào của mật ong. Chú lần theo mùi hương và tìm thấy tổ ong trên cành cây cao. Chú gấu leo lên cây, nhẹ nhàng lấy một ít mật ong vào chiếc hũ nhỏ mình mang theo. Xong rồi, chú nói: “Chỉ lấy vừa đủ thôi để không làm phiền các bạn ong nhé!” rồi leo xuống và đi về.";
+        yield return ReadingQuestion("seed-story-gau-mat-ong-q1", "Chú gấu và mật ong (1/5)", gauSpeech, "gau-mat-ong", "q1", "Chú gấu đi dạo ở đâu?", ["Trong rừng", "Ở trường", "Trong thành phố"], "Trong rừng");
+        yield return ReadingQuestion("seed-story-gau-mat-ong-q2", "Chú gấu và mật ong (2/5)", gauSpeech, "gau-mat-ong", "q2", "Chú gấu ngửi thấy mùi gì?", ["Mùi hoa", "Mùi mật ong", "Mùi thức ăn"], "Mùi mật ong");
+        yield return ReadingQuestion("seed-story-gau-mat-ong-q3", "Chú gấu và mật ong (3/5)", gauSpeech, "gau-mat-ong", "q3", "Tổ ong ở đâu?", ["Trên cành cây", "Dưới bụi cây", "Trong hang đá"], "Trên cành cây");
+        yield return ReadingQuestion("seed-story-gau-mat-ong-q4", "Chú gấu và mật ong (4/5)", gauSpeech, "gau-mat-ong", "q4", "Vì sao chú gấu chỉ lấy một ít mật ong?", ["Vì mật ong không ngon lắm", "Vì chú gấu tốt bụng và không muốn làm phiền các bạn ong", "Vì chú gấu vội nên không lấy được nhiều"], "Vì chú gấu tốt bụng và không muốn làm phiền các bạn ong");
+        yield return ReadingQuestion("seed-story-gau-mat-ong-q5", "Chú gấu và mật ong (5/5)", gauSpeech, "gau-mat-ong", "q5", "Theo con, chú gấu là một bạn như thế nào?", ["Tốt bụng", "Ích kỷ", "Nóng tính"], "Tốt bụng");
+
+        // 2. Cáo nhỏ và chiếc khăn
+        const string caoSpeech = "Mùa đông đã đến. Gió thổi lạnh buốt cả khu rừng. Cáo nhỏ thấy các bạn đều có khăn quàng cổ. Cáo cũng rất muốn có một chiếc khăn thật đẹp. Một hôm, cáo nhỏ nhìn thấy một chiếc khăn màu xanh nằm trên cành cây. Cáo nghĩ chắc bạn nào đánh rơi. Cáo liền nhảy lên, lấy chiếc khăn rồi quàng vào cổ. Chiếc khăn mềm mại và ấm áp quá! Đang lúc cáo nhỏ vui vẻ chạy đi khoe thì sóc nâu hớt hải chạy đến: – Chiếc khăn đó của tớ! Tớ đánh rơi khi đi tìm hạt dẻ. Cáo nhỏ ngại ngùng nói: – Tớ không biết đó là của cậu. Tớ chỉ thấy đẹp quá nên lấy thôi. Sóc nâu mỉm cười: – Cảm ơn cậu đã nói thật. Cậu trả lại tớ nhé! Cáo nhỏ vội tháo khăn trả lại cho sóc. Sóc nâu cảm ơn cáo và rủ cáo cùng đi tìm hạt dẻ. Từ đó, cáo nhỏ hiểu rằng: “Nhặt được của rơi thì phải trả lại cho người mất.”";
+        yield return ReadingQuestion("seed-story-cao-khan-q1", "Cáo nhỏ và chiếc khăn (1/6)", caoSpeech, "cao-chiec-khan", "q1", "Câu chuyện xảy ra vào mùa nào?", ["Mùa xuân", "Mùa hè", "Mùa đông"], "Mùa đông");
+        yield return ReadingQuestion("seed-story-cao-khan-q2", "Cáo nhỏ và chiếc khăn (2/6)", caoSpeech, "cao-chiec-khan", "q2", "Cáo nhỏ nhìn thấy gì trên cành cây?", ["Quả táo", "Chiếc khăn", "Quả thông"], "Chiếc khăn");
+        yield return ReadingQuestion("seed-story-cao-khan-q3", "Cáo nhỏ và chiếc khăn (3/6)", caoSpeech, "cao-chiec-khan", "q3", "Chiếc khăn màu gì?", ["Màu đỏ", "Màu xanh", "Màu vàng"], "Màu xanh");
+        yield return ReadingQuestion("seed-story-cao-khan-q4", "Cáo nhỏ và chiếc khăn (4/6)", caoSpeech, "cao-chiec-khan", "q4", "Vì sao cáo nhỏ lấy chiếc khăn?", ["Vì cáo thấy chiếc khăn đẹp nên lấy", "Vì cáo bị lạnh nên lấy để quàng cho ấm", "Vì cáo nghĩ đó là của mình"], "Vì cáo thấy chiếc khăn đẹp nên lấy");
+        yield return ReadingQuestion("seed-story-cao-khan-q5", "Cáo nhỏ và chiếc khăn (5/6)", caoSpeech, "cao-chiec-khan", "q5", "Cáo nhỏ đã làm gì khi biết chiếc khăn là của sóc nâu?", ["Trả lại khăn cho sóc nâu", "Mang khăn về và chạy đi", "Xé chiếc khăn làm đôi"], "Trả lại khăn cho sóc nâu");
+        yield return ReadingQuestion("seed-story-cao-khan-q6", "Cáo nhỏ và chiếc khăn (6/6)", caoSpeech, "cao-chiec-khan", "q6", "Theo con, chúng ta cần học điều gì từ câu chuyện này?", ["Cho đi để nhận lại", "Nhặt được của rơi phải trả lại", "Kết bạn và chia sẻ"], "Nhặt được của rơi phải trả lại");
+
+        // 3. Chiếc ô màu vàng
+        const string oVangSpeech = "Sáng nay, trời có mưa. Bé Na mang theo một chiếc ô màu vàng. Trên đường đến trường, Na gặp một chú mèo nhỏ đang trú dưới gốc cây. Na dừng lại, che ô cho chú mèo rồi mới tiếp tục đến lớp.";
+        yield return ReadingQuestion("seed-story-o-vang-q1", "Chiếc ô màu vàng (1/5)", oVangSpeech, "chiec-o-vang", "q1", "Chiếc ô của Na màu gì?", ["Xanh", "Vàng", "Đỏ"], "Vàng");
+        yield return ReadingQuestion("seed-story-o-vang-q2", "Chiếc ô màu vàng (2/5)", oVangSpeech, "chiec-o-vang", "q2", "Na gặp con vật nào trên đường đến trường?", ["Chó", "Mèo", "Thỏ"], "Mèo");
+        yield return ReadingQuestion("seed-story-o-vang-q3", "Chiếc ô màu vàng (3/5)", oVangSpeech, "chiec-o-vang", "q3", "Chú mèo đang trú ở đâu?", ["Dưới gốc cây", "Trong nhà", "Ở trường"], "Dưới gốc cây");
+        yield return ReadingQuestion("seed-story-o-vang-q4", "Chiếc ô màu vàng (4/5)", oVangSpeech, "chiec-o-vang", "q4", "Vì sao Na dừng lại?", ["Vì Na muốn quên đường", "Vì Na muốn giúp chú mèo", "Vì Na muốn chơi"], "Vì Na muốn giúp chú mèo");
+        yield return ReadingQuestion("seed-story-o-vang-q5", "Chiếc ô màu vàng (5/5)", oVangSpeech, "chiec-o-vang", "q5", "Con thấy Na là một bạn như thế nào?", ["Tốt bụng", "Ích kỷ", "Nóng tính"], "Tốt bụng");
+
+        // 4. Chú sóc và hạt dẻ
+        const string socDeSpeech = "Mùa thu đến, lá cây vàng đỏ khắp nơi. Chú sóc nâu chăm chỉ nhặt những hạt dẻ rơi dưới gốc cây lớn. Sóc nhặt từng hạt, bỏ vào giỏ nhỏ. Nhặt xong, sóc đào một cái hố và chôn giỏ hạt dẻ xuống đất. Sóc nghĩ: “Mùa đông đến, mình sẽ có thật nhiều hạt dẻ ngon để ăn.”";
+        yield return ReadingQuestion("seed-story-soc-de-q1", "Chú sóc và hạt dẻ (1/5)", socDeSpeech, "soc-hat-de", "q1", "Câu chuyện diễn ra vào mùa nào?", ["Mùa xuân", "Mùa hè", "Mùa thu"], "Mùa thu");
+        yield return ReadingQuestion("seed-story-soc-de-q2", "Chú sóc và hạt dẻ (2/5)", socDeSpeech, "soc-hat-de", "q2", "Sóc nâu chăm chỉ nhặt gì dưới gốc cây?", ["Hạt dẻ", "Táo", "Nấm"], "Hạt dẻ");
+        yield return ReadingQuestion("seed-story-soc-de-q3", "Chú sóc và hạt dẻ (3/5)", socDeSpeech, "soc-hat-de", "q3", "Sau khi nhặt xong, sóc đã làm gì?", ["Bỏ vào giỏ", "Đào hố chôn giỏ hạt dẻ", "Chạy về nhà ngay"], "Đào hố chôn giỏ hạt dẻ");
+        yield return ReadingQuestion("seed-story-soc-de-q4", "Chú sóc và hạt dẻ (4/5)", socDeSpeech, "soc-hat-de", "q4", "Vì sao sóc chôn hạt dẻ xuống đất?", ["Vì sóc không biết để ở đâu", "Vì sóc muốn giữ hạt dẻ cho mùa đông", "Vì sóc muốn chơi đùa với hạt dẻ"], "Vì sóc muốn giữ hạt dẻ cho mùa đông");
+        yield return ReadingQuestion("seed-story-soc-de-q5", "Chú sóc và hạt dẻ (5/5)", socDeSpeech, "soc-hat-de", "q5", "Theo con, chú sóc trong câu chuyện là một bạn như thế nào?", ["Chăm chỉ", "Lười biếng", "Ích kỷ"], "Chăm chỉ");
+
+        // 5. Chú chim non tập bay
+        const string chimBaySpeech = "Sáng nay, trong tổ có ba chú chim non. Mẹ chim đã đi kiếm mồi từ sớm. Một chú chim non nhìn ra ngoài và nói: “Con muốn tập bay như các bạn!” Chú nhảy lên cành cây nhỏ, dang đôi cánh bé xíu và cố gắng bay. Nhưng chú chỉ lượn được một đoạn ngắn rồi rơi xuống cành thấp. Chú hơi buồn. Mẹ chim bay về, nhẹ nhàng nói: “Lần đầu chưa được thì không sao. Con cứ tập mỗi ngày, con sẽ bay thật giỏi!” Chú chim non mỉm cười và hứa sẽ cố gắng hơn.";
+        yield return ReadingQuestion("seed-story-chim-bay-q1", "Chú chim non tập bay (1/5)", chimBaySpeech, "chim-non-tap-bay", "q1", "Trong tổ có bao nhiêu chú chim non?", ["2", "3", "4"], "3");
+        yield return ReadingQuestion("seed-story-chim-bay-q2", "Chú chim non tập bay (2/5)", chimBaySpeech, "chim-non-tap-bay", "q2", "Ai đã đi kiếm mồi từ sớm?", ["Chú chim non", "Mẹ chim", "Chú sóc"], "Mẹ chim");
+        yield return ReadingQuestion("seed-story-chim-bay-q3", "Chú chim non tập bay (3/5)", chimBaySpeech, "chim-non-tap-bay", "q3", "Chú chim non tập bay như thế nào?", ["Nhảy lên cành cây và dang cánh", "Nhảy xuống suối để bơi", "Chạy thật nhanh trên sân"], "Nhảy lên cành cây và dang cánh");
+        yield return ReadingQuestion("seed-story-chim-bay-q4", "Chú chim non tập bay (4/5)", chimBaySpeech, "chim-non-tap-bay", "q4", "Vì sao chú chim non lúc đầu hơi buồn?", ["Vì mẹ chim chưa về", "Vì chú rơi xuống cành thấp, chưa bay được xa", "Vì chú không thích ăn giun"], "Vì chú rơi xuống cành thấp, chưa bay được xa");
+        yield return ReadingQuestion("seed-story-chim-bay-q5", "Chú chim non tập bay (5/5)", chimBaySpeech, "chim-non-tap-bay", "q5", "Theo con, chú chim non là một bạn như thế nào?", ["Chăm chỉ và không bỏ cuộc", "Ích kỷ và chỉ nghĩ cho mình", "Lười biếng và hay nản chí"], "Chăm chỉ và không bỏ cuộc");
+
+        // 6. Rùa nhỏ và dòng suối
+        const string ruaSuoiSpeech = "Rùa nhỏ sống ở gần một dòng suối trong xanh. Ngày nào rùa cũng muốn sang bờ bên kia để ăn những chiếc lá non. Nhưng dòng suối khá rộng và nước chảy rất xiết, khiến rùa nhỏ không dám bơi qua. Một ngày, thỏ trắng thấy rùa ngồi buồn bên bờ suối liền hỏi: – Bạn buồn vì điều gì vậy? Rùa nhỏ kể lại nỗi sợ của mình. Thỏ trắng mỉm cười và nói: – Mình sẽ giúp bạn! Nói rồi, thỏ nhặt những cành cây và lá chuối, buộc thành một chiếc bè nhỏ. Thỏ dắt rùa lên bè và nhẹ nhàng đẩy qua suối. Rùa nhỏ cảm động nói: “Cảm ơn bạn rất nhiều! Nhờ bạn mà mình đã có bữa ăn ngon lành.” Từ đó, rùa nhỏ và thỏ trắng trở thành những người bạn tốt của nhau.";
+        yield return ReadingQuestion("seed-story-rua-suoi-q1", "Rùa nhỏ và dòng suối (1/5)", ruaSuoiSpeech, "rua-dong-suoi", "q1", "Rùa nhỏ muốn làm gì?", ["Ăn lá non", "Về nhà", "Ngắm hoa"], "Ăn lá non");
+        yield return ReadingQuestion("seed-story-rua-suoi-q2", "Rùa nhỏ và dòng suối (2/5)", ruaSuoiSpeech, "rua-dong-suoi", "q2", "Vì sao rùa nhỏ không dám qua suối?", ["Nước rất sâu", "Nhiều đá", "Nước chảy xiết"], "Nước chảy xiết");
+        yield return ReadingQuestion("seed-story-rua-suoi-q3", "Rùa nhỏ và dòng suối (3/5)", ruaSuoiSpeech, "rua-dong-suoi", "q3", "Ai đã giúp rùa nhỏ qua suối?", ["Sóc nâu", "Thỏ trắng", "Gà con"], "Thỏ trắng");
+        yield return ReadingQuestion("seed-story-rua-suoi-q4", "Rùa nhỏ và dòng suối (4/5)", ruaSuoiSpeech, "rua-dong-suoi", "q4", "Để giúp rùa nhỏ, thỏ trắng đã làm gì?", ["Nhặt cành cây và lá chuối buộc thành chiếc bè", "Bơi qua suối và cõng rùa sang bờ kia", "Gọi bạn đến rồi khiêng rùa qua suối"], "Nhặt cành cây và lá chuối buộc thành chiếc bè");
+        yield return ReadingQuestion("seed-story-rua-suoi-q5", "Rùa nhỏ và dòng suối (5/5)", ruaSuoiSpeech, "rua-dong-suoi", "q5", "Theo con, rùa nhỏ và thỏ trắng là những người bạn như thế nào?", ["Quan tâm và giúp đỡ nhau", "Không thích nhau", "Hay cãi nhau"], "Quan tâm và giúp đỡ nhau");
+
+        // 7. Chiếc hộp bí mật
+        const string hopBiMatSpeech = "Hôm nay là sinh nhật của Bin. Buổi sáng, Bin nhận được một chiếc hộp nhỏ từ mẹ. Hộp được gói bằng giấy màu xanh và buộc nơ vàng rất đẹp. Bin mở hộp ra, bên trong là một quyển sách tranh mà Bin rất thích. Bin ôm mẹ và nói: “Con cảm ơn mẹ nhiều lắm! Đây là món quà tuyệt vời nhất!”";
+        yield return ReadingQuestion("seed-story-hop-bi-mat-q1", "Chiếc hộp bí mật (1/5)", hopBiMatSpeech, "chiec-hop-bi-mat", "q1", "Hôm nay là ngày gì của Bin?", ["Sinh nhật", "Khai giảng", "Giáng sinh"], "Sinh nhật");
+        yield return ReadingQuestion("seed-story-hop-bi-mat-q2", "Chiếc hộp bí mật (2/5)", hopBiMatSpeech, "chiec-hop-bi-mat", "q2", "Bin nhận được gì từ mẹ?", ["Quyển sách", "Gấu bông", "Ô tô đồ chơi"], "Quyển sách");
+        yield return ReadingQuestion("seed-story-hop-bi-mat-q3", "Chiếc hộp bí mật (3/5)", hopBiMatSpeech, "chiec-hop-bi-mat", "q3", "Hộp quà được gói màu gì và buộc nơ màu gì?", ["Xanh - đỏ", "Xanh - vàng", "Hồng - tím"], "Xanh - vàng");
+        yield return ReadingQuestion("seed-story-hop-bi-mat-q4", "Chiếc hộp bí mật (4/5)", hopBiMatSpeech, "chiec-hop-bi-mat", "q4", "Vì sao Bin nói đây là món quà tuyệt vời nhất?", ["Vì quyển sách rất đẹp", "Vì đó là món quà mẹ tặng cho Bin", "Vì Bin chỉ thích nhận quà"], "Vì đó là món quà mẹ tặng cho Bin");
+        yield return ReadingQuestion("seed-story-hop-bi-mat-q5", "Chiếc hộp bí mật (5/5)", hopBiMatSpeech, "chiec-hop-bi-mat", "q5", "Con thấy Bin là một bạn như thế nào?", ["Biết ơn và lễ phép", "Ích kỷ", "Nóng tính"], "Biết ơn và lễ phép");
+
+        // 8. Chú nhím và quả táo
+        const string nhimTaoSpeech = "Buổi chiều, chú nhím nhỏ đi dạo trong vườn. Chú thấy một quả táo đỏ nằm dưới gốc cây. Chú dùng mũi nhọn lăn quả táo về phía mình. Quả táo hơi to nên chú phải nghỉ một lát rồi mới lăn được đến bụi cỏ. Chú nhím rửa sạch quả táo ở bờ suối rồi chậm rãi gặm từng miếng nhỏ. Ăn xong, chú cất phần còn lại vào hang để ăn dần. Chú nhím nghĩ: “Làm việc từ từ nhưng kiên trì thì sẽ làm được việc khó!”";
+        yield return ReadingQuestion("seed-story-nhim-tao-q1", "Chú nhím và quả táo (1/5)", nhimTaoSpeech, "nhim-qua-tao", "q1", "Chú nhím đi dạo vào lúc nào?", ["Buổi sáng", "Buổi trưa", "Buổi chiều"], "Buổi chiều");
+        yield return ReadingQuestion("seed-story-nhim-tao-q2", "Chú nhím và quả táo (2/5)", nhimTaoSpeech, "nhim-qua-tao", "q2", "Chú nhím thấy gì dưới gốc cây?", ["Quả táo", "Quả chuối", "Quả lê"], "Quả táo");
+        yield return ReadingQuestion("seed-story-nhim-tao-q3", "Chú nhím và quả táo (3/5)", nhimTaoSpeech, "nhim-qua-tao", "q3", "Chú nhím đã làm gì với quả táo?", ["Lăn về phía mình", "Xách về nhà", "Nhảy qua quả táo"], "Lăn về phía mình");
+        yield return ReadingQuestion("seed-story-nhim-tao-q4", "Chú nhím và quả táo (4/5)", nhimTaoSpeech, "nhim-qua-tao", "q4", "Vì sao chú nhím phải nghỉ một lát?", ["Vì chú mệt quá", "Vì quả táo hơi to", "Vì chú không biết lăn quả táo"], "Vì quả táo hơi to");
+        yield return ReadingQuestion("seed-story-nhim-tao-q5", "Chú nhím và quả táo (5/5)", nhimTaoSpeech, "nhim-qua-tao", "q5", "Theo con, chú nhím là một bạn như thế nào?", ["Kiên trì và siêng năng", "Ích kỷ và lười biếng", "Vui tính và hay giúp đỡ"], "Kiên trì và siêng năng");
+
+        // 9. Chú thỏ và củ cà rốt
+        const string thoCuCarotSpeech = "Sáng nay, thỏ trắng ra vườn tìm cà rốt. Thỏ thấy một củ cà rốt lớn nhô lên khỏi mặt đất. Thỏ dùng hai chân sau đạp đất, dùng hai chân trước kéo mạnh. Cuối cùng, củ cà rốt cũng được nhổ lên. Thỏ cười tươi: “Củ cà rốt này thật ngọt và giòn!”";
+        yield return ReadingQuestion("seed-story-tho-cu-ca-rot-q1", "Chú thỏ và củ cà rốt (1/5)", thoCuCarotSpeech, "tho-cu-ca-rot", "q1", "Thỏ ra vườn để làm gì?", ["Tìm cà rốt", "Hái hoa", "Tìm dưa hấu"], "Tìm cà rốt");
+        yield return ReadingQuestion("seed-story-tho-cu-ca-rot-q2", "Chú thỏ và củ cà rốt (2/5)", thoCuCarotSpeech, "tho-cu-ca-rot", "q2", "Thỏ nhìn thấy củ cà rốt như thế nào?", ["Nhỏ", "Vừa", "Lớn"], "Lớn");
+        yield return ReadingQuestion("seed-story-tho-cu-ca-rot-q3", "Chú thỏ và củ cà rốt (3/5)", thoCuCarotSpeech, "tho-cu-ca-rot", "q3", "Để nhổ được củ cà rốt, thỏ đã làm gì?", ["Chạy nhanh", "Nhảy lên", "Kéo mạnh"], "Kéo mạnh");
+        yield return ReadingQuestion("seed-story-tho-cu-ca-rot-q4", "Chú thỏ và củ cà rốt (4/5)", thoCuCarotSpeech, "tho-cu-ca-rot", "q4", "Vì sao cuối cùng thỏ cũng nhổ được củ cà rốt?", ["Vì thỏ mệt quá nên nghỉ một lát", "Vì thỏ cố gắng kéo mạnh", "Vì có bạn đến giúp thỏ"], "Vì thỏ cố gắng kéo mạnh");
+        yield return ReadingQuestion("seed-story-tho-cu-ca-rot-q5", "Chú thỏ và củ cà rốt (5/5)", thoCuCarotSpeech, "tho-cu-ca-rot", "q5", "Theo con, thỏ là một bạn như thế nào?", ["Chăm chỉ", "Lười biếng", "Ích kỷ"], "Chăm chỉ");
+
+        // 10. Chiếc thuyền giấy
+        const string thuyenGiaySpeech = "Buổi chiều, sau cơn mưa lớn, ở trước sân có rất nhiều vũng nước. An gấp một chiếc thuyền giấy thật xinh xắn. An thả thuyền xuống vũng nước và nhìn nó trôi theo dòng nước nhỏ. Chiếc thuyền đi qua lá cây, qua viên sỏi rồi dừng lại ở mép sân. An cười tít mắt vì chiếc thuyền đã có một chuyến đi thật thú vị!";
+        yield return ReadingQuestion("seed-story-thuyen-giay-q1", "Chiếc thuyền giấy (1/5)", thuyenGiaySpeech, "chiec-thuyen-giay", "q1", "An gấp gì?", ["Máy bay giấy", "Thuyền giấy", "Hạc giấy"], "Thuyền giấy");
+        yield return ReadingQuestion("seed-story-thuyen-giay-q2", "Chiếc thuyền giấy (2/5)", thuyenGiaySpeech, "chiec-thuyen-giay", "q2", "An thả thuyền ở đâu?", ["Vũng nước", "Bể cá", "Con suối"], "Vũng nước");
+        yield return ReadingQuestion("seed-story-thuyen-giay-q3", "Chiếc thuyền giấy (3/5)", thuyenGiaySpeech, "chiec-thuyen-giay", "q3", "Chiếc thuyền đi qua những gì?", ["Lá cây và viên sỏi", "Khúc gỗ to", "Đám cỏ rậm"], "Lá cây và viên sỏi");
+        yield return ReadingQuestion("seed-story-thuyen-giay-q4", "Chiếc thuyền giấy (4/5)", thuyenGiaySpeech, "chiec-thuyen-giay", "q4", "Vì sao An cười tít mắt?", ["Vì An được đi mua thuyền mới", "Vì chiếc thuyền có chuyến đi thật thú vị", "Vì thuyền giấy của An rất to và đẹp"], "Vì chiếc thuyền có chuyến đi thật thú vị");
+        yield return ReadingQuestion("seed-story-thuyen-giay-q5", "Chiếc thuyền giấy (5/5)", thuyenGiaySpeech, "chiec-thuyen-giay", "q5", "Theo con, An là một bạn như thế nào?", ["Sáng tạo và thích khám phá", "Ích kỷ", "Nóng tính"], "Sáng tạo và thích khám phá");
+
+        // 11. Thỏ con và cà rốt
+        const string thoConCarotSpeech = "Thỏ con rất thích cà rốt. Mỗi ngày, thỏ con đều ra vườn nhổ cà rốt để ăn. Nhưng có hôm, thỏ con thấy những củ cà rốt nhỏ xíu nên buồn rầu. Thỏ con hỏi bác thỏ già: – Tại sao cà rốt của cháu lại nhỏ thế ạ? Bác thỏ cười hiền và nói: – Cháu phải nhổ cỏ, tưới nước và kiên nhẫn chờ đợi thì cà rốt mới lớn được. Thỏ con làm theo lời bác. Một thời gian sau, những củ cà rốt trong vườn to và ngọt lắm! Thỏ con vui lắm vì biết rằng kiên trì sẽ mang lại kết quả tốt đẹp.";
+        yield return ReadingQuestion("seed-story-tho-con-carot-q1", "Thỏ con và cà rốt (1/5)", thoConCarotSpeech, "tho-con-ca-rot", "q1", "Thỏ con thích ăn gì?", ["Cà rốt", "Rau cải", "Táo"], "Cà rốt");
+        yield return ReadingQuestion("seed-story-tho-con-carot-q2", "Thỏ con và cà rốt (2/5)", thoConCarotSpeech, "tho-con-ca-rot", "q2", "Vì sao cà rốt lúc đầu nhỏ xíu?", ["Có nhiều cỏ và chưa được chăm sóc", "Đất cứng", "Trời không mưa"], "Có nhiều cỏ và chưa được chăm sóc");
+        yield return ReadingQuestion("seed-story-tho-con-carot-q3", "Thỏ con và cà rốt (3/5)", thoConCarotSpeech, "tho-con-ca-rot", "q3", "Bác thỏ già đã dặn thỏ con phải làm gì?", ["Nhổ cỏ, tưới nước và kiên nhẫn chờ đợi", "Đi chơi cùng bạn bè", "Đổi sang trồng củ khác"], "Nhổ cỏ, tưới nước và kiên nhẫn chờ đợi");
+        yield return ReadingQuestion("seed-story-tho-con-carot-q4", "Thỏ con và cà rốt (4/5)", thoConCarotSpeech, "tho-con-ca-rot", "q4", "Thỏ con đã làm gì sau khi nghe lời bác thỏ?", ["Nhổ cỏ và tưới nước", "Đi chơi cùng bạn bè", "Nằm ngủ cả ngày"], "Nhổ cỏ và tưới nước");
+        yield return ReadingQuestion("seed-story-tho-con-carot-q5", "Thỏ con và cà rốt (5/5)", thoConCarotSpeech, "tho-con-ca-rot", "q5", "Cuối cùng, thỏ con đã nhận được kết quả gì?", ["Những củ cà rốt to và ngọt", "Một chiếc huy chương", "Một chiếc bánh kem"], "Những củ cà rốt to và ngọt");
     }
 
     private static IEnumerable<SeedLesson> BuildCoverageLessons()
@@ -950,13 +1215,14 @@ public static class LearningContentSeed
         // Quantity and Counting seeds
         foreach (var number in new[] { 0, 1, 3, 5, 7, 8, 9 })
         {
-            yield return Quantity($"seed-quantity-{number}", $"Tạo {number} chấm tròn", "tao-so-luong", "●", number);
+            yield return Quantity($"seed-quantity-dot-{number}", $"Tạo {number} chấm tròn", "tao-so-luong", "●", number);
         }
         foreach (var number in new[] { 0, 1, 2, 4, 6, 8, 9 })
         {
-            yield return Counting($"seed-count-{number}", $"Đếm {number} chấm tròn", "dem-so-luong", "●", number);
+            yield return Counting($"seed-count-dot-{number}", $"Đếm {number} chấm tròn", "dem-so-luong", "●", number);
         }
 
+        // So sánh
         yield return Comparison("seed-compare-more-2", "Chọn nhóm nhiều hơn 2", "so-sanh", "●", "Nhóm A", 3, "Nhóm B", 6, "more");
         yield return Comparison("seed-compare-more-3", "Chọn nhóm nhiều hơn 3", "so-sanh", "■", "Nhóm A", 8, "Nhóm B", 5, "more");
         yield return Comparison("seed-compare-less-2", "Chọn nhóm ít hơn 2", "so-sanh", "▲", "Nhóm A", 7, "Nhóm B", 4, "less");
@@ -965,13 +1231,19 @@ public static class LearningContentSeed
         yield return Comparison("seed-compare-equal-3", "Hai nhóm bằng nhau 3", "so-sanh", "■", "Nhóm A", 6, "Nhóm B", 6, "equal");
         yield return Comparison("seed-compare-more-4", "Chọn nhóm nhiều hơn 4", "so-sanh", "◆", "Nhóm A", 9, "Nhóm B", 7, "more");
 
+        // Vận động tinh, Mê cung & Khéo tay
         yield return Ordering("seed-fine-fold", "Gấp giấy theo thứ tự", "kheo-tay", ["Đặt giấy ngay ngắn", "Gấp hai mép", "Miết nếp gấp"]);
         yield return Ordering("seed-fine-pencil", "Chuẩn bị bút chì", "kheo-tay", ["Chọn bút", "Cầm bằng ba ngón", "Đặt tay lên giấy"]);
+        yield return Ordering("seed-fine-beads", "Xâu hạt theo bước", "kheo-tay", ["Chọn sợi dây", "Chọn hạt", "Luồn từng hạt", "Buộc hai đầu"]);
+        yield return Ordering("seed-fine-cut-paper", "Cắt giấy an toàn", "kheo-tay", ["Ngồi ngay ngắn", "Cầm kéo đúng tay", "Cắt theo đường", "Cất kéo"]);
+        yield return Ordering("seed-fine-coloring", "Tô màu gọn gàng", "kheo-tay", ["Chọn màu", "Tô từ trong ra ngoài", "Tô kín hình", "Cất bút"]);
         yield return Drag("seed-fine-maze-1", "Đưa ong về tổ", "me-cung", "Tổ ong", ["Ong", "Cá", "Ô tô"], "Ong");
         yield return Drag("seed-fine-maze-2", "Đưa cá về hồ", "me-cung", "Hồ nước", ["Cá", "Chim", "Xe đạp"], "Cá");
         yield return Drag("seed-fine-maze-3", "Đưa xe về gara", "me-cung", "Gara", ["Ô tô", "Táo", "Bút"], "Ô tô");
-        yield return Ordering("seed-fine-beads", "Xâu hạt theo bước", "kheo-tay", ["Chọn sợi dây", "Chọn hạt", "Luồn từng hạt", "Buộc hai đầu"]);
+        yield return Drag("seed-fine-maze-4", "Đưa thỏ về vườn cà rốt", "me-cung", "Vườn cà rốt", ["Thỏ", "Cá", "Máy bay"], "Thỏ");
+        yield return Drag("seed-fine-maze-5", "Đưa chim về tổ", "me-cung", "Tổ chim", ["Chim", "Xe buýt", "Quả bóng"], "Chim");
 
+        // Hình dạng cơ bản
         var shapes = new[] { "Hình tròn", "Hình vuông", "Hình tam giác", "Hình ngôi sao", "Hình trái tim", "Hình chữ nhật" };
         foreach (var shape in shapes)
         {
@@ -990,180 +1262,123 @@ public static class LearningContentSeed
                 imageUrl: shapeImg);
         }
 
+        // Tư duy logic & Quy luật
         yield return Ordering("seed-logic-pattern-1", "Quy luật đỏ xanh", "quy-luat", ["Đỏ", "Xanh", "Đỏ", "Xanh"]);
         yield return Ordering("seed-logic-pattern-2", "Quy luật nhỏ lớn", "quy-luat", ["Nhỏ", "Lớn", "Nhỏ", "Lớn"]);
         yield return Ordering("seed-logic-pattern-3", "Quy luật một hai", "quy-luat", ["1", "2", "1", "2"]);
-        yield return Mapping("seed-logic-classify-1", "Phân loại đồ dùng học tập", "phan-loai", InteractionTypes.Classification, [("Bút", "Học tập"), ("Vở", "Học tập"), ("Bát", "Nhà bếp"), ("Thìa", "Nhà bếp")]);
-        yield return Mapping("seed-logic-classify-2", "Phân loại nơi di chuyển", "phan-loai", InteractionTypes.Classification, [("Thuyền", "Dưới nước"), ("Cá", "Dưới nước"), ("Xe", "Trên đường"), ("Xe đạp", "Trên đường")]);
-        yield return Mapping("seed-logic-classify-3", "Phân loại ngày và đêm", "phan-loai", InteractionTypes.Classification, [("Mặt trời", "Ban ngày"), ("Đi học", "Ban ngày"), ("Mặt trăng", "Ban đêm"), ("Đi ngủ", "Ban đêm")]);
-
-        yield return Ordering("seed-memory-morning", "Nhớ việc buổi sáng", "ghi-nho", ["Thức dậy", "Đánh răng", "Ăn sáng", "Đi học"]);
-        yield return Multi("seed-memory-colors", "Nhớ hai màu đã thấy", "ghi-nho", ["Đỏ", "Xanh", "Vàng", "Tím"], ["Đỏ", "Vàng"]);
-        yield return Mapping("seed-memory-pairs", "Nhớ cặp đồ vật", "ghi-nho", InteractionTypes.Matching, [("Bàn chải", "Kem đánh răng"), ("Bát", "Thìa"), ("Bút", "Vở")]);
-
-        yield return Choice("seed-life-helmet", "Đội mũ bảo hiểm khi đi xe máy", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn hành động an toàn.", "Khi ngồi trên xe máy, con cần làm gì?", ["Đội mũ bảo hiểm", "Đứng lên", "Đùa nghịch"], "Đội mũ bảo hiểm",
-            imageUrl: "/images/pictograms/helmet.svg");
-        yield return Choice("seed-life-stranger", "Không đi theo người lạ", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn cách xử lý an toàn.", "Người lạ rủ con đi theo, con làm gì?", ["Từ chối và gọi người thân", "Đi theo ngay", "Không nói với ai"], "Từ chối và gọi người thân",
-            imageUrl: "/images/pictograms/telephone.svg");
-        yield return Choice("seed-life-feeling", "Nói ra cảm xúc", "cam-xuc", InteractionTypes.SingleChoice,
-            "Con chọn cách chia sẻ phù hợp.", "Khi buồn, con nên làm gì?", ["Nói với người con tin tưởng", "Đập đồ", "La hét vào bạn"], "Nói với người con tin tưởng",
-            imageUrl: "/images/pictograms/speaking.svg");
-
-        yield return Ordering("seed-fine-cut-paper", "Cắt giấy an toàn", "kheo-tay", ["Ngồi ngay ngắn", "Cầm kéo đúng tay", "Cắt theo đường", "Cất kéo"]);
-        yield return Ordering("seed-fine-coloring", "Tô màu gọn gàng", "kheo-tay", ["Chọn màu", "Tô từ trong ra ngoài", "Tô kín hình", "Cất bút"]);
-        yield return Drag("seed-fine-maze-4", "Đưa thỏ về vườn cà rốt", "me-cung", "Vườn cà rốt", ["Thỏ", "Cá", "Máy bay"], "Thỏ");
-        yield return Drag("seed-fine-maze-5", "Đưa chim về tổ", "me-cung", "Tổ chim", ["Chim", "Xe buýt", "Quả bóng"], "Chim");
-
-        yield return Choice("seed-logic-different-1", "Tìm vật khác nhóm 1", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm một vật không cùng nhóm.", "Vật nào không phải trái cây?", ["Táo", "Cam", "Bút chì"], "Bút chì",
-            imageUrl: "/images/photos/flashcard-apple.jpg");
-        yield return Choice("seed-logic-different-2", "Tìm vật khác nhóm 2", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm một vật không cùng nhóm.", "Vật nào không phải con vật?", ["Mèo", "Gà", "Cái bàn"], "Cái bàn",
-            imageUrl: "/images/photos/cat.jpg");
-        yield return Choice("seed-logic-different-3", "Tìm vật khác nhóm 3", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm một vật không cùng nhóm.", "Vật nào không dùng để đi lại?", ["Xe đạp", "Ô tô", "Cái bát"], "Cái bát",
-            imageUrl: "/images/pictograms/bicycle.svg");
         yield return Ordering("seed-logic-pattern-4", "Quy luật tròn vuông", "quy-luat", ["Tròn", "Vuông", "Tròn", "Vuông"]);
         yield return Ordering("seed-logic-pattern-5", "Quy luật cao thấp", "quy-luat", ["Cao", "Thấp", "Cao", "Thấp"]);
         yield return Ordering("seed-logic-pattern-6", "Quy luật một một hai", "quy-luat", ["1", "1", "2", "1", "1", "2"]);
-        yield return Mapping("seed-logic-classify-4", "Phân loại nóng và lạnh", "phan-loai", InteractionTypes.Classification, [("Kem", "Lạnh"), ("Nước đá", "Lạnh"), ("Canh", "Nóng"), ("Trà", "Nóng")]);
-        yield return Mapping("seed-logic-classify-5", "Phân loại mềm và cứng", "phan-loai", InteractionTypes.Classification, [("Gối", "Mềm"), ("Bông", "Mềm"), ("Đá", "Cứng"), ("Gạch", "Cứng")]);
 
+        // Phân loại & Tìm khác biệt
+        yield return Choice("seed-logic-different-1", "Tìm vật khác nhóm (Trái cây)", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm một vật không cùng nhóm.", "Vật nào không phải trái cây?", ["Táo", "Cam", "Bút chì"], "Bút chì",
+            imageUrl: "/images/photos/flashcard-apple.jpg");
+        yield return Choice("seed-logic-different-2", "Tìm vật khác nhóm (Con vật)", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm một vật không cùng nhóm.", "Vật nào không phải con vật?", ["Mèo", "Gà", "Cái bàn"], "Cái bàn",
+            imageUrl: "/images/photos/cat.jpg");
+        yield return Choice("seed-logic-different-3", "Tìm vật khác nhóm (Phương tiện)", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm một vật không cùng nhóm.", "Vật nào không dùng để đi lại?", ["Xe đạp", "Ô tô", "Cái bát"], "Cái bát",
+            imageUrl: "/images/pictograms/bicycle.svg");
+        yield return Choice("seed-logic-different-water", "Tìm con vật sống dưới nước", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm con vật khác biệt với các con còn lại.", "Con vật nào sống dưới nước?", ["Con cá", "Con mèo", "Con chó"], "Con cá",
+            imageUrl: "/images/photos/fish.jpg");
+        yield return Choice("seed-logic-different-fly", "Tìm loài vật biết bay", "tim-khac-biet", InteractionTypes.SingleChoice,
+            "Con tìm loài vật có cánh biết bay lượn.", "Loài vật nào biết bay trên trời?", ["Con chim", "Con tôm", "Con thỏ"], "Con chim",
+            imageUrl: "/images/pictograms/bird.svg");
+
+        // Ghi nhớ & Tập trung
+        yield return Ordering("seed-memory-morning", "Nhớ việc buổi sáng", "ghi-nho", ["Thức dậy", "Đánh răng", "Ăn sáng", "Đi học"]);
         yield return Ordering("seed-memory-school", "Nhớ thứ tự đến lớp", "ghi-nho", ["Chào cô", "Cất ba lô", "Ngồi vào chỗ", "Mở sách"]);
         yield return Ordering("seed-memory-lunch", "Nhớ thứ tự bữa ăn", "ghi-nho", ["Rửa tay", "Ngồi ngay ngắn", "Ăn cơm", "Dọn bát"]);
+        yield return Multi("seed-memory-colors", "Nhớ hai màu đã thấy", "ghi-nho", ["Đỏ", "Xanh", "Vàng", "Tím"], ["Đỏ", "Vàng"]);
         yield return Multi("seed-memory-shapes", "Nhớ hai hình đã thấy", "ghi-nho", ["Hình tròn", "Hình vuông", "Hình tam giác", "Hình thoi"], ["Hình vuông", "Hình thoi"]);
         yield return Multi("seed-memory-objects", "Nhớ đồ dùng học tập", "ghi-nho", ["Bút", "Vở", "Nồi", "Chảo"], ["Bút", "Vở"]);
+        yield return Mapping("seed-memory-pairs-1", "Nhớ cặp đồ vật", "ghi-nho", InteractionTypes.Matching, [("Bàn chải", "Kem đánh răng"), ("Bát", "Thìa"), ("Bút", "Vở")]);
         yield return Mapping("seed-memory-pairs-2", "Nhớ cặp trang phục", "ghi-nho", InteractionTypes.Matching, [("Áo", "Quần"), ("Giày", "Tất"), ("Mũ", "Khăn")]);
         yield return Mapping("seed-memory-pairs-3", "Nhớ cặp nơi chốn", "ghi-nho", InteractionTypes.Matching, [("Cá", "Hồ nước"), ("Chim", "Tổ"), ("Xe", "Gara")]);
 
-        yield return Choice("seed-life-electric", "Tránh xa ổ điện", "an-toan", InteractionTypes.SingleChoice,
+        // Kỹ năng sống & An toàn & Cảm xúc
+        yield return Choice("seed-life-helmet-safety", "Đội mũ bảo hiểm khi đi xe máy", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn hành động an toàn.", "Khi ngồi trên xe máy, con cần làm gì?", ["Đội mũ bảo hiểm", "Đứng lên", "Đùa nghịch"], "Đội mũ bảo hiểm",
+            imageUrl: "/images/pictograms/helmet.svg");
+        yield return Choice("seed-life-stranger-safety", "Không đi theo người lạ", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn cách xử lý an toàn.", "Người lạ rủ con đi theo, con làm gì?", ["Từ chối và gọi người thân", "Đi theo ngay", "Không nói với ai"], "Từ chối và gọi người thân",
+            imageUrl: "/images/pictograms/telephone.svg");
+        yield return Choice("seed-life-electric-safety", "Tránh xa ổ cắm điện", "an-toan", InteractionTypes.SingleChoice,
             "Con chọn hành động an toàn.", "Khi thấy ổ điện, con cần làm gì?", ["Không chạm vào", "Cho tay vào", "Đổ nước lên"], "Không chạm vào",
             imageUrl: "/images/pictograms/electric-plug.svg");
-        yield return Choice("seed-life-sharing", "Biết chia sẻ đồ chơi", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn cách cư xử thân thiện.", "Bạn muốn chơi cùng, con nên làm gì?", ["Chia sẻ và chơi cùng", "Giấu đồ chơi", "Đẩy bạn ra"], "Chia sẻ và chơi cùng",
-            imageUrl: "/images/pictograms/handshake.svg");
-        yield return Choice("seed-life-apology", "Biết nói lời xin lỗi", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn lời nói phù hợp.", "Khi vô ý làm bạn đau, con nên nói gì?", ["Mình xin lỗi bạn", "Không phải mình", "Bạn tự chịu"], "Mình xin lỗi bạn",
-            imageUrl: "/images/pictograms/folded-hands.svg");
-
-        yield return Lesson("seed-visual-count-apples", "Đếm táo trong tranh", "dem-so-luong", InteractionTypes.Counting,
-            "Con quan sát tranh, chạm từng quả táo rồi chọn số đúng.", "Trong tranh có bao nhiêu quả táo đỏ?",
-            new
-            {
-                choices = new[] { "4", "5", "6" },
-                objectSymbol = "🍎",
-                targetCount = 5,
-                imageUrl = "/images/lessons/visual-counting-groups.png",
-                audioUrl = string.Empty,
-                speechText = string.Empty
-            }, "5");
-        yield return Choice("seed-visual-shape-triangle", "Tìm hình tam giác trong tranh", "hinh-dang", InteractionTypes.SingleChoice,
-            "Con quan sát tranh và chạm vào tên hình đúng.", "Hình nào có ba cạnh?",
-            ["Hình tam giác", "Hình tròn", "Hình vuông"], "Hình tam giác",
-            imageUrl: "/images/lessons/visual-basic-shapes.png");
-        yield return Choice("seed-visual-road-crossing", "Qua đường cùng người lớn", "an-toan", InteractionTypes.SingleChoice,
-            "Con quan sát tranh và chọn hành động an toàn.", "Khi qua đường, con nên làm gì?",
-            ["Đi cùng người lớn", "Tự chạy thật nhanh", "Đứng chơi giữa đường"], "Đi cùng người lớn",
-            imageUrl: "/images/lessons/visual-road-safety.png");
-
-        // Bổ sung bài học mới cho các nhóm kỹ năng
-        // 1. Phân loại & Nơi ở
-        yield return Mapping("seed-logic-animal-homes", "Ghép con vật và nơi ở", "phan-loai", InteractionTypes.Matching,
-            [("Chim", "Tổ chim"), ("Cá", "Hồ nước"), ("Thỏ", "Vườn cà rốt"), ("Ong", "Tổ ong")]);
-        yield return Mapping("seed-logic-fruits-veggies", "Phân loại rau củ và trái cây", "phan-loai", InteractionTypes.Classification,
-            [("Táo", "Trái cây"), ("Cam", "Trái cây"), ("Cà rốt", "Rau củ"), ("Bắp cải", "Rau củ")]);
-        yield return Mapping("seed-logic-weather-clothes", "Mặc trang phục theo thời tiết", "phan-loai", InteractionTypes.Matching,
-            [("Trời nắng", "Mũ rộng vành"), ("Trời mưa", "Áo mưa"), ("Trời lạnh", "Khăn")]);
-
-        // 2. Kỹ năng sống & Thói quen tốt
-        yield return Ordering("seed-life-brush-teeth", "Quy trình đánh răng đúng cách", "kheo-tay",
-            ["Lấy kem", "Chải mặt ngoài", "Chải mặt trong", "Súc miệng"]);
-        yield return Ordering("seed-life-clean-table", "Gọn gàng góc học tập", "kheo-tay",
-            ["Gập sách", "Cất bút", "Xếp ba lô", "Lau bàn"]);
-        yield return Choice("seed-life-happy-expression", "Cảm xúc khi làm việc tốt", "cam-xuc", InteractionTypes.SingleChoice,
+        yield return Choice("seed-life-traffic-light-action", "Tuân thủ tín hiệu đèn giao thông", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn hành động đúng theo tín hiệu đèn.", "Khi đèn giao thông màu đỏ sáng lên, người đi đường phải làm gì?", ["Dừng lại", "Chạy nhanh qua", "Bấm còi"], "Dừng lại",
+            imageUrl: "/images/pictograms/car.svg");
+        yield return Choice("seed-life-sharp-safety", "An toàn với vật sắc nhọn", "an-toan", InteractionTypes.SingleChoice,
+            "Con chọn cách xử lý an toàn.", "Khi thấy dao kéo hoặc vật sắc nhọn, con nên làm gì?", ["Không tự ý nghịch", "Lấy ra chơi đồ hàng", "Cầm chạy nhảy"], "Không tự ý nghịch",
+            imageUrl: "/images/pictograms/cooking-pot.svg");
+        yield return Choice("seed-life-wash-hands-routine", "Thời điểm bé cần rửa tay", "tu-phuc-vu", InteractionTypes.SingleChoice,
+            "Con chọn thời điểm cần rửa tay.", "Bé nên rửa tay sạch bằng xà phòng khi nào?", ["Trước khi ăn và sau khi đi vệ sinh", "Chỉ khi bị mẹ nhắc", "Không cần rửa"], "Trước khi ăn và sau khi đi vệ sinh",
+            imageUrl: "/images/pictograms/soap.svg");
+        yield return Choice("seed-life-feeling-share", "Chia sẻ cảm xúc khi buồn", "cam-xuc", InteractionTypes.SingleChoice,
+            "Con chọn cách chia sẻ phù hợp.", "Khi buồn, con nên làm gì?", ["Nói với người con tin tưởng", "Đập đồ", "La hét vào bạn"], "Nói với người con tin tưởng",
+            imageUrl: "/images/pictograms/speaking.svg");
+        yield return Choice("seed-life-happy-action", "Cảm xúc khi làm được việc tốt", "cam-xuc", InteractionTypes.SingleChoice,
             "Con chọn cảm xúc phù hợp.", "Khi giúp đỡ bạn, con cảm thấy thế nào?", ["Vui vẻ", "Tức giận", "Buồn bã"], "Vui vẻ",
             imageUrl: "/images/pictograms/speaking.svg");
-        yield return Choice("seed-life-help-parents", "Bé ngoan giúp đỡ việc nhà", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn việc làm phù hợp với lứa tuổi.", "Bé có thể giúp mẹ làm việc gì?", ["Gấp quần áo gọn gàng", "Tự ý bật bếp gas", "Nghịch nước bẩn"], "Gấp quần áo gọn gàng",
-            imageUrl: "/images/pictograms/shirt.svg");
+        yield return Choice("seed-life-sharing-toys", "Biết chia sẻ đồ chơi cùng bạn", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn cách cư xử thân thiện.", "Bạn muốn chơi cùng, con nên làm gì?", ["Chia sẻ và chơi cùng", "Giấu đồ chơi", "Đẩy bạn ra"], "Chia sẻ và chơi cùng",
+            imageUrl: "/images/pictograms/handshake.svg");
+        yield return Choice("seed-life-apology-manner", "Biết nói lời xin lỗi lễ phép", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn lời nói phù hợp.", "Khi vô ý làm bạn đau, con nên nói gì?", ["Mình xin lỗi bạn", "Không phải mình", "Bạn tự chịu"], "Mình xin lỗi bạn",
+            imageUrl: "/images/pictograms/folded-hands.svg");
+        yield return Choice("seed-life-greeting-class", "Lời chào khi đến lớp học", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn lời chào lễ phép khi đến lớp.", "Khi đến trường gặp cô giáo, bé nói gì?", ["Con chào cô ạ!", "Tớ đến rồi", "Không nói gì"], "Con chào cô ạ!",
+            imageUrl: "/images/pictograms/speaking.svg");
+        yield return Choice("seed-life-thank-gift", "Lời cảm ơn khi được tặng quà", "giao-tiep", InteractionTypes.SingleChoice,
+            "Con chọn lời nói lễ phép khi nhận quà.", "Khi được ông bà tặng quà, bé nói gì?", ["Con cảm ơn ông bà ạ!", "Cho con thêm cái nữa", "Cầm lấy rồi đi ngay"], "Con cảm ơn ông bà ạ!",
+            imageUrl: "/images/pictograms/folded-hands.svg");
+        yield return Choice("seed-life-clean-desk", "Bé ngoan giữ sạch bàn học", "kheo-tay", InteractionTypes.SingleChoice,
+            "Con chọn cách sắp xếp góc học tập.", "Sau khi học xong, bé nên làm gì?", ["Cất bút và xếp sách vở gọn gàng", "Vứt sách xuống đất", "Để nguyên rồi chạy đi chơi"], "Cất bút và xếp sách vở gọn gàng",
+            imageUrl: "/images/pictograms/notebook.svg");
 
-        // 3. Ngôn ngữ, Câu đố vần & Kể chuyện
-        yield return Choice("seed-lang-rhyme-cat", "Câu đố: Chú mèo bắt chuột", "kham-pha-chu", InteractionTypes.SingleChoice,
-            "Con nghe câu đố và chọn đáp án.", "Con gì mắt sáng, thích bắt chuột, kêu meo meo?", ["Con mèo", "Con cún", "Con vịt"], "Con mèo",
-            imageUrl: "/images/photos/cat.jpg");
-        yield return Choice("seed-lang-rhyme-rooster", "Câu đố: Tiếng gáy ban mai", "kham-pha-chu", InteractionTypes.SingleChoice,
-            "Con nghe câu đố và chọn đáp án.", "Con gì gáy ò ó o gọi mọi người thức dậy?", ["Gà trống", "Con thỏ", "Con ong"], "Gà trống",
-            imageUrl: "/images/photos/chicken.jpg");
-        yield return Story("seed-lang-story-frog", "Chuyện chú ếch ngoan ngoãn", "giao-tiep",
-            "Mỗi buổi sáng gặp người lớn, chú ếch nhỏ đều cúi đầu lễ phép khoanh tay chào hỏi.",
-            "/images/pictograms/speaking.svg",
-            "Chú ếch con trong truyện đã làm gì khi gặp người lớn?",
-            ["Khoanh tay chào lễ phép", "Nhảy đi mất", "Không nói gì"], "Khoanh tay chào lễ phép");
-
-        // 4. Hình dạng & Không gian
-        yield return Choice("seed-shape-find-circle", "Đồ vật hình tròn quanh bé", "hinh-dang", InteractionTypes.SingleChoice,
-            "Con quan sát và chọn đồ vật có hình tròn.", "Đồ vật nào dưới đây có dạng hình tròn?", ["Quả bóng", "Cái bảng đen", "Hộp quà vuông"], "Quả bóng",
-            imageUrl: "/images/pictograms/ball.svg");
-        yield return Choice("seed-shape-find-square", "Đồ vật hình vuông", "hinh-dang", InteractionTypes.SingleChoice,
-            "Con chọn đồ vật có bốn cạnh bằng nhau.", "Đồ vật nào có dạng hình vuông?", ["Cái khăn vuông", "Quả trứng", "Bánh xe"], "Cái khăn vuông",
-            imageUrl: "/images/photos/flashcard-shape-square.svg");
-        yield return Choice("seed-shape-find-triangle", "Đồ vật hình tam giác", "hinh-dang", InteractionTypes.SingleChoice,
-            "Con chọn đồ vật có dạng hình tam giác.", "Biển báo giao thông có dạng hình gì?", ["Hình tam giác", "Hình tròn", "Hình vuông"], "Hình tam giác",
-            imageUrl: "/images/photos/flashcard-shape-triangle.svg");
-
-        // 5. Chữ số và Toán học (Số 10-20, Thứ tự, Tách gộp, Cộng bớt)
-        yield return Choice("seed-math-num-10", "Nhận biết số 10", "so-10-20", InteractionTypes.SingleChoice,
-            "Con quan sát và chọn số mười.", "Đâu là số 10?", ["10", "1", "0"], "10",
-            imageUrl: "/images/photos/flashcard-number-10.jpg");
+        // Toán học & Số lượng nâng cao
+        yield return Choice("seed-math-order-after-3", "Số liền sau số 3", "thu-tu-so", InteractionTypes.SingleChoice,
+            "Con tìm số đứng ngay sau số ba.", "Số nào đứng liền sau số 3?", ["4", "2", "5"], "4");
         yield return Choice("seed-math-order-after-5", "Số liền sau số 5", "thu-tu-so", InteractionTypes.SingleChoice,
             "Con tìm số đứng ngay sau số năm.", "Số nào đứng liền sau số 5?", ["6", "4", "3"], "6");
         yield return Choice("seed-math-order-before-8", "Số liền trước số 8", "thu-tu-so", InteractionTypes.SingleChoice,
             "Con tìm số đứng ngay trước số tám.", "Số nào đứng liền trước số 8?", ["7", "9", "6"], "7");
+        yield return Choice("seed-math-order-between-4-6", "Số ở giữa số 4 và số 6", "thu-tu-so", InteractionTypes.SingleChoice,
+            "Con tìm số đứng giữa số bốn và số sáu.", "Số nào nằm giữa 4 và 6?", ["5", "3", "7"], "5");
+        yield return Choice("seed-math-diff-6-9", "Phân biệt số 6 và số 9", "phan-biet-so", InteractionTypes.SingleChoice,
+            "Con quan sát số có vòng tròn ở dưới.", "Đâu là số sáu (6)?", ["6", "9", "0"], "6",
+            imageUrl: "/images/photos/flashcard-number-6.jpg");
+        yield return Choice("seed-math-diff-1-7", "Phân biệt số 1 và số 7", "phan-biet-so", InteractionTypes.SingleChoice,
+            "Con quan sát số có nét gạch ngang trên đầu.", "Đâu là số bảy (7)?", ["7", "1", "4"], "7",
+            imageUrl: "/images/photos/flashcard-number-7.jpg");
         yield return Choice("seed-math-split-combine-4", "Tách gộp 4 quả táo", "tach-gop", InteractionTypes.SingleChoice,
             "Con quan sát cách tách bốn quả táo.", "Bốn quả táo có thể tách thành hai nhóm nào?", ["2 quả và 2 quả", "1 quả và 5 quả", "3 quả và 3 quả"], "2 quả và 2 quả",
             imageUrl: "/images/photos/flashcard-apple.jpg");
-        yield return Choice("seed-math-add-simple", "Bé làm phép tính thêm", "cong-bot", InteractionTypes.SingleChoice,
+        yield return Choice("seed-math-split-combine-5", "Tách gộp 5 ngôi sao", "tach-gop", InteractionTypes.SingleChoice,
+            "Con quan sát cách tách năm ngôi sao.", "Năm ngôi sao gồm những nhóm nào?", ["2 ngôi sao và 3 ngôi sao", "1 ngôi sao và 6 ngôi sao", "4 ngôi sao và 4 ngôi sao"], "2 ngôi sao và 3 ngôi sao",
+            imageUrl: "/images/photos/flashcard-shape-star.svg");
+        yield return Choice("seed-math-add-1plus1", "Phép tính thêm: 1 + 1", "cong-bot", InteractionTypes.SingleChoice,
+            "Có một chú cá, bơi thêm một chú cá nữa là mấy chú cá?", "1 chú cá thêm 1 chú cá là mấy chú cá?", ["2 chú cá", "1 chú cá", "3 chú cá"], "2 chú cá",
+            imageUrl: "/images/photos/fish.jpg");
+        yield return Choice("seed-math-add-simple", "Bé làm phép tính thêm: 2 + 1", "cong-bot", InteractionTypes.SingleChoice,
             "Có hai quả bóng, thêm một quả bóng nữa là mấy quả bóng?", "Có 2 quả bóng, thêm 1 quả bóng là mấy quả bóng?", ["3 quả bóng", "1 quả bóng", "4 quả bóng"], "3 quả bóng",
             imageUrl: "/images/pictograms/ball.svg");
-        yield return Choice("seed-math-subtract-simple", "Bé làm phép tính bớt", "cong-bot", InteractionTypes.SingleChoice,
+        yield return Choice("seed-math-subtract-simple", "Bé làm phép tính bớt: 3 - 1", "cong-bot", InteractionTypes.SingleChoice,
             "Có ba quả cam, ăn mất một quả thì còn mấy quả?", "Có 3 quả cam, bớt 1 quả thì còn lại mấy quả?", ["2 quả cam", "4 quả cam", "1 quả cam"], "2 quả cam",
             imageUrl: "/images/photos/flashcard-orange.jpg");
+        yield return Choice("seed-math-subtract-4minus2", "Bé làm phép tính bớt: 4 - 2", "cong-bot", InteractionTypes.SingleChoice,
+            "Có bốn chiếc kẹo, cho bạn hai chiếc kẹo thì còn lại mấy chiếc?", "Có 4 chiếc kẹo, bớt 2 chiếc kẹo thì còn mấy chiếc?", ["2 chiếc kẹo", "3 chiếc kẹo", "1 chiếc kẹo"], "2 chiếc kẹo");
 
-        // 6. Tư duy logic (Quy luật, Ghép bóng, Tìm khác biệt)
-        yield return Choice("seed-logic-find-different", "Tìm con vật sống dưới nước", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm con vật khác biệt với các con còn lại.", "Con vật nào sống dưới nước?", ["Con cá", "Con mèo", "Con chó"], "Con cá",
-            imageUrl: "/images/photos/fish.jpg");
-        yield return Choice("seed-logic-find-fly", "Tìm loài vật biết bay", "tim-khac-biet", InteractionTypes.SingleChoice,
-            "Con tìm loài vật có cánh biết bay lượn.", "Loài vật nào biết bay trên trời?", ["Con chim", "Con tôm", "Con thỏ"], "Con chim",
-            imageUrl: "/images/pictograms/bird.svg");
-        yield return Ordering("seed-logic-color-pattern", "Quy luật màu sắc đỏ vàng", "quy-luat",
-            ["Đỏ", "Vàng", "Đỏ", "Vàng"]);
-        yield return Mapping("seed-logic-match-shadow", "Ghép con vật và đặc điểm", "ghep-bong", InteractionTypes.Matching,
-            [("Con mèo", "Thích bắt chuột"), ("Con chó", "Trông giữ nhà"), ("Con vịt", "Biết bơi lội")]);
-
-        // 7. Kỹ năng sống & An toàn
-        yield return Choice("seed-life-helmet", "Đội mũ bảo hiểm khi đi xe", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn trang bị an toàn khi ngồi xe máy.", "Khi ngồi trên xe máy cùng bố mẹ, bé cần đội gì?", ["Mũ bảo hiểm", "Mũ len", "Mũ bơi"], "Mũ bảo hiểm",
-            imageUrl: "/images/pictograms/helmet.svg");
-        yield return Choice("seed-life-traffic-light", "Tuân thủ đèn giao thông", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn hành động đúng theo tín hiệu đèn.", "Khi đèn giao thông màu đỏ sáng lên, người đi đường phải làm gì?", ["Dừng lại", "Chạy nhanh qua", "Bấm còi"], "Dừng lại",
-            imageUrl: "/images/pictograms/car.svg");
-        yield return Choice("seed-life-sharp-objects", "An toàn với vật sắc nhọn", "an-toan", InteractionTypes.SingleChoice,
-            "Con chọn cách xử lý an toàn.", "Khi thấy dao kéo hoặc vật sắc nhọn, con nên làm gì?", ["Không tự ý nghịch", "Lấy ra chơi đồ hàng", "Cầm chạy nhảy"], "Không tự ý nghịch",
-            imageUrl: "/images/pictograms/cooking-pot.svg");
-        yield return Choice("seed-life-wash-hands", "Rửa tay sạch bằng xà phòng", "tu-phuc-vu", InteractionTypes.SingleChoice,
-            "Con chọn thời điểm cần rửa tay.", "Bé nên rửa tay sạch bằng xà phòng khi nào?", ["Trước khi ăn và sau khi đi vệ sinh", "Chỉ khi bị mẹ nhắc", "Không cần rửa"], "Trước khi ăn và sau khi đi vệ sinh",
-            imageUrl: "/images/pictograms/soap.svg");
-        yield return Choice("seed-life-greeting-school", "Lời chào khi đến trường", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn lời chào lễ phép khi đến lớp.", "Khi đến trường gặp cô giáo, bé nói gì?", ["Con chào cô ạ!", "Tớ đến rồi", "Không nói gì"], "Con chào cô ạ!",
-            imageUrl: "/images/pictograms/speaking.svg");
-        yield return Choice("seed-life-say-thanks", "Lời cảm ơn khi nhận quà", "giao-tiep", InteractionTypes.SingleChoice,
-            "Con chọn lời nói lễ phép khi nhận quà.", "Khi được ông bà tặng quà, bé nói gì?", ["Con cảm ơn ông bà ạ!", "Cho con thêm cái nữa", "Cầm lấy rồi đi ngay"], "Con cảm ơn ông bà ạ!",
-            imageUrl: "/images/pictograms/folded-hands.svg");
-
-        // 8. Tiền tập đọc, Ngôn ngữ & Kể chuyện
+        // Ngôn ngữ & Âm vần & Vốn từ
+        yield return Choice("seed-lang-diff-b-d", "Phân biệt chữ b và chữ d", "phan-biet-chu", InteractionTypes.SingleChoice,
+            "Con quan sát chữ có nét cong bên phải.", "Đâu là chữ b trong quả bóng?", ["b", "d", "p"], "b",
+            imageUrl: "/images/photos/flashcard-letter-b.jpg");
+        yield return Choice("seed-lang-diff-n-m", "Phân biệt chữ n và chữ m", "phan-biet-chu", InteractionTypes.SingleChoice,
+            "Con quan sát chữ có hai nét móc.", "Đâu là chữ m trong con mèo?", ["m", "n", "u"], "m",
+            imageUrl: "/images/photos/flashcard-letter-m.jpg");
         yield return Choice("seed-lang-body-parts", "Nhận biết các giác quan", "von-tu", InteractionTypes.SingleChoice,
             "Con chọn bộ phận dùng để nhìn ngắm.", "Bộ phận nào trên khuôn mặt giúp bé nhìn thấy vạn vật?", ["Đôi mắt", "Đôi tai", "Cái mũi"], "Đôi mắt",
             imageUrl: "/images/pictograms/flower.svg");
@@ -1173,31 +1388,38 @@ public static class LearningContentSeed
         yield return Choice("seed-lang-sound-c", "Tiếng có âm C", "am-van", InteractionTypes.SingleChoice,
             "Con tìm từ bắt đầu bằng âm C.", "Từ nào dưới đây bắt đầu bằng âm C?", ["Con cá", "Quả táo", "Bông hoa"], "Con cá",
             imageUrl: "/images/photos/fish.jpg");
-        yield return Story("seed-lang-story-tortoise", "Chuyện Rùa và Thỏ", "ke-chuyen",
-            "Thỏ cậy mình chạy nhanh nên mải chơi, còn Rùa kiên trì từng bước và đã về đích trước.",
-            "/images/photos/flashcard-rabbit.jpg",
-            "Trong cuộc thi chạy, vì sao chú Rùa lại chiến thắng chú Thỏ?",
-            ["Rùa kiên trì, chăm chỉ", "Rùa chạy nhanh hơn Thỏ", "Thỏ nhường cho Rùa"], "Rùa kiên trì, chăm chỉ");
+        yield return Choice("seed-lang-sound-d", "Tiếng có âm D", "am-van", InteractionTypes.SingleChoice,
+            "Con tìm từ bắt đầu bằng âm D.", "Từ nào dưới đây bắt đầu bằng âm D?", ["Quả dưa", "Con gà", "Cái bàn"], "Quả dưa");
 
-        // 9. Vị trí & Kích thước trong không gian
+        // Không gian & Kích thước
         yield return Choice("seed-space-up-down", "Vị trí trên và dưới", "vi-tri", InteractionTypes.SingleChoice,
             "Con quan sát vị trí của chú chim và cây xanh.", "Chú chim đang đậu ở đâu?", ["Trên cành cây", "Dưới mặt đất", "Trong hồ nước"], "Trên cành cây",
             imageUrl: "/images/pictograms/bird.svg");
+        yield return Choice("seed-space-in-out", "Vị trí trong và ngoài", "vi-tri", InteractionTypes.SingleChoice,
+            "Con quan sát vị trí đồ vật.", "Quả táo đang nằm ở đâu so với chiếc giỏ?", ["Trong giỏ", "Ngoài giỏ", "Dưới giỏ"], "Trong giỏ",
+            imageUrl: "/images/photos/flashcard-apple.jpg");
         yield return Choice("seed-space-size-compare", "So sánh lớn hơn và nhỏ hơn", "kich-thuoc", InteractionTypes.SingleChoice,
             "Con so sánh kích thước của hai con vật.", "Con voi như thế nào so với con chuột?", ["To lớn hơn", "Nhỏ bé hơn", "Bằng nhau"], "To lớn hơn",
             imageUrl: "/images/photos/cat.jpg");
+        yield return Choice("seed-space-height-compare", "So sánh cao hơn và thấp hơn", "kich-thuoc", InteractionTypes.SingleChoice,
+            "Con so sánh chiều cao của hai cây.", "Cây dừa như thế nào so với bụi cỏ?", ["Cao hơn", "Thấp hơn", "Bằng nhau"], "Cao hơn",
+            imageUrl: "/images/pictograms/seedling.svg");
 
-        // 10. Khám phá thế giới
-        yield return Mapping("seed-world-animals-habitat", "Môi trường sống của động vật", "con-vat", InteractionTypes.Classification,
-            [("Con cá", "Dưới nước"), ("Con tôm", "Dưới nước"), ("Con mèo", "Trên cạn"), ("Con chó", "Trên cạn")]);
-        yield return Mapping("seed-world-vehicles-transport", "Phương tiện và đường đi", "giao-thong", InteractionTypes.Matching,
-            [("Ô tô", "Đường bộ"), ("Tàu buồm", "Đường thủy"), ("Máy bay", "Đường hàng không")]);
+        // Khám phá tự nhiên & Thế giới
         yield return Choice("seed-world-plant-roots", "Bộ phận hút nước của cây", "cay-co", InteractionTypes.SingleChoice,
             "Con chọn bộ phận dưới lòng đất của cây.", "Bộ phận nào nằm dưới đất hút chất dinh dưỡng cho cây?", ["Rễ cây", "Lá cây", "Bông hoa"], "Rễ cây",
             imageUrl: "/images/pictograms/seedling.svg");
         yield return Choice("seed-world-day-night", "Bầu trời ban ngày và ban đêm", "thoi-tiet", InteractionTypes.SingleChoice,
             "Con quan sát hiện tượng tự nhiên.", "Khi ban đêm đến, bé nhìn thấy gì trên bầu trời?", ["Mặt trăng và các vì sao", "Mặt trời rực rỡ", "Cầu vồng bảy sắc"], "Mặt trăng và các vì sao",
             imageUrl: "/images/pictograms/moon.svg");
+        yield return Choice("seed-world-rain-umbrella", "Đồ dùng khi trời mưa", "thoi-tiet", InteractionTypes.SingleChoice,
+            "Con chọn đồ dùng phù hợp khi trời mưa.", "Khi đi dưới trời mưa, bé cần mang theo vật gì?", ["Chiếc ô che mưa", "Kính râm", "Quạt tay"], "Chiếc ô che mưa",
+            imageUrl: "/images/pictograms/umbrella.svg");
+        yield return Choice("seed-world-animals-egg", "Loài vật đẻ trứng", "con-vat", InteractionTypes.SingleChoice,
+            "Con chọn con vật sinh sản bằng cách đẻ trứng.", "Con vật nào dưới đây đẻ ra những quả trứng tròn?", ["Con gà mái", "Con chó con", "Con mèo"], "Con gà mái",
+            imageUrl: "/images/photos/chicken.jpg");
+        yield return Choice("seed-world-animals-milk", "Loài vật cho sữa thơm ngon", "con-vat", InteractionTypes.SingleChoice,
+            "Con chọn con vật mang lại nguồn sữa cho bé.", "Con vật nào cho chúng ta nguồn sữa tươi thơm ngon?", ["Bò sữa", "Con thỏ", "Con vịt"], "Bò sữa");
     }
 
     private static string NormalizeSeedCode(string value) => value
@@ -1287,8 +1509,33 @@ public static class LearningContentSeed
             new { objectSymbol = symbol, leftLabel, leftCount, rightLabel, rightCount, comparisonMode, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, answer);
     }
 
-    private static SeedLesson Story(string code, string title, string topicCode, string speechText, string imageUrl, string prompt, string[] choices, string answer) =>
-        Choice(code, title, topicCode, InteractionTypes.StoryChoice, "Con nghe câu chuyện, xem tranh rồi chọn đáp án.", prompt, choices, answer, speechText, imageUrl);
+    private static SeedLesson Story(string code, string title, string topicCode, string speechText, string imageUrl, string prompt, string[] choices, string answer, Dictionary<string, string>? itemMedia = null)
+    {
+        var payload = itemMedia is { Count: > 0 }
+            ? (object)new { choices, targetLabel = string.Empty, audioUrl = string.Empty, speechText, imageUrl, itemMedia }
+            : new { choices, targetLabel = string.Empty, audioUrl = string.Empty, speechText, imageUrl };
+        return Lesson(code, title, topicCode, InteractionTypes.StoryChoice, "Con nghe câu chuyện, xem tranh rồi chọn đáp án.", prompt, payload, answer);
+    }
+
+    private static SeedLesson ReadingQuestion(
+        string code,
+        string title,
+        string speechText,
+        string slug,
+        string qKey,
+        string prompt,
+        string[] choices,
+        string answer)
+    {
+        var media = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < choices.Length && i < 3; i++)
+        {
+            var optPath = $"/images/lessons/doc-hieu/opt-{slug}-{qKey}-opt{i + 1}.jpg";
+            media[choices[i]] = optPath;
+        }
+        var qImg = $"/images/lessons/doc-hieu/qbox-{slug}-{qKey}.jpg";
+        return Story(code, title, "doc-hieu", speechText, qImg, prompt, choices, answer, media);
+    }
 
     private static SeedLesson Lesson(string code, string title, string topicCode, string type, string instruction, string prompt, object payload, string answer) =>
         new(code, title, topicCode, type, instruction, prompt, JsonSerializer.Serialize(payload), answer, "Con quan sát kỹ từng thông tin rồi thử lại nhé.");

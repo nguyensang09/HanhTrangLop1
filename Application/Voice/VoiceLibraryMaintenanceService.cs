@@ -82,6 +82,7 @@ public sealed class VoiceLibraryMaintenanceService
                 entry.LastError = null;
                 entry.UpdatedAt = DateTimeOffset.UtcNow;
                 created += 1;
+                await _db.SaveChangesAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -91,9 +92,15 @@ public sealed class VoiceLibraryMaintenanceService
                 entry.UpdatedAt = DateTimeOffset.UtcNow;
                 failed += 1;
                 _logger.LogWarning(ex, "Cannot generate voice file for {VoiceName}", entry.Name);
+                try
+                {
+                    await _db.SaveChangesAsync(cancellationToken);
+                }
+                catch
+                {
+                }
             }
         }
-        await _db.SaveChangesAsync(cancellationToken);
 
         var updatedItems = 0;
         foreach (var item in items)
@@ -413,18 +420,24 @@ public sealed class VoiceLibraryMaintenanceService
         return storagePath;
     }
 
-    public async Task<(int Created, int Failed, int UpdatedItems)> GenerateMissingAndRelinkAsync(CancellationToken cancellationToken = default)
+    public async Task<(int Created, int Failed, int UpdatedItems)> GenerateMissingAndRelinkAsync(int maxItems = 0, CancellationToken cancellationToken = default)
     {
         await _db.Database.MigrateAsync(cancellationToken);
-        var entries = await _db.TextToSpeechCaches
+        var query = _db.TextToSpeechCaches
             .Where(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready")
-            .OrderBy(x => x.CreatedAt)
-            .ToListAsync(cancellationToken);
+            .OrderBy(x => x.CreatedAt);
+
+        var entries = maxItems > 0
+            ? await query.Take(maxItems).ToListAsync(cancellationToken)
+            : await query.ToListAsync(cancellationToken);
 
         var created = 0;
         var failed = 0;
+        var total = entries.Count;
+        var index = 0;
         foreach (var entry in entries)
         {
+            index++;
             try
             {
                 entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry, cancellationToken);
@@ -432,6 +445,8 @@ public sealed class VoiceLibraryMaintenanceService
                 entry.LastError = null;
                 entry.UpdatedAt = DateTimeOffset.UtcNow;
                 created += 1;
+                await _db.SaveChangesAsync(cancellationToken);
+                Console.WriteLine($"[{index}/{total}] Voice OK: {entry.Name} ({entry.NormalizedText})");
             }
             catch (Exception ex)
             {
@@ -440,9 +455,17 @@ public sealed class VoiceLibraryMaintenanceService
                 entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
                 entry.UpdatedAt = DateTimeOffset.UtcNow;
                 failed += 1;
+                _logger.LogWarning(ex, "Cannot generate voice file for {VoiceName}", entry.Name);
+                Console.WriteLine($"[{index}/{total}] Voice FAIL: {entry.Name} -> {ex.Message}");
+                try
+                {
+                    await _db.SaveChangesAsync(cancellationToken);
+                }
+                catch
+                {
+                }
             }
         }
-        await _db.SaveChangesAsync(cancellationToken);
 
         var items = await _db.LearningItems
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
@@ -457,7 +480,10 @@ public sealed class VoiceLibraryMaintenanceService
                 updatedItems += 1;
             }
         }
-        await _db.SaveChangesAsync(cancellationToken);
+        if (updatedItems > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
 
         return (created, failed, updatedItems);
     }
@@ -556,6 +582,10 @@ public sealed class VoiceLibraryMaintenanceService
                     catch
                     {
                     }
+                    if (File.Exists(outputPath))
+                    {
+                        try { File.Delete(outputPath); } catch { }
+                    }
                     errors.Add($"{fileName}: quá thời gian tạo voice.");
                     continue;
                 }
@@ -567,10 +597,19 @@ public sealed class VoiceLibraryMaintenanceService
                     return;
                 }
 
+                if (File.Exists(outputPath))
+                {
+                    try { File.Delete(outputPath); } catch { }
+                }
+
                 errors.Add($"{fileName}: {stderr} {stdout}".Trim());
             }
             catch (Exception ex)
             {
+                if (File.Exists(outputPath))
+                {
+                    try { File.Delete(outputPath); } catch { }
+                }
                 errors.Add($"{fileName}: {ex.Message}");
             }
         }
@@ -717,15 +756,51 @@ public sealed class VoiceLibraryMaintenanceService
             : cleaned;
     }
 
-    private static string ResolveTextForSpeechSynthesis(string text) => text switch
+    private static string ResolveTextForSpeechSynthesis(string text)
     {
-        "△" or "▲" => "hình tam giác",
-        "□" or "■" => "hình vuông",
-        "○" or "●" => "hình tròn",
-        "◇" or "◆" => "hình thoi",
-        "☆" or "★" => "ngôi sao",
-        _ => text
-    };
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return text;
+        }
+
+        var trimmed = text.Trim();
+        if (trimmed.All(c => c is '●' or '○' or '•'))
+        {
+            return $"{trimmed.Length} chấm tròn";
+        }
+        if (trimmed.All(c => c is '▲' or '△'))
+        {
+            return $"{trimmed.Length} hình tam giác";
+        }
+        if (trimmed.All(c => c is '■' or '□'))
+        {
+            return $"{trimmed.Length} hình vuông";
+        }
+        if (trimmed.All(c => c is '★' or '☆'))
+        {
+            return $"{trimmed.Length} ngôi sao";
+        }
+        if (trimmed.All(c => c is '◆' or '◇'))
+        {
+            return $"{trimmed.Length} hình thoi";
+        }
+        if (trimmed.All(c => c is '♥' or '❤'))
+        {
+            return $"{trimmed.Length} trái tim";
+        }
+
+        return text
+            .Replace("△", "hình tam giác")
+            .Replace("▲", "hình tam giác")
+            .Replace("□", "hình vuông")
+            .Replace("■", "hình vuông")
+            .Replace("○", "hình tròn")
+            .Replace("●", "hình tròn")
+            .Replace("◇", "hình thoi")
+            .Replace("◆", "hình thoi")
+            .Replace("☆", "ngôi sao")
+            .Replace("★", "ngôi sao");
+    }
     private static string AudioCacheKey(string normalizedText)
     {
         var key = $"tts:v1:{normalizedText.ToLowerInvariant()}";

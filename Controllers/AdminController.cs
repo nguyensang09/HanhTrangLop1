@@ -1,3 +1,4 @@
+using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
 using HanhTrangLop1.Models;
@@ -45,17 +46,20 @@ public class AdminController : Controller
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
     private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
+    private readonly VoiceLibraryMaintenanceService _voiceLibraryService;
 
     public AdminController(
         ApplicationDbContext db,
         IWebHostEnvironment environment,
         IConfiguration configuration,
-        Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager)
+        Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager,
+        VoiceLibraryMaintenanceService voiceLibraryService)
     {
         _db = db;
         _environment = environment;
         _configuration = configuration;
         _userManager = userManager;
+        _voiceLibraryService = voiceLibraryService;
     }
 
     [HttpGet("")]
@@ -216,6 +220,16 @@ public class AdminController : Controller
         };
 
         return View(model);
+    }
+
+    [HttpPost("reseed-lessons")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReseedLessons()
+    {
+        var created = await LearningContentSeed.SeedAsync(_db);
+        await LegacyLearningItemNormalizer.NormalizeAsync(_db, null);
+        TempData["AdminMessage"] = $"Đã đồng bộ kho bài học thành công! ({created} bài mới được tạo thêm).";
+        return RedirectToAction(nameof(LearningItems));
     }
 
     [HttpGet("learning-items/{id:guid}")]
@@ -941,49 +955,32 @@ public class AdminController : Controller
 
     [HttpPost("voice-cache/generate-missing")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GenerateMissingVoiceFiles()
+    public async Task<IActionResult> GenerateMissingVoiceFiles(int batchSize = 30)
     {
-        var entries = await _db.TextToSpeechCaches
-            .Where(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready")
-            .OrderBy(x => x.CreatedAt)
-            .ToListAsync();
+        batchSize = Math.Clamp(batchSize, 10, 100);
+        var totalMissingBefore = await _db.TextToSpeechCaches
+            .CountAsync(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
 
-        var generated = 0;
-        var failed = 0;
-        foreach (var entry in entries)
+        if (totalMissingBefore == 0)
         {
-            try
-            {
-                entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
-                entry.Status = "ready";
-                entry.LastError = null;
-                entry.UpdatedAt = DateTimeOffset.UtcNow;
-                generated += 1;
-            }
-            catch (Exception ex)
-            {
-                entry.Status = "missing";
-                entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
-                entry.UpdatedAt = DateTimeOffset.UtcNow;
-                failed += 1;
-            }
+            TempData["AdminMessage"] = "Tất cả voice trong hệ thống đã có file đầy đủ.";
+            return RedirectToAction(nameof(VoiceCache));
         }
 
-        if (entries.Count > 0)
+        var result = await _voiceLibraryService.GenerateMissingAndRelinkAsync(batchSize, HttpContext.RequestAborted);
+        var totalMissingAfter = await _db.TextToSpeechCaches
+            .CountAsync(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+
+        if (totalMissingAfter == 0)
         {
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                TempData["AdminMessage"] = $"Không thể lưu file voice tự tạo: {GetInnermostMessage(ex)}";
-                return RedirectToAction(nameof(VoiceCache));
-            }
+            TempData["AdminMessage"] = $"Đã tự tạo {result.Created} file voice. Tất cả voice đã đầy đủ 100% (cập nhật {result.UpdatedItems} bài học).";
+        }
+        else
+        {
+            TempData["AdminMessage"] = $"Đã tự tạo {result.Created} file voice (còn lại {totalMissingAfter} mục chưa có file, lỗi {result.Failed} mục). Bạn có thể bấm tiếp 'Tự tạo file thiếu' để tiếp tục.";
         }
 
-        TempData["AdminMessage"] = $"Đã tự tạo {generated} file voice. Lỗi {failed} mục.";
-        return RedirectToAction(nameof(VoiceCache));
+        return RedirectToAction(nameof(VoiceCache), new { status = totalMissingAfter > 0 ? "missing" : null });
     }
 
     [HttpPost("voice-cache/generate-text")]
@@ -2060,7 +2057,18 @@ public class AdminController : Controller
             rate = "-10%";
         }
 
-        await RunEdgeTextToSpeechAsync(text, voice, rate, diskPath);
+        try
+        {
+            await RunEdgeTextToSpeechAsync(text, voice, rate, diskPath);
+        }
+        catch
+        {
+            if (System.IO.File.Exists(diskPath))
+            {
+                try { System.IO.File.Delete(diskPath); } catch { }
+            }
+            throw;
+        }
 
         var storagePath = $"/uploads/audio/{storedName}";
         _db.MediaAssets.Add(new MediaAsset
@@ -2130,6 +2138,10 @@ public class AdminController : Controller
                     {
                         // Ignore kill errors; the failure message below is enough for admin.
                     }
+                    if (System.IO.File.Exists(outputPath))
+                    {
+                        try { System.IO.File.Delete(outputPath); } catch { }
+                    }
                     errors.Add($"{fileName}: quá thời gian tạo voice.");
                     continue;
                 }
@@ -2141,10 +2153,19 @@ public class AdminController : Controller
                     return;
                 }
 
+                if (System.IO.File.Exists(outputPath))
+                {
+                    try { System.IO.File.Delete(outputPath); } catch { }
+                }
+
                 errors.Add($"{fileName}: {stderr} {stdout}".Trim());
             }
             catch (Exception ex)
             {
+                if (System.IO.File.Exists(outputPath))
+                {
+                    try { System.IO.File.Delete(outputPath); } catch { }
+                }
                 errors.Add($"{fileName}: {ex.Message}");
             }
         }
@@ -2181,15 +2202,51 @@ public class AdminController : Controller
         return string.Join(' ', Clean(text).Split(' ', StringSplitOptions.RemoveEmptyEntries));
     }
 
-    private static string ResolveTextForSpeechSynthesis(string text) => text switch
+    private static string ResolveTextForSpeechSynthesis(string text)
     {
-        "△" or "▲" => "hình tam giác",
-        "□" or "■" => "hình vuông",
-        "○" or "●" => "hình tròn",
-        "◇" or "◆" => "hình thoi",
-        "☆" or "★" => "ngôi sao",
-        _ => text
-    };
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return text;
+        }
+
+        var trimmed = text.Trim();
+        if (trimmed.All(c => c is '●' or '○' or '•'))
+        {
+            return $"{trimmed.Length} chấm tròn";
+        }
+        if (trimmed.All(c => c is '▲' or '△'))
+        {
+            return $"{trimmed.Length} hình tam giác";
+        }
+        if (trimmed.All(c => c is '■' or '□'))
+        {
+            return $"{trimmed.Length} hình vuông";
+        }
+        if (trimmed.All(c => c is '★' or '☆'))
+        {
+            return $"{trimmed.Length} ngôi sao";
+        }
+        if (trimmed.All(c => c is '◆' or '◇'))
+        {
+            return $"{trimmed.Length} hình thoi";
+        }
+        if (trimmed.All(c => c is '♥' or '❤'))
+        {
+            return $"{trimmed.Length} trái tim";
+        }
+
+        return text
+            .Replace("△", "hình tam giác")
+            .Replace("▲", "hình tam giác")
+            .Replace("□", "hình vuông")
+            .Replace("■", "hình vuông")
+            .Replace("○", "hình tròn")
+            .Replace("●", "hình tròn")
+            .Replace("◇", "hình thoi")
+            .Replace("◆", "hình thoi")
+            .Replace("☆", "ngôi sao")
+            .Replace("★", "ngôi sao");
+    }
 
     private static string AudioCacheKey(string normalizedText)
     {

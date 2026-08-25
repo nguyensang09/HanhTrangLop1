@@ -28,6 +28,12 @@
                     <span class="material-symbols-outlined">draw</span>
                     Tạo bài tô nét
                 </a>
+                <form class="inline-action-form" asp-action="ReseedLessons" method="post">
+                    <button class="app-btn app-btn-muted app-btn-small" type="submit" title="Đồng bộ lại toàn bộ kho bài học gốc còn thiếu vào hệ thống">
+                        <span class="material-symbols-outlined">sync</span>
+                        Đồng bộ kho bài học
+                    </button>
+                </form>
                 <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
                     <input type="hidden" name="status" value="@Model.Status" />
                     <input type="hidden" name="interactionType" value="@Model.InteractionType" />

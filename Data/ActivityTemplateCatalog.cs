@@ -55,6 +55,7 @@ public static class ActivityTemplateCatalog
             ["nghe-hieu"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Ordering),
             ["ke-chuyen"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose),
             ["am-van"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect),
+            ["doc-hieu"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.MultiSelect),
 
             ["hinh-dang"] = Rule(InteractionTypes.SingleChoice, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.MultiSelect, InteractionTypes.DragDrop),
             ["vi-tri"] = Rule(InteractionTypes.DragDrop, InteractionTypes.SingleChoice, InteractionTypes.StoryChoice, InteractionTypes.Matching),
