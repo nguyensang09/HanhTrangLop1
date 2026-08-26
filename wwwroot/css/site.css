@@ -45,36 +45,162 @@ a {
 }
 
 .app-navbar {
-  background: rgba(255, 253, 247, 0.92);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 10px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+  transition: all 0.2s ease-in-out;
 }
 
 .app-brand {
-  color: var(--primary-dark);
+  color: #0f172a;
   font-weight: 800;
+  font-size: 1.15rem;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  text-decoration: none;
 }
 
 .brand-avatar {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
-  display: inline-block;
-  vertical-align: middle;
+  filter: drop-shadow(0 4px 8px rgba(249, 115, 22, 0.25));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.app-brand:hover .brand-avatar {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+.brand-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-family: "Plus Jakarta Sans", "Be Vietnam Pro", sans-serif;
+  font-weight: 800;
+  font-size: 1.12rem;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  font-size: 0.72rem;
+  color: #f97316;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .nav-icon {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   vertical-align: middle;
   margin-right: 4px;
+  color: #64748b;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.nav-link {
-  color: var(--ink);
-  font-weight: 600;
+.app-navbar .nav-link {
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 8px 14px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-navbar .nav-link:hover {
+  color: #ea580c;
+  background: rgba(255, 247, 237, 0.85);
+}
+
+.app-navbar .nav-link:hover .nav-icon {
+  color: #ea580c;
+  transform: translateY(-2px);
+}
+
+.app-navbar .nav-link.active {
+  color: #c2410c;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid #fdba74;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.12);
+}
+
+.app-navbar .nav-link.active .nav-icon {
+  color: #ea580c;
+  font-variation-settings: 'FILL' 1;
+}
+
+/* User & Auth styling in header */
+.user-profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.user-avatar-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffedd5;
+  color: #ea580c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.active-child-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 6px;
+  background: #ffffff;
+  border: 1.5px solid #fed7aa;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.08);
+  text-decoration: none;
+  color: #1e293b;
+  transition: all 0.2s ease;
+}
+
+.active-child-chip:hover {
+  border-color: #f97316;
+  background: #fff7ed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(249, 115, 22, 0.15);
+  color: #ea580c;
+}
+
+.active-child-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ffedd5;
+}
+
+.active-child-name {
+  font-weight: 800;
+  font-size: 0.88rem;
 }
 
 .app-page {

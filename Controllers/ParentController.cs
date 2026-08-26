@@ -29,18 +29,21 @@ public class ParentController : Controller
     public async Task<IActionResult> Dashboard()
     {
         var userId = GetCurrentUserId();
-        var children = await _db.ChildProfiles.Where(x => x.ParentUserId == userId).OrderBy(x => x.CreatedAt).ToListAsync();
+        var children = await _db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == userId).OrderBy(x => x.CreatedAt).ToListAsync();
         var childIds = children.Select(x => x.Id).ToList();
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Include(x => x.ChildProfile)
             .Include(x => x.LearningItem)
             .Where(x => childIds.Contains(x.ChildProfileId))
             .OrderByDescending(x => x.StartedAt)
             .ToListAsync();
         var sessions = await _db.LearningSessions
+            .AsNoTracking()
             .Where(x => childIds.Contains(x.ChildProfileId))
             .ToListAsync();
         var progressItems = await _db.SkillProgress
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Where(x => childIds.Contains(x.ChildProfileId))
             .ToListAsync();
@@ -72,14 +75,17 @@ public class ParentController : Controller
         }
 
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Include(x => x.LearningItem)
             .Where(x => x.ChildProfileId == child.Id)
             .OrderByDescending(x => x.StartedAt)
             .ToListAsync();
         var sessions = await _db.LearningSessions
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id)
             .ToListAsync();
         var progressItems = await _db.SkillProgress
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Where(x => x.ChildProfileId == child.Id)
             .OrderBy(x => x.SkillGroup!.SortOrder)
@@ -112,6 +118,7 @@ public class ParentController : Controller
         }
 
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Include(x => x.LearningItem)
             .Where(x => x.ChildProfileId == child.Id)
             .OrderByDescending(x => x.StartedAt)
@@ -143,6 +150,7 @@ public class ParentController : Controller
         var model = new ChildProfileListViewModel
         {
             Children = await _db.ChildProfiles
+                .AsNoTracking()
                 .Where(x => x.ParentUserId == userId)
                 .OrderBy(x => x.CreatedAt)
                 .ToListAsync()

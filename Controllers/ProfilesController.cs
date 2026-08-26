@@ -30,6 +30,7 @@ public class ProfilesController : Controller
         {
             var userId = _userManager.GetUserId(User);
             children = await _db.ChildProfiles
+                .AsNoTracking()
                 .Where(x => x.ParentUserId == userId)
                 .OrderBy(x => x.CreatedAt)
                 .ToListAsync();
@@ -37,6 +38,7 @@ public class ProfilesController : Controller
         else
         {
             children = await _db.ChildProfiles
+                .AsNoTracking()
                 .Where(x => x.ParentUserId == null)
                 .OrderBy(x => x.CreatedAt)
                 .ToListAsync();

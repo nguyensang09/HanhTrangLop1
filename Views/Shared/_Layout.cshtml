@@ -1,3 +1,7 @@
+@using HanhTrangLop1.Infrastructure
+@using HanhTrangLop1.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,46 +20,119 @@
 <body class="app-shell @(ViewData["FocusMode"] as bool? == true ? "focus-mode-active" : "")">
     @{
         var focusMode = ViewData["FocusMode"] as bool? == true;
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+        // Lấy thông tin bé đang chọn
+        HanhTrangLop1.Models.ChildProfile? activeChild = null;
+        var selectedRaw = Context.Session.GetString(SessionKeys.SelectedChildProfileId);
+        if (Guid.TryParse(selectedRaw, out var childId))
+        {
+            activeChild = await Db.ChildProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == childId);
+        }
+        if (activeChild is null)
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    activeChild = await Db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == userId).OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
+                }
+            }
+            else
+            {
+                activeChild = await Db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == null).OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
+            }
+        }
+
+        string ResolveAvatar(string? key)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+            if (key.StartsWith("/")) return key;
+            return key switch
+            {
+                "avatar-cat" => "/images/avatars/avatar-cat.png",
+                "avatar-dog" => "/images/avatars/avatar-dog.png",
+                "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+                "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+                "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+                _ => "/images/mascot-squirrel-3d.png"
+            };
+        }
     }
+
     @if (!focusMode)
     {
-    <header>
+    <header class="app-site-header">
         <nav class="navbar navbar-expand-lg app-navbar">
             <div class="container">
+                <!-- Brand Logo -->
                 <a class="navbar-brand app-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="brand-avatar" />
-                    <span>Sóc Nâu Đồng Hành</span>
+                    <div class="brand-text-col">
+                        <span class="brand-title">Sóc Nâu Đồng Hành</span>
+                        <span class="brand-subtitle">Hành Trang Lớp 1</span>
+                    </div>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Mở điều hướng">
-                    <span class="navbar-toggler-icon"></span>
+
+                <!-- Mobile Hamburger Button -->
+                <button class="navbar-toggler border-0 shadow-none p-2" type="button" data-bs-toggle="collapse" data-bs-target="#appMainNavbar" aria-controls="appMainNavbar"
+                        aria-expanded="false" aria-label="Mở bảng điều hướng">
+                    <span class="material-symbols-outlined fs-2 text-dark">menu</span>
                 </button>
-                <div class="navbar-collapse collapse justify-content-end">
-                    <ul class="navbar-nav align-items-lg-center gap-lg-2">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined nav-icon">school</span>Khu học của bé</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Profiles" asp-action="Index"><span class="material-symbols-outlined nav-icon">face</span>Hồ sơ bé</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined nav-icon">family_restroom</span>Góc phụ huynh</a></li>
+
+                <!-- Navigation Links & User Controls -->
+                <div class="navbar-collapse collapse justify-content-end" id="appMainNavbar">
+                    <ul class="navbar-nav align-items-lg-center gap-lg-2 my-2 my-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Kids" ? "active" : "")" asp-controller="Kids" asp-action="Home">
+                                <span class="material-symbols-outlined nav-icon">school</span>
+                                <span>Góc học của bé</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Parent" ? "active" : "")" asp-controller="Parent" asp-action="Dashboard">
+                                <span class="material-symbols-outlined nav-icon">family_restroom</span>
+                                <span>Góc phụ huynh</span>
+                            </a>
+                        </li>
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index"><span class="material-symbols-outlined nav-icon">admin_panel_settings</span>Admin</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Admin" ? "active" : "")" asp-controller="Admin" asp-action="Index">
+                                    <span class="material-symbols-outlined nav-icon">admin_panel_settings</span>
+                                    <span>Quản trị</span>
+                                </a>
+                            </li>
                         }
+
+                        <!-- Chip thông tin bé đang chọn -->
+                        <li class="nav-item ms-lg-2 py-1 py-lg-0">
+                            <a class="active-child-chip" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi hồ sơ bé khác">
+                                <img src="@ResolveAvatar(activeChild?.AvatarKey)" alt="Bé" class="active-child-avatar" />
+                                <span class="active-child-name">@(activeChild?.Nickname ?? "Bạn nhỏ")</span>
+                                <span class="material-symbols-outlined ms-1" style="font-size:1.1rem; color:#f97316;">sync_alt</span>
+                            </a>
+                        </li>
+
+                        <!-- Auth section -->
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item ms-lg-2">
-                                <span class="badge bg-light text-dark border px-3 py-2 user-badge">
-                                    <span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:text-bottom;">person</span>
-                                    @(User.Identity.Name)
-                                </span>
+                            <li class="nav-item py-1 py-lg-0">
+                                <div class="user-profile-badge" title="Tài khoản đang đăng nhập">
+                                    <span class="user-avatar-icon material-symbols-outlined">person</span>
+                                    <span>@(User.Identity.Name)</span>
+                                </div>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Parent" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn app-btn app-btn-small app-btn-muted">Đăng xuất</button>
+                                    <button type="submit" class="btn app-btn app-btn-small app-btn-muted" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>
                                 </form>
                             </li>
                         }
                         else
                         {
-                            <li class="nav-item"><a class="btn app-btn app-btn-small" asp-controller="Parent" asp-action="Login">Đăng nhập</a></li>
+                            <li class="nav-item ms-lg-1"><a class="btn app-btn app-btn-small" asp-controller="Parent" asp-action="Login">Đăng nhập</a></li>
                             <li class="nav-item"><a class="btn app-btn app-btn-small app-btn-muted" asp-controller="Parent" asp-action="Register">Đăng ký</a></li>
                         }
                     </ul>

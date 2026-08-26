@@ -53,9 +53,8 @@
         window.speechSynthesis?.addEventListener?.("voiceschanged", onVoicesChanged, {once: true});
     });
 
-    const speak = (text) => new Promise(async (resolve) => {
+    const speak = async (text) => {
         if (!text || !window.speechSynthesis) {
-            resolve();
             return;
         }
 
@@ -63,19 +62,20 @@
         const voices = await loadVoices();
         const vietnameseVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith("vi"));
         if (!vietnameseVoice) {
-            resolve();
             return;
         }
 
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "vi-VN";
-        utterance.rate = 0.82;
-        utterance.pitch = 1.04;
-        utterance.voice = vietnameseVoice;
-        utterance.onend = resolve;
-        utterance.onerror = resolve;
-        window.speechSynthesis.speak(utterance);
-    });
+        return new Promise((resolve) => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "vi-VN";
+            utterance.rate = 0.82;
+            utterance.pitch = 1.04;
+            utterance.voice = vietnameseVoice;
+            utterance.onend = resolve;
+            utterance.onerror = resolve;
+            window.speechSynthesis.speak(utterance);
+        });
+    };
 
     const playFile = (url) => new Promise((resolve, reject) => {
         if (!url) {

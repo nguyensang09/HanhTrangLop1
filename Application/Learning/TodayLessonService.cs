@@ -42,6 +42,7 @@ public class TodayLessonService
     public async Task<int> GetCurrentDayNumberAsync(ChildProfile child)
     {
         var completedSessions = await _db.LearningSessions
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id && x.Status == "completed")
             .CountAsync();
 
@@ -89,6 +90,7 @@ public class TodayLessonService
 
         var items = await GetSessionItemsAsync(session);
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Where(x => x.SessionId == session.Id)
             .ToListAsync();
 
@@ -155,6 +157,7 @@ public class TodayLessonService
     public async Task<List<DailyRoadmapItemViewModel>> BuildRoadmapDaysAsync(ChildProfile child, int currentDay)
     {
         var completedDaySessions = await _db.LearningSessions
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id && x.Status == "completed")
             .ToListAsync();
 
@@ -192,6 +195,7 @@ public class TodayLessonService
         }
 
         var items = await _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Where(x => ids.Contains(x.Id) && x.Status == ContentStatus.Published)
@@ -205,16 +209,18 @@ public class TodayLessonService
             .ToList();
     }
 
-    public async Task<Guid?> FindNextItemIdAsync(LearningSession session, Guid currentItemId)
+    public Task<Guid?> FindNextItemIdAsync(LearningSession session, Guid currentItemId)
     {
         var ids = ReadPlanIds(session.SessionPlanJson);
         var currentIndex = ids.IndexOf(currentItemId);
-        return currentIndex >= 0 && currentIndex + 1 < ids.Count ? ids[currentIndex + 1] : null;
+        Guid? nextId = currentIndex >= 0 && currentIndex + 1 < ids.Count ? ids[currentIndex + 1] : null;
+        return Task.FromResult(nextId);
     }
 
     public async Task CompleteSessionAsync(LearningSession session)
     {
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Where(x => x.SessionId == session.Id)
             .ToListAsync();
 
@@ -232,6 +238,7 @@ public class TodayLessonService
     private async Task<List<Guid>> BuildDayPlanAsync(int dayNumber)
     {
         var allItems = await _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Where(x => x.Status == ContentStatus.Published)

@@ -63,6 +63,7 @@ public class KidsController : Controller
         }
 
         var todayItems = await _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.Topic)
             .Include(x => x.SkillGroup)
             .Where(x => x.Status == ContentStatus.Published)
@@ -72,7 +73,7 @@ public class KidsController : Controller
         var model = new KidsHomeViewModel
         {
             ChildProfile = child,
-            SkillGroups = await _db.SkillGroups.Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(),
+            SkillGroups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(),
             TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(5).ToList()
         };
 
@@ -115,6 +116,7 @@ public class KidsController : Controller
         }
 
         var items = await _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.Topic)
             .Include(x => x.Questions)
             .Where(x => x.SkillGroupId == id && x.Status == ContentStatus.Published)
@@ -129,6 +131,7 @@ public class KidsController : Controller
         var latestAttempts = itemIds.Count == 0
             ? []
             : await _db.LearningAttempts
+                .AsNoTracking()
                 .Where(x => x.ChildProfileId == child.Id && itemIds.Contains(x.LearningItemId))
                 .OrderByDescending(x => x.StartedAt)
                 .ToListAsync();
@@ -169,6 +172,7 @@ public class KidsController : Controller
         }
 
         var tracingItems = await _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.Topic)
             .Include(x => x.SkillGroup)
             .Include(x => x.Questions)
@@ -178,6 +182,7 @@ public class KidsController : Controller
             .ToListAsync();
 
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id)
             .ToListAsync();
 
@@ -547,11 +552,13 @@ public class KidsController : Controller
         await EnsureDefaultRewardsExistAsync();
 
         var allRewards = await _db.RewardDefinitions
+            .AsNoTracking()
             .Where(x => x.IsActive)
             .OrderBy(x => x.Code)
             .ToListAsync();
 
         var earnedRewards = await _db.ChildRewards
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id)
             .ToDictionaryAsync(x => x.RewardDefinitionId);
 

@@ -77,11 +77,13 @@ public class AdminController : Controller
             TotalAttempts = await _db.LearningAttempts.CountAsync(),
             TotalParents = await _db.Users.CountAsync(),
             RecentItems = await _db.LearningItems
+                .AsNoTracking()
                 .Include(x => x.SkillGroup)
                 .OrderByDescending(x => x.UpdatedAt)
                 .Take(8)
                 .ToListAsync(),
             RecentAttempts = await _db.LearningAttempts
+                .AsNoTracking()
                 .Include(x => x.ChildProfile)
                 .Include(x => x.LearningItem)
                 .OrderByDescending(x => x.StartedAt)
@@ -96,6 +98,7 @@ public class AdminController : Controller
     public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search)
     {
         var query = _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Include(x => x.Questions)
@@ -576,6 +579,7 @@ public class AdminController : Controller
     public async Task<IActionResult> Catalogs()
     {
         var groups = await _db.SkillGroups
+            .AsNoTracking()
             .AsSplitQuery()
             .Include(x => x.Topics.OrderBy(topic => topic.SortOrder))
             .Include(x => x.LearningItems)
@@ -2895,19 +2899,22 @@ public class AdminController : Controller
             childrenQuery = childrenQuery.Where(c => c.Nickname.ToLower().Contains(search));
         }
 
-        var users = await usersQuery.OrderByDescending(x => x.Email).ToListAsync();
-        var children = await childrenQuery.ToListAsync();
+        var users = await usersQuery.AsNoTracking().OrderByDescending(x => x.Email).ToListAsync();
+        var children = await childrenQuery.AsNoTracking().ToListAsync();
 
         var childIds = children.Select(x => x.Id).ToList();
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Where(x => childIds.Contains(x.ChildProfileId))
             .ToListAsync();
 
         var sessions = await _db.LearningSessions
+            .AsNoTracking()
             .Where(x => childIds.Contains(x.ChildProfileId))
             .ToListAsync();
 
         var rewards = await _db.ChildRewards
+            .AsNoTracking()
             .Where(x => childIds.Contains(x.ChildProfileId))
             .ToListAsync();
 
@@ -2944,7 +2951,7 @@ public class AdminController : Controller
             {
                 UserId = user.Id,
                 Email = user.Email ?? string.Empty,
-                DisplayName = user.DisplayName,
+                DisplayName = user.DisplayName ?? user.UserName ?? string.Empty,
                 Children = userChildren.Select(c => MapChild(c, user)).ToList()
             });
         }
@@ -2970,16 +2977,17 @@ public class AdminController : Controller
     [HttpGet("kids/{id:guid}")]
     public async Task<IActionResult> ChildDetail(Guid id)
     {
-        var child = await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == id);
+        var child = await _db.ChildProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (child is null) return NotFound();
 
         ApplicationUser? parent = null;
         if (!string.IsNullOrEmpty(child.ParentUserId))
         {
-            parent = await _db.Users.FirstOrDefaultAsync(x => x.Id == child.ParentUserId);
+            parent = await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == child.ParentUserId);
         }
 
         var attempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Include(x => x.LearningItem)
             .ThenInclude(x => x!.SkillGroup)
             .Where(x => x.ChildProfileId == id)
@@ -2988,18 +2996,21 @@ public class AdminController : Controller
             .ToListAsync();
 
         var sessions = await _db.LearningSessions
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == id)
             .OrderByDescending(x => x.StartedAt)
             .Take(20)
             .ToListAsync();
 
         var rewards = await _db.ChildRewards
+            .AsNoTracking()
             .Include(x => x.RewardDefinition)
             .Where(x => x.ChildProfileId == id)
             .OrderByDescending(x => x.EarnedAt)
             .ToListAsync();
 
         var skillProgresses = await _db.SkillProgress
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Where(x => x.ChildProfileId == id)
             .ToListAsync();
