@@ -140,20 +140,7 @@
         </div>
     }
 
-    @if (Model.IsCorrect == false)
-    {
-        <!-- Banner Động Viên Thân Thiện Khi Làm Chưa Đúng -->
-        <div class="answer-retry-toast clay-card" role="alert">
-            <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="retry-mascot-img" />
-            <div class="retry-text-col">
-                <strong>Chưa chính xác rồi, bé đừng lo nhé! 🌱</strong>
-                <p>@(string.IsNullOrWhiteSpace(Model.FeedbackMessage) ? "Bé hãy quan sát thật kỹ câu hỏi rồi thử chọn lại nha." : Model.FeedbackMessage)</p>
-            </div>
-            <button class="sound-button clay-button" type="button" aria-label="Nghe lại hướng dẫn" data-learning-replay="retry">
-                <span class="material-symbols-outlined">volume_up</span>
-            </button>
-        </div>
-    }
+
     @if (Model.IsCorrect != true && Model.Item.InteractionType == InteractionTypes.Tracing)
     {
         <div class="choice-board tracing-lesson-layout interaction-tracing">

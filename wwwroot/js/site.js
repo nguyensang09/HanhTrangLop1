@@ -437,24 +437,22 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             const kind = document.createElement("small");
             kind.textContent = row.kind;
             const text = document.createElement("span");
-            text.textContent = row.text || "Ch\u01b0a nh\u1eadp text";
+            text.textContent = row.text || "Chưa nhập text";
             const actions = document.createElement("div");
             actions.className = "builder-voice-actions";
-            const updateEntryAudio = (entry, result) => {
-                entry.audioUrl = result.audioUrl;
-                entry.AudioUrl = result.audioUrl;
-                entry.status = result.status;
-                entry.Status = result.status;
-                if (result.audioUrl && result.status === "ready") {
+
+            const updateEntryAudio = (result) => {
+                if (result && result.audioUrl) {
+                    const normalizedKey = normalizeLookupText(result.normalizedText || row.text);
+                    voiceByText.set(normalizedKey, result);
+                    if (!readyVoiceEntries.some((v) => readEntry(v, "id") === result.id)) {
+                        readyVoiceEntries.unshift(result);
+                    }
                     setTimeout(updateBuilderVoicePanel, 0);
                 }
-                const audio = actions.querySelector("audio");
-                if (audio) {
-                    audio.src = `${result.audioUrl}?v=${Date.now()}`;
-                    audio.load();
-                }
             };
-            const makeInlineTools = (entry) => {
+
+            const makeInlineTools = (currentMatch) => {
                 const uploadBox = document.createElement("div");
                 uploadBox.className = "builder-voice-tools";
                 const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
@@ -467,11 +465,11 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 picker.placeholder = "Tìm kho voice";
                 const datalist = document.createElement("datalist");
                 datalist.id = listId;
-                readyVoiceEntries.slice(0, 200).forEach((voice) => {
+                readyVoiceEntries.forEach((voice) => {
+                    const rawText = readEntry(voice, "normalizedText");
+                    const label = `${displayUsageType(readEntry(voice, "usageType"))} - ${rawText}`;
                     const option = document.createElement("option");
-                    const label = `${displayUsageType(readEntry(voice, "usageType"))} - ${readEntry(voice, "normalizedText")}`;
                     option.value = label;
-                    option.label = readEntry(voice, "audioUrl");
                     voiceByLabel.set(label, readEntry(voice, "id"));
                     datalist.append(option);
                 });
@@ -481,19 +479,22 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                     picker.disabled = true;
                     try {
                         const data = new FormData();
+                        data.append("id", readEntry(currentMatch, "id") || "");
                         data.append("sourceId", sourceId);
+                        data.append("text", row.text);
+                        data.append("usageType", row.kind);
                         data.append("__RequestVerificationToken", token);
-                        const response = await fetch(`/admin/voice-cache/${encodeURIComponent(readEntry(entry, "id"))}/copy-inline`, {
+                        const response = await fetch("/admin/voice-cache/copy-inline", {
                             method: "POST",
                             headers: {"RequestVerificationToken": token},
                             body: data,
                             credentials: "same-origin"
                         });
                         if (!response.ok) {
-                            const error = await response.json().catch(() => ({message: "Kh\u00f4ng th\u1ec3 ch\u1ecdn voice t\u1eeb kho."}));
-                            throw new Error(error.message || "Kh\u00f4ng th\u1ec3 ch\u1ecdn voice t\u1eeb kho.");
+                            const error = await response.json().catch(() => ({message: "Không thể chọn voice từ kho."}));
+                            throw new Error(error.message || "Không thể chọn voice từ kho.");
                         }
-                        updateEntryAudio(entry, await response.json());
+                        updateEntryAudio(await response.json());
                     } catch (error) {
                         window.alert(error.message);
                     } finally {
@@ -505,27 +506,29 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 const fileInput = document.createElement("input");
                 fileInput.type = "file";
                 fileInput.accept = "audio/*,.mp3,.wav,.m4a";
+                fileInput.title = "Tải file âm thanh từ máy";
                 fileInput.addEventListener("change", async () => {
                     const file = fileInput.files?.[0];
-                    if (!file) {
-                        return;
-                    }
+                    if (!file) return;
                     const data = new FormData();
+                    data.append("id", readEntry(currentMatch, "id") || "");
                     data.append("audioFile", file);
+                    data.append("text", row.text);
+                    data.append("usageType", row.kind);
                     data.append("__RequestVerificationToken", token);
                     fileInput.disabled = true;
                     try {
-                        const response = await fetch(`/admin/voice-cache/${encodeURIComponent(readEntry(entry, "id"))}/upload-inline`, {
+                        const response = await fetch("/admin/voice-cache/upload-inline", {
                             method: "POST",
                             headers: {"RequestVerificationToken": token},
                             body: data,
                             credentials: "same-origin"
                         });
                         if (!response.ok) {
-                            const error = await response.json().catch(() => ({message: "Kh\u00f4ng th\u1ec3 l\u01b0u file voice."}));
-                            throw new Error(error.message || "Kh\u00f4ng th\u1ec3 l\u01b0u file voice.");
+                            const error = await response.json().catch(() => ({message: "Không thể lưu file voice."}));
+                            throw new Error(error.message || "Không thể lưu file voice.");
                         }
-                        updateEntryAudio(entry, await response.json());
+                        updateEntryAudio(await response.json());
                     } catch (error) {
                         window.alert(error.message);
                     } finally {
@@ -533,14 +536,49 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                         fileInput.disabled = false;
                     }
                 });
-                uploadBox.append(picker, datalist, fileInput);
+
+                const generateBtn = document.createElement("button");
+                generateBtn.type = "button";
+                generateBtn.className = "mini-action app-btn-small";
+                generateBtn.textContent = hasAudio ? "Tạo lại" : "Tạo file";
+                generateBtn.title = "Tự động tạo giọng đọc TTS cho nội dung này";
+                generateBtn.addEventListener("click", async () => {
+                    if (!row.text) return;
+                    generateBtn.disabled = true;
+                    generateBtn.textContent = "Đang tạo...";
+                    try {
+                        const data = new FormData();
+                        data.append("id", readEntry(currentMatch, "id") || "");
+                        data.append("text", row.text);
+                        data.append("usageType", row.kind);
+                        data.append("__RequestVerificationToken", token);
+                        const response = await fetch("/admin/voice-cache/generate-inline", {
+                            method: "POST",
+                            headers: {"RequestVerificationToken": token},
+                            body: data,
+                            credentials: "same-origin"
+                        });
+                        if (!response.ok) {
+                            const error = await response.json().catch(() => ({message: "Không thể tạo file voice tự động."}));
+                            throw new Error(error.message || "Không thể tạo file voice tự động.");
+                        }
+                        updateEntryAudio(await response.json());
+                    } catch (error) {
+                        window.alert(error.message);
+                    } finally {
+                        generateBtn.disabled = false;
+                        generateBtn.textContent = hasAudio ? "Tạo lại" : "Tạo file";
+                    }
+                });
+
+                uploadBox.append(picker, datalist, fileInput, generateBtn);
                 return uploadBox;
             };
 
             if (!row.text) {
                 const chip = document.createElement("strong");
                 chip.className = "builder-voice-chip";
-                chip.textContent = "Thi\u1ebfu text";
+                chip.textContent = "Thiếu text";
                 actions.append(chip);
             } else if (hasAudio) {
                 const audio = document.createElement("audio");
@@ -548,22 +586,11 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 audio.preload = "none";
                 audio.src = audioUrl;
                 actions.append(audio, makeInlineTools(match));
-            } else if (match) {
-                const chip = document.createElement("strong");
-                chip.className = "builder-voice-chip";
-                chip.textContent = "Thi\u1ebfu file";
-                actions.append(chip, makeInlineTools(match));
             } else {
-                const link = document.createElement("a");
-                link.className = "mini-action";
-                link.href = `/admin/voice-cache?status=missing&q=${encodeURIComponent(row.text)}`;
-                link.target = "_blank";
-                link.rel = "noreferrer";
-                link.textContent = "T\u1ea1o file";
                 const chip = document.createElement("strong");
                 chip.className = "builder-voice-chip";
-                chip.textContent = "Thi\u1ebfu file";
-                actions.append(chip, link);
+                chip.textContent = "Thiếu file";
+                actions.append(chip, makeInlineTools(match));
             }
 
             item.append(kind, text, actions);

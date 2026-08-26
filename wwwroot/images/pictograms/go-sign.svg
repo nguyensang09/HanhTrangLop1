@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- Green Go Circle -->
+  <circle cx="36" cy="36" r="30" fill="#10b981" stroke="#ffffff" stroke-width="3"/>
+  <circle cx="36" cy="36" r="26" fill="#059669"/>
+  <!-- Walking / Arrow Icon -->
+  <circle cx="36" cy="22" r="5" fill="#ffffff"/>
+  <path d="M34 29 L38 29 L41 38 L46 41 L44 45 L38 41 L36 49 L41 58 L37 60 L32 50 L32 37 L27 34 L29 30 L34 33 Z" fill="#ffffff"/>
+</svg>

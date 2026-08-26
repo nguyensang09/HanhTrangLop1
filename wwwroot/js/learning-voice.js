@@ -53,6 +53,15 @@
         window.speechSynthesis?.addEventListener?.("voiceschanged", onVoicesChanged, {once: true});
     });
 
+    const setMascotSpeaking = (speaking) => {
+        const mascot = host.querySelector(".mascot-speaking, .retry-mascot-img");
+        if (mascot) {
+            mascot.classList.toggle("is-speaking", speaking);
+        }
+        const replayBtns = host.querySelectorAll("[data-learning-replay]");
+        replayBtns.forEach((btn) => btn.classList.toggle("is-playing", speaking));
+    };
+
     const speak = async (text) => {
         if (!text || !window.speechSynthesis) {
             return;
@@ -79,26 +88,47 @@
 
     const playFile = (url) => new Promise((resolve, reject) => {
         if (!url) {
-            reject();
+            reject(new Error("No URL"));
             return;
         }
-        activeAudio?.pause();
-        activeAudio = new Audio(url);
-        activeAudio.onended = resolve;
-        activeAudio.onerror = reject;
-        activeAudio.play().catch(reject);
+        try {
+            activeAudio?.pause();
+            activeAudio = new Audio(url);
+            activeAudio.onended = resolve;
+            activeAudio.onerror = (e) => reject(e);
+            const promise = activeAudio.play();
+            if (promise !== undefined) {
+                promise.then(resolve).catch((err) => {
+                    const resumeOnGesture = () => {
+                        document.removeEventListener("pointerdown", resumeOnGesture);
+                        document.removeEventListener("keydown", resumeOnGesture);
+                        activeAudio?.play().then(resolve).catch(reject);
+                    };
+                    document.addEventListener("pointerdown", resumeOnGesture, { once: true });
+                    document.addEventListener("keydown", resumeOnGesture, { once: true });
+                    reject(err);
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
     });
 
     const speakOrPlay = async (text, audioUrl) => {
-        if (audioUrl) {
-            try {
-                await playFile(audioUrl);
-                return;
-            } catch {
-                // Fall back to the browser voice when a generated file cannot play.
+        setMascotSpeaking(true);
+        try {
+            if (audioUrl) {
+                try {
+                    await playFile(audioUrl);
+                    return;
+                } catch {
+                    // Fall back to the browser voice when a generated file cannot play.
+                }
             }
+            await speak(text);
+        } finally {
+            setMascotSpeaking(false);
         }
-        await speak(text);
     };
 
     const playTitle = async () => {
@@ -109,11 +139,13 @@
     const playQuestion = async () => {
         window.speechSynthesis?.cancel();
         if (feedback) {
-            await speakOrPlay(feedback, feedbackAudioUrl);
+            await speakOrPlay(feedback, feedbackAudioUrl || retryAudioUrl || correctAudioUrl);
             return;
         }
 
-        await speakOrPlay(question || instruction, questionAudioUrl);
+        const text = question || instruction || titleText;
+        const audioUrl = questionAudioUrl || instructionAudioUrl || titleAudioUrl;
+        await speakOrPlay(text, audioUrl);
     };
 
     const labelFromElement = (element) => {
@@ -161,17 +193,29 @@
         }, {capture: true});
     });
 
-    host.addEventListener("click", (event) => {
-        const target = event.target.closest(".activity-option,.draggable-option,.activity-drop-zone,.activity-audio-button,.counting-object");
-        if (!target || target.matches("[data-speak-option]") || target.matches("[data-learning-replay]")) {
-            return;
-        }
+    let hasPlayedInitialVoice = false;
 
-        const label = labelFromElement(target);
-        if (label) {
-            void playOption(label);
-        }
-    }, {capture: true});
+    const tryPlayInitialVoice = () => {
+        if (hasPlayedInitialVoice) return;
+        playQuestion()
+            .then(() => { hasPlayedInitialVoice = true; })
+            .catch(() => {});
+    };
 
-    window.setTimeout(playQuestion, 350);
+    // Try autoplay on page ready
+    window.setTimeout(tryPlayInitialVoice, 150);
+    window.setTimeout(tryPlayInitialVoice, 500);
+
+    // If browser autoplay policy blocked audio before user gesture, play immediately on first tap/click anywhere!
+    const onUserInteraction = () => {
+        if (!hasPlayedInitialVoice) {
+            tryPlayInitialVoice();
+        }
+        document.removeEventListener("pointerdown", onUserInteraction, true);
+        document.removeEventListener("touchstart", onUserInteraction, true);
+        document.removeEventListener("keydown", onUserInteraction, true);
+    };
+    document.addEventListener("pointerdown", onUserInteraction, true);
+    document.addEventListener("touchstart", onUserInteraction, true);
+    document.addEventListener("keydown", onUserInteraction, true);
 })();

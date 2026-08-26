@@ -36,7 +36,7 @@
         ["sách", "book.svg"], ["quyển sách", "book.svg"], ["ba lô", "backpack.svg"], ["cặp sách", "backpack.svg"],
         ["bát", "bowl.svg"], ["cái bát", "bowl.svg"], ["thìa", "spoon.svg"], ["cái thìa", "spoon.svg"], ["nồi", "cooking-pot.svg"],
         ["thuyền", "sailboat.svg"], ["xe đạp", "bicycle.svg"], ["ô tô", "car.svg"], ["xe ô tô", "car.svg"], ["xe", "car.svg"], ["xe buýt", "bus.svg"], ["máy bay", "airplane.svg"], ["gara", "house.svg"],
-        ["bàn chải", "toothbrush.svg"], ["áo", "shirt.svg"], ["quần", "pants.svg"], ["giày", "shoe.svg"], ["cởi giày", "shoe.svg"], ["tất", "socks.svg"], ["mũ", "hat.svg"], ["khăn", "scarf.svg"],
+        ["bàn chải", "toothbrush.svg"], ["kem đánh răng", "toothbrush.svg"], ["áo", "shirt.svg"], ["quần", "pants.svg"], ["giày", "shoe.svg"], ["cởi giày", "shoe.svg"], ["tất", "socks.svg"], ["mũ", "hat.svg"], ["khăn", "scarf.svg"],
         ["kem", "ice-cream.svg"], ["nước đá", "ice-cube.svg"], ["canh", "cooking-pot.svg"], ["trà", "tea.svg"], ["gối", "pillow.svg"], ["bông", "cloud.svg"], ["đá", "rock.svg"], ["gạch", "brick.svg"],
         ["mặt trời", "sun.svg"], ["mặt trăng", "moon.svg"], ["quả bóng", "ball.svg"], ["xà phòng", "soap.svg"], ["cây", "seedling.svg"], ["bông hoa", "flower.svg"], ["kéo", "scissors.svg"], ["hạt", "thread.svg"], ["tô màu", "artist-palette.svg"],
         ["mũ bảo hiểm", "helmet.svg"], ["đội mũ bảo hiểm", "helmet.svg"], ["ổ điện", "electric-plug.svg"], ["chia sẻ", "handshake.svg"], ["xin lỗi", "folded-hands.svg"], ["buồn", "sad-face.svg"], ["người lớn", "handshake.svg"],
@@ -48,7 +48,7 @@
         ["đập đồ", "hammer.svg"], ["la hét vào bạn", "speaking.svg"], ["không chạm vào", "prohibited.svg"],
         ["cho tay vào", "raised-hand.svg"], ["đổ nước lên", "water.svg"], ["giấu đồ chơi", "package.svg"],
         ["đẩy bạn ra", "raised-hand.svg"], ["không phải mình", "shrug.svg"], ["bạn tự chịu", "sad-face.svg"],
-        ["tự chạy thật nhanh", "running.svg"], ["đứng chơi giữa đường", "standing.svg"], ["đi ngủ", "sleeping.svg"],
+        ["tự chạy thật nhanh", "running.svg"], ["chạy thật nhanh qua đường", "running.svg"], ["đứng chơi giữa đường", "standing.svg"], ["đi ngủ", "sleeping.svg"],
         ["cất sách", "book.svg"], ["cất hết bút đi", "package.svg"], ["bỏ ra ngoài", "walking.svg"],
         ["rửa tay", "soap.svg"], ["làm ướt tay", "water.svg"], ["lấy xà phòng", "soap.svg"], ["chà sạch tay", "soap.svg"], ["xả nước", "water.svg"], ["lau khô", "shirt.svg"],
         ["chào cô", "speaking.svg"], ["cất ba lô", "backpack.svg"], ["ngồi vào chỗ", "standing.svg"], ["mở sách", "book.svg"],
@@ -57,9 +57,21 @@
         ["gieo hạt", "seedling.svg"], ["tưới nước", "water.svg"], ["hạt nảy mầm", "seedling.svg"], ["cây lớn lên", "seedling.svg"],
         ["meo meo", "cat.svg"], ["gâu gâu", "dog.svg"], ["cạp cạp", "duck.svg"],
         ["cao", "sun.svg"], ["thấp", "flower.svg"],
-        ["khi đèn người đi bộ màu xanh", "walking.svg"], ["khi xe đang chạy", "car.svg"], ["khi đèn người đi bộ màu đỏ", "prohibited.svg"],
+        // Traffic lights & Safety actions
+        ["đèn đỏ", "traffic-red.svg"], ["tín hiệu đèn đỏ", "traffic-red.svg"],
+        ["đèn vàng", "traffic-yellow.svg"], ["tín hiệu đèn vàng", "traffic-yellow.svg"],
+        ["đèn xanh", "traffic-green.svg"], ["tín hiệu đèn xanh", "traffic-green.svg"],
+        ["dừng lại", "stop-sign.svg"], ["dừng", "stop-sign.svg"], ["dừng lại trước vạch kẻ đường", "stop-sign.svg"],
+        ["đi chậm", "slow-sign.svg"], ["chậm lại", "slow-sign.svg"], ["giảm tốc độ", "slow-sign.svg"],
+        ["được đi", "go-sign.svg"], ["đi tiếp", "go-sign.svg"], ["được phép đi", "go-sign.svg"],
+        ["khi đèn người đi bộ màu xanh", "go-sign.svg"], ["khi xe đang chạy", "car.svg"], ["khi đèn người đi bộ màu đỏ", "stop-sign.svg"],
         ["chia sẻ bút màu", "artist-palette.svg"], ["chia sẻ và chơi cùng", "handshake.svg"],
-        ["mình xin lỗi bạn", "folded-hands.svg"], ["đi cùng người lớn", "walking.svg"]
+        ["mình xin lỗi bạn", "folded-hands.svg"], ["đi cùng người lớn", "walking.svg"],
+        ["gà mẹ", "chicken.svg"], ["gà con", "chicken.svg"],
+        ["mèo mẹ", "cat.svg"], ["mèo con", "cat.svg"],
+        ["vịt mẹ", "duck.svg"], ["vịt con", "duck.svg"],
+        ["tổ cây", "seedling.svg"], ["hồ nước", "water.svg"], ["tổ ong", "bee.svg"],
+        ["hạt thóc", "seedling.svg"], ["cỏ tươi", "leafy-green.svg"]
     ]);
 
     const shapeClasses = new Map([
@@ -117,10 +129,17 @@
         const isLetterOrDigit = isSingleSymbol(value) && !pictograms.has(normalized);
         const shouldHideOptionPhoto = (type === "single_choice" || type === "listen_choose" || type === "multi_select") && isLetterOrDigit;
         const mediaUrl = shouldHideOptionPhoto ? "" : resolveItemMedia(value);
-        const pictogram = shouldHideOptionPhoto || type === "story_choice" ? "" : resolvePictogram(value);
+        const pictogram = shouldHideOptionPhoto ? "" : resolvePictogram(value);
         const shape = shapeClasses.get(normalized);
         const color = colorValues.get(normalized);
         button.replaceChildren();
+
+        if (isSingleSymbol(value)) {
+            button.classList.add("is-single-symbol");
+        } else {
+            button.classList.add("is-text-word");
+            if (value.trim().length > 5) button.classList.add("is-long-phrase");
+        }
 
         if (mediaUrl) {
             const image = document.createElement("img");
@@ -268,6 +287,10 @@
         const selected = new Set();
         const grid = document.createElement("div");
         grid.className = "activity-option-grid";
+        const hasTextOptions = (payload.choices || []).some((c) => String(c || "").trim().length > 3);
+        if (hasTextOptions) {
+            grid.classList.add("grid-text-options");
+        }
         if (payload.focusVisual) {
             const focusVisual = document.createElement("div");
             focusVisual.className = "activity-focus-visual";

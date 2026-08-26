@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- Red Octagon Stop Sign -->
+  <polygon points="23,6 49,6 66,23 66,49 49,66 23,66 6,49 6,23" fill="#ef4444" stroke="#ffffff" stroke-width="3"/>
+  <polygon points="24,9 48,9 63,24 63,48 48,63 24,63 9,48 9,24" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+  <!-- Raised Hand Stop Icon -->
+  <path d="M36 20 C34 20 32 22 32 25 L32 35 L30 35 C28 35 26 37 26 39 C26 46 31 52 38 52 C45 52 48 46 48 39 L48 27 C48 24 46 22 44 22 C43 22 41 23 40 24 L40 23 C40 21 38 20 36 20 Z" fill="#ffffff"/>
+</svg>

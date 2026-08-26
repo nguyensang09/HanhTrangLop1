@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- Yellow Warning Triangle -->
+  <polygon points="36,8 66,60 6,60" fill="#f59e0b" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="36,14 62,56 10,56" fill="#fef3c7"/>
+  <!-- Exclamation / Slow Symbol -->
+  <rect x="33" y="24" width="6" height="18" rx="3" fill="#b45309"/>
+  <circle cx="36" cy="49" r="3.5" fill="#b45309"/>
+</svg>

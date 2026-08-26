@@ -458,79 +458,30 @@ public class AdminController : Controller
 
     [HttpPost("learning-items/generate-missing-audio")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GenerateMissingLearningItemsAudio(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search)
+    public async Task<IActionResult> GenerateMissingLearningItemsAudio(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search, string? returnTo = null)
     {
-        var query = _db.LearningItems
-            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(status))
+        try
         {
-            query = query.Where(x => x.Status == status);
-        }
+            var relinkResult = await _voiceLibraryService.EnsureVoiceRowsAndRelinkAsync(HttpContext.RequestAborted);
+            var missingCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready"));
 
-        if (!string.IsNullOrWhiteSpace(interactionType))
-        {
-            query = query.Where(x => x.InteractionType == interactionType);
-        }
-
-        if (skillGroupId.HasValue)
-        {
-            query = query.Where(x => x.SkillGroupId == skillGroupId.Value);
-        }
-
-        if (topicId.HasValue)
-        {
-            query = query.Where(x => x.TopicId == topicId.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var keyword = search.Trim();
-            query = query.Where(x => x.Title.Contains(keyword) ||
-                                     (x.Topic != null && x.Topic.Name.Contains(keyword)) ||
-                                     (x.Topic != null && x.Topic.Code.Contains(keyword)) ||
-                                     (x.SkillGroup != null && x.SkillGroup.Name.Contains(keyword)));
-        }
-
-        var items = await query
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Title)
-            .ToListAsync();
-
-        var linkedCount = 0;
-        var updatedItems = 0;
-        foreach (var item in items)
-        {
-            var linkedForItem = await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
-            if (linkedForItem > 0)
+            if (relinkResult.LearningItemsUpdated > 0 || relinkResult.LegacyAudioRowsBackfilled > 0)
             {
-                linkedCount += linkedForItem;
-                updatedItems += 1;
+                TempData["AdminMessage"] = $"Đã rà soát {relinkResult.LearningItemsScanned} bài học (cập nhật voice cho {relinkResult.LearningItemsUpdated} bài). Hiện còn {missingCount} mục voice chưa có file.";
+            }
+            else
+            {
+                TempData["AdminMessage"] = $"Đã rà soát {relinkResult.LearningItemsScanned} bài học. Tất cả mục text cần voice đã được đưa vào bảng kiểm soát (còn {missingCount} mục chưa có file).";
             }
         }
-
-        var hasChanges = _db.ChangeTracker.HasChanges();
-        if (hasChanges)
+        catch (Exception ex)
         {
-            try
-            {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                TempData["AdminMessage"] = $"Không thể lưu rà soát voice: {GetInnermostMessage(ex)}";
-                return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, search });
-            }
+            TempData["AdminMessage"] = $"Không thể hoàn tất rà soát voice: {ex.Message}";
         }
 
-        if (linkedCount > 0)
+        if (string.Equals(returnTo, "voice-cache", StringComparison.OrdinalIgnoreCase))
         {
-            TempData["AdminMessage"] = $"Đã đồng bộ {linkedCount} voice có file cho {updatedItems} bài học. Các voice thiếu file đã nằm trong bảng kiểm soát.";
-        }
-        else
-        {
-            TempData["AdminMessage"] = "Đã rà soát voice. Chưa có file nào để gắn thêm; hãy vào Kiểm soát voice để tải file cho mục còn thiếu.";
+            return RedirectToAction(nameof(VoiceCache));
         }
 
         return RedirectToAction(nameof(LearningItems), new { status, interactionType, skillGroupId, topicId, search });
@@ -891,14 +842,24 @@ public class AdminController : Controller
         return RedirectToAction(nameof(VoiceCache));
     }
 
-    [HttpPost("voice-cache/{id:guid}/upload-inline")]
+    [HttpPost("voice-cache/upload-inline")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UploadVoiceCacheFileInline(Guid id, IFormFile? audioFile)
+    public async Task<IActionResult> UploadVoiceCacheFileInline(Guid? id, IFormFile? audioFile, string? text, string? usageType, string? name)
     {
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        TextToSpeechCache? entry = null;
+        if (id.HasValue && id.Value != Guid.Empty)
+        {
+            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id.Value);
+        }
+
+        if (entry is null && !string.IsNullOrWhiteSpace(text))
+        {
+            entry = await EnsureVoiceCacheEntryAsync(text, string.IsNullOrWhiteSpace(usageType) ? "custom" : usageType.Trim(), name);
+        }
+
         if (entry is null)
         {
-            return NotFound(new { message = "Không tìm thấy voice." });
+            return NotFound(new { message = "Không tìm thấy hoặc không tạo được mục voice." });
         }
 
         if (audioFile is null || audioFile.Length == 0)
@@ -919,18 +880,29 @@ public class AdminController : Controller
             id = entry.Id,
             audioUrl = entry.AudioUrl,
             status = entry.Status,
+            normalizedText = entry.NormalizedText,
             updatedAt = entry.UpdatedAt
         });
     }
 
-    [HttpPost("voice-cache/{id:guid}/copy-inline")]
+    [HttpPost("voice-cache/copy-inline")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CopyVoiceCacheFileInline(Guid id, Guid sourceId)
+    public async Task<IActionResult> CopyVoiceCacheFileInline(Guid? id, Guid sourceId, string? text, string? usageType, string? name)
     {
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
+        TextToSpeechCache? entry = null;
+        if (id.HasValue && id.Value != Guid.Empty)
+        {
+            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id.Value);
+        }
+
+        if (entry is null && !string.IsNullOrWhiteSpace(text))
+        {
+            entry = await EnsureVoiceCacheEntryAsync(text, string.IsNullOrWhiteSpace(usageType) ? "custom" : usageType.Trim(), name);
+        }
+
         if (entry is null)
         {
-            return NotFound(new { message = "Không tìm thấy voice cần đổi." });
+            return NotFound(new { message = "Không tìm thấy mục voice." });
         }
 
         var source = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
@@ -953,8 +925,56 @@ public class AdminController : Controller
             id = entry.Id,
             audioUrl = entry.AudioUrl,
             status = entry.Status,
+            normalizedText = entry.NormalizedText,
             updatedAt = entry.UpdatedAt
         });
+    }
+
+    [HttpPost("voice-cache/generate-inline")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateVoiceCacheFileInline(Guid? id, string? text, string? usageType, string? name)
+    {
+        TextToSpeechCache? entry = null;
+        if (id.HasValue && id.Value != Guid.Empty)
+        {
+            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id.Value);
+        }
+
+        if (entry is null && !string.IsNullOrWhiteSpace(text))
+        {
+            entry = await EnsureVoiceCacheEntryAsync(text, string.IsNullOrWhiteSpace(usageType) ? "custom" : usageType.Trim(), name);
+        }
+
+        if (entry is null)
+        {
+            return NotFound(new { message = "Vui lòng cung cấp nội dung text để tạo voice." });
+        }
+
+        try
+        {
+            entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+            entry.Status = "ready";
+            entry.LastError = null;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return Json(new
+            {
+                id = entry.Id,
+                audioUrl = entry.AudioUrl,
+                status = entry.Status,
+                normalizedText = entry.NormalizedText,
+                updatedAt = entry.UpdatedAt
+            });
+        }
+        catch (Exception ex)
+        {
+            entry.Status = "missing";
+            entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+            return BadRequest(new { message = $"Không thể tạo file voice: {ex.Message}" });
+        }
     }
 
     [HttpPost("voice-cache/generate-missing")]
