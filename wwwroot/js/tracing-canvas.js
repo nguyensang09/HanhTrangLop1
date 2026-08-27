@@ -475,7 +475,9 @@
   });
 
   audioButton?.addEventListener("click", function () {
-    const audioUrl = host.dataset.tracingAudioUrl;
+    const hostVoiceEl = document.querySelector("[data-learning-voice]") || host;
+    const isEnglishVoice = hostVoiceEl?.dataset?.englishVoice === "true";
+    const audioUrl = isEnglishVoice ? (host.dataset.tracingAudioUrlEn || host.dataset.tracingAudioUrl) : host.dataset.tracingAudioUrl;
     if (audioUrl) new Audio(audioUrl).play();
   });
 

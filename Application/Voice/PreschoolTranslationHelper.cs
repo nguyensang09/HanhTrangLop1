@@ -150,7 +150,31 @@ public static class PreschoolTranslationHelper
 
     private static async Task<string> FetchGoogleTranslationAsync(string text)
     {
-        // Kênh 1: Google Chrome Extension Translate Endpoint (Tốc độ cao, không bị 429 rate limit)
+        // Kênh 1: Google Translate Mobile Web (Độ tin cậy 100%, không bị 429 rate limit)
+        try
+        {
+            var urlWeb = $"https://translate.google.com/m?sl=vi&tl=en&q={Uri.EscapeDataString(text)}";
+            using var reqWeb = new HttpRequestMessage(HttpMethod.Get, urlWeb);
+            using var resWeb = await _httpClient.SendAsync(reqWeb);
+            if (resWeb.IsSuccessStatusCode)
+            {
+                var html = await resWeb.Content.ReadAsStringAsync();
+                var match = Regex.Match(html, @"<div[^>]*class=""result-container""[^>]*>(.*?)<\/div>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    var rawResult = System.Net.WebUtility.HtmlDecode(match.Groups[1].Value.Trim());
+                    if (!string.IsNullOrWhiteSpace(rawResult))
+                    {
+                        return rawResult;
+                    }
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        // Kênh 2: Google Chrome Extension Translate Endpoint (Tốc độ cao)
         try
         {
             var url1 = $"https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=vi&tl=en&q={Uri.EscapeDataString(text)}";
@@ -162,10 +186,16 @@ public static class PreschoolTranslationHelper
                 using var doc = JsonDocument.Parse(json);
                 if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
                 {
-                    var result = doc.RootElement[0].GetString();
-                    if (!string.IsNullOrWhiteSpace(result))
+                    var first = doc.RootElement[0];
+                    if (first.ValueKind == JsonValueKind.String)
                     {
-                        return result.Trim();
+                        var result = first.GetString();
+                        if (!string.IsNullOrWhiteSpace(result)) return result.Trim();
+                    }
+                    else if (first.ValueKind == JsonValueKind.Array && first.GetArrayLength() > 0 && first[0].ValueKind == JsonValueKind.String)
+                    {
+                        var result = first[0].GetString();
+                        if (!string.IsNullOrWhiteSpace(result)) return result.Trim();
                     }
                 }
             }
@@ -174,7 +204,7 @@ public static class PreschoolTranslationHelper
         {
         }
 
-        // Kênh 2: Google GTX Endpoint
+        // Kênh 3: Google GTX Endpoint
         try
         {
             var url2 = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=en&dt=t&q={Uri.EscapeDataString(text)}";
@@ -215,7 +245,7 @@ public static class PreschoolTranslationHelper
         {
         }
 
-        // Kênh 3: MyMemory Professional Translation API Fallback
+        // Kênh 4: MyMemory Professional Translation API Fallback
         try
         {
             var url3 = $"https://api.mymemory.translated.net/get?q={Uri.EscapeDataString(text)}&langpair=vi|en";

@@ -950,14 +950,14 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 statItems.textContent = totalUpdated;
 
                 const remaining = data.remainingMissing || 0;
-                const totalLessons = data.scannedItems || (totalUpdated + remaining);
-                const percent = totalLessons > 0 ? Math.min(99, Math.round(((totalLessons - remaining) / totalLessons) * 100)) : 100;
+                const totalEntries = data.totalVoices || (totalUpdated + remaining);
+                const percent = data.isCompleted || remaining === 0 ? 100 : Math.min(99, Math.round(((totalEntries - remaining) / Math.max(1, totalEntries)) * 100));
 
                 progressBar.style.width = `${percent}%`;
                 percentText.textContent = `${percent}%`;
                 progressText.textContent = remaining > 0
-                    ? `Đợt ${batchStep}: Đã hoàn tất bài học (còn ${remaining} bài cần đồng bộ)...`
-                    : `Đã hoàn tất 100% kho bài học!`;
+                    ? `Đợt ${batchStep}: Đang tạo voice (còn ${remaining} mục cần xử lý)...`
+                    : `Đã đồng bộ và tạo file voice hoàn tất 100%!`;
 
                 if (data.errorMessages?.length) {
                     data.errorMessages.forEach((err) => {
@@ -968,7 +968,7 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                     });
                 } else {
                     const div = document.createElement("div");
-                    div.textContent = `✓ Đợt ${batchStep}: Hoàn tất bài học (+${data.createdVi || 0} VI, +${data.createdEn || 0} EN)`;
+                    div.textContent = `✓ Đợt ${batchStep}: Hoàn tất (+${data.createdVi || 0} VI, +${data.createdEn || 0} EN)`;
                     statusLog.prepend(div);
                 }
 

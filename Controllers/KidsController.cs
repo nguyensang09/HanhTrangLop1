@@ -934,6 +934,11 @@ public class KidsController : Controller
         if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
         if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
 
+        if (question is not null)
+        {
+            question.PayloadJson = await EnrichPayloadOptionAudioAsync(question.PayloadJson);
+        }
+
         return new LearnViewModel
         {
             Item = item,
@@ -990,6 +995,104 @@ public class KidsController : Controller
             !string.IsNullOrEmpty(x.AudioUrlEn) &&
             (x.NormalizedText == clean || x.OriginalText == clean));
         return entry?.AudioUrlEn ?? string.Empty;
+    }
+
+    private async Task<string> EnrichPayloadOptionAudioAsync(string? payloadJson)
+    {
+        if (string.IsNullOrWhiteSpace(payloadJson)) return "{}";
+        try
+        {
+            var payload = System.Text.Json.Nodes.JsonNode.Parse(payloadJson)?.AsObject();
+            if (payload is null) return payloadJson;
+
+            var audioMap = payload.TryGetPropertyValue("optionAudio", out var optNode) && optNode is System.Text.Json.Nodes.JsonObject optObj ? optObj : new System.Text.Json.Nodes.JsonObject();
+            var audioMapEn = payload.TryGetPropertyValue("optionAudioEn", out var optEnNode) && optEnNode is System.Text.Json.Nodes.JsonObject optEnObj ? optEnObj : new System.Text.Json.Nodes.JsonObject();
+
+            var labels = CollectOptionLabelsFromPayload(payload).ToList();
+            var changed = false;
+
+            foreach (var label in labels)
+            {
+                var cleanLabel = label.Trim();
+                var currentVi = audioMap.TryGetPropertyValue(cleanLabel, out var vNode) ? vNode?.ToString() : null;
+                if (string.IsNullOrWhiteSpace(currentVi))
+                {
+                    var url = await ResolveActiveVoiceUrlAsync(label);
+                    if (!string.IsNullOrWhiteSpace(url))
+                    {
+                        audioMap[cleanLabel] = url;
+                        audioMap[label] = url;
+                        changed = true;
+                    }
+                }
+
+                var currentEn = audioMapEn.TryGetPropertyValue(cleanLabel, out var veNode) ? veNode?.ToString() : null;
+                if (string.IsNullOrWhiteSpace(currentEn))
+                {
+                    var urlEn = await ResolveActiveVoiceUrlEnAsync(label);
+                    if (!string.IsNullOrWhiteSpace(urlEn))
+                    {
+                        audioMapEn[cleanLabel] = urlEn;
+                        audioMapEn[label] = urlEn;
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed || !payload.ContainsKey("optionAudio") || !payload.ContainsKey("optionAudioEn"))
+            {
+                payload["optionAudio"] = audioMap;
+                payload["optionAudioEn"] = audioMapEn;
+                return payload.ToJsonString();
+            }
+            return payloadJson;
+        }
+        catch
+        {
+            return payloadJson ?? "{}";
+        }
+    }
+
+    private static IEnumerable<string> CollectOptionLabelsFromPayload(System.Text.Json.Nodes.JsonObject payload)
+    {
+        if (payload.TryGetPropertyValue("choices", out var chNode) && chNode is System.Text.Json.Nodes.JsonArray chArr)
+        {
+            foreach (var item in chArr) if (item != null) yield return item.ToString();
+        }
+        if (payload.TryGetPropertyValue("items", out var itNode) && itNode is System.Text.Json.Nodes.JsonArray itArr)
+        {
+            foreach (var item in itArr) if (item != null) yield return item.ToString();
+        }
+        if (payload.TryGetPropertyValue("categories", out var catNode) && catNode is System.Text.Json.Nodes.JsonArray catArr)
+        {
+            foreach (var item in catArr) if (item != null) yield return item.ToString();
+        }
+        if (payload.TryGetPropertyValue("pairs", out var pNode) && pNode is System.Text.Json.Nodes.JsonArray pArr)
+        {
+            foreach (var item in pArr)
+            {
+                if (item is System.Text.Json.Nodes.JsonObject obj)
+                {
+                    if (obj.TryGetPropertyValue("left", out var l) && l != null) yield return l.ToString();
+                    if (obj.TryGetPropertyValue("right", out var r) && r != null) yield return r.ToString();
+                }
+            }
+        }
+        if (payload.TryGetPropertyValue("mappings", out var mNode) && mNode is System.Text.Json.Nodes.JsonArray mArr)
+        {
+            foreach (var item in mArr)
+            {
+                if (item is System.Text.Json.Nodes.JsonObject obj)
+                {
+                    if (obj.TryGetPropertyValue("left", out var l) && l != null) yield return l.ToString();
+                    if (obj.TryGetPropertyValue("right", out var r) && r != null) yield return r.ToString();
+                }
+            }
+        }
+        if (payload.TryGetPropertyValue("targetLabel", out var tlNode) && tlNode != null && !string.IsNullOrWhiteSpace(tlNode.ToString()))
+        {
+            yield return tlNode.ToString();
+        }
     }
 
     private static string ExtractTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)

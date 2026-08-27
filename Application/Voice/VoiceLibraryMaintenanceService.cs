@@ -106,9 +106,9 @@ public sealed class VoiceLibraryMaintenanceService
     public async Task<VoiceLibrarySyncBatchResult> SyncAndGenerateBatchAsync(int batchSize = 1, CancellationToken cancellationToken = default)
     {
         await _db.Database.MigrateAsync(cancellationToken);
-        batchSize = Math.Clamp(batchSize, 1, 5);
+        batchSize = Math.Clamp(batchSize, 1, 10);
 
-        // Dọn dẹp các dòng rác (nếu có chứa đường dẫn file ảnh, JSON hoặc không phải văn bản đọc)
+        // 1. Dọn dẹp các dòng rác (nếu có chứa đường dẫn file ảnh, JSON hoặc không phải văn bản đọc)
         var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
         var unSpeakable = allCaches.Where(x => !IsSpeakableText(x.NormalizedText) || !IsSpeakableText(x.OriginalText)).ToList();
         if (unSpeakable.Count > 0)
@@ -117,100 +117,92 @@ public sealed class VoiceLibraryMaintenanceService
             await _db.SaveChangesAsync(cancellationToken);
         }
 
-        // Lấy tất cả bài học
-        var allLessons = await _db.LearningItems
-            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Title)
-            .ToListAsync(cancellationToken);
-
         var createdVi = 0;
         var createdEn = 0;
         var failed = 0;
         var updatedItems = 0;
         var errors = new List<string>();
 
-        // Tìm danh sách các bài học còn thiếu Voice VI hoặc Voice EN
-        var pendingLessons = new List<LearningItem>();
-        foreach (var lesson in allLessons)
+        // 2. Quét và tạo file cho các dòng còn thiếu Voice VI hoặc Voice EN trong TextToSpeechCaches
+        var missingVoicesQuery = _db.TextToSpeechCaches
+            .Where(x => x.UsageType != "legacy" &&
+                        ((x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready") ||
+                         (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready")))
+            .OrderBy(x => x.CreatedAt);
+
+        var missingVoicesBatch = await missingVoicesQuery.Take(batchSize * 3).ToListAsync(cancellationToken);
+
+        foreach (var entry in missingVoicesBatch)
         {
-            if (await LessonNeedsVoiceGenerationAsync(lesson, cancellationToken))
+            if (cancellationToken.IsCancellationRequested) break;
+            if (!IsSpeakableText(entry.NormalizedText)) continue;
+
+            // Dịch tiếng Anh nếu chưa có
+            if (string.IsNullOrWhiteSpace(entry.TextEn))
             {
-                pendingLessons.Add(lesson);
+                entry.TextEn = await PreschoolTranslationHelper.TranslateToEnglishAsync(string.IsNullOrWhiteSpace(entry.OriginalText) ? entry.NormalizedText : entry.OriginalText);
             }
+
+            // Sinh Voice VI
+            if (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready")
+            {
+                try
+                {
+                    entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry, cancellationToken);
+                    entry.Status = "ready";
+                    entry.LastError = null;
+                    createdVi++;
+                }
+                catch (Exception ex)
+                {
+                    entry.AudioUrl = string.Empty;
+                    entry.Status = "failed";
+                    entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                    failed++;
+                    errors.Add($"VI [{entry.Name}]: {ex.Message}");
+                }
+            }
+
+            // Sinh Voice EN
+            if (!string.IsNullOrWhiteSpace(entry.TextEn) && IsSpeakableText(entry.TextEn) && (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready"))
+            {
+                try
+                {
+                    entry.AudioUrlEn = await GenerateVoiceCacheFileEnAsync(entry, cancellationToken);
+                    entry.StatusEn = "ready";
+                    entry.LastErrorEn = null;
+                    createdEn++;
+                }
+                catch (Exception ex)
+                {
+                    entry.AudioUrlEn = string.Empty;
+                    entry.StatusEn = "failed";
+                    entry.LastErrorEn = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                    failed++;
+                    errors.Add($"EN [{entry.Name}]: {ex.Message}");
+                }
+            }
+
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync(cancellationToken);
         }
 
-        var lessonsToProcess = pendingLessons.Take(batchSize).ToList();
+        // 3. Quét tất cả bài học để đảm bảo các đoạn text của bài học đều được nạp vào kho và liên kết URL
+        var allLessons = await _db.LearningItems
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .ToListAsync(cancellationToken);
 
-        foreach (var lesson in lessonsToProcess)
+        // Lấy bài học cần liên kết URL
+        var unlinkedLessons = allLessons.Where(l => !IsLessonFullySynced(l)).Take(batchSize).ToList();
+        foreach (var lesson in unlinkedLessons)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                break;
-            }
+            if (cancellationToken.IsCancellationRequested) break;
 
-            // 1. Thu thập tất cả các đoạn text cần có voice cho bài học này
-            var entries = await EnsureAndGetVoiceEntriesForLessonAsync(lesson, cancellationToken);
+            // Đảm bảo các voice của bài học này tồn tại trong CSDL
+            await EnsureAndGetVoiceEntriesForLessonAsync(lesson, cancellationToken);
 
-            // 2. Dịch tiếng Anh và sinh file âm thanh cho từng đoạn text của bài học này
-            foreach (var entry in entries)
-            {
-                if (!IsSpeakableText(entry.NormalizedText))
-                {
-                    continue;
-                }
-
-                // Dịch tiếng Anh nếu chưa có
-                if (string.IsNullOrWhiteSpace(entry.TextEn))
-                {
-                    entry.TextEn = await PreschoolTranslationHelper.TranslateToEnglishAsync(string.IsNullOrWhiteSpace(entry.OriginalText) ? entry.NormalizedText : entry.OriginalText);
-                }
-
-                // Sinh Voice VI
-                if (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready")
-                {
-                    try
-                    {
-                        entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry, cancellationToken);
-                        entry.Status = "ready";
-                        entry.LastError = null;
-                        createdVi++;
-                    }
-                    catch (Exception ex)
-                    {
-                        entry.AudioUrl = string.Empty;
-                        entry.Status = "failed";
-                        entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
-                        failed++;
-                        errors.Add($"VI [{entry.Name}]: {ex.Message}");
-                    }
-                }
-
-                // Sinh Voice EN
-                if (!string.IsNullOrWhiteSpace(entry.TextEn) && IsSpeakableText(entry.TextEn) && (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready"))
-                {
-                    try
-                    {
-                        entry.AudioUrlEn = await GenerateVoiceCacheFileEnAsync(entry, cancellationToken);
-                        entry.StatusEn = "ready";
-                        entry.LastErrorEn = null;
-                        createdEn++;
-                    }
-                    catch (Exception ex)
-                    {
-                        entry.AudioUrlEn = string.Empty;
-                        entry.StatusEn = "failed";
-                        entry.LastErrorEn = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
-                        failed++;
-                        errors.Add($"EN [{entry.Name}]: {ex.Message}");
-                    }
-                }
-
-                entry.UpdatedAt = DateTimeOffset.UtcNow;
-                await _db.SaveChangesAsync(cancellationToken);
-            }
-
-            // 3. Liên kết ngay lập tức toàn bộ AudioUrl & AudioUrlEn vào bài học này
             if (await LinkVoiceUrlsForLearningItemAsync(lesson, cancellationToken))
             {
                 updatedItems++;
@@ -219,25 +211,39 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         var totalEntries = await _db.TextToSpeechCaches.CountAsync(cancellationToken);
-        var missingVi = await _db.TextToSpeechCaches.CountAsync(x => x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready", cancellationToken);
-        var missingEn = await _db.TextToSpeechCaches.CountAsync(x => x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready", cancellationToken);
+        var remainingMissingVi = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && (x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready"), cancellationToken);
+        var remainingMissingEn = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready"), cancellationToken);
+        var remainingUnlinkedLessons = allLessons.Count(l => !IsLessonFullySynced(l));
 
-        // Số bài học còn lại cần đồng bộ
-        var remainingLessonsCount = Math.Max(0, pendingLessons.Count - lessonsToProcess.Count);
+        var remainingTotal = remainingMissingVi + remainingMissingEn + remainingUnlinkedLessons;
+        var isCompleted = remainingTotal == 0;
 
         return new VoiceLibrarySyncBatchResult(
             allLessons.Count,
             totalEntries,
-            missingVi,
-            missingEn,
-            lessonsToProcess.Count,
+            remainingMissingVi,
+            remainingMissingEn,
+            missingVoicesBatch.Count + unlinkedLessons.Count,
             createdVi,
             createdEn,
             failed,
             updatedItems,
-            remainingLessonsCount,
-            remainingLessonsCount == 0,
+            remainingTotal,
+            isCompleted,
             errors);
+    }
+
+    private static bool IsLessonFullySynced(LearningItem item)
+    {
+        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        if (question is null) return true;
+
+        var payload = ParsePayloadObject(question.PayloadJson);
+        var titleEn = ReadJsonString(payload, "titleAudioUrlEn");
+        var hasOptionEn = payload.ContainsKey("optionAudioEn");
+        var hasOptionVi = payload.ContainsKey("optionAudio");
+
+        return !string.IsNullOrWhiteSpace(titleEn) && hasOptionEn && hasOptionVi;
     }
 
     private async Task<List<TextToSpeechCache>> EnsureAndGetVoiceEntriesForLessonAsync(LearningItem item, CancellationToken cancellationToken)
@@ -555,8 +561,16 @@ public sealed class VoiceLibraryMaintenanceService
         foreach (var label in CollectOptionSpeechLabels(payload))
         {
             var cleanLabel = Clean(label);
-            audioMap[cleanLabel] = await ResolveVoiceAudioUrlAsync(label, cancellationToken) ?? string.Empty;
-            audioMapEn[cleanLabel] = await ResolveVoiceAudioUrlEnAsync(label, cancellationToken) ?? string.Empty;
+            var urlVi = await ResolveVoiceAudioUrlAsync(label, cancellationToken) ?? string.Empty;
+            var urlEn = await ResolveVoiceAudioUrlEnAsync(label, cancellationToken) ?? string.Empty;
+
+            audioMap[cleanLabel] = urlVi;
+            audioMapEn[cleanLabel] = urlEn;
+            if (!string.Equals(cleanLabel, label, StringComparison.Ordinal))
+            {
+                audioMap[label] = urlVi;
+                audioMapEn[label] = urlEn;
+            }
         }
         payload["optionAudio"] = audioMap;
         payload["optionAudioEn"] = audioMapEn;

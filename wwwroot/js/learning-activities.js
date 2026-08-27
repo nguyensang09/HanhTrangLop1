@@ -208,36 +208,75 @@
         }
     };
 
-    const speak = (text) => {
+    const hostVoiceEl = document.querySelector("[data-learning-voice]") || document.querySelector(".learning-stage");
+    const isEnglishVoice = hostVoiceEl?.dataset?.englishVoice === "true";
+
+    const loadBrowserVoices = () => new Promise((resolve) => {
+        const voices = window.speechSynthesis?.getVoices?.() || [];
+        if (voices.length) {
+            resolve(voices);
+            return;
+        }
+        const timeout = window.setTimeout(() => {
+            window.speechSynthesis?.removeEventListener?.("voiceschanged", onVoicesChanged);
+            resolve(window.speechSynthesis?.getVoices?.() || []);
+        }, 600);
+        function onVoicesChanged() {
+            window.clearTimeout(timeout);
+            resolve(window.speechSynthesis?.getVoices?.() || []);
+        }
+        window.speechSynthesis?.addEventListener?.("voiceschanged", onVoicesChanged, { once: true });
+    });
+
+    const isVietnameseText = (str) => /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ]/i.test(str || "");
+
+    const speak = async (text) => {
         if (!text || !window.speechSynthesis) return;
-        const vietnameseVoice = window.speechSynthesis.getVoices()
-            .find((voice) => voice.lang.toLowerCase().startsWith("vi"));
-        if (!vietnameseVoice) return;
+        const targetLang = (isEnglishVoice && !isVietnameseText(text)) ? "en" : "vi";
+        const voices = await loadBrowserVoices();
+        const matchedVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(targetLang));
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "vi-VN";
-        utterance.rate = 0.86;
-        utterance.voice = vietnameseVoice;
+        utterance.lang = targetLang === "en" ? "en-US" : "vi-VN";
+        utterance.rate = targetLang === "en" ? 0.85 : 0.86;
+        if (matchedVoice) {
+            utterance.voice = matchedVoice;
+        }
         window.speechSynthesis.speak(utterance);
     };
 
     const playPromptAudio = () => {
-        if (payload.audioUrl) {
-            new Audio(payload.audioUrl).play();
+        const audioUrl = isEnglishVoice
+            ? (payload.audioUrlEn || payload.questionAudioUrlEn || payload.audioUrl)
+            : (payload.audioUrl || payload.questionAudioUrl);
+        if (audioUrl) {
+            new Audio(audioUrl).play().catch(() => {});
         } else {
-            speak(payload.speechText);
+            void speak(payload.speechText);
         }
     };
 
     const optionAudio = payload.optionAudio && typeof payload.optionAudio === "object" ? payload.optionAudio : {};
+    const optionAudioEn = payload.optionAudioEn && typeof payload.optionAudioEn === "object" ? payload.optionAudioEn : {};
     const normalizeOptionKey = (value) => String(value || "").trim().toLocaleLowerCase("vi-VN");
+
     const resolveOptionAudioUrl = (value) => {
-        const direct = optionAudio[String(value || "").trim()];
-        if (direct) return String(direct);
+        const cleanKey = String(value || "").trim();
         const normalized = normalizeOptionKey(value);
-        const match = Object.entries(optionAudio)
+
+        if (isEnglishVoice) {
+            const directEn = optionAudioEn[cleanKey];
+            if (directEn) return String(directEn);
+            const matchEn = Object.entries(optionAudioEn)
+                .find(([label]) => normalizeOptionKey(label) === normalized);
+            if (matchEn?.[1]) return String(matchEn[1]);
+        }
+
+        const directVi = optionAudio[cleanKey];
+        if (directVi) return String(directVi);
+        const matchVi = Object.entries(optionAudio)
             .find(([label]) => normalizeOptionKey(label) === normalized);
-        return match?.[1] ? String(match[1]) : "";
+        return matchVi?.[1] ? String(matchVi[1]) : "";
     };
 
     const playAnswerAudio = (value) => {
@@ -245,10 +284,10 @@
         window.speechSynthesis?.cancel?.();
         if (audioUrl) {
             const audio = new Audio(audioUrl);
-            audio.play().catch(() => speak(value));
+            audio.play().catch(() => void speak(value));
             return true;
         }
-        speak(value);
+        void speak(value);
         return Boolean(value);
     };
 

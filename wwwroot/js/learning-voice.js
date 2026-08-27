@@ -85,6 +85,8 @@
         replayBtns.forEach((btn) => btn.classList.toggle("is-playing", speaking));
     };
 
+    const isVietnameseText = (str) => /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ]/i.test(str || "");
+
     const speak = async (text) => {
         if (!text || !window.speechSynthesis) {
             return;
@@ -92,7 +94,7 @@
 
         window.speechSynthesis.cancel();
         const voices = await loadVoices();
-        const targetLang = isEnglishVoice ? "en" : "vi";
+        const targetLang = (isEnglishVoice && !isVietnameseText(text)) ? "en" : "vi";
         const matchedVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(targetLang));
         if (!matchedVoice && !voices.length) {
             return;
@@ -100,8 +102,8 @@
 
         return new Promise((resolve) => {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = isEnglishVoice ? "en-US" : "vi-VN";
-            utterance.rate = isEnglishVoice ? 0.85 : 0.82;
+            utterance.lang = targetLang === "en" ? "en-US" : "vi-VN";
+            utterance.rate = targetLang === "en" ? 0.85 : 0.82;
             utterance.pitch = 1.04;
             if (matchedVoice) {
                 utterance.voice = matchedVoice;

@@ -62,6 +62,7 @@
 
         <!-- Form Tạo Voice Tùy Chỉnh Nhanh (Mặc định ẩn, bật lên khi bấm Tạo voice mới) -->
         <form class="soft-card voice-generate-card" id="addVoiceCard" asp-action="GenerateVoiceFromText" method="post" style="display:none;">
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
             <div class="voice-card-header">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="material-symbols-outlined header-icon">add_circle</span>
@@ -132,7 +133,11 @@
                 <select id="status" name="status" class="form-control">
                     <option value="">Tất cả trạng thái</option>
                     <option value="missing" selected="@(currentStatus == "missing")">Thiếu file (VI hoặc EN)</option>
-                    <option value="ready" selected="@(currentStatus == "ready")">Đầy đủ cả 2 file</option>
+                    <option value="missing-en" selected="@(currentStatus == "missing-en")">Thiếu Voice Tiếng Anh (EN)</option>
+                    <option value="missing-vi" selected="@(currentStatus == "missing-vi")">Thiếu Voice Tiếng Việt (VI)</option>
+                    <option value="missing-both" selected="@(currentStatus == "missing-both")">Thiếu cả 2 file (VI & EN)</option>
+                    <option value="ready" selected="@(currentStatus == "ready")">Đầy đủ cả 2 file (VI & EN)</option>
+                    <option value="failed" selected="@(currentStatus == "failed")">Bị lỗi khi sinh file</option>
                 </select>
             </div>
             <div class="filter-field">
@@ -241,6 +246,7 @@
                                     <span class="material-symbols-outlined">edit</span>
                                 </button>
                                 <form asp-action="DeleteVoiceCache" asp-route-id="@item.Id" method="post" data-confirm-delete data-confirm-message="Xóa mục voice này khỏi thư viện?">
+                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
                                     <button class="mini-danger-btn" type="submit" title="Xóa voice này">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
@@ -295,6 +301,7 @@
 
         <form id="editVoiceForm" method="post" action="">
             @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
             <div class="voice-form-rows">
                 <div class="form-row-two-col">
                     <div class="form-field-wrap">

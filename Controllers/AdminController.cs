@@ -635,13 +635,32 @@ public class AdminController : Controller
         var query = _db.TextToSpeechCaches
             .Where(x => x.UsageType != "legacy")
             .AsQueryable();
-        if (status == "ready")
+        if (status == "ready" || status == "full")
         {
-            query = query.Where(x => !string.IsNullOrWhiteSpace(x.AudioUrl) && x.Status == "ready");
+            query = query.Where(x => x.AudioUrl != null && x.AudioUrl != "" && x.Status == "ready" &&
+                                     x.AudioUrlEn != null && x.AudioUrlEn != "" && x.StatusEn == "ready");
+        }
+        else if (status == "missing-en")
+        {
+            query = query.Where(x => x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready");
+        }
+        else if (status == "missing-vi")
+        {
+            query = query.Where(x => x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready");
+        }
+        else if (status == "missing-both")
+        {
+            query = query.Where(x => (x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready") &&
+                                     (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready"));
         }
         else if (status == "missing")
         {
-            query = query.Where(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+            query = query.Where(x => (x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready") ||
+                                     (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready"));
+        }
+        else if (status == "failed")
+        {
+            query = query.Where(x => x.Status == "failed" || x.StatusEn == "failed");
         }
 
         if (!string.IsNullOrWhiteSpace(usageType))
@@ -655,7 +674,8 @@ public class AdminController : Controller
             query = query.Where(x =>
                 x.Name.Contains(keyword) ||
                 x.NormalizedText.Contains(keyword) ||
-                x.OriginalText.Contains(keyword));
+                x.OriginalText.Contains(keyword) ||
+                (x.TextEn != null && x.TextEn.Contains(keyword)));
         }
 
         ViewBag.Status = status;
@@ -664,7 +684,9 @@ public class AdminController : Controller
         ViewBag.Page = page;
         ViewBag.PageSize = pageSize;
         ViewBag.TotalVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy");
-        ViewBag.MissingVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready"));
+        ViewBag.MissingVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" &&
+            ((x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready") ||
+             (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready")));
         ViewBag.LegacyVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType == "legacy");
         ViewBag.UsageTypes = await _db.TextToSpeechCaches
             .Where(x => !string.IsNullOrWhiteSpace(x.UsageType) && x.UsageType != "legacy")
@@ -687,7 +709,7 @@ public class AdminController : Controller
 
     [HttpPost("voice-cache/{id:guid}/update")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? textEn, string? usageType, bool regenerateVoice = false, bool generateFile = false)
+    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? textEn, string? usageType, bool regenerateVoice = false, bool generateFile = false, string? returnUrl = null)
     {
         var shouldRegenerate = regenerateVoice || generateFile;
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
@@ -700,7 +722,8 @@ public class AdminController : Controller
         if (string.IsNullOrWhiteSpace(normalizedText))
         {
             TempData["AdminMessage"] = "Vui lòng nhập nội dung voice.";
-            return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
+            return RedirectToAction(nameof(VoiceCache));
         }
 
         var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
@@ -714,7 +737,8 @@ public class AdminController : Controller
         if (duplicated is not null)
         {
             TempData["AdminMessage"] = "Text này đã có trong kho voice. Không thể sửa trùng với một dòng khác.";
-            return RedirectToAction(nameof(VoiceCache), new { q = normalizedText });
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
+            return RedirectToAction(nameof(VoiceCache));
         }
 
         var textChanged = !string.Equals(entry.TextHash, cacheKey.TextHash, StringComparison.OrdinalIgnoreCase);
@@ -770,12 +794,17 @@ public class AdminController : Controller
         entry.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
         TempData["AdminMessage"] = $"Đã cập nhật voice “{entry.Name}”{(shouldRegenerate || textChanged ? " và sinh file âm thanh thành công" : "")}.";
-        return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return LocalRedirect(returnUrl);
+        }
+        return RedirectToAction(nameof(VoiceCache));
     }
 
     [HttpPost("voice-cache/{id:guid}/generate-file")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GenerateVoiceCacheFile(Guid id)
+    public async Task<IActionResult> GenerateVoiceCacheFile(Guid id, string? returnUrl = null)
     {
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
         if (entry is null)
@@ -785,28 +814,42 @@ public class AdminController : Controller
 
         try
         {
-            entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+            entry.AudioUrl = await _voiceLibraryService.GenerateVoiceCacheFileAsync(entry);
             entry.Status = "ready";
             entry.LastError = null;
-            entry.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"Đã tạo file voice cho “{entry.Name}”.";
         }
         catch (Exception ex)
         {
             entry.Status = "missing";
             entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
-            entry.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"Không thể tạo file voice: {ex.Message}";
         }
 
-        return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+        try
+        {
+            entry.AudioUrlEn = await _voiceLibraryService.GenerateVoiceCacheFileEnAsync(entry);
+            entry.StatusEn = "ready";
+            entry.LastErrorEn = null;
+        }
+        catch (Exception exEn)
+        {
+            entry.StatusEn = "missing";
+            entry.LastErrorEn = exEn.Message.Length > 1000 ? exEn.Message[..1000] : exEn.Message;
+        }
+
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Đã tạo đầy đủ file voice VI & EN cho “{entry.Name}”.";
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return LocalRedirect(returnUrl);
+        }
+        return RedirectToAction(nameof(VoiceCache));
     }
 
     [HttpPost("voice-cache/{id:guid}/delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteVoiceCache(Guid id)
+    public async Task<IActionResult> DeleteVoiceCache(Guid id, string? returnUrl = null)
     {
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
         if (entry is null)
@@ -817,6 +860,11 @@ public class AdminController : Controller
         _db.TextToSpeechCaches.Remove(entry);
         await _db.SaveChangesAsync();
         TempData["AdminMessage"] = $"Đã xóa voice “{entry.Name}”.";
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return LocalRedirect(returnUrl);
+        }
         return RedirectToAction(nameof(VoiceCache));
     }
 
@@ -1159,11 +1207,12 @@ public class AdminController : Controller
 
     [HttpPost("voice-cache/generate-text")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GenerateVoiceFromText(string text, string? textEn, string? name, string? usageType)
+    public async Task<IActionResult> GenerateVoiceFromText(string text, string? textEn, string? name, string? usageType, string? returnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             TempData["AdminMessage"] = "Vui lòng nhập nội dung Tiếng Việt cần tạo voice.";
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
             return RedirectToAction(nameof(VoiceCache));
         }
 
@@ -1171,6 +1220,7 @@ public class AdminController : Controller
         if (entry is null)
         {
             TempData["AdminMessage"] = "Không thể tạo voice vì nội dung trống.";
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
             return RedirectToAction(nameof(VoiceCache));
         }
 
@@ -1210,7 +1260,9 @@ public class AdminController : Controller
             entry.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
             TempData["AdminMessage"] = $"Đã tạo voice song ngữ thành công cho “{entry.NormalizedText}”.";
-            return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
+            return RedirectToAction(nameof(VoiceCache));
         }
         catch (Exception ex)
         {
@@ -1219,7 +1271,9 @@ public class AdminController : Controller
             entry.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
             TempData["AdminMessage"] = $"Không thể tạo file voice: {ex.Message}";
-            return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
+            return RedirectToAction(nameof(VoiceCache));
         }
     }
 
