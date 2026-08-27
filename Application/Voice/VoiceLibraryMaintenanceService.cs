@@ -108,14 +108,8 @@ public sealed class VoiceLibraryMaintenanceService
         await _db.Database.MigrateAsync(cancellationToken);
         batchSize = Math.Clamp(batchSize, 1, 10);
 
-        // 1. Dọn dẹp các dòng rác (nếu có chứa đường dẫn file ảnh, JSON hoặc không phải văn bản đọc)
-        var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
-        var unSpeakable = allCaches.Where(x => !IsSpeakableText(x.NormalizedText) || !IsSpeakableText(x.OriginalText)).ToList();
-        if (unSpeakable.Count > 0)
-        {
-            _db.TextToSpeechCaches.RemoveRange(unSpeakable);
-            await _db.SaveChangesAsync(cancellationToken);
-        }
+        // 1. Chuẩn hóa dữ liệu bài học và dọn dẹp sạch toàn bộ voice thừa trong CSDL lẫn file vật lý
+        await CleanupAllRedundantDatabaseAndVoiceFilesAsync(cancellationToken);
 
         var createdVi = 0;
         var createdEn = 0;
@@ -246,6 +240,176 @@ public sealed class VoiceLibraryMaintenanceService
         return !string.IsNullOrWhiteSpace(titleEn) && hasOptionEn && hasOptionVi;
     }
 
+    private static readonly HashSet<string> GenericPromptsToClean = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Những đáp án nào phù hợp?",
+        "Những đáp án nào phù hợp",
+        "Thứ tự đúng là gì?",
+        "Thứ tự đúng là gì",
+        "Con vừa nghe thấy gì?",
+        "Con vừa nghe thấy gì",
+        "Mỗi vật thuộc nhóm nào?",
+        "Mỗi vật thuộc nhóm nào",
+        "Con hãy nối đủ các cặp.",
+        "Con hãy nối đủ các cặp",
+        "Vật nào đúng?",
+        "Đáp án nào đúng?",
+        "Con chọn đáp án đúng.",
+        "Con chọn đáp án đúng"
+    };
+
+    public async Task<int> CleanupAllRedundantDatabaseAndVoiceFilesAsync(CancellationToken cancellationToken = default)
+    {
+        // 1. Chuẩn hóa tất cả bài học trong DB (thay thế câu generic bằng nội dung có nghĩa)
+        await LegacyLearningItemNormalizer.NormalizeAsync(_db);
+
+        // 2. Thu thập danh sách tất cả các chuỗi text thực sự đang được dùng trong các bài học
+        var activeTextHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var lessons = await _db.LearningItems
+            .Include(x => x.Questions)
+            .ToListAsync(cancellationToken);
+
+        foreach (var item in lessons)
+        {
+            var q = item.Questions.FirstOrDefault();
+            if (q is null) continue;
+
+            void AddText(string? txt)
+            {
+                if (string.IsNullOrWhiteSpace(txt)) return;
+                var norm = NormalizeSpeechText(txt);
+                if (IsSpeakableText(norm))
+                {
+                    var key = BuildTextToSpeechCacheKey(norm);
+                    activeTextHashes.Add(key.TextHash);
+                }
+            }
+
+            AddText(q.PromptText);
+            AddText(ReadJsonString(q.FeedbackJson, "correct"));
+            AddText(ReadJsonString(q.FeedbackJson, "retry"));
+
+            var payload = ParsePayloadObject(q.PayloadJson);
+            if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+            {
+                AddText(ReadJsonString(payload, "speechText"));
+            }
+
+            foreach (var label in CollectOptionSpeechLabels(payload))
+            {
+                AddText(label);
+            }
+        }
+
+        // 3. Tìm tất cả các dòng TextToSpeechCaches không còn được bài học nào sử dụng hoặc thuộc loại legacy / title / instruction / generic rác
+        var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
+        var redundantEntries = allCaches.Where(x =>
+            x.UsageType == "legacy" ||
+            x.UsageType == "title" ||
+            x.UsageType == "instruction" ||
+            GenericPromptsToClean.Contains(x.NormalizedText) ||
+            GenericPromptsToClean.Contains(x.OriginalText) ||
+            !activeTextHashes.Contains(x.TextHash)
+        ).ToList();
+
+        var deletedCount = 0;
+        foreach (var entry in redundantEntries)
+        {
+            DeletePhysicalAudioFile(entry.AudioUrl);
+            DeletePhysicalAudioFile(entry.AudioUrlEn);
+            _db.TextToSpeechCaches.Remove(entry);
+            deletedCount++;
+        }
+
+        if (deletedCount > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        // 4. Xóa tất cả các file mp3 mồ côi trên ổ đĩa
+        await CleanupAllOrphanedPhysicalAudioFilesAsync(cancellationToken);
+
+        return deletedCount;
+    }
+
+    public async Task<int> CleanupAllOrphanedPhysicalAudioFilesAsync(CancellationToken cancellationToken = default)
+    {
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio");
+        if (!Directory.Exists(folder))
+        {
+            return 0;
+        }
+
+        // Gom tất cả các URL âm thanh hợp lệ đang được lưu trong CSDL
+        var activeUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var viUrls = await _db.TextToSpeechCaches
+            .Where(x => !string.IsNullOrEmpty(x.AudioUrl))
+            .Select(x => x.AudioUrl)
+            .ToListAsync(cancellationToken);
+        foreach (var u in viUrls) activeUrls.Add(NormalizeStoragePath(u));
+
+        var enUrls = await _db.TextToSpeechCaches
+            .Where(x => !string.IsNullOrEmpty(x.AudioUrlEn))
+            .Select(x => x.AudioUrlEn)
+            .ToListAsync(cancellationToken);
+        foreach (var u in enUrls) activeUrls.Add(NormalizeStoragePath(u));
+
+        var mediaUrls = await _db.MediaAssets
+            .Where(x => x.AssetType == "audio" && !string.IsNullOrEmpty(x.StoragePath))
+            .Select(x => x.StoragePath)
+            .ToListAsync(cancellationToken);
+        foreach (var u in mediaUrls) activeUrls.Add(NormalizeStoragePath(u));
+
+        var deletedCount = 0;
+        var filesOnDisk = Directory.GetFiles(folder, "*.*", SearchOption.TopDirectoryOnly);
+
+        foreach (var file in filesOnDisk)
+        {
+            var fileName = Path.GetFileName(file);
+            var relativePath = $"/uploads/audio/{fileName}";
+
+            if (!activeUrls.Contains(relativePath))
+            {
+                try
+                {
+                    File.Delete(file);
+                    deletedCount++;
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        return deletedCount;
+    }
+
+    private static string NormalizeStoragePath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return string.Empty;
+        var p = path.Trim().Replace('\\', '/');
+        return p.StartsWith('/') ? p : "/" + p;
+    }
+
+    public void DeletePhysicalAudioFile(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        try
+        {
+            var relative = url.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            var fullPath = Path.Combine(_environment.WebRootPath, relative);
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+        }
+        catch
+        {
+        }
+    }
+
     private async Task<List<TextToSpeechCache>> EnsureAndGetVoiceEntriesForLessonAsync(LearningItem item, CancellationToken cancellationToken)
     {
         var result = new List<TextToSpeechCache>();
@@ -262,8 +426,7 @@ public sealed class VoiceLibraryMaintenanceService
             }
         }
 
-        AddIfValid(await EnsureVoiceEntryAsync(item.Title, "title", item.Title, cancellationToken));
-        AddIfValid(await EnsureVoiceEntryAsync(item.InstructionText, "instruction", item.Title, cancellationToken));
+        // Chỉ tạo Voice cho câu hỏi bài học (PromptText), phản hồi đúng/sai, nội dung nghe và các đáp án
         AddIfValid(await EnsureVoiceEntryAsync(question.PromptText, item.InteractionType == InteractionTypes.Tracing ? "tracing-prompt" : "question", item.Title, cancellationToken));
         AddIfValid(await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "correct"), "correct-feedback", item.Title, cancellationToken));
         AddIfValid(await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "retry"), "retry-feedback", item.Title, cancellationToken));

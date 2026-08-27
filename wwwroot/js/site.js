@@ -407,9 +407,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 });
         };
 
-        add("Ti\u00eau \u0111\u1ec1", read("Title"), true);
-        add("H\u01b0\u1edbng d\u1eabn", read("InstructionText"), true);
-        add("C\u00e2u h\u1ecfi", read("PromptText"), true);
+        // Chỉ giữ Voice Câu hỏi bài học (PromptText), Phản hồi đúng/sai và các đáp án
+        add("C\u00e2u h\u1ecfi b\u00e0i h\u1ecdc", read("PromptText") || read("Title"), true);
         add("Ph\u1ea3n h\u1ed3i \u0111\u00fang", read("CorrectFeedback"), true);
         add("Ph\u1ea3n h\u1ed3i sai", read("RetryFeedback"), true);
 
@@ -774,6 +773,23 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         updateBuilderPreview();
         updateBuilderVoicePanel();
     });
+
+    const promptInput = form.querySelector('[name="PromptText"]');
+    const titleInput = form.querySelector('[name="Title"]');
+    if (promptInput && titleInput) {
+        promptInput.addEventListener("input", () => {
+            if (!titleInput.dataset.userEdited && promptInput.value.trim()) {
+                const clean = promptInput.value.trim()
+                    .replace(/^(?:Bé hãy|Con hãy|Hãy|Chọn các|Chọn|Tô theo|Tô tranh|Sắp xếp|Tìm)\s+/i, "");
+                titleInput.value = clean.slice(0, 50);
+            }
+            updateBuilderVoicePanel();
+        });
+        titleInput.addEventListener("input", () => {
+            titleInput.dataset.userEdited = "true";
+            updateBuilderVoicePanel();
+        });
+    }
 
     filterTopics();
     syncCorrectAnswer();

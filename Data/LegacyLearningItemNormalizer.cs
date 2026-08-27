@@ -33,6 +33,37 @@ public static class LegacyLearningItemNormalizer
         return updated;
     }
 
+    private static readonly HashSet<string> GenericPrompts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Những đáp án nào phù hợp?",
+        "Những đáp án nào phù hợp",
+        "Thứ tự đúng là gì?",
+        "Thứ tự đúng là gì",
+        "Con vừa nghe thấy gì?",
+        "Con vừa nghe thấy gì",
+        "Mỗi vật thuộc nhóm nào?",
+        "Mỗi vật thuộc nhóm nào",
+        "Con hãy nối đủ các cặp.",
+        "Con hãy nối đủ các cặp",
+        "Vật nào đúng?",
+        "Đáp án nào đúng?",
+        "Con chọn đáp án đúng.",
+        "Con chọn đáp án đúng"
+    };
+
+    public static string DeriveShortMapTitle(string? fullTitle, string? prompt)
+    {
+        var text = string.IsNullOrWhiteSpace(fullTitle) ? (prompt ?? string.Empty) : fullTitle;
+        text = text.Trim();
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"^(?:Bé hãy|Con hãy|Hãy|Chọn các|Chọn|Tô theo|Tô tranh|Sắp xếp|Tìm)\s+", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        text = text.Trim();
+        if (text.Length > 50)
+        {
+            text = text[..50].TrimEnd();
+        }
+        return string.IsNullOrWhiteSpace(text) ? "Bài học" : char.ToUpper(text[0]) + text[1..];
+    }
+
     private static bool NormalizeItem(LearningItem item)
     {
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
@@ -41,13 +72,21 @@ public static class LegacyLearningItemNormalizer
             return false;
         }
 
+        var changed = false;
+
+        // Nếu PromptText là câu hỏi chung chung vô nghĩa, chuyển nội dung Title sang làm PromptText chính
+        if (string.IsNullOrWhiteSpace(question.PromptText) || GenericPrompts.Contains(question.PromptText.Trim()))
+        {
+            question.PromptText = item.Title;
+            changed = true;
+        }
+
         var payload = ParseObject(question.PayloadJson);
         if (payload.Count == 0)
         {
             payload = ParseObject(item.ContentJson);
         }
 
-        var changed = false;
         var correctFeedback = ReadJsonString(question.FeedbackJson, "correct");
         var retryFeedback = ReadJsonString(question.FeedbackJson, "retry");
         if (string.IsNullOrWhiteSpace(correctFeedback))
@@ -86,6 +125,13 @@ public static class LegacyLearningItemNormalizer
         EnsureString(payload, "retrySpeechText", retryFeedback, ref changed);
         EnsureObject(payload, "itemMedia", ref changed);
         EnsureObject(payload, "optionAudio", ref changed);
+
+        // Đồng bộ questionSpeechText với prompt thực tế
+        if (payload["questionSpeechText"]?.ToString() != question.PromptText)
+        {
+            payload["questionSpeechText"] = question.PromptText;
+            changed = true;
+        }
 
         if (!changed)
         {

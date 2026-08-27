@@ -921,12 +921,12 @@ public class KidsController : Controller
         var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
         var retryFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrlEn", string.Empty);
 
-        if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = await ResolveActiveVoiceUrlAsync(item.Title);
-        if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.Title);
-        if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = await ResolveActiveVoiceUrlAsync(item.InstructionText);
-        if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.InstructionText);
         if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(question?.PromptText ?? item.Title);
         if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(question?.PromptText ?? item.Title);
+        if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = questionAudioUrl;
+        if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = questionAudioUrlEn;
+        if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = questionAudioUrl;
+        if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = questionAudioUrlEn;
         if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
         if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
         if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Giỏi lắm, con đã hoàn thành đúng!");

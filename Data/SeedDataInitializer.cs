@@ -29,16 +29,14 @@ public static class SeedDataInitializer
         if (createdLessons > 0)
         {
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
-            await LegacyLearningItemNormalizer.NormalizeAsync(db, logger);
-            var voiceResult = await voiceLibrary.EnsureVoiceRowsAndRelinkAsync();
-            if (voiceResult.LegacyAudioRowsBackfilled > 0 || voiceResult.LearningItemsUpdated > 0)
-            {
-                logger.LogInformation(
-                    "Đã đồng bộ voice cho dữ liệu mới: backfill {BackfilledCount} audio, quét {ScannedCount} bài, cập nhật {UpdatedCount} bài.",
-                    voiceResult.LegacyAudioRowsBackfilled,
-                    voiceResult.LearningItemsScanned,
-                    voiceResult.LearningItemsUpdated);
-            }
+        }
+
+        // Luôn chuẩn hóa CSDL bài học và xóa sạch toàn bộ bản ghi voice thừa cùng file vật lý tương ứng trên đĩa
+        await LegacyLearningItemNormalizer.NormalizeAsync(db, logger);
+        var deletedRedundantVoices = await voiceLibrary.CleanupAllRedundantDatabaseAndVoiceFilesAsync();
+        if (deletedRedundantVoices > 0)
+        {
+            logger.LogInformation("Đã dọn dẹp sạch {DeletedCount} voice thừa và file âm thanh tương ứng khỏi CSDL & ổ đĩa.", deletedRedundantVoices);
         }
     }
 

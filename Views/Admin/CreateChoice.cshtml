@@ -96,9 +96,16 @@
             <h2>Thông tin bài học</h2>
             <div class="builder-info-grid">
                 <div class="span-2">
-                    <label asp-for="Title">Tên bài</label>
-                    <input asp-for="Title" class="form-control" maxlength="200" data-preview-source="title" />
+                    <label asp-for="PromptText">Câu hỏi / Yêu cầu chính (Phát âm thanh trong bài) *</label>
+                    <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: Bé hãy chọn tất cả các loài vật biết bay nhé!" data-preview-source="prompt" required></textarea>
+                    <span asp-validation-for="PromptText" class="text-danger"></span>
+                </div>
+
+                <div class="span-2">
+                    <label asp-for="Title">Tên bài hiển thị trên Bản đồ (Ngắn gọn 2-5 từ) *</label>
+                    <input asp-for="Title" class="form-control" maxlength="100" placeholder="Ví dụ: Loài vật biết bay" data-preview-source="title" required />
                     <span asp-validation-for="Title" class="text-danger"></span>
+                    <small style="color:#64748b; font-size:0.82rem;">Tên này xuất hiện trên các nút Bản đồ Map / Thẻ bài học để không bị tràn chữ.</small>
                 </div>
 
                 <div>
@@ -111,7 +118,7 @@
                     </select>
                 </div>
 
-                <div class="span-2">
+                <div>
                     <label asp-for="TopicId">Chủ đề</label>
                     <select asp-for="TopicId" class="form-control" data-topic-select>
                         <option value="">Chọn chủ đề</option>
@@ -122,7 +129,6 @@
                         }
                     </select>
                     <span asp-validation-for="TopicId" class="text-danger"></span>
-                    <p class="builder-field-help" data-topic-guidance></p>
                 </div>
 
                 <div>
@@ -133,18 +139,6 @@
                             <option value="@template.InteractionType" data-default-instruction="@template.DefaultInstruction" data-default-prompt="@template.DefaultPrompt" data-description="@template.Description">@template.Name</option>
                         }
                     </select>
-                </div>
-
-            </div>
-
-            <div class="builder-copy-grid">
-                <div>
-                    <label asp-for="InstructionText">Lời hướng dẫn</label>
-                    <textarea asp-for="InstructionText" class="form-control" rows="2" maxlength="500" data-preview-source="instruction"></textarea>
-                </div>
-                <div>
-                    <label asp-for="PromptText">Câu hỏi</label>
-                    <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" data-preview-source="prompt"></textarea>
                 </div>
             </div>
 

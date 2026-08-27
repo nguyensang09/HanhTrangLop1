@@ -857,9 +857,12 @@ public class AdminController : Controller
             return NotFound();
         }
 
+        _voiceLibraryService.DeletePhysicalAudioFile(entry.AudioUrl);
+        _voiceLibraryService.DeletePhysicalAudioFile(entry.AudioUrlEn);
+
         _db.TextToSpeechCaches.Remove(entry);
         await _db.SaveChangesAsync();
-        TempData["AdminMessage"] = $"Đã xóa voice “{entry.Name}”.";
+        TempData["AdminMessage"] = $"Đã xóa voice “{entry.Name}” và file âm thanh tương ứng.";
 
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
@@ -872,10 +875,19 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteLegacyVoiceCache()
     {
-        var deleted = await _db.TextToSpeechCaches
+        var legacyEntries = await _db.TextToSpeechCaches
             .Where(x => x.UsageType == "legacy")
-            .ExecuteDeleteAsync();
-        TempData["AdminMessage"] = $"Đã xóa {deleted} voice cũ khỏi bảng kiểm soát.";
+            .ToListAsync();
+
+        foreach (var entry in legacyEntries)
+        {
+            _voiceLibraryService.DeletePhysicalAudioFile(entry.AudioUrl);
+            _voiceLibraryService.DeletePhysicalAudioFile(entry.AudioUrlEn);
+        }
+
+        _db.TextToSpeechCaches.RemoveRange(legacyEntries);
+        var deleted = await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Đã xóa {deleted} voice cũ và file âm thanh tương ứng khỏi hệ thống.";
         return RedirectToAction(nameof(VoiceCache));
     }
 

@@ -1468,13 +1468,13 @@ public static class LearningContentSeed
         Lesson(code, title, topicCode, type, instruction, prompt, new { choices, targetLabel = string.Empty, audioUrl = string.Empty, speechText, imageUrl }, answer);
 
     private static SeedLesson Multi(string code, string title, string topicCode, string[] choices, string[] answers) =>
-        Lesson(code, title, topicCode, InteractionTypes.MultiSelect, "Con chọn tất cả đáp án đúng rồi bấm Hoàn thành.", "Những đáp án nào phù hợp?", new { choices, correctCount = answers.Length, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', answers.OrderBy(x => x)));
+        Lesson(code, title, topicCode, InteractionTypes.MultiSelect, "Con chọn tất cả đáp án đúng rồi bấm Hoàn thành.", title, new { choices, correctCount = answers.Length, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', answers.OrderBy(x => x)));
 
     private static SeedLesson Listen(string code, string title, string topicCode, string speechText, string[] choices, string answer) =>
-        Choice(code, title, topicCode, InteractionTypes.ListenAndChoose, "Con bấm Nghe rồi chọn đáp án đúng.", "Con vừa nghe thấy gì?", choices, answer, speechText);
+        Choice(code, title, topicCode, InteractionTypes.ListenAndChoose, "Con bấm Nghe rồi chọn đáp án đúng.", title, choices, answer, speechText);
 
     private static SeedLesson Drag(string code, string title, string topicCode, string target, string[] choices, string answer) =>
-        Lesson(code, title, topicCode, InteractionTypes.DragDrop, "Con chọn hoặc kéo vật đúng vào vùng đích.", $"Vật nào thuộc vùng “{target}”?", new { choices, targetLabel = target, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, answer);
+        Lesson(code, title, topicCode, InteractionTypes.DragDrop, "Con chọn hoặc kéo vật đúng vào vùng đích.", title, new { choices, targetLabel = target, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, answer);
 
     private static SeedLesson Mapping(string code, string title, string topicCode, string type, (string Left, string Right)[] mappings)
     {
@@ -1484,15 +1484,15 @@ public static class LearningContentSeed
             : JsonSerializer.Serialize(new { pairs = mappings.Select(x => new { left = x.Left, right = x.Right }), imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty });
         return new(code, title, topicCode, type,
             type == InteractionTypes.Classification ? "Con đưa từng vật vào đúng nhóm màu." : "Con chọn hai mục phù hợp để tạo đường nối.",
-            type == InteractionTypes.Classification ? "Mỗi vật thuộc nhóm nào?" : "Con hãy nối đủ các cặp.",
+            title,
             payload, orderedAnswer, "Quan sát đặc điểm của từng mục rồi thử ghép lại.");
     }
 
     private static SeedLesson Ordering(string code, string title, string topicCode, string[] items) =>
-        Lesson(code, title, topicCode, InteractionTypes.Ordering, "Con dùng các nút mũi tên để sắp xếp đúng thứ tự.", "Thứ tự đúng là gì?", new { items, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', items));
+        Lesson(code, title, topicCode, InteractionTypes.Ordering, "Con dùng các nút mũi tên để sắp xếp đúng thứ tự.", title, new { items, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', items));
 
     private static SeedLesson Counting(string code, string title, string topicCode, string symbol, int count) =>
-        Lesson(code, title, topicCode, InteractionTypes.Counting, "Con chạm từng đồ vật để đếm rồi chọn số đúng.", "Có bao nhiêu đồ vật?", new { choices = new[] { Math.Max(0, count - 1).ToString(), count.ToString(), (count + 1).ToString() }, objectSymbol = symbol, targetCount = count, imageUrl = ResolveCountingFlashcardUrl(count), audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
+        Lesson(code, title, topicCode, InteractionTypes.Counting, "Con chạm từng đồ vật để đếm rồi chọn số đúng.", title, new { choices = new[] { Math.Max(0, count - 1).ToString(), count.ToString(), (count + 1).ToString() }, objectSymbol = symbol, targetCount = count, imageUrl = ResolveCountingFlashcardUrl(count), audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
 
     private static SeedLesson Quantity(string code, string title, string topicCode, string symbol, int count) =>
         Lesson(code, title, topicCode, InteractionTypes.QuantityBuilder, "Con thêm hoặc bớt đồ vật để tạo đúng số lượng.", $"Hãy tạo {count} đồ vật.", new { objectSymbol = symbol, targetCount = count, maxItems = count + 3, targetLabel = "Số lượng đã tạo", imageUrl = ResolveCountingFlashcardUrl(count), audioUrl = string.Empty, speechText = string.Empty }, count.ToString());
