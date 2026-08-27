@@ -35,6 +35,8 @@
 
   const state = {
     drawing: false,
+    activeStrokeIndex: null,
+    lastValidPoint: null,
     strokes: [],
     currentStroke: []
   };
@@ -350,6 +352,8 @@
     }
     pt.penWidth = match.penWidth;
     state.drawing = true;
+    state.activeStrokeIndex = match.closestCheckpoint?.strokeIndex ?? null;
+    state.lastValidPoint = pt;
     state.currentStroke = [pt];
     canvas.setPointerCapture(event.pointerId);
     redraw();
@@ -368,23 +372,80 @@
     const cps = getCheckpoints();
     const match = findClosestCheckpoint(pt, cps);
 
-    if (match.inCorridor) {
-      pt.penWidth = match.penWidth;
-      state.currentStroke.push(pt);
+    // Nếu con trỏ kéo ra ngoài phạm vi nét vẽ (khoảng trắng giữa các chữ):
+    if (!match.inCorridor) {
+      // Lập tức ngắt nét vẽ hiện tại để không tạo đường nối nhảy cóc
+      if (state.currentStroke.length > 1) {
+        state.strokes.push(state.currentStroke);
+      }
+      state.currentStroke = [];
+      state.drawing = false;
+      state.activeStrokeIndex = null;
+      state.lastValidPoint = null;
       redraw();
       syncForm();
-    }
-  }
-
-  function finishStroke(event) {
-    if (!state.drawing) {
       return;
     }
 
-    if (event.cancelable) {
+    // Kiểm tra xem có bị nhảy sang chữ/nét khác hoặc khoảng cách quá xa không
+    const currentStrokeIdx = match.closestCheckpoint?.strokeIndex ?? null;
+    const lastPt = state.lastValidPoint || state.currentStroke[state.currentStroke.length - 1];
+    let distanceSq = 0;
+    if (lastPt) {
+      const dx = pt.x - lastPt.x;
+      const dy = pt.y - lastPt.y;
+      distanceSq = dx * dx + dy * dy;
+    }
+
+    const MAX_GAP_SQ = 45 * 45; // Tối đa 45px khoảng cách giữa 2 điểm liên tiếp trong 1 nét
+
+    if (state.activeStrokeIndex !== null && currentStrokeIdx !== null && state.activeStrokeIndex !== currentStrokeIdx) {
+      // Đã di chuyển sang một chữ / nét khác -> Ngắt nét cũ, tạo nét mới độc lập
+      if (state.currentStroke.length > 1) {
+        state.strokes.push(state.currentStroke);
+      }
+      pt.penWidth = match.penWidth;
+      state.activeStrokeIndex = currentStrokeIdx;
+      state.lastValidPoint = pt;
+      state.currentStroke = [pt];
+      redraw();
+      syncForm();
+      return;
+    }
+
+    if (distanceSq > MAX_GAP_SQ) {
+      // Bước nhảy quá xa -> Ngắt nét cũ, tạo nét mới
+      if (state.currentStroke.length > 1) {
+        state.strokes.push(state.currentStroke);
+      }
+      pt.penWidth = match.penWidth;
+      state.activeStrokeIndex = currentStrokeIdx;
+      state.lastValidPoint = pt;
+      state.currentStroke = [pt];
+      redraw();
+      syncForm();
+      return;
+    }
+
+    // Nét vẽ hợp lệ trong cùng một chữ
+    pt.penWidth = match.penWidth;
+    state.lastValidPoint = pt;
+    state.currentStroke.push(pt);
+    redraw();
+    syncForm();
+  }
+
+  function finishStroke(event) {
+    if (!state.drawing && !state.currentStroke.length) {
+      return;
+    }
+
+    if (event && event.cancelable) {
       event.preventDefault();
     }
     state.drawing = false;
+    state.activeStrokeIndex = null;
+    state.lastValidPoint = null;
     if (state.currentStroke.length > 1) {
       state.strokes.push(state.currentStroke);
     }
