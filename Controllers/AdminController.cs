@@ -333,6 +333,20 @@ public class AdminController : Controller
             .OrderBy(x => x.SortOrder)
             .FirstOrDefaultAsync();
 
+        var titleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty);
+        var questionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty);
+        var instructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty);
+        var tracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty);
+        var correctFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty);
+        var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
+
+        if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = await ResolveActiveAdminVoiceUrlAsync(item.Title);
+        if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = await ResolveActiveAdminVoiceUrlAsync(item.InstructionText);
+        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveAdminVoiceUrlAsync(question?.PromptText ?? item.Title);
+        if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm, con đã hoàn thành đúng!");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
+
         return new LearnViewModel
         {
             Item = item,
@@ -344,19 +358,30 @@ public class AdminController : Controller
             TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
             TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
             TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
-            TracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty),
+            TracingAudioUrl = tracingAudioUrl,
             QuestionImageUrl = questionImageUrl,
             QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
-            TitleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty),
-            QuestionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty),
-            InstructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty),
-            CorrectFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty),
-            RetryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty),
+            TitleAudioUrl = titleAudioUrl,
+            QuestionAudioUrl = questionAudioUrl,
+            InstructionAudioUrl = instructionAudioUrl,
+            CorrectFeedbackAudioUrl = correctFeedbackAudioUrl,
+            RetryFeedbackAudioUrl = retryFeedbackAudioUrl,
             FeedbackMessage = feedbackMessage,
             IsCorrect = isCorrect,
             NextItemId = nextItem?.Id,
             ReturnSkillGroupId = item.SkillGroupId
         };
+    }
+
+    private async Task<string> ResolveActiveAdminVoiceUrlAsync(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var clean = text.Trim();
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            x.Status == "ready" &&
+            !string.IsNullOrEmpty(x.AudioUrl) &&
+            (x.NormalizedText == clean || x.OriginalText == clean));
+        return entry?.AudioUrl ?? string.Empty;
     }
 
     private static string ExtractAdminTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
@@ -1564,13 +1589,14 @@ public class AdminController : Controller
             }));
         var voiceEntries = await _db.TextToSpeechCaches
             .OrderByDescending(x => x.UpdatedAt)
-            .Take(1000)
+            .Take(5000)
             .Select(x => new
             {
                 x.Id,
                 x.Name,
                 x.UsageType,
                 x.NormalizedText,
+                x.OriginalText,
                 x.AudioUrl,
                 x.Status
             })
@@ -1974,12 +2000,26 @@ public class AdminController : Controller
             return pendingEntry;
         }
 
+        var rawText = (text ?? string.Empty).Trim();
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
-            x.Provider == cacheKey.Provider &&
-            x.Voice == cacheKey.Voice &&
-            x.ModelId == cacheKey.ModelId &&
-            x.Format == cacheKey.Format &&
-            x.TextHash == cacheKey.TextHash);
+            (x.Provider == cacheKey.Provider &&
+             x.Voice == cacheKey.Voice &&
+             x.ModelId == cacheKey.ModelId &&
+             x.Format == cacheKey.Format &&
+             x.TextHash == cacheKey.TextHash) ||
+            (x.Status == "ready" &&
+             !string.IsNullOrEmpty(x.AudioUrl) &&
+             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)));
+
+        if (entry is null)
+        {
+            var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
+            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                x.Status == "ready" &&
+                !string.IsNullOrEmpty(x.AudioUrl) &&
+                (x.NormalizedText == stripped || x.OriginalText == stripped));
+        }
+
         if (entry is not null)
         {
             if (string.IsNullOrWhiteSpace(entry.Name))

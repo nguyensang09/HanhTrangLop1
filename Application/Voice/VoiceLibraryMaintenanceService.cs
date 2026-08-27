@@ -351,7 +351,8 @@ public sealed class VoiceLibraryMaintenanceService
 
     private async Task<string?> ResolveVoiceAudioUrlAsync(string? text, CancellationToken cancellationToken)
     {
-        var normalizedText = NormalizeSpeechText(text ?? string.Empty);
+        var rawText = (text ?? string.Empty).Trim();
+        var normalizedText = NormalizeSpeechText(rawText);
         if (string.IsNullOrWhiteSpace(normalizedText))
         {
             return null;
@@ -359,12 +360,28 @@ public sealed class VoiceLibraryMaintenanceService
 
         var key = BuildTextToSpeechCacheKey(normalizedText);
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
-            x.Provider == key.Provider &&
-            x.Voice == key.Voice &&
-            x.ModelId == key.ModelId &&
-            x.Format == key.Format &&
-            x.TextHash == key.TextHash,
+            (x.Provider == key.Provider &&
+             x.Voice == key.Voice &&
+             x.ModelId == key.ModelId &&
+             x.Format == key.Format &&
+             x.TextHash == key.TextHash &&
+             x.Status == "ready" &&
+             !string.IsNullOrEmpty(x.AudioUrl)) ||
+            (x.Status == "ready" &&
+             !string.IsNullOrEmpty(x.AudioUrl) &&
+             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)),
             cancellationToken);
+
+        if (entry is null)
+        {
+            var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
+            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                x.Status == "ready" &&
+                !string.IsNullOrEmpty(x.AudioUrl) &&
+                (x.NormalizedText == stripped || x.OriginalText == stripped),
+                cancellationToken);
+        }
+
         return entry is { Status: "ready", AudioUrl.Length: > 0 } ? entry.AudioUrl : null;
     }
 

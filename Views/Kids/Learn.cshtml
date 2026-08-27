@@ -16,6 +16,22 @@
         InteractionTypes.Classification,
         InteractionTypes.StoryChoice
     };
+
+    var topicCode = Model.Item.Topic?.Code?.ToLowerInvariant() ?? string.Empty;
+    var titleLower = Model.Item.Title.ToLowerInvariant();
+    var symbolLower = (Model.TracingSymbol ?? string.Empty).ToLowerInvariant();
+    var itemCodeLower = (Model.Item.Code ?? string.Empty).ToLowerInvariant();
+    var isPictureTracing = topicCode.Contains("tao-hinh") || topicCode.Contains("tranh") ||
+        topicCode == "art" || titleLower.Contains("tranh") || titleLower.Contains("tạo hình") ||
+        symbolLower.Contains("phong-canh") || symbolLower.Contains("do-dung") ||
+        symbolLower.Contains("meo-con") || symbolLower.Contains("ca-heo") ||
+        symbolLower.Contains("o-che-mua") || symbolLower.Contains("hinh-hoc") ||
+        symbolLower.Contains("trai-tao") || symbolLower.Contains("tau-hoa") ||
+        symbolLower.Contains("chu-tho") || symbolLower.Contains("ong-vang") ||
+        symbolLower.Contains("may-bay") || symbolLower.Contains("thuyen") ||
+        symbolLower.Contains("cau-vong") || symbolLower.Contains("chu-buom") ||
+        symbolLower.Contains("khung-long") || symbolLower.Contains("ten-lua") ||
+        itemCodeLower.Contains("picture");
 }
 
 <section class="learn-screen learning-focus-shell"
@@ -32,7 +48,7 @@
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
     
-    <!-- Topbar Focus Mode (1 Tiêu đề chính + 1 Nút nghe) -->
+    <!-- Topbar Focus Mode (1 Tiêu đề chính + Nút nghe / Nút xem mẫu góc phải) -->
     <header class="learning-common-zone">
         <div class="learning-focus-topbar">
             @if (Model.FromTracing)
@@ -48,9 +64,17 @@
                 <a class="icon-link learning-back-btn clay-button" asp-controller="Kids" asp-action="Today" title="Quay lại"><span class="material-symbols-outlined">arrow_back</span></a>
             }
             <h1>@(Model.CurrentQuestion?.PromptText ?? Model.Item.Title)</h1>
-            <button class="learning-voice-button clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
-                <span class="material-symbols-outlined">volume_up</span>
-            </button>
+            <div class="learning-topbar-actions">
+                @if (Model.Item.InteractionType == InteractionTypes.Tracing && !isPictureTracing)
+                {
+                    <button class="tracing-demo clay-button" type="button" title="Xem mẫu tô nét">
+                        <span class="material-symbols-outlined">auto_draw_solid</span>
+                    </button>
+                }
+                <button class="learning-voice-button clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
+                    <span class="material-symbols-outlined">volume_up</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -149,7 +173,8 @@
                      data-tracing-min-points="@Model.TracingMinPoints"
                      data-tracing-expected-strokes="@Model.TracingExpectedStrokeCount"
                      data-tracing-audio-url="@Model.TracingAudioUrl"
-                     data-tracing-symbol="@Model.TracingSymbol">
+                     data-tracing-symbol="@Model.TracingSymbol"
+                     data-is-picture="@(isPictureTracing ? "true" : "false")">
                     <div class="tracing-guide-overlay" aria-hidden="true"></div>
                     <canvas class="tracing-canvas" width="920" height="1200" aria-label="Bảng tô nét"></canvas>
                 </div>

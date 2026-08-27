@@ -10,6 +10,7 @@
   const undoButton = document.querySelector(".tracing-undo");
   const clearButton = document.querySelector(".tracing-clear");
   const audioButton = document.querySelector(".tracing-audio");
+  const demoButton = document.querySelector(".tracing-demo");
   const submitButton = form.querySelector(".tracing-submit-button");
   const strokesInput = form.querySelector(".tracing-strokes-input");
   const metricsInput = form.querySelector(".tracing-metrics-input");
@@ -20,14 +21,23 @@
   const overlay = host.querySelector(".tracing-guide-overlay");
   window.tracingGuides?.renderTracingGuide(overlay, tracingSymbol);
 
+  const isPicture = host.dataset.isPicture === "true" ||
+                    overlay?.getAttribute("data-is-picture") === "true" ||
+                    overlay?._isPicture === true ||
+                    window.tracingGuides?.isPictureSymbol?.(tracingSymbol);
+
+  if (isPicture && demoButton) {
+    demoButton.style.display = "none";
+  }
+
+  let demoAnimationId = null;
+  let isDemoRunning = false;
+
   const state = {
     drawing: false,
     strokes: [],
     currentStroke: []
   };
-
-  const CORRIDOR_RADIUS = 20; // Max distance from guideline to allow ink
-  const COVERAGE_RADIUS = 15; // Radius to mark a checkpoint as "covered"
 
   function getCheckpoints() {
     return window.tracingGuides?.getGuideCheckpoints(overlay) || [];
@@ -51,7 +61,7 @@
       }
     }
 
-    const corridorRad = closestCp?.corridorRadius || 20;
+    const corridorRad = Math.max(22, closestCp?.corridorRadius || 24);
     const inCorridor = minDistanceSq <= corridorRad * corridorRad;
     return {
       inCorridor,
@@ -70,13 +80,13 @@
   }
 
   function drawStroke(points) {
-    if (points.length < 2) {
+    if (!points || points.length < 2) {
       return;
     }
 
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.strokeStyle = "#10b981"; // Fresh emerald green
+    context.strokeStyle = "#10b981"; // Fresh emerald green for child's ink
 
     for (let index = 1; index < points.length; index += 1) {
       const p1 = points[index - 1];
@@ -137,7 +147,7 @@
         const cp = checkpoints[i];
         const dx = p.x - cp.x;
         const dy = p.y - cp.y;
-        const coverRadius = Math.max(12, (cp.corridorRadius || 20) * 0.85);
+        const coverRadius = Math.max(16, (cp.corridorRadius || 20) * 0.9);
         if (dx * dx + dy * dy <= coverRadius * coverRadius) {
           coveredSet.add(i);
         }
@@ -156,7 +166,7 @@
       });
 
       const strokeCoverage = totalInStroke === 0 ? 1 : (coveredInStroke / totalInStroke);
-      if (strokeCoverage >= 0.65) {
+      if (strokeCoverage >= 0.55) {
         completedStrokes += 1;
       }
     });
@@ -165,8 +175,8 @@
     const coveredCount = coveredSet.size;
     const coverageScore = Math.min(100, Math.round((coveredCount / Math.max(1, totalCheckpoints)) * 100));
 
-    // Completed only when 100% of the individual strokes are completed
-    const completed = completedStrokes >= totalStrokes;
+    // Bé hoàn thành khi đã tô đủ các nét và có nét vẽ trên trang vở
+    const completed = (completedStrokes >= totalStrokes || coverageScore >= 60) && state.strokes.length >= 1;
 
     return {
       source: "tracing_strict_multitier_v5",
@@ -200,12 +210,136 @@
     }
   }
 
+  function stopStrokeDemo() {
+    if (demoAnimationId) {
+      cancelAnimationFrame(demoAnimationId);
+      demoAnimationId = null;
+    }
+    isDemoRunning = false;
+    const oldCursor = host.querySelector(".tracing-demo-cursor");
+    if (oldCursor) oldCursor.remove();
+    const oldLayer = host.querySelector(".tracing-demo-layer");
+    if (oldLayer) oldLayer.remove();
+    if (demoButton) demoButton.classList.remove("is-playing");
+  }
+
+  function playStrokeDemo() {
+    stopStrokeDemo();
+    if (isPicture) return;
+
+    const allCenterlines = [...overlay.querySelectorAll(".tracing-guide-centerline")];
+    if (!allCenterlines.length) return;
+
+    // Lấy các nét thuộc hàng mẫu đầu tiên (data-tier="bold")
+    let centerlines = allCenterlines.filter(cl => cl.getAttribute("data-tier") === "bold");
+    if (!centerlines.length) {
+      centerlines = allCenterlines.slice(0, Math.min(2, allCenterlines.length));
+    }
+    if (!centerlines.length) return;
+
+    isDemoRunning = true;
+    if (demoButton) demoButton.classList.add("is-playing");
+
+    let demoSvg = host.querySelector(".tracing-demo-layer");
+    if (!demoSvg) {
+      demoSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      demoSvg.setAttribute("class", "tracing-demo-layer");
+      demoSvg.setAttribute("viewBox", overlay.querySelector("svg")?.getAttribute("viewBox") || "0 0 920 1200");
+      host.appendChild(demoSvg);
+    }
+    demoSvg.replaceChildren();
+
+    const cursor = document.createElement("div");
+    cursor.className = "tracing-demo-cursor";
+    cursor.innerHTML = `
+      <div class="demo-pencil-wrap">
+        <span class="demo-pencil-icon">✏️</span>
+        <span class="demo-sparkle">✨</span>
+      </div>
+    `;
+    host.appendChild(cursor);
+
+    const strokePaths = centerlines.map((cl) => {
+      const len = cl.getTotalLength();
+      const pathClone = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      pathClone.setAttribute("d", cl.getAttribute("d"));
+      pathClone.setAttribute("fill", "none");
+      pathClone.setAttribute("stroke", "#2563eb");
+      pathClone.setAttribute("stroke-width", "16");
+      pathClone.setAttribute("stroke-linecap", "round");
+      pathClone.setAttribute("stroke-linejoin", "round");
+      pathClone.setAttribute("stroke-dasharray", `${len} ${len}`);
+      pathClone.setAttribute("stroke-dashoffset", String(len));
+      pathClone.style.filter = "drop-shadow(0 0 8px rgba(37, 99, 235, 0.7))";
+      demoSvg.appendChild(pathClone);
+      return { path: cl, clone: pathClone, length: len };
+    });
+
+    let currentStrokeIdx = 0;
+    let strokeProgress = 0;
+    const speed = 5.0;
+
+    function updateCursorPosition(pt) {
+      const viewBox = (overlay.querySelector("svg")?.getAttribute("viewBox") || "0 0 920 1200").split(" ").map(Number);
+      const vbW = viewBox[2] || 920;
+      const vbH = viewBox[3] || 1200;
+      const percentX = (pt.x / vbW) * 100;
+      const percentY = (pt.y / vbH) * 100;
+      cursor.style.left = `${percentX}%`;
+      cursor.style.top = `${percentY}%`;
+    }
+
+    function animateStep() {
+      if (!isDemoRunning) return;
+
+      if (currentStrokeIdx >= strokePaths.length) {
+        // Tô xong hàng mẫu -> Tự động mờ dần và xóa bỏ lớp vẽ mẫu sạch sẽ
+        setTimeout(() => {
+          if (isDemoRunning) {
+            demoSvg.style.transition = "opacity 0.4s ease";
+            demoSvg.style.opacity = "0";
+            cursor.style.transition = "opacity 0.3s ease";
+            cursor.style.opacity = "0";
+            setTimeout(stopStrokeDemo, 400);
+          }
+        }, 500);
+        return;
+      }
+
+      const item = strokePaths[currentStrokeIdx];
+      strokeProgress += speed;
+
+      if (strokeProgress >= item.length) {
+        item.clone.setAttribute("stroke-dashoffset", "0");
+        const endPt = item.path.getPointAtLength(item.length);
+        updateCursorPosition(endPt);
+
+        currentStrokeIdx += 1;
+        strokeProgress = 0;
+        setTimeout(() => {
+          if (isDemoRunning) {
+            demoAnimationId = requestAnimationFrame(animateStep);
+          }
+        }, 180);
+        return;
+      }
+
+      item.clone.setAttribute("stroke-dashoffset", String(item.length - strokeProgress));
+      const pt = item.path.getPointAtLength(strokeProgress);
+      updateCursorPosition(pt);
+
+      demoAnimationId = requestAnimationFrame(animateStep);
+    }
+
+    demoAnimationId = requestAnimationFrame(animateStep);
+  }
+
   function startStroke(event) {
+    stopStrokeDemo();
     const pt = pointFromEvent(event);
     const cps = getCheckpoints();
     const match = findClosestCheckpoint(pt, cps);
 
-    // If touching outside guideline corridor, allow natural page scrolling on iPad/touch devices!
     if (!match.inCorridor) {
       state.drawing = false;
       return;
@@ -227,12 +361,13 @@
       return;
     }
 
-    event.preventDefault();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     const pt = pointFromEvent(event);
     const cps = getCheckpoints();
     const match = findClosestCheckpoint(pt, cps);
 
-    // Strict boundary: Only record point if within corridor!
     if (match.inCorridor) {
       pt.penWidth = match.penWidth;
       state.currentStroke.push(pt);
@@ -246,7 +381,9 @@
       return;
     }
 
-    event.preventDefault();
+    if (event.cancelable) {
+      event.preventDefault();
+    }
     state.drawing = false;
     if (state.currentStroke.length > 1) {
       state.strokes.push(state.currentStroke);
@@ -258,16 +395,22 @@
   }
 
   undoButton?.addEventListener("click", function () {
+    stopStrokeDemo();
     state.strokes.pop();
     redraw();
     syncForm();
   });
 
   clearButton?.addEventListener("click", function () {
+    stopStrokeDemo();
     state.strokes = [];
     state.currentStroke = [];
     redraw();
     syncForm();
+  });
+
+  demoButton?.addEventListener("click", function () {
+    playStrokeDemo();
   });
 
   audioButton?.addEventListener("click", function () {
@@ -286,11 +429,21 @@
   canvas.addEventListener("pointermove", continueStroke);
   canvas.addEventListener("pointerup", finishStroke);
   canvas.addEventListener("pointercancel", finishStroke);
+  canvas.addEventListener("pointerleave", finishStroke);
 
   // Allow trackpad / mouse wheel to scroll page over canvas
   canvas.addEventListener("wheel", function (event) {
     window.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
   }, { passive: true });
 
+  // Initial draw & sync
+  redraw();
   syncForm();
+
+  // Auto-play demo once when entering the lesson (only for letters/numbers/strokes, NOT for picture art tracing)
+  window.setTimeout(function () {
+    if (!isPicture && !state.strokes.length && !state.drawing) {
+      playStrokeDemo();
+    }
+  }, 500);
 })();

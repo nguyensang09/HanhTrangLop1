@@ -125,13 +125,19 @@
 
     @if (Model.IsCorrect != true && Model.Item.InteractionType == InteractionTypes.Tracing)
     {
+        var topicCode = Model.Item.Topic?.Code?.ToLowerInvariant() ?? string.Empty;
+        var titleLower = Model.Item.Title.ToLowerInvariant();
+        var isPictureTracing = topicCode.Contains("tao-hinh") || topicCode.Contains("tranh") ||
+            topicCode == "art" || titleLower.StartsWith("tô tranh") || titleLower.StartsWith("tranh ");
+
         <div class="choice-board tracing-lesson-layout interaction-tracing">
             <div class="lesson-answer-zone tracing-answer-zone">
                 <div class="tracing-board tracing-canvas-host clay-card"
                      data-tracing-min-points="@Model.TracingMinPoints"
                      data-tracing-expected-strokes="@Model.TracingExpectedStrokeCount"
                      data-tracing-audio-url="@Model.TracingAudioUrl"
-                     data-tracing-symbol="@Model.TracingSymbol">
+                     data-tracing-symbol="@Model.TracingSymbol"
+                     data-is-picture="@(isPictureTracing ? "true" : "false")">
                     <div class="tracing-guide-overlay" aria-hidden="true"></div>
                     <canvas class="tracing-canvas" width="920" height="1200" aria-label="Bảng tô nét"></canvas>
                 </div>
@@ -140,6 +146,13 @@
                     <input class="tracing-metrics-input" type="hidden" name="MetricsJson" value="{}" />
                     <div class="tracing-bottom-bar">
                         <div class="board-actions tracing-controls-bar">
+                            @if (!isPictureTracing)
+                            {
+                                <button class="tracing-demo clay-button" type="button" title="Xem mẫu tô nét tự động">
+                                    <span class="material-symbols-outlined">auto_draw_solid</span>
+                                    <span>Xem mẫu</span>
+                                </button>
+                            }
                             @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))
                             {
                                 <button class="tracing-audio clay-button" type="button" title="Nghe hướng dẫn"><span class="material-symbols-outlined">volume_up</span></button>

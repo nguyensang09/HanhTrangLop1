@@ -800,15 +800,28 @@
 
   function isPictureSymbol(raw) {
     const s = cleanSymbolKey(raw);
-    return s.includes("tranh") || s.includes("phong canh") || s.includes("thien nhien") || s.includes("nature") ||
-           s.includes("do dung") || s.includes("school") || s.includes("balo") ||
-           s.includes("meo") || s.includes("cat") ||
-           s.includes("ca heo") || s.includes("dolphin") ||
-           s.includes("o che mua") || s.includes("umbrella") || s.includes("o mua") ||
-           s.includes("hinh hoc") || s.includes("shapes") || s.includes("ngoi sao") || s.includes("hinh") ||
-           s.includes("trai tao") || s.includes("apple") || s.includes("tao") ||
-           s.includes("tau hoa") || s.includes("train") || s.includes("tau") ||
-           s.includes("luon") || s.includes("wave") || s.includes("ziczac") || s.includes("mua") || s.includes("rain") || s.includes("cuu") || s.includes("kien") || s.includes("doi") || s.includes("non");
+    if (!s) return false;
+    return s === "phong canh" || s.includes("phong canh") ||
+           s === "do dung" || s.includes("do dung") ||
+           s === "thien nhien" || s.includes("thien nhien") ||
+           s === "hinh hoc" || s.includes("hinh hoc") ||
+           s === "ngoi sao" || s.includes("ngoi sao") ||
+           s === "meo" || s.includes("meo") ||
+           s === "ca heo" || s.includes("ca heo") ||
+           s === "o che mua" || s.includes("o che mua") || s.includes("umbrella") ||
+           s === "trai tao" || s.includes("trai tao") || s.includes("tao") ||
+           s === "tau hoa" || s.includes("tau hoa") || s.includes("train") ||
+           s === "chu tho" || s.includes("chu tho") || s.includes("rabbit") || s.includes("tho") ||
+           s === "ong vang" || s.includes("ong vang") || s.includes("bee") || s.includes("ong") ||
+           s === "may bay" || s.includes("may bay") || s.includes("plane") ||
+           s === "thuyen" || s.includes("thuyen") || s.includes("boat") ||
+           s === "cau vong" || s.includes("cau vong") || s.includes("rainbow") ||
+           s === "chu buom" || s.includes("chu buom") || s.includes("butterfly") || s.includes("buom") ||
+           s === "khung long" || s.includes("khung long") || s.includes("dinosaur") ||
+           s === "ten lua" || s.includes("ten lua") || s.includes("rocket") ||
+           s === "tranh" || s.startsWith("tranh ") || s.includes("to tranh") ||
+           s.includes("nghe thuat") || s.includes("tao hinh") ||
+           s.includes("picture") || s.includes("art");
   }
 
   function guideStrokesFor(symbol) {
@@ -877,30 +890,6 @@
       }
     });
     return checkpoints;
-  }
-
-  function isPictureSymbol(symbol) {
-    const textLower = cleanSymbolKey(symbol);
-    return textLower.includes("phong canh") ||
-           textLower.includes("do dung") ||
-           textLower.includes("meo") ||
-           textLower.includes("ca heo") ||
-           textLower.includes("o che mua") ||
-           textLower.includes("hinh hoc") ||
-           textLower.includes("trai tao") ||
-           textLower.includes("tau hoa") ||
-           textLower.includes("chu tho") ||
-           textLower.includes("tho") ||
-           textLower.includes("ong vang") ||
-           textLower.includes("ong") ||
-           textLower.includes("may bay") ||
-           textLower.includes("thuyen") ||
-           textLower.includes("cau vong") ||
-           textLower.includes("chu buom") ||
-           textLower.includes("buom") ||
-           textLower.includes("khung long") ||
-           textLower.includes("ten lua") ||
-           textLower.includes("tranh");
   }
 
   function renderTracingGuide(target, symbol) {
@@ -1058,6 +1047,7 @@
         class: "tracing-guide-centerline",
         "data-corridor-radius": String(def.corridorRadius),
         "data-pen-width": String(def.penWidth),
+        "data-tier": String(def.tier || (index === 0 ? "bold" : "light")),
         "data-step": def.tier === "bold" ? "12" : (def.tier === "medium" ? "8" : "6"),
         fill: "none",
         stroke: "#ffffff",
@@ -1094,6 +1084,8 @@
 
     target.replaceChildren(svg);
     target._guideCheckpoints = extractCheckpoints(svg);
+    target._isPicture = isPicture;
+    target.setAttribute("data-is-picture", isPicture ? "true" : "false");
   }
 
   function getGuideCheckpoints(target) {
@@ -1105,5 +1097,5 @@
     return extractCheckpoints(svg);
   }
 
-  window.tracingGuides = { renderTracingGuide, guideStrokesFor, getGuideCheckpoints, strokePalette };
+  window.tracingGuides = { renderTracingGuide, guideStrokesFor, getGuideCheckpoints, strokePalette, isPictureSymbol };
 })();

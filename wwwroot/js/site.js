@@ -43,11 +43,28 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     } catch {
         imageAssets = [];
     }
-    const normalizeLookupText = (value) => (value || "").replace(/\s+/g, " ").trim().toLocaleLowerCase("vi-VN");
+    const normalizeLookupText = (value) => (value || "").replace(/[?!.,:;]/g, "").replace(/\s+/g, " ").trim().toLocaleLowerCase("vi-VN");
     const readEntry = (entry, name) => entry?.[name] ?? entry?.[name.charAt(0).toUpperCase() + name.slice(1)] ?? "";
-    const voiceByText = new Map(voiceCacheEntries
-        .filter((entry) => readEntry(entry, "normalizedText"))
-        .map((entry) => [normalizeLookupText(readEntry(entry, "normalizedText")), entry]));
+    const voiceByText = new Map();
+    voiceCacheEntries.forEach((entry) => {
+        const norm = readEntry(entry, "normalizedText");
+        const orig = readEntry(entry, "originalText");
+        const name = readEntry(entry, "name");
+        if (norm) {
+            voiceByText.set(normalizeLookupText(norm), entry);
+            voiceByText.set((norm || "").trim().toLocaleLowerCase("vi-VN"), entry);
+        }
+        if (orig) {
+            voiceByText.set(normalizeLookupText(orig), entry);
+            voiceByText.set((orig || "").trim().toLocaleLowerCase("vi-VN"), entry);
+        }
+        if (name) {
+            const nameParts = name.split(" - ");
+            if (nameParts.length > 1) {
+                voiceByText.set(normalizeLookupText(nameParts.slice(1).join(" - ")), entry);
+            }
+        }
+    });
     const readyVoiceEntries = voiceCacheEntries
         .filter((entry) => readEntry(entry, "status") === "ready" && readEntry(entry, "audioUrl"));
     const imageAssetEntries = imageAssets
@@ -466,12 +483,25 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 const datalist = document.createElement("datalist");
                 datalist.id = listId;
                 readyVoiceEntries.forEach((voice) => {
-                    const rawText = readEntry(voice, "normalizedText");
-                    const label = `${displayUsageType(readEntry(voice, "usageType"))} - ${rawText}`;
-                    const option = document.createElement("option");
-                    option.value = label;
-                    voiceByLabel.set(label, readEntry(voice, "id"));
-                    datalist.append(option);
+                    const id = readEntry(voice, "id");
+                    const norm = readEntry(voice, "normalizedText");
+                    const orig = readEntry(voice, "originalText");
+                    const name = readEntry(voice, "name");
+                    const usage = displayUsageType(readEntry(voice, "usageType"));
+
+                    const seen = new Set();
+                    const addOption = (text) => {
+                        if (!text || seen.has(text)) return;
+                        seen.add(text);
+                        const opt = document.createElement("option");
+                        opt.value = text;
+                        voiceByLabel.set(text, id);
+                        datalist.append(opt);
+                    };
+
+                    if (norm) addOption(`${usage} - ${norm}`);
+                    if (orig && orig !== norm) addOption(`${usage} - ${orig}`);
+                    if (name) addOption(name);
                 });
                 picker.addEventListener("change", async () => {
                     const sourceId = voiceByLabel.get(picker.value);
