@@ -74,7 +74,7 @@ public class KidsController : Controller
         {
             ChildProfile = child,
             SkillGroups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(),
-            TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(5).ToList()
+            TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(10).ToList()
         };
 
         return View(model);
