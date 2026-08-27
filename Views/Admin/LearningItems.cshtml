@@ -28,27 +28,20 @@
                     <span class="material-symbols-outlined">draw</span>
                     Tạo bài tô nét
                 </a>
-                <form class="inline-action-form" asp-action="ReseedLessons" method="post">
-                    <button class="app-btn app-btn-muted app-btn-small" type="submit" title="Đồng bộ lại toàn bộ kho bài học gốc còn thiếu vào hệ thống">
-                        <span class="material-symbols-outlined">sync</span>
-                        Đồng bộ kho bài học
-                    </button>
-                </form>
-                <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
-                    <input type="hidden" name="status" value="@Model.Status" />
-                    <input type="hidden" name="interactionType" value="@Model.InteractionType" />
-                    <input type="hidden" name="skillGroupId" value="@Model.SkillGroupId" />
-                    <input type="hidden" name="topicId" value="@Model.TopicId" />
-                    <input type="hidden" name="search" value="@Model.Search" />
-                    <button class="app-btn app-btn-muted app-btn-small" type="submit">
-                        <span class="material-symbols-outlined">record_voice_over</span>
-                        Rà soát voice
-                    </button>
-                </form>
+                <button class="app-btn app-btn-small" type="button" data-sync-voice-btn title="Rà soát voice có sẵn và tự động sinh Voice VI & EN còn thiếu cho toàn bộ bài học">
+                    <span class="material-symbols-outlined">sync</span>
+                    Đồng bộ & Tự sinh Voice
+                </button>
                 <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
                     <span class="material-symbols-outlined">graphic_eq</span>
                     Kiểm soát voice
                 </a>
+                <form class="inline-action-form" asp-action="ReseedLessons" method="post">
+                    <button class="app-btn app-btn-muted app-btn-small" type="submit" title="Đồng bộ lại cấu trúc kho bài học gốc">
+                        <span class="material-symbols-outlined">refresh</span>
+                        Nạp lại kho bài gốc
+                    </button>
+                </form>
                 <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
             </div>
         </div>
@@ -320,7 +313,7 @@
                                                                 <td class="table-actions">
                                                                     <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử giao diện bé học">
                                                                         <span class="material-symbols-outlined">visibility</span>
-                                                                        Xem thử
+                                                                        Xem
                                                                     </a>
                                                                     @if (item.InteractionType == InteractionTypes.Tracing)
                                                                     {
@@ -424,7 +417,7 @@
                                                             <td class="table-actions">
                                                                 <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử" target="_blank">
                                                                     <span class="material-symbols-outlined">visibility</span>
-                                                                    Xem thử
+                                                                    Xem
                                                                 </a>
                                                                 @if (item.InteractionType == InteractionTypes.Tracing)
                                                                 {

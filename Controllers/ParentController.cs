@@ -185,7 +185,8 @@ public class ParentController : Controller
             BirthYear = model.BirthYear,
             AvatarKey = uploadedAvatar ?? model.AvatarKey ?? "avatar-squirrel",
             DailyLearningMinutes = model.DailyLearningMinutes,
-            SoundEnabled = model.SoundEnabled
+            SoundEnabled = model.SoundEnabled,
+            EnglishVoice = model.EnglishVoice
         };
 
         _db.ChildProfiles.Add(child);
@@ -214,7 +215,8 @@ public class ParentController : Controller
             BirthYear = child.BirthYear,
             AvatarKey = child.AvatarKey,
             DailyLearningMinutes = child.DailyLearningMinutes,
-            SoundEnabled = child.SoundEnabled
+            SoundEnabled = child.SoundEnabled,
+            EnglishVoice = child.EnglishVoice
         };
 
         return View("ProfileForm", model);
@@ -251,6 +253,7 @@ public class ParentController : Controller
         }
         child.DailyLearningMinutes = model.DailyLearningMinutes;
         child.SoundEnabled = model.SoundEnabled;
+        child.EnglishVoice = model.EnglishVoice;
         child.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _db.SaveChangesAsync();

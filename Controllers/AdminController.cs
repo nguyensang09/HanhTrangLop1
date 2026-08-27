@@ -248,7 +248,7 @@ public class AdminController : Controller
     }
 
     [HttpGet("learning-items/{id:guid}/preview")]
-    public async Task<IActionResult> PreviewLearningItem(Guid id)
+    public async Task<IActionResult> PreviewLearningItem(Guid id, bool englishVoice = false)
     {
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
@@ -262,13 +262,13 @@ public class AdminController : Controller
         }
 
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-        var model = await BuildAdminPreviewLearnViewModelAsync(item, question);
+        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, englishVoice: englishVoice);
         return View("PreviewLearningItem", model);
     }
 
     [HttpPost("learning-items/{id:guid}/preview-answer")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> PreviewAnswer(Guid id, SubmitAnswerViewModel answer)
+    public async Task<IActionResult> PreviewAnswer(Guid id, SubmitAnswerViewModel answer, bool englishVoice = false)
     {
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
@@ -286,13 +286,13 @@ public class AdminController : Controller
         var isCorrect = LearningAnswerEvaluator.IsCorrect(item.InteractionType, answer.AnswerValue, correctAnswer);
         var feedbackMessage = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
 
-        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, feedbackMessage, isCorrect);
+        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, feedbackMessage, isCorrect, englishVoice: englishVoice);
         return View("PreviewLearningItem", model);
     }
 
     [HttpPost("learning-items/{id:guid}/preview-tracing")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> PreviewTracing(Guid id, SubmitTracingViewModel tracing)
+    public async Task<IActionResult> PreviewTracing(Guid id, SubmitTracingViewModel tracing, bool englishVoice = false)
     {
         var item = await _db.LearningItems
             .Include(x => x.SkillGroup)
@@ -306,7 +306,7 @@ public class AdminController : Controller
         }
 
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, "Bé đã hoàn thành bài tô nét xuất sắc!", true);
+        var model = await BuildAdminPreviewLearnViewModelAsync(item, question, "Bé đã hoàn thành bài tô nét xuất sắc!", true, englishVoice: englishVoice);
         return View("PreviewLearningItem", model);
     }
 
@@ -314,7 +314,8 @@ public class AdminController : Controller
         LearningItem item,
         Question? question,
         string? feedbackMessage = null,
-        bool? isCorrect = null)
+        bool? isCorrect = null,
+        bool englishVoice = false)
     {
         var payloadSymbol = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", string.Empty);
         var tracingSymbol = ExtractAdminTracingSymbol(payloadSymbol, item.Title, question?.PromptText);
@@ -334,23 +335,35 @@ public class AdminController : Controller
             .FirstOrDefaultAsync();
 
         var titleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty);
+        var titleAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrlEn", string.Empty);
         var questionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty);
+        var questionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrlEn", string.Empty);
         var instructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty);
+        var instructionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrlEn", string.Empty);
         var tracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty);
+        var tracingAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrlEn", string.Empty);
         var correctFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty);
+        var correctFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrlEn", string.Empty);
         var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
+        var retryFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrlEn", string.Empty);
 
         if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = await ResolveActiveAdminVoiceUrlAsync(item.Title);
+        if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(item.Title);
         if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = await ResolveActiveAdminVoiceUrlAsync(item.InstructionText);
+        if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(item.InstructionText);
         if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveAdminVoiceUrlAsync(question?.PromptText ?? item.Title);
+        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(question?.PromptText ?? item.Title);
         if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
+        if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
         if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm, con đã hoàn thành đúng!");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Giỏi lắm, con đã hoàn thành đúng!");
         if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
 
         return new LearnViewModel
         {
             Item = item,
-            ChildProfile = new ChildProfile { Nickname = "Bé Xem Thử (Admin)", SoundEnabled = true },
+            ChildProfile = new ChildProfile { Nickname = "Bé Xem Thử (Admin)", SoundEnabled = true, EnglishVoice = englishVoice },
             CurrentQuestion = question,
             Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
             TracingSymbol = tracingSymbol,
@@ -359,13 +372,20 @@ public class AdminController : Controller
             TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
             TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
             TracingAudioUrl = tracingAudioUrl,
+            TracingAudioUrlEn = tracingAudioUrlEn,
             QuestionImageUrl = questionImageUrl,
             QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
             TitleAudioUrl = titleAudioUrl,
+            TitleAudioUrlEn = titleAudioUrlEn,
             QuestionAudioUrl = questionAudioUrl,
+            QuestionAudioUrlEn = questionAudioUrlEn,
             InstructionAudioUrl = instructionAudioUrl,
+            InstructionAudioUrlEn = instructionAudioUrlEn,
             CorrectFeedbackAudioUrl = correctFeedbackAudioUrl,
+            CorrectFeedbackAudioUrlEn = correctFeedbackAudioUrlEn,
             RetryFeedbackAudioUrl = retryFeedbackAudioUrl,
+            RetryFeedbackAudioUrlEn = retryFeedbackAudioUrlEn,
+            EnglishVoiceEnabled = englishVoice,
             FeedbackMessage = feedbackMessage,
             IsCorrect = isCorrect,
             NextItemId = nextItem?.Id,
@@ -382,6 +402,17 @@ public class AdminController : Controller
             !string.IsNullOrEmpty(x.AudioUrl) &&
             (x.NormalizedText == clean || x.OriginalText == clean));
         return entry?.AudioUrl ?? string.Empty;
+    }
+
+    private async Task<string> ResolveActiveAdminVoiceUrlEnAsync(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var clean = text.Trim();
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            x.StatusEn == "ready" &&
+            !string.IsNullOrEmpty(x.AudioUrlEn) &&
+            (x.NormalizedText == clean || x.OriginalText == clean));
+        return entry?.AudioUrlEn ?? string.Empty;
     }
 
     private static string ExtractAdminTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
@@ -656,8 +687,9 @@ public class AdminController : Controller
 
     [HttpPost("voice-cache/{id:guid}/update")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? usageType, bool generateFile = true)
+    public async Task<IActionResult> UpdateVoiceCache(Guid id, string? name, string? text, string? textEn, string? usageType, bool regenerateVoice = false, bool generateFile = false)
     {
+        var shouldRegenerate = regenerateVoice || generateFile;
         var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x => x.Id == id);
         if (entry is null)
         {
@@ -694,31 +726,50 @@ public class AdminController : Controller
         entry.Name = string.IsNullOrWhiteSpace(name) ? BuildVoiceName(usageType ?? entry.UsageType, null, normalizedText) : AudioAltText(name.Trim());
         entry.UsageType = string.IsNullOrWhiteSpace(usageType) ? "custom" : usageType.Trim();
         entry.NormalizedText = AudioAltText(normalizedText);
-        entry.OriginalText = AudioOriginalText(normalizedText);
+        entry.OriginalText = AudioOriginalText(text?.Trim() ?? normalizedText);
         entry.LastError = null;
-        entry.UpdatedAt = DateTimeOffset.UtcNow;
 
-        if (textChanged || generateFile)
+        if (!string.IsNullOrWhiteSpace(textEn))
+        {
+            entry.TextEn = textEn.Trim();
+        }
+        else if (textChanged || shouldRegenerate || string.IsNullOrWhiteSpace(entry.TextEn))
+        {
+            entry.TextEn = await PreschoolTranslationHelper.TranslateToEnglishAsync(string.IsNullOrWhiteSpace(entry.OriginalText) ? entry.NormalizedText : entry.OriginalText);
+        }
+
+        if (textChanged || shouldRegenerate)
         {
             try
             {
-                entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+                entry.AudioUrl = await _voiceLibraryService.GenerateVoiceCacheFileAsync(entry);
                 entry.Status = "ready";
+                entry.LastError = null;
             }
-            catch (Exception ex)
+            catch (Exception exVi)
             {
                 entry.AudioUrl = string.Empty;
                 entry.Status = "missing";
-                entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                entry.LastError = exVi.Message.Length > 1000 ? exVi.Message[..1000] : exVi.Message;
+            }
+
+            try
+            {
+                entry.AudioUrlEn = await _voiceLibraryService.GenerateVoiceCacheFileEnAsync(entry);
+                entry.StatusEn = "ready";
+                entry.LastErrorEn = null;
+            }
+            catch (Exception exEn)
+            {
+                entry.AudioUrlEn = string.Empty;
+                entry.StatusEn = "missing";
+                entry.LastErrorEn = exEn.Message.Length > 1000 ? exEn.Message[..1000] : exEn.Message;
             }
         }
 
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
-        TempData["AdminMessage"] = (textChanged || generateFile)
-            ? entry.Status == "ready"
-                ? "Đã cập nhật nội dung và tạo lại file voice cho dòng này."
-                : "Đã cập nhật nội dung cho dòng này, nhưng chưa tạo được file. Có thể tải file lên hoặc bấm Tạo file."
-            : "Đã cập nhật tên/loại voice.";
+        TempData["AdminMessage"] = $"Đã cập nhật voice “{entry.Name}”{(shouldRegenerate || textChanged ? " và sinh file âm thanh thành công" : "")}.";
         return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
     }
 
@@ -837,6 +888,8 @@ public class AdminController : Controller
         return RedirectToAction(nameof(VoiceCache));
     }
 
+
+
     [HttpPost("voice-cache/{id:guid}/upload")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UploadVoiceCacheFile(Guid id, IFormFile? audioFile)
@@ -942,6 +995,13 @@ public class AdminController : Controller
         entry.AudioUrl = source.AudioUrl;
         entry.Status = "ready";
         entry.LastError = null;
+        if (!string.IsNullOrWhiteSpace(source.AudioUrlEn))
+        {
+            entry.AudioUrlEn = source.AudioUrlEn;
+            entry.StatusEn = source.StatusEn;
+            entry.TextEn = source.TextEn;
+            entry.LastErrorEn = null;
+        }
         entry.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
 
@@ -949,8 +1009,11 @@ public class AdminController : Controller
         {
             id = entry.Id,
             audioUrl = entry.AudioUrl,
+            audioUrlEn = entry.AudioUrlEn,
             status = entry.Status,
+            statusEn = entry.StatusEn,
             normalizedText = entry.NormalizedText,
+            textEn = entry.TextEn,
             updatedAt = entry.UpdatedAt
         });
     }
@@ -977,9 +1040,23 @@ public class AdminController : Controller
 
         try
         {
-            entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+            entry.AudioUrl = await _voiceLibraryService.GenerateVoiceCacheFileAsync(entry);
             entry.Status = "ready";
             entry.LastError = null;
+
+            try
+            {
+                entry.AudioUrlEn = await _voiceLibraryService.GenerateVoiceCacheFileEnAsync(entry);
+                entry.StatusEn = "ready";
+                entry.LastErrorEn = null;
+            }
+            catch (Exception exEn)
+            {
+                entry.AudioUrlEn = string.Empty;
+                entry.StatusEn = "missing";
+                entry.LastErrorEn = exEn.Message.Length > 1000 ? exEn.Message[..1000] : exEn.Message;
+            }
+
             entry.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
 
@@ -987,8 +1064,11 @@ public class AdminController : Controller
             {
                 id = entry.Id,
                 audioUrl = entry.AudioUrl,
+                audioUrlEn = entry.AudioUrlEn,
                 status = entry.Status,
+                statusEn = entry.StatusEn,
                 normalizedText = entry.NormalizedText,
+                textEn = entry.TextEn,
                 updatedAt = entry.UpdatedAt
             });
         }
@@ -1000,6 +1080,51 @@ public class AdminController : Controller
             await _db.SaveChangesAsync();
             return BadRequest(new { message = $"Không thể tạo file voice: {ex.Message}" });
         }
+    }
+
+    [HttpPost("sync-voice-batch")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SyncVoiceBatch(int batchSize = 10, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await _voiceLibraryService.SyncAndGenerateBatchAsync(batchSize, cancellationToken);
+            return Json(new
+            {
+                scannedItems = result.ScannedItems,
+                totalEntries = result.TotalEntries,
+                missingVi = result.MissingVi,
+                missingEn = result.MissingEn,
+                processedInBatch = result.ProcessedInBatch,
+                createdVi = result.CreatedVi,
+                createdEn = result.CreatedEn,
+                failed = result.Failed,
+                updatedItems = result.UpdatedItems,
+                remainingMissing = result.RemainingMissing,
+                isCompleted = result.IsCompleted,
+                errorMessages = result.ErrorMessages
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            return NoContent();
+        }
+    }
+
+    [HttpGet("voice-cache/audit-stats")]
+    public async Task<IActionResult> GetVoiceAuditStats()
+    {
+        var stats = await _voiceLibraryService.GetVoiceAuditStatsAsync(HttpContext.RequestAborted);
+        return Json(new
+        {
+            totalVoices = stats.TotalVoices,
+            readyVi = stats.ReadyVoicesVi,
+            missingVi = stats.MissingVoicesVi,
+            readyEn = stats.ReadyVoicesEn,
+            missingEn = stats.MissingVoicesEn,
+            totalLessons = stats.TotalLessons,
+            fullySyncedLessons = stats.FullySyncedLessons
+        });
     }
 
     [HttpPost("voice-cache/generate-missing")]
@@ -1034,11 +1159,11 @@ public class AdminController : Controller
 
     [HttpPost("voice-cache/generate-text")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GenerateVoiceFromText(string text, string? name, string? usageType)
+    public async Task<IActionResult> GenerateVoiceFromText(string text, string? textEn, string? name, string? usageType)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
-            TempData["AdminMessage"] = "Vui lòng nhập nội dung cần tạo voice.";
+            TempData["AdminMessage"] = "Vui lòng nhập nội dung Tiếng Việt cần tạo voice.";
             return RedirectToAction(nameof(VoiceCache));
         }
 
@@ -1054,14 +1179,37 @@ public class AdminController : Controller
             entry.Name = AudioAltText(name.Trim());
         }
 
+        if (!string.IsNullOrWhiteSpace(textEn))
+        {
+            entry.TextEn = textEn.Trim();
+        }
+        else if (string.IsNullOrWhiteSpace(entry.TextEn))
+        {
+            entry.TextEn = await PreschoolTranslationHelper.TranslateToEnglishAsync(text);
+        }
+
         try
         {
-            entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry);
+            entry.AudioUrl = await _voiceLibraryService.GenerateVoiceCacheFileAsync(entry);
             entry.Status = "ready";
             entry.LastError = null;
+
+            try
+            {
+                entry.AudioUrlEn = await _voiceLibraryService.GenerateVoiceCacheFileEnAsync(entry);
+                entry.StatusEn = "ready";
+                entry.LastErrorEn = null;
+            }
+            catch (Exception exEn)
+            {
+                entry.AudioUrlEn = string.Empty;
+                entry.StatusEn = "missing";
+                entry.LastErrorEn = exEn.Message.Length > 1000 ? exEn.Message[..1000] : exEn.Message;
+            }
+
             entry.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
-            TempData["AdminMessage"] = $"Đã tạo voice cho “{entry.NormalizedText}”.";
+            TempData["AdminMessage"] = $"Đã tạo voice song ngữ thành công cho “{entry.NormalizedText}”.";
             return RedirectToAction(nameof(VoiceCache), new { q = entry.NormalizedText });
         }
         catch (Exception ex)
@@ -1789,41 +1937,9 @@ public class AdminController : Controller
 
     private async Task<int> SyncVoiceForLearningItemAsync(LearningItem item, bool onlyMissing)
     {
-        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-        if (question is null)
-        {
-            return 0;
-        }
-
-        var payload = ParsePayloadObject(question.PayloadJson);
-        var linkedCount = 0;
-        linkedCount += await SyncPayloadVoiceAsync(payload, "titleAudioUrl", item.Title, "title", item.Title, onlyMissing);
-        linkedCount += await SyncPayloadVoiceAsync(payload, "instructionAudioUrl", item.InstructionText, "instruction", item.Title, onlyMissing);
-        linkedCount += await SyncPayloadVoiceAsync(payload, "correctAudioUrl", ReadJsonString(question.FeedbackJson, "correct"), "correct-feedback", item.Title, onlyMissing);
-        linkedCount += await SyncPayloadVoiceAsync(payload, "retryAudioUrl", ReadJsonString(question.FeedbackJson, "retry"), "retry-feedback", item.Title, onlyMissing);
-
-        if (item.InteractionType == InteractionTypes.Tracing)
-        {
-            linkedCount += await SyncPayloadVoiceAsync(payload, "audioUrl", question.PromptText, "tracing-prompt", item.Title, onlyMissing);
-            linkedCount += await SyncPayloadVoiceAsync(payload, "questionAudioUrl", question.PromptText, "question", item.Title, onlyMissing);
-        }
-        else
-        {
-            linkedCount += await SyncPayloadVoiceAsync(payload, "questionAudioUrl", question.PromptText, "question", item.Title, onlyMissing);
-            if (item.InteractionType == InteractionTypes.ListenAndChoose ||
-                item.InteractionType == InteractionTypes.StoryChoice)
-            {
-                linkedCount += await SyncPayloadVoiceAsync(payload, "audioUrl", ReadJsonString(payload, "speechText"), "content", item.Title, onlyMissing);
-            }
-        }
-
-        linkedCount += await SyncOptionVoiceMapAsync(payload, item.Title, onlyMissing);
-
-        var payloadJson = payload.ToJsonString();
-        question.PayloadJson = payloadJson;
-        item.ContentJson = payloadJson;
-        item.UpdatedAt = DateTimeOffset.UtcNow;
-        return linkedCount;
+        await _voiceLibraryService.EnsureVoiceRowsForLearningItemAsync(item);
+        var updated = await _voiceLibraryService.LinkVoiceUrlsForLearningItemAsync(item);
+        return updated ? 1 : 0;
     }
 
     private async Task<int> SyncPayloadVoiceAsync(JsonObject payload, string propertyName, string text, string usageType, string? lessonTitle, bool onlyMissing)
@@ -2040,15 +2156,19 @@ public class AdminController : Controller
             Id = Guid.NewGuid(),
             Provider = cacheKey.Provider,
             Voice = cacheKey.Voice,
+            VoiceEn = "en-US-JennyNeural",
             ModelId = cacheKey.ModelId,
             Format = cacheKey.Format,
             TextHash = cacheKey.TextHash,
             Name = BuildVoiceName(usageType, lessonTitle, normalizedText),
             UsageType = usageType,
             NormalizedText = AudioAltText(normalizedText),
-            OriginalText = AudioOriginalText(text),
+            OriginalText = AudioOriginalText(text ?? normalizedText),
+            TextEn = PreschoolTranslationHelper.TranslateToEnglish(text ?? normalizedText),
             AudioUrl = string.Empty,
+            AudioUrlEn = string.Empty,
             Status = "missing",
+            StatusEn = "missing",
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
         };
@@ -2237,7 +2357,7 @@ public class AdminController : Controller
         throw new InvalidOperationException(string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x))));
     }
 
-    private static string AudioAltText(string text) => text.Length > 180 ? text[..180] : text;
+    private static string AudioAltText(string text) => text.Length > 500 ? text[..500] : text;
 
     private static string AudioOriginalText(string text) => text.Length > 1000 ? text[..1000] : text;
 

@@ -37,14 +37,22 @@
 <section class="learn-screen learning-focus-shell"
          data-learning-voice
          data-sound-enabled="@(Model.ChildProfile?.SoundEnabled != false ? "true" : "false")"
+         data-english-voice="@(Model.EnglishVoiceEnabled ? "true" : "false")"
          data-title-text="@Model.Item.Title"
          data-title-audio-url="@Model.TitleAudioUrl"
+         data-title-audio-url-en="@Model.TitleAudioUrlEn"
          data-instruction-text="@Model.Item.InstructionText"
          data-question-text="@Model.CurrentQuestion?.PromptText"
          data-question-audio-url="@Model.QuestionAudioUrl"
+         data-question-audio-url-en="@Model.QuestionAudioUrlEn"
          data-instruction-audio-url="@Model.InstructionAudioUrl"
+         data-instruction-audio-url-en="@Model.InstructionAudioUrlEn"
          data-correct-audio-url="@Model.CorrectFeedbackAudioUrl"
+         data-correct-audio-url-en="@Model.CorrectFeedbackAudioUrlEn"
          data-retry-audio-url="@Model.RetryFeedbackAudioUrl"
+         data-retry-audio-url-en="@Model.RetryFeedbackAudioUrlEn"
+         data-tracing-audio-url="@Model.TracingAudioUrl"
+         data-tracing-audio-url-en="@Model.TracingAudioUrlEn"
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
     

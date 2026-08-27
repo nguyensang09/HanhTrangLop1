@@ -22,6 +22,8 @@ public class ChildProfile
 
     public bool SoundEnabled { get; set; } = true;
 
+    public bool EnglishVoice { get; set; } = false;
+
     public string PreferredSkillGroupIdsJson { get; set; } = "[]";
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

@@ -141,6 +141,9 @@ namespace HanhTrangLop1.Data.Migrations
                     b.Property<int>("DailyLearningMinutes")
                         .HasColumnType("int");
 
+                    b.Property<bool>("EnglishVoice")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Nickname")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -692,6 +695,10 @@ namespace HanhTrangLop1.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("AudioUrlEn")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -701,6 +708,10 @@ namespace HanhTrangLop1.Data.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("LastErrorEn")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -737,6 +748,15 @@ namespace HanhTrangLop1.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("StatusEn")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TextEn")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<string>("TextHash")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -752,6 +772,10 @@ namespace HanhTrangLop1.Data.Migrations
 
                     b.Property<string>("Voice")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("VoiceEn")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 

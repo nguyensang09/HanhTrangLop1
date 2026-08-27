@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Kiểm soát voice";
     var totalCount = ViewBag.TotalVoiceCount as int? ?? Model.Count;
-    var missingCount = ViewBag.MissingVoiceCount as int? ?? Model.Count(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+    var missingCount = ViewBag.MissingVoiceCount as int? ?? Model.Count(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready" || string.IsNullOrWhiteSpace(x.AudioUrlEn) || x.StatusEn != "ready");
     var currentStatus = ViewBag.Status as string;
     var currentUsageType = ViewBag.UsageType as string;
     var keyword = ViewBag.Keyword as string;
@@ -19,10 +19,10 @@
         "title" => "Tiêu đề",
         "instruction" => "Hướng dẫn",
         "question" => "Câu hỏi",
+        "content" => "Nội dung",
         "correct-feedback" => "Phản hồi đúng",
         "retry-feedback" => "Phản hồi sai",
         "option" => "Đáp án",
-        "content" => "Nội dung",
         "tracing-prompt" => "Tô nét",
         "legacy" => "Voice cũ",
         "custom" => "Tự tạo",
@@ -40,200 +40,376 @@
 
         <div class="dashboard-header">
             <div>
-                <p class="eyebrow">Thư viện âm thanh riêng</p>
-                <h1>Kiểm soát voice</h1>
-                <p class="empty-note">@totalCount mục, @missingCount mục chưa có file. Đang hiển thị @Model.Count / @filteredCount mục.</p>
+                <p class="eyebrow">Thư viện âm thanh Song Ngữ</p>
+                <h1>Kiểm soát voice (Việt – Anh)</h1>
+                <p class="empty-note">Tổng số @totalCount mục voice. Đang hiển thị @Model.Count / @filteredCount mục.</p>
             </div>
-        <div class="hero-actions">
-            <form class="inline-action-form" asp-action="GenerateMissingLearningItemsAudio" method="post">
-                <input type="hidden" name="returnTo" value="voice-cache" />
-                <button class="app-btn app-btn-small" type="submit">
-                    <span class="material-symbols-outlined">playlist_add_check</span>
-                    Rà soát bài học
+            <div class="hero-actions">
+                <button class="app-btn app-btn-muted app-btn-small" type="button" id="toggleAddVoiceBtn" title="Mở form tạo nhanh voice mới">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Tạo voice mới
                 </button>
-            </form>
-            <form class="inline-action-form" asp-action="GenerateMissingVoiceFiles" method="post">
-                <button class="app-btn app-btn-small" type="submit">
-                    <span class="material-symbols-outlined">record_voice_over</span>
-                    Tự tạo file thiếu
+                <button class="app-btn app-btn-small" type="button" data-sync-voice-btn title="Rà soát voice đã có và tự động sinh Voice VI & EN cho toàn bộ bài học">
+                    <span class="material-symbols-outlined">sync</span>
+                    Đồng bộ & Tự sinh Voice
                 </button>
-            </form>
-            @if (legacyCount > 0)
-            {
-                <form class="inline-action-form" asp-action="DeleteLegacyVoiceCache" method="post" data-confirm-delete data-confirm-message="Xóa toàn bộ voice cũ khỏi bảng kiểm soát?">
-                    <button class="app-btn app-btn-muted app-btn-small" type="submit">
-                        <span class="material-symbols-outlined">delete_sweep</span>
-                        Xóa voice cũ (@legacyCount)
-                    </button>
-                </form>
-            }
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
-                <span class="material-symbols-outlined">library_books</span>
-                Kho bài học
-            </a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
+                    <span class="material-symbols-outlined">library_books</span>
+                    Kho bài học
+                </a>
+            </div>
         </div>
-    </div>
 
-    <form class="soft-card admin-filter voice-filter" asp-action="VoiceCache" method="get">
-        <input type="hidden" name="pageSize" value="@pageSize" />
-        <div>
-            <label for="q">Tìm text</label>
-            <input id="q" name="q" class="form-control" value="@keyword" placeholder="Nhập câu hỏi, đáp án, phản hồi..." />
-        </div>
-        <div>
-            <label for="status">Trạng thái</label>
-            <select id="status" name="status" class="form-control">
-                <option value="">Tất cả</option>
-                <option value="missing" selected="@(currentStatus == "missing")">Thiếu file</option>
-                <option value="ready" selected="@(currentStatus == "ready")">Có file</option>
-            </select>
-        </div>
-        <div>
-            <label for="usageType">Loại voice</label>
-            <select id="usageType" name="usageType" class="form-control">
-                <option value="">Tất cả</option>
-                @foreach (var type in usageTypes)
-                {
-                    <option value="@type" selected="@(currentUsageType == type)">@DisplayUsageType(type)</option>
-                }
-            </select>
-        </div>
-        <button class="app-btn app-btn-small" type="submit">
-            <span class="material-symbols-outlined">filter_alt</span>
-            Lọc
-        </button>
-        <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">Xóa lọc</a>
-    </form>
+        <!-- Form Tạo Voice Tùy Chỉnh Nhanh (Mặc định ẩn, bật lên khi bấm Tạo voice mới) -->
+        <form class="soft-card voice-generate-card" id="addVoiceCard" asp-action="GenerateVoiceFromText" method="post" style="display:none;">
+            <div class="voice-card-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="material-symbols-outlined header-icon">add_circle</span>
+                    <div>
+                        <h2 class="card-title">Thêm Voice Song Ngữ Mới (Việt – Anh)</h2>
+                        <p class="card-subtitle">Nhập câu Tiếng Việt và tùy chỉnh câu Tiếng Anh (nếu để trống hệ thống sẽ tự động dịch chuẩn).</p>
+                    </div>
+                </div>
+                <button type="button" class="close-card-btn" id="closeAddVoiceBtn" title="Đóng form">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
 
-    <form class="soft-card voice-generate-form" asp-action="GenerateVoiceFromText" method="post">
-        <div>
-            <label for="voiceText">Text cần tạo voice</label>
-            <input id="voiceText" name="text" class="form-control" maxlength="1000" placeholder="Nhập một câu bất kỳ để tạo file MP3" />
-        </div>
-        <div>
-            <label for="voiceName">Tên kiểm soát</label>
-            <input id="voiceName" name="name" class="form-control" maxlength="200" placeholder="Ví dụ: Lời nhắc mở đầu" />
-        </div>
-        <div>
-            <label for="voiceUsageType">Loại</label>
-            <select id="voiceUsageType" name="usageType" class="form-control">
-                <option value="custom">Tự tạo</option>
-                <option value="instruction">Hướng dẫn</option>
-                <option value="question">Câu hỏi</option>
-                <option value="option">Đáp án</option>
-                <option value="correct-feedback">Phản hồi đúng</option>
-                <option value="retry-feedback">Phản hồi sai</option>
-            </select>
-        </div>
-        <button class="app-btn app-btn-small" type="submit">
-            <span class="material-symbols-outlined">record_voice_over</span>
-            Tạo voice
-        </button>
-    </form>
+            <div class="voice-form-rows">
+                <!-- Hàng 1: Tiếng Việt (50%) & Tiếng Anh (50%) dạng textarea rộng rãi -->
+                <div class="form-row-two-col">
+                    <div class="form-field-wrap">
+                        <label for="voiceText">Nội dung Tiếng Việt *</label>
+                        <textarea id="voiceText" name="text" class="form-control voice-textarea" rows="3" maxlength="1000" placeholder="Ví dụ: Con hãy chọn đáp án đúng" required></textarea>
+                    </div>
+                    <div class="form-field-wrap">
+                        <label for="voiceTextEn">Bản dịch Tiếng Anh (Tùy chỉnh)</label>
+                        <textarea id="voiceTextEn" name="textEn" class="form-control voice-textarea" rows="3" maxlength="1000" placeholder="Ví dụ: Please choose the correct answer (để trống để tự động dịch)"></textarea>
+                    </div>
+                </div>
 
-    <div class="soft-card report-panel mt-4 voice-cache-panel">
-        <table class="app-table voice-cache-table">
-            <thead>
-            <tr>
-                <th>Nội dung voice</th>
-                <th>Loại</th>
-                <th>Trạng thái</th>
-                <th>Nghe</th>
-                <th>Thao tác</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model)
-            {
-                var hasFile = !string.IsNullOrWhiteSpace(item.AudioUrl) && item.Status == "ready";
+                <!-- Hàng 2: Tên kiểm soát + Loại voice + Nút bấm tạo voice cùng 1 hàng -->
+                <div class="form-row-three-col">
+                    <div class="form-field-wrap">
+                        <label for="voiceName">Tên kiểm soát</label>
+                        <input id="voiceName" name="name" class="form-control" maxlength="200" placeholder="Ví dụ: Lời nhắc mở đầu" />
+                    </div>
+                    <div class="form-field-wrap">
+                        <label for="voiceUsageType">Loại voice</label>
+                        <select id="voiceUsageType" name="usageType" class="form-control">
+                            <option value="title">Tiêu đề</option>
+                            <option value="instruction">Hướng dẫn</option>
+                            <option value="question">Câu hỏi</option>
+                            <option value="content">Nội dung</option>
+                            <option value="option">Đáp án</option>
+                            <option value="correct-feedback">Phản hồi đúng</option>
+                            <option value="retry-feedback">Phản hồi sai</option>
+                            <option value="tracing-prompt">Tô nét</option>
+                            <option value="custom" selected>Tự tạo</option>
+                            <option value="legacy">Voice cũ</option>
+                        </select>
+                    </div>
+                    <div class="form-field-wrap btn-wrap">
+                        <label class="invisible-label">&nbsp;</label>
+                        <button class="app-btn app-btn-small" type="submit">
+                            <span class="material-symbols-outlined">record_voice_over</span>
+                            Tạo voice song ngữ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Bộ Lọc & Tìm Kiếm Voice -->
+        <form class="soft-card admin-filter voice-filter" asp-action="VoiceCache" method="get">
+            <input type="hidden" name="pageSize" value="@pageSize" />
+            <div class="filter-field">
+                <label for="q">Tìm kiếm</label>
+                <input id="q" name="q" class="form-control" value="@keyword" placeholder="Nhập câu tiếng Việt hoặc tiếng Anh..." />
+            </div>
+            <div class="filter-field">
+                <label for="status">Trạng thái</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="missing" selected="@(currentStatus == "missing")">Thiếu file (VI hoặc EN)</option>
+                    <option value="ready" selected="@(currentStatus == "ready")">Đầy đủ cả 2 file</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="usageType">Loại voice</label>
+                <select id="usageType" name="usageType" class="form-control">
+                    <option value="">Tất cả loại voice</option>
+                    @foreach (var type in usageTypes)
+                    {
+                        <option value="@type" selected="@(currentUsageType == type)">@DisplayUsageType(type)</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-actions-group">
+                <button class="app-btn app-btn-small" type="submit">
+                    <span class="material-symbols-outlined">filter_alt</span>
+                    Lọc
+                </button>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">Xóa lọc</a>
+            </div>
+        </form>
+
+        <!-- Bảng Danh Sách Voice Song Ngữ -->
+        <div class="soft-card report-panel mt-4 voice-cache-panel">
+            <table class="app-table voice-cache-table">
+                <thead>
                 <tr>
-                    <td class="voice-main-cell">
-                        <form id="voice-edit-@item.Id" class="voice-edit-form" asp-action="UpdateVoiceCache" asp-route-id="@item.Id" method="post">
-                            <div class="voice-edit-grid">
-                                <input class="form-control" name="name" value="@item.Name" maxlength="200" placeholder="Tên kiểm soát" />
-                                <input class="form-control" name="text" value="@item.NormalizedText" maxlength="500" placeholder="Nội dung cần đọc" />
-                                <select class="form-control" name="usageType">
-                                    <option value="custom" selected="@(item.UsageType == "custom")">Tự tạo</option>
-                                    <option value="title" selected="@(item.UsageType == "title")">Tiêu đề</option>
-                                    <option value="instruction" selected="@(item.UsageType == "instruction")">Hướng dẫn</option>
-                                    <option value="question" selected="@(item.UsageType == "question")">Câu hỏi</option>
-                                    <option value="option" selected="@(item.UsageType == "option")">Đáp án</option>
-                                    <option value="content" selected="@(item.UsageType == "content")">Nội dung nghe</option>
-                                    <option value="correct-feedback" selected="@(item.UsageType == "correct-feedback")">Phản hồi đúng</option>
-                                    <option value="retry-feedback" selected="@(item.UsageType == "retry-feedback")">Phản hồi sai</option>
-                                    <option value="tracing-prompt" selected="@(item.UsageType == "tracing-prompt")">Tô nét</option>
-                                </select>
-                            </div>
-                        </form>
-                        @if (!string.IsNullOrWhiteSpace(item.LastError))
-                        {
-                            <small class="voice-path-line text-danger">@item.LastError</small>
-                        }
-                        else if (hasFile)
-                        {
-                            <small class="voice-path-line">@item.AudioUrl</small>
-                        }
-                        else
-                        {
-                            <small class="voice-path-line">Chưa có file.</small>
-                        }
-                    </td>
-                    <td><span class="voice-type-pill">@DisplayUsageType(item.UsageType)</span></td>
-                    <td>
-                        <span class="status-chip @(hasFile ? "status-published" : "status-warning")">@(hasFile ? "Có file" : "Thiếu file")</span>
-                        <small class="voice-reuse">Dùng lại: @item.ReuseCount</small>
-                    </td>
-                    <td class="voice-audio-cell">
-                        @if (hasFile)
-                        {
-                            <audio controls preload="none" src="@item.AudioUrl"></audio>
-                        }
-                    </td>
-                    <td class="voice-upload-cell">
-                        <div class="voice-action-row">
-                            <button class="voice-row-button" type="submit" form="voice-edit-@item.Id" name="generateFile" value="true" title="Cập nhật dòng này và tạo lại file MP3 từ nội dung hiện tại">Cập nhật</button>
-                            @if (!hasFile)
-                            {
-                                <form asp-action="GenerateVoiceCacheFile" asp-route-id="@item.Id" method="post">
-                                    <button class="voice-generate-button" type="submit" title="Tạo file MP3 từ nội dung voice">Tạo file</button>
-                                </form>
-                            }
-                            <form asp-action="UploadVoiceCacheFile" asp-route-id="@item.Id" method="post" enctype="multipart/form-data" data-auto-submit-file>
-                                <label class="voice-file-picker" title="Chọn file âm thanh để thay thế">
-                                    <span class="material-symbols-outlined">attach_file</span>
-                                    <span class="sr-only">Chọn file</span>
-                                    <input type="file" name="audioFile" accept="audio/*,.mp3,.wav,.m4a" />
-                                </label>
-                            </form>
-                            <form asp-action="DeleteVoiceCache" asp-route-id="@item.Id" method="post" data-confirm-delete data-confirm-message="Xóa voice này khỏi bảng kiểm soát?">
-                                <button class="voice-delete-button" type="submit" title="Xóa voice">Xóa</button>
-                            </form>
-                        </div>
-                    </td>
+                    <th style="width:36%;">Nội dung Tiếng Việt & Voice VI</th>
+                    <th style="width:36%;">Bản dịch Tiếng Anh & Voice EN</th>
+                    <th style="width:10%;">Loại</th>
+                    <th style="width:12%;">Trạng thái</th>
+                    <th style="width:6%; text-align:center;">Thao tác</th>
                 </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model)
+                {
+                    var hasVi = !string.IsNullOrWhiteSpace(item.AudioUrl) && item.Status == "ready";
+                    var hasEn = !string.IsNullOrWhiteSpace(item.AudioUrlEn) && item.StatusEn == "ready";
+                    <tr>
+                        <td class="voice-main-cell">
+                            <strong class="voice-title-label">@item.Name</strong>
+                            <p class="voice-text-content">@(string.IsNullOrWhiteSpace(item.OriginalText) ? item.NormalizedText : item.OriginalText)</p>
+                            @if (hasVi)
+                            {
+                                <div class="voice-audio-wrap">
+                                    <audio controls preload="none" src="@item.AudioUrl" class="voice-audio-player"></audio>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="badge-voice-status badge-voice-missing">Chưa có Voice VI</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.LastError))
+                            {
+                                <small class="text-danger-msg">@item.LastError</small>
+                            }
+                        </td>
+                        <td class="voice-main-cell">
+                            <span class="badge-voice-en">🇬🇧 English</span>
+                            <p class="voice-text-en">@(string.IsNullOrWhiteSpace(item.TextEn) ? "Chưa có bản dịch" : item.TextEn)</p>
+                            @if (hasEn)
+                            {
+                                <div class="voice-audio-wrap">
+                                    <audio controls preload="none" src="@item.AudioUrlEn" class="voice-audio-player"></audio>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="badge-voice-status badge-voice-missing">Chưa có Voice EN</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.LastErrorEn))
+                            {
+                                <small class="text-danger-msg">@item.LastErrorEn</small>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge-voice-type">@DisplayUsageType(item.UsageType)</span>
+                        </td>
+                        <td>
+                            @if (hasVi && hasEn)
+                            {
+                                <span class="status-chip status-published" title="Đã có đủ cả Voice VI và EN">Đủ VI & EN</span>
+                            }
+                            else if (hasVi && !hasEn)
+                            {
+                                <span class="status-chip status-review" title="Đã có Voice VI, đang thiếu Voice EN">Thiếu Voice EN</span>
+                            }
+                            else if (!hasVi && hasEn)
+                            {
+                                <span class="status-chip status-review" title="Đã có Voice EN, đang thiếu Voice VI">Thiếu Voice VI</span>
+                            }
+                            else
+                            {
+                                <span class="status-chip status-draft" title="Chưa có file nào">Thiếu cả 2</span>
+                            }
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:inline-flex; align-items:center; gap:6px;">
+                                <button type="button" class="mini-edit-btn" title="Chỉnh sửa voice này"
+                                        data-edit-voice-btn
+                                        data-id="@item.Id"
+                                        data-name="@item.Name"
+                                        data-text="@(string.IsNullOrWhiteSpace(item.OriginalText) ? item.NormalizedText : item.OriginalText)"
+                                        data-text-en="@item.TextEn"
+                                        data-usage-type="@item.UsageType">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <form asp-action="DeleteVoiceCache" asp-route-id="@item.Id" method="post" data-confirm-delete data-confirm-message="Xóa mục voice này khỏi thư viện?">
+                                    <button class="mini-danger-btn" type="submit" title="Xóa voice này">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="empty-cell">Không tìm thấy mục voice nào phù hợp với bộ lọc.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            @if (totalPages > 1)
+            {
+                <div class="pagination-bar mt-4">
+                    @for (var p = 1; p <= totalPages; p++)
+                    {
+                        <a class="page-num @(p == currentPage ? "active" : "")"
+                           asp-action="VoiceCache"
+                           asp-route-page="@p"
+                           asp-route-pageSize="@pageSize"
+                           asp-route-q="@keyword"
+                           asp-route-status="@currentStatus"
+                           asp-route-usageType="@currentUsageType">@p</a>
+                    }
+                </div>
             }
-            </tbody>
-        </table>
-        @if (totalPages > 1)
-        {
-            <nav class="voice-pagination" aria-label="Phân trang voice">
-                <a class="app-btn app-btn-muted app-btn-small @(currentPage <= 1 ? "disabled" : "")"
-                   asp-action="VoiceCache"
-                   asp-route-status="@currentStatus"
-                   asp-route-usageType="@currentUsageType"
-                   asp-route-q="@keyword"
-                   asp-route-page="@(Math.Max(1, currentPage - 1))"
-                   asp-route-pageSize="@pageSize">Trước</a>
-                <span>Trang @currentPage / @totalPages</span>
-                <a class="app-btn app-btn-muted app-btn-small @(currentPage >= totalPages ? "disabled" : "")"
-                   asp-action="VoiceCache"
-                   asp-route-status="@currentStatus"
-                   asp-route-usageType="@currentUsageType"
-                   asp-route-q="@keyword"
-                   asp-route-page="@(Math.Min(totalPages, currentPage + 1))"
-                   asp-route-pageSize="@pageSize">Sau</a>
-            </nav>
-        }
-    </div>
+        </div>
     </main>
 </section>
+
+<!-- Modal Chỉnh Sửa Voice Song Ngữ (Rộng rãi 880px, Textarea đầy đủ) -->
+<div class="voice-edit-modal-backdrop" id="editVoiceModal" style="display:none;">
+    <div class="voice-edit-modal-box">
+        <div class="voice-card-header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="material-symbols-outlined header-icon" style="color:var(--primary);">edit</span>
+                <div>
+                    <h2 class="card-title">Chỉnh Sửa Voice Song Ngữ</h2>
+                    <p class="card-subtitle">Cập nhật nội dung Tiếng Việt, câu Tiếng Anh hoặc sinh lại âm thanh.</p>
+                </div>
+            </div>
+            <button type="button" class="close-card-btn" id="closeEditModalBtn" title="Đóng">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="editVoiceForm" method="post" action="">
+            @Html.AntiForgeryToken()
+            <div class="voice-form-rows">
+                <div class="form-row-two-col">
+                    <div class="form-field-wrap">
+                        <label for="editVoiceText">Nội dung Tiếng Việt *</label>
+                        <textarea id="editVoiceText" name="text" class="form-control voice-textarea" rows="3" maxlength="1000" required></textarea>
+                    </div>
+                    <div class="form-field-wrap">
+                        <label for="editVoiceTextEn">Bản dịch Tiếng Anh</label>
+                        <textarea id="editVoiceTextEn" name="textEn" class="form-control voice-textarea" rows="3" maxlength="1000" placeholder="Để trống để tự động dịch lại"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row-two-col">
+                    <div class="form-field-wrap">
+                        <label for="editVoiceName">Tên kiểm soát</label>
+                        <input id="editVoiceName" name="name" class="form-control" maxlength="200" />
+                    </div>
+                    <div class="form-field-wrap">
+                        <label for="editVoiceUsageType">Loại voice</label>
+                        <select id="editVoiceUsageType" name="usageType" class="form-control">
+                            <option value="title">Tiêu đề</option>
+                            <option value="instruction">Hướng dẫn</option>
+                            <option value="question">Câu hỏi</option>
+                            <option value="content">Nội dung</option>
+                            <option value="option">Đáp án</option>
+                            <option value="correct-feedback">Phản hồi đúng</option>
+                            <option value="retry-feedback">Phản hồi sai</option>
+                            <option value="tracing-prompt">Tô nét</option>
+                            <option value="custom">Tự tạo</option>
+                            <option value="legacy">Voice cũ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer-actions">
+                    <label class="check-row" style="font-weight:700; color:#c2410c; margin:0; font-size:0.88rem; cursor:pointer;">
+                        <input type="checkbox" name="regenerateVoice" value="true" checked />
+                        Tự động sinh lại file âm thanh (VI & EN) sau khi lưu
+                    </label>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="app-btn app-btn-muted app-btn-small" id="cancelEditModalBtn">Hủy</button>
+                        <button type="submit" class="app-btn app-btn-small">
+                            <span class="material-symbols-outlined">save</span>
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Toggle Create Form
+        const toggleBtn = document.getElementById("toggleAddVoiceBtn");
+        const addCard = document.getElementById("addVoiceCard");
+        const closeBtn = document.getElementById("closeAddVoiceBtn");
+
+        if (toggleBtn && addCard) {
+            toggleBtn.addEventListener("click", function() {
+                const isHidden = addCard.style.display === "none";
+                addCard.style.display = isHidden ? "block" : "none";
+                if (isHidden) {
+                    document.getElementById("voiceText")?.focus();
+                }
+            });
+        }
+
+        if (closeBtn && addCard) {
+            closeBtn.addEventListener("click", function() {
+                addCard.style.display = "none";
+            });
+        }
+
+        // Edit Voice Modal
+        const editModal = document.getElementById("editVoiceModal");
+        const editForm = document.getElementById("editVoiceForm");
+        const closeEditBtn = document.getElementById("closeEditModalBtn");
+        const cancelEditBtn = document.getElementById("cancelEditModalBtn");
+
+        const editText = document.getElementById("editVoiceText");
+        const editTextEn = document.getElementById("editVoiceTextEn");
+        const editName = document.getElementById("editVoiceName");
+        const editUsage = document.getElementById("editVoiceUsageType");
+
+        document.querySelectorAll("[data-edit-voice-btn]").forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                const id = btn.getAttribute("data-id");
+                const name = btn.getAttribute("data-name") || "";
+                const text = btn.getAttribute("data-text") || "";
+                const textEn = btn.getAttribute("data-text-en") || "";
+                const usage = btn.getAttribute("data-usage-type") || "custom";
+
+                editForm.action = "/admin/voice-cache/" + id + "/update";
+                if (editText) editText.value = text;
+                if (editTextEn) editTextEn.value = textEn;
+                if (editName) editName.value = name;
+                if (editUsage) editUsage.value = usage;
+
+                editModal.style.display = "flex";
+                editText?.focus();
+            });
+        });
+
+        const closeEdit = function() {
+            editModal.style.display = "none";
+        };
+
+        if (closeEditBtn) closeEditBtn.addEventListener("click", closeEdit);
+        if (cancelEditBtn) cancelEditBtn.addEventListener("click", closeEdit);
+        if (editModal) {
+            editModal.addEventListener("click", function(e) {
+                if (e.target === editModal) closeEdit();
+            });
+        }
+    });
+</script>

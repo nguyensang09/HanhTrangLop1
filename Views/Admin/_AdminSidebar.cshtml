@@ -2,43 +2,58 @@
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 }
 
-<aside class="admin-side">
+<aside class="admin-side" id="adminSidebar">
     <div class="admin-brand-wrap">
         <a asp-controller="Admin" asp-action="Index" class="admin-brand-link" title="Trang Quản trị Sóc Nâu">
             <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Quản trị" class="admin-brand-avatar" />
         </a>
+        <button type="button" class="admin-sidebar-toggle-btn" id="adminSidebarToggle" title="Thu gọn / Mở rộng menu (tiết kiệm không gian làm việc)" aria-label="Thu gọn / Mở rộng menu">
+            <span class="material-symbols-outlined">menu_open</span>
+        </button>
     </div>
 
-    <a class="@(currentAction == "Index" ? "active" : "")" asp-controller="Admin" asp-action="Index">
-        <span class="material-symbols-outlined">dashboard</span>
-        <span>Dashboard</span>
-    </a>
-    <a class="@(currentAction == "ParentsAndKids" || currentAction == "ChildDetail" ? "active" : "")" asp-controller="Admin" asp-action="ParentsAndKids">
-        <span class="material-symbols-outlined">family_restroom</span>
-        <span>Phụ huynh & Bé</span>
-    </a>
-    <a class="@(currentAction == "LearningItems" || currentAction == "LearningItemDetail" || currentAction == "EditLearningItem" ? "active" : "")" asp-controller="Admin" asp-action="LearningItems">
-        <span class="material-symbols-outlined">library_books</span>
-        <span>Kho nội dung</span>
-    </a>
-    <a class="@(currentAction == "Catalogs" ? "active" : "")" asp-controller="Admin" asp-action="Catalogs">
-        <span class="material-symbols-outlined">account_tree</span>
-        <span>Cấu trúc chương trình</span>
-    </a>
-    <a class="@(currentAction == "MediaLibrary" ? "active" : "")" asp-controller="Admin" asp-action="MediaLibrary">
-        <span class="material-symbols-outlined">perm_media</span>
-        <span>Thư viện hình ảnh</span>
-    </a>
-    <a class="@(currentAction == "VoiceCache" ? "active" : "")" asp-controller="Admin" asp-action="VoiceCache">
-        <span class="material-symbols-outlined">graphic_eq</span>
-        <span>Kiểm soát voice</span>
-    </a>
-    <a class="@(currentAction == "CreateChoice" ? "active" : "")" asp-controller="Admin" asp-action="CreateChoice">
-        <span class="material-symbols-outlined">add_circle</span>
-        <span>Tạo bài tương tác</span>
-    </a>
-    <a class="@(currentAction == "CreateTracing" ? "active" : "")" asp-controller="Admin" asp-action="CreateTracing">
-        <span class="material-symbols-outlined">draw</span>
-        <span>Tạo bài tô nét</span>
-    </a>
+    <nav class="admin-nav-list">
+        <a class="@(currentAction == "Index" ? "active" : "")" asp-controller="Admin" asp-action="Index" data-tooltip="Dashboard" title="Dashboard">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="nav-text">Dashboard</span>
+        </a>
+        <a class="@(currentAction == "ParentsAndKids" || currentAction == "ChildDetail" ? "active" : "")" asp-controller="Admin" asp-action="ParentsAndKids" data-tooltip="Phụ huynh & Bé" title="Phụ huynh & Bé">
+            <span class="material-symbols-outlined">family_restroom</span>
+            <span class="nav-text">Phụ huynh & Bé</span>
+        </a>
+        <a class="@(currentAction == "LearningItems" || currentAction == "LearningItemDetail" || currentAction == "EditLearningItem" ? "active" : "")" asp-controller="Admin" asp-action="LearningItems" data-tooltip="Kho nội dung" title="Kho nội dung">
+            <span class="material-symbols-outlined">library_books</span>
+            <span class="nav-text">Kho nội dung</span>
+        </a>
+        <a class="@(currentAction == "Catalogs" ? "active" : "")" asp-controller="Admin" asp-action="Catalogs" data-tooltip="Cấu trúc chương trình" title="Cấu trúc chương trình">
+            <span class="material-symbols-outlined">account_tree</span>
+            <span class="nav-text">Cấu trúc chương trình</span>
+        </a>
+        <a class="@(currentAction == "MediaLibrary" ? "active" : "")" asp-controller="Admin" asp-action="MediaLibrary" data-tooltip="Thư viện hình ảnh" title="Thư viện hình ảnh">
+            <span class="material-symbols-outlined">perm_media</span>
+            <span class="nav-text">Thư viện hình ảnh</span>
+        </a>
+        <a class="@(currentAction == "VoiceCache" ? "active" : "")" asp-controller="Admin" asp-action="VoiceCache" data-tooltip="Kiểm soát voice" title="Kiểm soát voice">
+            <span class="material-symbols-outlined">graphic_eq</span>
+            <span class="nav-text">Kiểm soát voice</span>
+        </a>
+        <a class="@(currentAction == "CreateChoice" ? "active" : "")" asp-controller="Admin" asp-action="CreateChoice" data-tooltip="Tạo bài tương tác" title="Tạo bài tương tác">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span class="nav-text">Tạo bài tương tác</span>
+        </a>
+        <a class="@(currentAction == "CreateTracing" ? "active" : "")" asp-controller="Admin" asp-action="CreateTracing" data-tooltip="Tạo bài tô nét" title="Tạo bài tô nét">
+            <span class="material-symbols-outlined">draw</span>
+            <span class="nav-text">Tạo bài tô nét</span>
+        </a>
+    </nav>
 </aside>
+
+<script>
+    (function() {
+        if (localStorage.getItem('admin_sidebar_collapsed') === 'true') {
+            document.querySelectorAll('.admin-layout').forEach(function(el) {
+                el.classList.add('sidebar-collapsed');
+            });
+        }
+    })();
+</script>

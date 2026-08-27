@@ -42,6 +42,21 @@ public class TextToSpeechCache
     [MaxLength(1000)]
     public string? LastError { get; set; }
 
+    [MaxLength(1000)]
+    public string? TextEn { get; set; }
+
+    [MaxLength(500)]
+    public string? AudioUrlEn { get; set; }
+
+    [MaxLength(100)]
+    public string? VoiceEn { get; set; }
+
+    [MaxLength(30)]
+    public string StatusEn { get; set; } = "missing";
+
+    [MaxLength(1000)]
+    public string? LastErrorEn { get; set; }
+
     public int ReuseCount { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

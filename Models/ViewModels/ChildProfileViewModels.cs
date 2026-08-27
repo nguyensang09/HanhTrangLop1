@@ -28,5 +28,7 @@ public class ChildProfileFormViewModel
 
     public bool SoundEnabled { get; set; } = true;
 
+    public bool EnglishVoice { get; set; } = false;
+
     public IFormFile? AvatarFile { get; set; }
 }

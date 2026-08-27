@@ -7,6 +7,8 @@
         return;
     }
 
+    const isEnglishVoice = host.dataset.englishVoice === "true";
+
     let payload = {};
     try {
         payload = JSON.parse(document.querySelector("[data-activity-payload]")?.value || "{}");
@@ -16,23 +18,44 @@
 
     const titleText = host.dataset.titleText || "";
     const titleAudioUrl = payload.titleAudioUrl || host.dataset.titleAudioUrl || "";
+    const titleAudioUrlEn = payload.titleAudioUrlEn || host.dataset.titleAudioUrlEn || "";
+
     const instruction = payload.instructionSpeechText || host.dataset.instructionText || "";
+    const instructionAudioUrl = payload.instructionAudioUrl || host.dataset.instructionAudioUrl || "";
+    const instructionAudioUrlEn = payload.instructionAudioUrlEn || host.dataset.instructionAudioUrlEn || "";
+
     const question = payload.questionSpeechText || host.dataset.questionText || "";
     const questionAudioUrl = payload.questionAudioUrl || host.dataset.questionAudioUrl || "";
-    const instructionAudioUrl = payload.instructionAudioUrl || host.dataset.instructionAudioUrl || "";
+    const questionAudioUrlEn = payload.questionAudioUrlEn || host.dataset.questionAudioUrlEn || "";
+
     const correctAudioUrl = payload.correctAudioUrl || host.dataset.correctAudioUrl || "";
+    const correctAudioUrlEn = payload.correctAudioUrlEn || host.dataset.correctAudioUrlEn || "";
+
     const retryAudioUrl = payload.retryAudioUrl || host.dataset.retryAudioUrl || "";
+    const retryAudioUrlEn = payload.retryAudioUrlEn || host.dataset.retryAudioUrlEn || "";
+
     const optionAudio = payload.optionAudio || {};
+    const optionAudioEn = payload.optionAudioEn || {};
+
     const feedback = host.dataset.result === "correct"
         ? payload.correctSpeechText || host.dataset.feedbackText || "Đúng rồi!"
         : host.dataset.result === "retry"
             ? payload.retrySpeechText || host.dataset.feedbackText || "Con thử lại nhé."
             : "";
+
+    // Ưu tiên phát Voice EN nếu bật English Voice, tự động fallback sang Voice VI nếu thiếu file EN
+    const activeTitleAudio = isEnglishVoice ? (titleAudioUrlEn || titleAudioUrl) : titleAudioUrl;
+    const activeInstructionAudio = isEnglishVoice ? (instructionAudioUrlEn || instructionAudioUrl) : instructionAudioUrl;
+    const activeQuestionAudio = isEnglishVoice ? (questionAudioUrlEn || questionAudioUrl) : questionAudioUrl;
+    const activeCorrectAudio = isEnglishVoice ? (correctAudioUrlEn || correctAudioUrl) : correctAudioUrl;
+    const activeRetryAudio = isEnglishVoice ? (retryAudioUrlEn || retryAudioUrl) : retryAudioUrl;
+
     const feedbackAudioUrl = host.dataset.result === "correct"
-        ? correctAudioUrl
+        ? activeCorrectAudio
         : host.dataset.result === "retry"
-            ? retryAudioUrl
+            ? activeRetryAudio
             : "";
+
     let activeAudio = null;
 
     const loadVoices = () => new Promise((resolve) => {
@@ -69,17 +92,20 @@
 
         window.speechSynthesis.cancel();
         const voices = await loadVoices();
-        const vietnameseVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith("vi"));
-        if (!vietnameseVoice) {
+        const targetLang = isEnglishVoice ? "en" : "vi";
+        const matchedVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(targetLang));
+        if (!matchedVoice && !voices.length) {
             return;
         }
 
         return new Promise((resolve) => {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "vi-VN";
-            utterance.rate = 0.82;
+            utterance.lang = isEnglishVoice ? "en-US" : "vi-VN";
+            utterance.rate = isEnglishVoice ? 0.85 : 0.82;
             utterance.pitch = 1.04;
-            utterance.voice = vietnameseVoice;
+            if (matchedVoice) {
+                utterance.voice = matchedVoice;
+            }
             utterance.onend = resolve;
             utterance.onerror = resolve;
             window.speechSynthesis.speak(utterance);
@@ -133,18 +159,18 @@
 
     const playTitle = async () => {
         window.speechSynthesis?.cancel();
-        await speakOrPlay(titleText || instruction || question, titleAudioUrl || instructionAudioUrl || questionAudioUrl);
+        await speakOrPlay(titleText || instruction || question, activeTitleAudio || activeInstructionAudio || activeQuestionAudio);
     };
 
     const playQuestion = async () => {
         window.speechSynthesis?.cancel();
         if (feedback) {
-            await speakOrPlay(feedback, feedbackAudioUrl || retryAudioUrl || correctAudioUrl);
+            await speakOrPlay(feedback, feedbackAudioUrl || activeRetryAudio || activeCorrectAudio);
             return;
         }
 
         const text = question || instruction || titleText;
-        const audioUrl = questionAudioUrl || instructionAudioUrl || titleAudioUrl;
+        const audioUrl = activeQuestionAudio || activeInstructionAudio || activeTitleAudio;
         await speakOrPlay(text, audioUrl);
     };
 
@@ -159,7 +185,12 @@
     const playOption = async (label) => {
         if (!label) return false;
         const cleanLabel = label.trim();
-        const audioUrl = optionAudio[cleanLabel] || optionAudio[label];
+        let audioUrl = "";
+        if (isEnglishVoice) {
+            audioUrl = optionAudioEn[cleanLabel] || optionAudioEn[label] || optionAudio[cleanLabel] || optionAudio[label];
+        } else {
+            audioUrl = optionAudio[cleanLabel] || optionAudio[label];
+        }
         await speakOrPlay(cleanLabel, audioUrl);
         return true;
     };

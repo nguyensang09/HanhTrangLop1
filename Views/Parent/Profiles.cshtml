@@ -34,7 +34,7 @@
                         <h2>@child.Nickname</h2>
                         <p>Năm sinh: @(child.BirthYear?.ToString() ?? "Chưa đặt")</p>
                         <p>Thời lượng: @child.DailyLearningMinutes phút mỗi ngày</p>
-                        <p>Âm thanh: @(child.SoundEnabled ? "Bật" : "Tắt")</p>
+                        <p>Âm thanh: @(child.SoundEnabled ? "Bật" : "Tắt") &bull; Giọng đọc: @(child.EnglishVoice ? "🇬🇧 Tiếng Anh" : "🇻🇳 Tiếng Việt")</p>
                     </div>
                     <div class="profile-actions">
                         <a class="app-btn app-btn-muted app-btn-small" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@child.Id">Bé vào lớp</a>

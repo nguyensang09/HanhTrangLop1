@@ -810,3 +810,194 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
     guideMode?.addEventListener("change", updateTracingPreview);
     updateTracingPreview();
 });
+
+// Admin Sidebar Toggle Logic
+(() => {
+    const toggleBtn = document.getElementById("adminSidebarToggle");
+    const layouts = document.querySelectorAll(".admin-layout");
+    if (!toggleBtn || !layouts.length) return;
+
+    toggleBtn.addEventListener("click", () => {
+        const isCollapsed = layouts[0].classList.toggle("sidebar-collapsed");
+        layouts.forEach((el) => {
+            if (el !== layouts[0]) el.classList.toggle("sidebar-collapsed", isCollapsed);
+        });
+        localStorage.setItem("admin_sidebar_collapsed", isCollapsed ? "true" : "false");
+    });
+})();
+
+// Unified Batch Voice Synchronizer Runner
+(() => {
+    const syncButtons = document.querySelectorAll("[data-sync-voice-btn]");
+    if (!syncButtons.length) return;
+
+    let isRunning = false;
+
+    const createModal = () => {
+        const existing = document.getElementById("voiceSyncModal");
+        if (existing) return existing;
+
+        const backdrop = document.createElement("div");
+        backdrop.id = "voiceSyncModal";
+        backdrop.className = "voice-sync-modal-backdrop";
+        backdrop.innerHTML = `
+            <div class="voice-sync-modal-box">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:1.25rem; display:flex; align-items:center; gap:8px;">
+                        <span class="material-symbols-outlined" style="color:var(--primary); font-size:1.6rem;">sync</span>
+                        Đồng bộ & Tự sinh Voice Song Ngữ
+                    </h3>
+                </div>
+                <p style="color:#64748b; font-size:0.9rem; margin:8px 0 16px;">
+                    Hệ thống tự động quét bài học, tái sử dụng voice có sẵn và sinh bổ sung Voice Tiếng Việt & Tiếng Anh còn thiếu.
+                </p>
+                
+                <div class="voice-sync-progress-outer">
+                    <div class="voice-sync-progress-inner" id="voiceSyncProgressBar"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.88rem; font-weight:700; color:#334155; margin-bottom:12px;">
+                    <span id="voiceSyncProgressText">Đang chuẩn bị...</span>
+                    <span id="voiceSyncPercentText">0%</span>
+                </div>
+
+                <div class="voice-sync-stats-cards">
+                    <div class="voice-sync-stat-item">
+                        <strong id="voiceSyncCreatedVi">0</strong>
+                        <span>Voice VI tạo mới</span>
+                    </div>
+                    <div class="voice-sync-stat-item">
+                        <strong id="voiceSyncCreatedEn">0</strong>
+                        <span>Voice EN tạo mới</span>
+                    </div>
+                    <div class="voice-sync-stat-item">
+                        <strong id="voiceSyncUpdatedItems">0</strong>
+                        <span>Bài học đồng bộ</span>
+                    </div>
+                </div>
+
+                <div id="voiceSyncStatusLog" style="max-height:90px; overflow-y:auto; font-size:0.8rem; color:#64748b; background:#f8fafc; padding:8px 12px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:16px;">
+                    Sẵn sàng bắt đầu quá trình đồng bộ...
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="app-btn app-btn-small" id="voiceSyncCloseBtn" disabled>
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                        Đang đồng bộ...
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(backdrop);
+        return backdrop;
+    };
+
+    const getCsrfToken = () => {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+    };
+
+    const runBatchSync = async () => {
+        if (isRunning) return;
+        isRunning = true;
+
+        const modal = createModal();
+        modal.style.display = "flex";
+
+        const progressBar = document.getElementById("voiceSyncProgressBar");
+        const progressText = document.getElementById("voiceSyncProgressText");
+        const percentText = document.getElementById("voiceSyncPercentText");
+        const statVi = document.getElementById("voiceSyncCreatedVi");
+        const statEn = document.getElementById("voiceSyncCreatedEn");
+        const statItems = document.getElementById("voiceSyncUpdatedItems");
+        const statusLog = document.getElementById("voiceSyncStatusLog");
+        const closeBtn = document.getElementById("voiceSyncCloseBtn");
+
+        let totalVi = 0;
+        let totalEn = 0;
+        let totalUpdated = 0;
+        let batchStep = 0;
+        let isDone = false;
+
+        closeBtn.disabled = true;
+        closeBtn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span> Đang xử lý...`;
+        progressText.textContent = "Đang quét toàn bộ kho bài học...";
+        statusLog.innerHTML = `<div>&bull; Bắt đầu quét và đồng bộ voice...</div>`;
+
+        const csrf = getCsrfToken();
+
+        while (!isDone) {
+            batchStep++;
+            try {
+                const formData = new FormData();
+                formData.append("__RequestVerificationToken", csrf);
+                formData.append("batchSize", "1");
+
+                const response = await fetch("/admin/sync-voice-batch", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Lỗi máy chủ (${response.status})`);
+                }
+
+                const data = await response.json();
+                totalVi += data.createdVi || 0;
+                totalEn += data.createdEn || 0;
+                totalUpdated += data.updatedItems || 0;
+
+                statVi.textContent = totalVi;
+                statEn.textContent = totalEn;
+                statItems.textContent = totalUpdated;
+
+                const remaining = data.remainingMissing || 0;
+                const totalLessons = data.scannedItems || (totalUpdated + remaining);
+                const percent = totalLessons > 0 ? Math.min(99, Math.round(((totalLessons - remaining) / totalLessons) * 100)) : 100;
+
+                progressBar.style.width = `${percent}%`;
+                percentText.textContent = `${percent}%`;
+                progressText.textContent = remaining > 0
+                    ? `Đợt ${batchStep}: Đã hoàn tất bài học (còn ${remaining} bài cần đồng bộ)...`
+                    : `Đã hoàn tất 100% kho bài học!`;
+
+                if (data.errorMessages?.length) {
+                    data.errorMessages.forEach((err) => {
+                        const div = document.createElement("div");
+                        div.style.color = "#dc2626";
+                        div.textContent = `⚠ ${err}`;
+                        statusLog.prepend(div);
+                    });
+                } else {
+                    const div = document.createElement("div");
+                    div.textContent = `✓ Đợt ${batchStep}: Hoàn tất bài học (+${data.createdVi || 0} VI, +${data.createdEn || 0} EN)`;
+                    statusLog.prepend(div);
+                }
+
+                if (data.isCompleted || remaining === 0) {
+                    isDone = true;
+                }
+            } catch (err) {
+                statusLog.innerHTML = `<div style="color:#dc2626;"><strong>Lỗi:</strong> ${err.message}. Đang thử lại đợt tiếp theo...</div>` + statusLog.innerHTML;
+                await new Promise((r) => setTimeout(r, 2000));
+            }
+        }
+
+        progressBar.style.width = "100%";
+        percentText.textContent = "100%";
+        progressText.textContent = "Đã đồng bộ và tạo file voice hoàn tất 100%!";
+        closeBtn.disabled = false;
+        closeBtn.className = "app-btn app-btn-small celebration-btn-primary";
+        closeBtn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Hoàn tất & Tải lại`;
+        closeBtn.onclick = () => {
+            window.location.reload();
+        };
+        isRunning = false;
+    };
+
+    syncButtons.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            void runBatchSync();
+        });
+    });
+})();
+

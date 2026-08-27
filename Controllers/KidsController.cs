@@ -909,18 +909,30 @@ public class KidsController : Controller
         }
 
         var titleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty);
+        var titleAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrlEn", string.Empty);
         var questionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty);
+        var questionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrlEn", string.Empty);
         var instructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty);
+        var instructionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrlEn", string.Empty);
         var tracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty);
+        var tracingAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrlEn", string.Empty);
         var correctFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty);
+        var correctFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrlEn", string.Empty);
         var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
+        var retryFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrlEn", string.Empty);
 
         if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = await ResolveActiveVoiceUrlAsync(item.Title);
+        if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.Title);
         if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = await ResolveActiveVoiceUrlAsync(item.InstructionText);
+        if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.InstructionText);
         if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(question?.PromptText ?? item.Title);
+        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(question?.PromptText ?? item.Title);
         if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
+        if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
         if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Giỏi lắm, con đã hoàn thành đúng!");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Giỏi lắm, con đã hoàn thành đúng!");
         if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
 
         return new LearnViewModel
         {
@@ -934,13 +946,20 @@ public class KidsController : Controller
             TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
             TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
             TracingAudioUrl = tracingAudioUrl,
+            TracingAudioUrlEn = tracingAudioUrlEn,
             QuestionImageUrl = questionImageUrl,
             QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
             TitleAudioUrl = titleAudioUrl,
+            TitleAudioUrlEn = titleAudioUrlEn,
             QuestionAudioUrl = questionAudioUrl,
+            QuestionAudioUrlEn = questionAudioUrlEn,
             InstructionAudioUrl = instructionAudioUrl,
+            InstructionAudioUrlEn = instructionAudioUrlEn,
             CorrectFeedbackAudioUrl = correctFeedbackAudioUrl,
+            CorrectFeedbackAudioUrlEn = correctFeedbackAudioUrlEn,
             RetryFeedbackAudioUrl = retryFeedbackAudioUrl,
+            RetryFeedbackAudioUrlEn = retryFeedbackAudioUrlEn,
+            EnglishVoiceEnabled = child?.EnglishVoice == true,
             FeedbackMessage = feedbackMessage,
             IsCorrect = isCorrect,
             NextItemId = fromTracing
@@ -960,6 +979,17 @@ public class KidsController : Controller
             !string.IsNullOrEmpty(x.AudioUrl) &&
             (x.NormalizedText == clean || x.OriginalText == clean));
         return entry?.AudioUrl ?? string.Empty;
+    }
+
+    private async Task<string> ResolveActiveVoiceUrlEnAsync(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var clean = text.Trim();
+        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            x.StatusEn == "ready" &&
+            !string.IsNullOrEmpty(x.AudioUrlEn) &&
+            (x.NormalizedText == clean || x.OriginalText == clean));
+        return entry?.AudioUrlEn ?? string.Empty;
     }
 
     private static string ExtractTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)

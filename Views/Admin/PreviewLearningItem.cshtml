@@ -43,6 +43,17 @@
                 <span class="material-symbols-outlined">edit</span> Sửa bài này
             </a>
         }
+        <div class="admin-voice-test-switch" title="Chuyển đổi nhanh để test giọng đọc Tiếng Việt hoặc Tiếng Anh ngay trong Admin">
+            <span style="font-size:0.8rem; font-weight:700; color:#64748b; margin-left:6px;">Test Voice:</span>
+            <a href="@Url.Action("PreviewLearningItem", new { id = Model.Item.Id, englishVoice = false })"
+               class="admin-voice-test-btn @(!Model.EnglishVoiceEnabled ? "active" : "")">
+               🇻🇳 Tiếng Việt
+            </a>
+            <a href="@Url.Action("PreviewLearningItem", new { id = Model.Item.Id, englishVoice = true })"
+               class="admin-voice-test-btn @(Model.EnglishVoiceEnabled ? "active" : "")">
+               🇬🇧 Tiếng Anh
+            </a>
+        </div>
         <a class="preview-tool-btn primary" asp-action="LearningItems">
             <span class="material-symbols-outlined">arrow_back</span> Quay lại kho bài học
         </a>
@@ -52,14 +63,20 @@
 <section class="learn-screen learning-focus-shell"
          data-learning-voice
          data-sound-enabled="true"
+         data-english-voice="@(Model.EnglishVoiceEnabled ? "true" : "false")"
          data-title-text="@Model.Item.Title"
          data-title-audio-url="@Model.TitleAudioUrl"
+         data-title-audio-url-en="@Model.TitleAudioUrlEn"
          data-instruction-text="@Model.Item.InstructionText"
          data-question-text="@Model.CurrentQuestion?.PromptText"
          data-question-audio-url="@Model.QuestionAudioUrl"
+         data-question-audio-url-en="@Model.QuestionAudioUrlEn"
          data-instruction-audio-url="@Model.InstructionAudioUrl"
+         data-instruction-audio-url-en="@Model.InstructionAudioUrlEn"
          data-correct-audio-url="@Model.CorrectFeedbackAudioUrl"
+         data-correct-audio-url-en="@Model.CorrectFeedbackAudioUrlEn"
          data-retry-audio-url="@Model.RetryFeedbackAudioUrl"
+         data-retry-audio-url-en="@Model.RetryFeedbackAudioUrlEn"
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
     

@@ -85,6 +85,16 @@
                 Bật âm thanh & giọng đọc hướng dẫn của Sóc Nâu
             </label>
 
+            <div class="soft-card mt-2" style="background:#fff7ed; border:1.5px solid #fed7aa; padding:12px 16px; border-radius:12px;">
+                <label class="check-row" style="margin-bottom:0; font-weight:700; color:#9a3412;">
+                    <input asp-for="EnglishVoice" />
+                    Phát Voice bằng Tiếng Anh (Song ngữ Việt – Anh)
+                </label>
+                <p style="margin:4px 0 0 26px; font-size:0.83rem; color:#78350f;">
+                    Toàn bộ chữ trên màn hình vẫn giữ 100% Tiếng Việt, riêng giọng đọc câu hỏi và hướng dẫn sẽ phát bằng Tiếng Anh chuẩn giúp bé làm quen song ngữ.
+                </p>
+            </div>
+
             <button class="app-btn app-btn-wide mt-3" type="submit">Lưu hồ sơ</button>
             <a class="form-back-link" asp-action="Profiles">Quay lại danh sách</a>
         </form>
