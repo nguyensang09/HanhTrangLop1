@@ -400,6 +400,9 @@ public static class LearningContentSeed
         var expectedHintJson = JsonSerializer.Serialize(new { level1 = definition.Hint });
         if (question.HintJson != expectedHintJson) { question.HintJson = expectedHintJson; changed = true; }
 
+        var expectedFeedbackJson = JsonSerializer.Serialize(new { correct = "Giỏi lắm, con làm đúng rồi!", retry = "Con thử lại nhé" });
+        if (question.FeedbackJson != expectedFeedbackJson) { question.FeedbackJson = expectedFeedbackJson; changed = true; }
+
         return changed;
     }
 
@@ -559,8 +562,8 @@ public static class LearningContentSeed
         payload["questionAudioUrl"] ??= string.Empty;
         payload["instructionSpeechText"] = lesson.Instruction;
         payload["questionSpeechText"] = lesson.Prompt;
-        payload["correctSpeechText"] = "Giỏi lắm, con đã làm đúng!";
-        payload["retrySpeechText"] = "Con quan sát kỹ rồi thử lại nhé.";
+        payload["correctSpeechText"] = "Giỏi lắm, con làm đúng rồi!";
+        payload["retrySpeechText"] = "Con thử lại nhé";
 
         if (lesson.TopicCode == "hinh-dang" &&
             string.IsNullOrWhiteSpace(payload["imageUrl"]?.GetValue<string>()))

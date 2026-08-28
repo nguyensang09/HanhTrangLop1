@@ -28,24 +28,22 @@ public static class PreschoolTranslationHelper
     private static readonly Dictionary<string, string> ExactPhrases = new(StringComparer.OrdinalIgnoreCase)
     {
         // Phản hồi đúng
+        ["Giỏi lắm, con làm đúng rồi!"] = "Great job, you did it right!",
+        ["Giỏi lắm, con làm đúng rồi"] = "Great job, you did it right!",
         ["Đúng rồi! Bé giỏi quá!"] = "Great job! That's correct!",
         ["Đúng rồi!"] = "That's right!",
         ["Chính xác rồi!"] = "Exactly right!",
         ["Hoan hô bé!"] = "Hooray! Well done!",
         ["Tuyệt vời!"] = "Awesome!",
-        ["Giỏi lắm, con chọn đúng rồi!"] = "Great job, you chose correctly!",
-        ["Giỏi lắm, con đã hoàn thành đúng!"] = "Great job, you completed it correctly!",
         ["Bé làm rất tốt!"] = "You did very well!",
         ["Xuất sắc quá!"] = "Excellent!",
         ["Chúc mừng bé!"] = "Congratulations!",
 
         // Phản hồi sai / thử lại
-        ["Chưa đúng rồi. Con thử lại nhé!"] = "Not quite right. Let's try again!",
-        ["Chưa đúng rồi. Con thử lại nhé."] = "Not quite right. Let's try again.",
-        ["Chưa đúng rồi. Con quan sát kỹ và thử lại nhé."] = "Not quite right. Look closely and try again.",
-        ["Chưa đúng rồi. Bé quan sát kỹ và thử lại nhé."] = "Not quite right. Look closely and try again.",
+        ["Con thử lại nhé"] = "Let's try again.",
+        ["Con thử lại nhé."] = "Let's try again.",
+        ["Con thử lại nhé!"] = "Let's try again!",
         ["Không sao, con thử lại nhé!"] = "That's okay, try again!",
-        ["Không sao, mình thử lại nhẹ nhàng nhé."] = "No worries, let's try again gently.",
         ["Bé cố lên nào!"] = "You can do it, keep trying!",
         ["Con nhìn kỹ từng lựa chọn nhé."] = "Look carefully at each choice.",
         ["Bé hãy thử lại một lần nữa nhé."] = "Please try once more.",

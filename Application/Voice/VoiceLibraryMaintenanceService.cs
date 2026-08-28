@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net.WebSockets;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -346,19 +348,19 @@ public sealed class VoiceLibraryMaintenanceService
 
         var viUrls = await _db.TextToSpeechCaches
             .Where(x => !string.IsNullOrEmpty(x.AudioUrl))
-            .Select(x => x.AudioUrl)
+            .Select(x => x.AudioUrl!)
             .ToListAsync(cancellationToken);
         foreach (var u in viUrls) activeUrls.Add(NormalizeStoragePath(u));
 
         var enUrls = await _db.TextToSpeechCaches
             .Where(x => !string.IsNullOrEmpty(x.AudioUrlEn))
-            .Select(x => x.AudioUrlEn)
+            .Select(x => x.AudioUrlEn!)
             .ToListAsync(cancellationToken);
         foreach (var u in enUrls) activeUrls.Add(NormalizeStoragePath(u));
 
         var mediaUrls = await _db.MediaAssets
             .Where(x => x.AssetType == "audio" && !string.IsNullOrEmpty(x.StoragePath))
-            .Select(x => x.StoragePath)
+            .Select(x => x.StoragePath!)
             .ToListAsync(cancellationToken);
         foreach (var u in mediaUrls) activeUrls.Add(NormalizeStoragePath(u));
 
@@ -690,13 +692,13 @@ public sealed class VoiceLibraryMaintenanceService
 
         // Phản hồi đúng
         var correctText = ReadJsonString(question.FeedbackJson, "correct");
-        if (string.IsNullOrWhiteSpace(correctText)) correctText = "Giỏi lắm, con đã hoàn thành đúng!";
+        if (string.IsNullOrWhiteSpace(correctText)) correctText = "Giỏi lắm, con làm đúng rồi!";
         payload["correctAudioUrl"] = await ResolveVoiceAudioUrlAsync(correctText, cancellationToken) ?? string.Empty;
         payload["correctAudioUrlEn"] = await ResolveVoiceAudioUrlEnAsync(correctText, cancellationToken) ?? string.Empty;
 
         // Phản hồi sai / thử lại
         var retryText = ReadJsonString(question.FeedbackJson, "retry");
-        if (string.IsNullOrWhiteSpace(retryText)) retryText = "Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.";
+        if (string.IsNullOrWhiteSpace(retryText)) retryText = "Con thử lại nhé";
         payload["retryAudioUrl"] = await ResolveVoiceAudioUrlAsync(retryText, cancellationToken) ?? string.Empty;
         payload["retryAudioUrlEn"] = await ResolveVoiceAudioUrlEnAsync(retryText, cancellationToken) ?? string.Empty;
 
@@ -1018,6 +1020,22 @@ public sealed class VoiceLibraryMaintenanceService
             .Replace("\r", " ")
             .Replace("\n", " ");
 
+        // 1. Thử tạo âm thanh trực tiếp qua WebSocket của Edge TTS
+        try
+        {
+            if (await SynthesizeViaDirectEdgeWebSocketAsync(cleanText, voice, rate, outputPath, cancellationToken))
+            {
+                if (File.Exists(outputPath) && new FileInfo(outputPath).Length > 0)
+                {
+                    return;
+                }
+            }
+        }
+        catch
+        {
+            // Fallback sang python subprocess
+        }
+
         var voiceCandidates = new List<string> { voice };
         if (voice.StartsWith("en-", StringComparison.OrdinalIgnoreCase))
         {
@@ -1034,7 +1052,8 @@ public sealed class VoiceLibraryMaintenanceService
         var candidates = new[]
         {
             ("python", new[] { "-m", "edge_tts" }),
-            ("py", new[] { "-m", "edge_tts" })
+            ("py", new[] { "-m", "edge_tts" }),
+            (@"C:\Program Files\PostgreSQL\18\pgAdmin 4\python\python.exe", new[] { "-m", "edge_tts" })
         };
 
         var errors = new List<string>();
@@ -1121,6 +1140,93 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         throw new InvalidOperationException(string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x))));
+    }
+
+    private static async Task<bool> SynthesizeViaDirectEdgeWebSocketAsync(string text, string voice, string rate, string outputPath, CancellationToken cancellationToken)
+    {
+        var voiceCandidates = new List<string> { voice };
+        if (voice.StartsWith("en-", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!voice.Equals("en-US-JennyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-JennyNeural");
+            if (!voice.Equals("en-US-AriaNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-AriaNeural");
+        }
+        else if (voice.StartsWith("vi-", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!voice.Equals("vi-VN-HoaiMyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-HoaiMyNeural");
+            if (!voice.Equals("vi-VN-NamMinhNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-NamMinhNeural");
+        }
+
+        foreach (var currentVoice in voiceCandidates)
+        {
+            try
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(25));
+                using var ws = new ClientWebSocket();
+                ws.Options.SetRequestHeader("Origin", "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold");
+                ws.Options.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0");
+
+                var connectionId = Guid.NewGuid().ToString("N");
+                var uri = new Uri($"wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EA6549728392C5533268B312&ConnectionId={connectionId}");
+                await ws.ConnectAsync(uri, cts.Token);
+
+                var configPayload = "Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"false\"},\"outputFormat\":\"audio-24khz-48kbitrate-mono-mp3\"}}}}";
+                var configBytes = Encoding.UTF8.GetBytes(configPayload);
+                await ws.SendAsync(new ArraySegment<byte>(configBytes), WebSocketMessageType.Text, true, cts.Token);
+
+                var requestId = Guid.NewGuid().ToString("N");
+                var lang = currentVoice.StartsWith("vi-", StringComparison.OrdinalIgnoreCase) ? "vi-VN" : "en-US";
+                var escapedText = SecurityElement.Escape(text);
+                var ssml = $"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='{lang}'><voice name='{currentVoice}'><prosody pitch='+0Hz' rate='{rate}' volume='+0%'>{escapedText}</prosody></voice></speak>";
+                var ssmlPayload = $"X-RequestId:{requestId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:{DateTime.UtcNow:o}\r\nPath:ssml\r\n\r\n{ssml}";
+                var ssmlBytes = Encoding.UTF8.GetBytes(ssmlPayload);
+                await ws.SendAsync(new ArraySegment<byte>(ssmlBytes), WebSocketMessageType.Text, true, cts.Token);
+
+                using var audioMs = new MemoryStream();
+                var buffer = new byte[16384];
+
+                while (ws.State == WebSocketState.Open && !cts.Token.IsCancellationRequested)
+                {
+                    var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        break;
+                    }
+
+                    if (result.MessageType == WebSocketMessageType.Text)
+                    {
+                        var textMsg = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                        if (textMsg.Contains("Path:turn.end", StringComparison.OrdinalIgnoreCase))
+                        {
+                            break;
+                        }
+                    }
+                    else if (result.MessageType == WebSocketMessageType.Binary && result.Count > 2)
+                    {
+                        var headerLength = (buffer[0] << 8) | buffer[1];
+                        var headerBytes = 2 + headerLength;
+                        if (result.Count > headerBytes)
+                        {
+                            audioMs.Write(buffer, headerBytes, result.Count - headerBytes);
+                        }
+                    }
+                }
+
+                if (audioMs.Length > 0)
+                {
+                    var dir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrWhiteSpace(dir)) Directory.CreateDirectory(dir);
+                    await File.WriteAllBytesAsync(outputPath, audioMs.ToArray(), cancellationToken);
+                    return true;
+                }
+            }
+            catch
+            {
+                // Thử ứng viên giọng tiếp theo
+            }
+        }
+
+        return false;
     }
 
     private TextToSpeechCacheKey BuildTextToSpeechCacheKey(string normalizedText)
@@ -1273,6 +1379,10 @@ public sealed class VoiceLibraryMaintenanceService
             "tracing-prompt" => "Tô nét",
             _ => "Voice"
         };
+        if (usageType is "correct-feedback" or "retry-feedback")
+        {
+            return prefix;
+        }
         var suffix = string.IsNullOrWhiteSpace(lessonTitle) ? normalizedText : lessonTitle.Trim();
         return AudioAltText($"{prefix} - {suffix}");
     }

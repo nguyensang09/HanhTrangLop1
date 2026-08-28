@@ -929,10 +929,10 @@ public class KidsController : Controller
         if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = questionAudioUrlEn;
         if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
         if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Giỏi lắm, con đã hoàn thành đúng!");
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Giỏi lắm, con đã hoàn thành đúng!");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Giỏi lắm, con làm đúng rồi!");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Giỏi lắm, con làm đúng rồi!");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Con thử lại nhé");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Con thử lại nhé");
 
         if (question is not null)
         {

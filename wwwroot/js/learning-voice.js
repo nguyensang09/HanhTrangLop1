@@ -38,9 +38,9 @@
     const optionAudioEn = payload.optionAudioEn || {};
 
     const feedback = host.dataset.result === "correct"
-        ? payload.correctSpeechText || host.dataset.feedbackText || "Đúng rồi!"
+        ? payload.correctSpeechText || host.dataset.feedbackText || "Giỏi lắm, con làm đúng rồi!"
         : host.dataset.result === "retry"
-            ? payload.retrySpeechText || host.dataset.feedbackText || "Con thử lại nhé."
+            ? payload.retrySpeechText || host.dataset.feedbackText || "Con thử lại nhé"
             : "";
 
     // Ưu tiên phát Voice EN nếu bật English Voice, tự động fallback sang Voice VI nếu thiếu file EN

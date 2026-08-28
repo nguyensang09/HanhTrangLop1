@@ -355,10 +355,10 @@ public class AdminController : Controller
         if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(question?.PromptText ?? item.Title);
         if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
         if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm, con đã hoàn thành đúng!");
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Giỏi lắm, con đã hoàn thành đúng!");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Chưa đúng rồi. Con quan sát kỹ và thử lại nhé.");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm, con làm đúng rồi!");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Giỏi lắm, con làm đúng rồi!");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Con thử lại nhé");
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Con thử lại nhé");
 
         return new LearnViewModel
         {
@@ -2597,8 +2597,8 @@ public class AdminController : Controller
             Level = item.Level,
             EstimatedMinutes = item.EstimatedMinutes,
             HintText = string.IsNullOrWhiteSpace(hintText) ? "Con nhìn kỹ từng lựa chọn nhé." : hintText,
-            CorrectFeedback = string.IsNullOrWhiteSpace(correctFeedback) ? "Giỏi lắm, con chọn đúng rồi!" : correctFeedback,
-            RetryFeedback = string.IsNullOrWhiteSpace(retryFeedback) ? "Không sao, mình thử lại nhẹ nhàng nhé." : retryFeedback
+            CorrectFeedback = string.IsNullOrWhiteSpace(correctFeedback) ? "Giỏi lắm, con làm đúng rồi!" : correctFeedback,
+            RetryFeedback = string.IsNullOrWhiteSpace(retryFeedback) ? "Con thử lại nhé" : retryFeedback
         };
     }
 
@@ -2709,8 +2709,8 @@ public class AdminController : Controller
             ["speechText"] = Clean(model.SpeechText),
             ["instructionSpeechText"] = Clean(model.InstructionText),
             ["questionSpeechText"] = Clean(model.PromptText),
-            ["correctSpeechText"] = "Giỏi lắm, con đã làm đúng!",
-            ["retrySpeechText"] = "Con quan sát kỹ rồi thử lại nhé."
+            ["correctSpeechText"] = "Giỏi lắm, con làm đúng rồi!",
+            ["retrySpeechText"] = "Con thử lại nhé"
         };
 
         payload["correctSpeechText"] = Clean(model.CorrectFeedback);

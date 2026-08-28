@@ -89,15 +89,18 @@ public static class LegacyLearningItemNormalizer
 
         var correctFeedback = ReadJsonString(question.FeedbackJson, "correct");
         var retryFeedback = ReadJsonString(question.FeedbackJson, "retry");
+        const string StandardCorrect = "Giỏi lắm, con làm đúng rồi!";
+        const string StandardRetry = "Con thử lại nhé";
+
         if (string.IsNullOrWhiteSpace(correctFeedback))
         {
-            correctFeedback = "Giỏi lắm, con chọn đúng rồi!";
+            correctFeedback = StandardCorrect;
             question.FeedbackJson = SetJsonObject(question.FeedbackJson, "correct", correctFeedback);
             changed = true;
         }
         if (string.IsNullOrWhiteSpace(retryFeedback))
         {
-            retryFeedback = "Không sao, mình thử lại nhẹ nhàng nhé.";
+            retryFeedback = StandardRetry;
             question.FeedbackJson = SetJsonObject(question.FeedbackJson, "retry", retryFeedback);
             changed = true;
         }
@@ -125,6 +128,18 @@ public static class LegacyLearningItemNormalizer
         EnsureString(payload, "retrySpeechText", retryFeedback, ref changed);
         EnsureObject(payload, "itemMedia", ref changed);
         EnsureObject(payload, "optionAudio", ref changed);
+
+        if (payload["correctSpeechText"]?.ToString() != correctFeedback)
+        {
+            payload["correctSpeechText"] = correctFeedback;
+            changed = true;
+        }
+
+        if (payload["retrySpeechText"]?.ToString() != retryFeedback)
+        {
+            payload["retrySpeechText"] = retryFeedback;
+            changed = true;
+        }
 
         // Đồng bộ questionSpeechText với prompt thực tế
         if (payload["questionSpeechText"]?.ToString() != question.PromptText)
