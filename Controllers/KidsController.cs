@@ -304,6 +304,22 @@ public class KidsController : Controller
         return View(model);
     }
 
+    [HttpGet("bilingual-listen")]
+    public async Task<IActionResult> BilingualListen()
+    {
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null)
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("CreateProfile", "Parent");
+            }
+            return RedirectToAction("Index", "Profiles");
+        }
+
+        return View(child);
+    }
+
     [HttpGet("learn/{id:guid}")]
     public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId, bool fromTracing = false)
     {

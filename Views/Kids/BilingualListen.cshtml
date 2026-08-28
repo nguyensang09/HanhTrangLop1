@@ -1,0 +1,147 @@
+@model HanhTrangLop1.Models.ChildProfile
+@{
+    ViewData["Title"] = "Nghe song ngữ";
+
+    var letters = new (string Symbol, string Word, string Image)[]
+    {
+        ("A", "Apple", "/images/photos/flashcard-apple.jpg"),
+        ("B", "Ball", "/images/photos/flashcard-letter-b.jpg"),
+        ("C", "Cat", "/images/photos/cat.jpg"),
+        ("D", "Dog", "/images/photos/dog.jpg"),
+        ("E", "Elephant", "/images/photos/flashcard-letter-e.jpg"),
+        ("F", "Fish", "/images/photos/fish.jpg"),
+        ("G", "Goat", "/images/photos/flashcard-letter-g.jpg"),
+        ("H", "House", "/images/photos/flashcard-letter-h.jpg"),
+        ("I", "Ice cream", "/images/photos/flashcard-letter-i.jpg"),
+        ("J", "Juice", "/images/photos/flashcard-letter-j.jpg"),
+        ("K", "Kite", "/images/photos/flashcard-letter-k.jpg"),
+        ("L", "Lion", "/images/photos/flashcard-letter-l.jpg"),
+        ("M", "Moon", "/images/photos/flashcard-letter-m.jpg"),
+        ("N", "Notebook", "/images/photos/flashcard-letter-n.jpg"),
+        ("O", "Orange", "/images/photos/flashcard-orange.jpg"),
+        ("P", "Pencil", "/images/photos/flashcard-letter-p.jpg"),
+        ("Q", "Queen", "/images/photos/flashcard-letter-q.jpg"),
+        ("R", "Rabbit", "/images/photos/flashcard-rabbit.jpg"),
+        ("S", "Sun", "/images/photos/flashcard-letter-s.jpg"),
+        ("T", "Tree", "/images/photos/flashcard-letter-t.jpg"),
+        ("U", "Umbrella", "/images/photos/flashcard-letter-u.jpg"),
+        ("V", "Van", "/images/photos/flashcard-letter-v.jpg"),
+        ("W", "Water", "/images/photos/flashcard-letter-w.jpg"),
+        ("X", "Xylophone", "/images/photos/flashcard-letter-x.jpg"),
+        ("Y", "Yo-yo", "/images/photos/flashcard-letter-y.jpg"),
+        ("Z", "Zebra", "/images/photos/flashcard-letter-z.jpg")
+    };
+}
+
+<section class="kid-screen bilingual-listen-screen">
+    <div class="kid-topbar home-topbar clay-card">
+        <div class="kid-header-profile">
+            <a class="back-round-button" asp-controller="Kids" asp-action="Home" aria-label="Về trang chủ">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <p class="eyebrow">Nghe tiếng Anh</p>
+                <h1>ABC & Số</h1>
+            </div>
+        </div>
+        <div class="kid-topbar-actions">
+            <span class="star-pill clay-button">
+                <span class="material-symbols-outlined">volume_up</span>
+                <span>Chạm để nghe</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="bilingual-section">
+        <div class="bilingual-section-heading">
+            <h2>Bảng chữ cái tiếng Anh</h2>
+            <span>26 chữ, mỗi chữ có một ví dụ gần gũi</span>
+        </div>
+        <div class="listen-card-grid letter-listen-grid">
+            @foreach (var letter in letters)
+            {
+                <button class="listen-card letter-card"
+                        type="button"
+                        data-listen-card
+                        data-symbol="@letter.Symbol"
+                        data-word="@letter.Word"
+                        data-kind="letter"
+                        data-image="@letter.Image"
+                        data-speak="@letter.Symbol"
+                        data-example-speak="@letter.Word">
+                    <strong>@letter.Symbol</strong>
+                    <span>@letter.Word</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="bilingual-section number-section">
+        <div class="bilingual-section-heading">
+            <h2>Số từ 0 đến 20</h2>
+            <span>Chạm từng số để nghe cách đọc tiếng Anh</span>
+        </div>
+        <div class="listen-card-grid number-listen-grid">
+            @for (var number = 0; number <= 20; number++)
+            {
+                var names = new[]
+                {
+                    "Zero", "One", "Two", "Three", "Four", "Five", "Six",
+                    "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
+                    "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
+                    "Eighteen", "Nineteen", "Twenty"
+                };
+                var numberName = names[number];
+                var image = number == 0
+                    ? "/images/photos/flashcard-number-0.svg"
+                    : $"/images/photos/flashcard-number-{number}.jpg";
+
+                <button class="listen-card number-card"
+                        type="button"
+                        data-listen-card
+                        data-symbol="@number"
+                        data-word="@numberName"
+                        data-kind="number"
+                        data-image="@image"
+                        data-speak="@numberName">
+                    <strong>@number</strong>
+                    <span>@numberName</span>
+                </button>
+            }
+        </div>
+    </div>
+</section>
+
+<div class="listen-popover-backdrop" data-listen-popover hidden>
+    <div class="listen-popover clay-card" role="status" aria-live="polite">
+        <img src="/images/photos/flashcard-apple.jpg" alt="" data-listen-image />
+        <div class="listen-popover-copy">
+            <span data-listen-kind>Letter</span>
+            <strong data-listen-symbol>A</strong>
+            <p data-listen-word>Apple</p>
+        </div>
+    </div>
+</div>
+
+<nav class="kid-bottom-nav">
+    <a class="active" asp-controller="Kids" asp-action="Home">
+        <span class="material-symbols-outlined">home</span>
+        <span>Trang chủ</span>
+    </a>
+    <a asp-controller="Kids" asp-action="Today">
+        <span class="material-symbols-outlined">edit_square</span>
+        <span>Bài tập</span>
+    </a>
+    <a asp-controller="Kids" asp-action="Rewards">
+        <span class="material-symbols-outlined">emoji_events</span>
+        <span>Quà tặng</span>
+    </a>
+    <a asp-controller="Parent" asp-action="Dashboard">
+        <span class="material-symbols-outlined">family_restroom</span>
+        <span>Phụ huynh</span>
+    </a>
+</nav>
+
+@section Scripts {
+    <script src="~/js/bilingual-listen.js" asp-append-version="true"></script>
+}
