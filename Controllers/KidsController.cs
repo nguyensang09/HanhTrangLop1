@@ -103,6 +103,7 @@ public class KidsController : Controller
     public async Task<IActionResult> Skill(Guid id)
     {
         var skillGroup = await _db.SkillGroups
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
         if (skillGroup is null)
         {
@@ -137,6 +138,12 @@ public class KidsController : Controller
                 .ToListAsync();
 
         var mostRecentAttempt = latestAttempts.OrderByDescending(x => x.CompletedAt ?? x.StartedAt).FirstOrDefault();
+        var latestAttemptByItemId = latestAttempts
+            .GroupBy(x => x.LearningItemId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderByDescending(x => x.StartedAt).First());
+
         var model = new SkillLearningListViewModel
         {
             ChildProfile = child,
@@ -144,7 +151,7 @@ public class KidsController : Controller
             LastPracticedItemId = mostRecentAttempt?.LearningItemId,
             Items = items.Select(item =>
             {
-                var latestAttempt = latestAttempts.FirstOrDefault(x => x.LearningItemId == item.Id);
+                latestAttemptByItemId.TryGetValue(item.Id, out var latestAttempt);
                 return new SkillLearningItemViewModel
                 {
                     Item = item,
@@ -642,11 +649,14 @@ public class KidsController : Controller
         await EnsureDefaultRewardsExistAsync();
 
         var earnedIds = await _db.ChildRewards
+            .AsNoTracking()
             .Where(x => x.ChildProfileId == childProfileId)
             .Select(x => x.RewardDefinitionId)
-            .ToListAsync();
+            .ToHashSetAsync();
 
-        var allRewards = await _db.RewardDefinitions.ToDictionaryAsync(x => x.Code);
+        var allRewards = await _db.RewardDefinitions
+            .AsNoTracking()
+            .ToDictionaryAsync(x => x.Code);
         var newlyAwarded = new List<RewardDefinition>();
 
         void TryAward(string code)
@@ -667,6 +677,7 @@ public class KidsController : Controller
 
         // Lấy dữ liệu tổng hợp lịch sử của bé
         var totalAttempts = await _db.LearningAttempts
+            .AsNoTracking()
             .Include(x => x.LearningItem)
             .ThenInclude(x => x!.SkillGroup)
             .Where(x => x.ChildProfileId == childProfileId && x.Status == "completed")
@@ -864,7 +875,9 @@ public class KidsController : Controller
 
     private async Task<Guid?> FindNextTracingItemIdAsync(Guid currentItemId)
     {
-        var currentItem = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == currentItemId);
+        var currentItem = await _db.LearningItems
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == currentItemId);
         if (currentItem is null)
         {
             return null;

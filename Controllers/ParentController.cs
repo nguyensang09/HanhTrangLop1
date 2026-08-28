@@ -450,17 +450,28 @@ public class ParentController : Controller
         IReadOnlyList<LearningSession> sessions,
         IReadOnlyList<SkillProgress> progressItems)
     {
+        var attemptsByChildId = attempts
+            .GroupBy(x => x.ChildProfileId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+        var sessionsByChildId = sessions
+            .GroupBy(x => x.ChildProfileId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+        var progressByChildId = progressItems
+            .GroupBy(x => x.ChildProfileId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         return children.Select(child =>
         {
-            var childAttempts = attempts.Where(x => x.ChildProfileId == child.Id).ToList();
-            var childProgress = progressItems.Where(x => x.ChildProfileId == child.Id).ToList();
+            var childAttempts = attemptsByChildId.GetValueOrDefault(child.Id) ?? [];
+            var childSessions = sessionsByChildId.GetValueOrDefault(child.Id) ?? [];
+            var childProgress = progressByChildId.GetValueOrDefault(child.Id) ?? [];
 
             return new ParentChildSummaryViewModel
             {
                 Child = child,
                 CompletedItems = childAttempts.Count(x => x.Status == "completed"),
                 NeedsPracticeItems = childAttempts.Count(x => x.Status == "needs_practice"),
-                LearningMinutes = sessions.Where(x => x.ChildProfileId == child.Id).Sum(x => x.ActualSeconds) / 60,
+                LearningMinutes = childSessions.Sum(x => x.ActualSeconds) / 60,
                 StarsEarned = childAttempts.Sum(x => x.StarsEarned),
                 AverageMastery = childProgress.Count == 0 ? 0 : Math.Round(childProgress.Average(x => x.MasteryLevel), 1),
                 LastLearnedAt = childAttempts.OrderByDescending(x => x.StartedAt).FirstOrDefault()?.StartedAt
@@ -488,19 +499,30 @@ public class ParentController : Controller
         int days)
     {
         var today = DateTime.Today;
+        var attemptsByDate = attempts
+            .GroupBy(x => x.StartedAt.LocalDateTime.Date)
+            .ToDictionary(g => g.Key, g => new
+            {
+                CompletedItems = g.Count(x => x.Status == "completed"),
+                NeedsPracticeItems = g.Count(x => x.Status == "needs_practice")
+            });
+        var learningMinutesByDate = sessions
+            .GroupBy(x => x.StartedAt.LocalDateTime.Date)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.ActualSeconds) / 60);
+
         return Enumerable.Range(0, days)
             .Select(offset => today.AddDays(offset - days + 1))
             .Select(date =>
             {
-                var dayAttempts = attempts.Where(x => x.StartedAt.LocalDateTime.Date == date).ToList();
-                var daySessions = sessions.Where(x => x.StartedAt.LocalDateTime.Date == date).ToList();
+                attemptsByDate.TryGetValue(date, out var dayAttempts);
+                learningMinutesByDate.TryGetValue(date, out var learningMinutes);
                 return new ParentDailyActivityViewModel
                 {
                     Date = date,
                     DateLabel = date.ToString("dd/MM"),
-                    CompletedItems = dayAttempts.Count(x => x.Status == "completed"),
-                    NeedsPracticeItems = dayAttempts.Count(x => x.Status == "needs_practice"),
-                    LearningMinutes = daySessions.Sum(x => x.ActualSeconds) / 60
+                    CompletedItems = dayAttempts?.CompletedItems ?? 0,
+                    NeedsPracticeItems = dayAttempts?.NeedsPracticeItems ?? 0,
+                    LearningMinutes = learningMinutes
                 };
             }).ToList();
     }

@@ -101,13 +101,16 @@ public class TodayLessonService
             .Where(x => x.SessionId == session.Id)
             .ToListAsync();
 
+        var latestAttemptByItemId = attempts
+            .GroupBy(x => x.LearningItemId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderByDescending(x => x.StartedAt).First());
+
         var firstOpenStepFound = false;
         var steps = items.Select(item =>
         {
-            var attempt = attempts
-                .Where(x => x.LearningItemId == item.Id)
-                .OrderByDescending(x => x.StartedAt)
-                .FirstOrDefault();
+            latestAttemptByItemId.TryGetValue(item.Id, out var attempt);
 
             if (attempt?.Status == "completed")
             {
@@ -163,14 +166,11 @@ public class TodayLessonService
 
     public async Task<List<DailyRoadmapItemViewModel>> BuildRoadmapDaysAsync(ChildProfile child, int currentDay)
     {
-        var completedDaySessions = await _db.LearningSessions
+        var completedDayNumbers = await _db.LearningSessions
             .AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id && x.Status == "completed")
-            .ToListAsync();
-
-        var completedDayNumbers = completedDaySessions
             .Select(x => x.PlannedMinutes)
-            .ToHashSet();
+            .ToHashSetAsync();
 
         return DayThemes.Select(theme =>
         {
@@ -207,12 +207,13 @@ public class TodayLessonService
             .Include(x => x.Topic)
             .Where(x => ids.Contains(x.Id) && x.Status == ContentStatus.Published)
             .ToListAsync();
-        items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
+        var itemById = items
+            .Where(ActivityTemplateCatalog.IsItemAllowed)
+            .ToDictionary(x => x.Id);
 
         return ids
-            .Select(id => items.FirstOrDefault(x => x.Id == id))
-            .Where(x => x is not null)
-            .Cast<LearningItem>()
+            .Where(itemById.ContainsKey)
+            .Select(id => itemById[id])
             .ToList();
     }
 
@@ -263,7 +264,8 @@ public class TodayLessonService
         var logicAndLifeItems = allItems.Where(x => x.SkillGroup?.Code == "tu-duy-logic" || x.SkillGroup?.Code == "ky-nang-song" || x.SkillGroup?.Code == "hinh-dang-khong-gian" || x.SkillGroup?.Code == "ngon-ngu").ToList();
         var tracingItems = allItems.Where(x => x.InteractionType == InteractionTypes.Tracing).ToList();
 
-        var selected = new List<Guid>();
+        var selected = new List<Guid>(capacity: 10);
+        var selectedIds = new HashSet<Guid>();
 
         void AddFromList(List<LearningItem> list, int offset)
         {
@@ -271,7 +273,7 @@ public class TodayLessonService
             {
                 var idx = Math.Abs(offset) % list.Count;
                 var item = list[idx];
-                if (!selected.Contains(item.Id))
+                if (selectedIds.Add(item.Id))
                 {
                     selected.Add(item.Id);
                 }
@@ -303,7 +305,7 @@ public class TodayLessonService
         {
             var idx = (stepOffset + i) % allItems.Count;
             var item = allItems[idx];
-            if (!selected.Contains(item.Id))
+            if (selectedIds.Add(item.Id))
             {
                 selected.Add(item.Id);
             }

@@ -133,8 +133,8 @@ public class AdminController : Controller
                                      (x.SkillGroup != null && x.SkillGroup.Name.Contains(keyword)));
         }
 
-        var allSkillGroups = await _db.SkillGroups.OrderBy(x => x.SortOrder).ToListAsync();
-        var allTopics = await _db.Topics.OrderBy(x => x.SortOrder).ToListAsync();
+        var allSkillGroups = await _db.SkillGroups.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
+        var allTopics = await _db.Topics.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
 
         var items = await query
             .OrderBy(x => x.SkillGroup!.SortOrder)
@@ -158,11 +158,20 @@ public class AdminController : Controller
                         (!topicId.HasValue || t.Id == topicId.Value))
             .ToList();
 
+        var itemsByGroupId = items.ToLookup(x => x.SkillGroupId);
+        var itemsByTopicId = items
+            .Where(x => x.TopicId.HasValue)
+            .ToLookup(x => x.TopicId!.Value);
+        var directItemsByGroupId = items
+            .Where(x => !x.TopicId.HasValue)
+            .ToLookup(x => x.SkillGroupId);
+        var topicsByGroupId = filteredTopics.ToLookup(x => x.SkillGroupId);
+
         var treeGroups = new List<AdminLearningGroupTreeItem>();
         foreach (var group in filteredGroups)
         {
-            var groupItems = items.Where(x => x.SkillGroupId == group.Id).ToList();
-            var groupTopics = filteredTopics.Where(t => t.SkillGroupId == group.Id).ToList();
+            var groupItems = itemsByGroupId[group.Id].ToList();
+            var groupTopics = topicsByGroupId[group.Id].ToList();
 
             // When a filter is active and specific group was not locked, hide empty group branches
             if (hasFilter && !skillGroupId.HasValue && groupItems.Count == 0)
@@ -173,17 +182,17 @@ public class AdminController : Controller
             var topicTreeItems = new List<AdminLearningTopicTreeItem>();
             foreach (var topic in groupTopics)
             {
-                var topicItems = groupItems.Where(x => x.TopicId == topic.Id).ToList();
+                var topicItems = itemsByTopicId[topic.Id].ToList();
                 if (hasFilter && !topicId.HasValue && topicItems.Count == 0)
                 {
                     continue;
                 }
 
-                var allowedTemplates = ActivityTemplateCatalog.ForTopic(topic.Code).InteractionTypes
+                var topicRule = ActivityTemplateCatalog.ForTopic(topic.Code);
+                var allowedTemplates = topicRule.InteractionTypes
                     .Select(ActivityTemplateCatalog.Find)
                     .OfType<ActivityTemplateDefinition>()
                     .ToList();
-                var allowsTracing = ActivityTemplateCatalog.ForTopic(topic.Code).AllowsTracing;
 
                 topicTreeItems.Add(new AdminLearningTopicTreeItem
                 {
@@ -191,11 +200,11 @@ public class AdminController : Controller
                     LearningItemCount = topicItems.Count,
                     Items = topicItems,
                     AllowedTemplates = allowedTemplates,
-                    AllowsTracing = allowsTracing
+                    AllowsTracing = topicRule.AllowsTracing
                 });
             }
 
-            var directItems = groupItems.Where(x => !x.TopicId.HasValue).ToList();
+            var directItems = directItemsByGroupId[group.Id].ToList();
 
             treeGroups.Add(new AdminLearningGroupTreeItem
             {
