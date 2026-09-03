@@ -1,26 +1,20 @@
 @model AdminDashboardViewModel
 @{
-    ViewData["Title"] = "Admin";
+    ViewData["Title"] = "Tổng quan hệ thống";
 }
 
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
     <main class="admin-main">
-        <div class="dashboard-header">
-            <div>
-                <p class="eyebrow">Admin</p>
-                <h1>Tổng quan hệ thống</h1>
-            </div>
-            <a class="app-btn app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho nội dung</a>
-        </div>
+        <partial name="_AdminHeader" model='ViewData["Title"]' />
 
-        <div class="stat-row">
+        <div class="stat-row mt-3">
             <div class="soft-card stat-card"><span class="material-symbols-outlined">extension</span><strong>@Model.TotalActivities</strong><span>Tổng bài học</span></div>
             <div class="soft-card stat-card"><span class="material-symbols-outlined">verified</span><strong>@Model.PublishedActivities</strong><span>Đã xuất bản</span></div>
             <div class="soft-card stat-card"><span class="material-symbols-outlined">draft</span><strong>@Model.DraftActivities</strong><span>Bản nháp</span></div>
         </div>
 
-        <div class="stat-row mt-4">
+        <div class="stat-row mt-3">
             <div class="soft-card stat-card"><span class="material-symbols-outlined">rate_review</span><strong>@Model.ReviewActivities</strong><span>Chờ duyệt</span></div>
             <div class="soft-card stat-card"><span class="material-symbols-outlined">face</span><strong>@Model.TotalChildren</strong><span>Hồ sơ bé</span></div>
             <div class="soft-card stat-card"><span class="material-symbols-outlined">touch_app</span><strong>@Model.TotalAttempts</strong><span>Lượt học</span></div>
@@ -32,19 +26,21 @@
                     <h2>Nội dung gần đây</h2>
                     <a class="mini-action" asp-action="LearningItems">Xem tất cả</a>
                 </div>
-                <table class="app-table">
-                    <thead><tr><th>Bài học</th><th>Nhóm</th><th>Trạng thái</th></tr></thead>
-                    <tbody>
-                    @foreach (var item in Model.RecentItems)
-                    {
-                        <tr>
-                            <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
-                            <td>@item.SkillGroup?.Name</td>
-                            <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="app-table">
+                        <thead><tr><th>Bài học</th><th>Nhóm</th><th>Trạng thái</th></tr></thead>
+                        <tbody>
+                        @foreach (var item in Model.RecentItems)
+                        {
+                            <tr>
+                                <td><a class="table-link" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td>
+                                <td>@item.SkillGroup?.Name</td>
+                                <td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="soft-card report-panel">

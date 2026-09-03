@@ -1,6 +1,7 @@
 @model ParentDashboardViewModel
 @{
-    ViewData["Title"] = "Góc phụ huynh - Tổng quan học tập";
+    ViewData["Title"] = "Góc phụ huynh - Báo cáo & Đồng hành cùng bé";
+    var isAdmin = User.IsInRole("Admin") || string.Equals(User.Identity?.Name, "admin", StringComparison.OrdinalIgnoreCase);
 
     string ResolveAvatar(string? key)
     {
@@ -18,7 +19,7 @@
     }
 }
 
-<section class="dashboard-wrap container parent-report-page">
+<section class="dashboard-wrap container-fluid parent-portal-container">
     <!-- Header banner -->
     <div class="parent-dash-header soft-card">
         <div class="header-info-side">
@@ -26,24 +27,12 @@
                 <span class="material-symbols-outlined icon-badge">family_restroom</span>
                 <span>Góc Phụ Huynh Đồng Hành</span>
             </div>
-            <h1 class="header-title">Tổng quan học tập của bé</h1>
-            <p class="header-desc">Theo dõi tiến độ, phân bổ thời gian học và đồng hành cùng bé mỗi ngày.</p>
-        </div>
-        <div class="header-actions-side">
-            <a class="dash-btn dash-btn-primary" asp-action="Profiles">
-                <span class="material-symbols-outlined">badge</span>
-                <span>Quản lý hồ sơ bé</span>
-            </a>
-            <form asp-action="Logout" method="post" class="d-inline m-0">
-                <button class="dash-btn dash-btn-outline" type="submit" title="Đăng xuất khỏi tài khoản">
-                    <span class="material-symbols-outlined">logout</span>
-                    <span>Đăng xuất</span>
-                </button>
-            </form>
+            <h1 class="header-title">Báo cáo & Tiến độ học tập của bé</h1>
+            <p class="header-desc">Theo dõi thời lượng rèn luyện, mức độ nắm vững kiến thức và cùng bé vững vàng vào lớp 1.</p>
         </div>
     </div>
 
-    <!-- Quick Stats Grid (Mobile & Tablet optimized) -->
+    <!-- Quick Stat Pills Bar -->
     <div class="parent-stat-grid mt-4">
         <div class="parent-stat-card stat-time">
             <div class="stat-icon-wrap">
@@ -51,8 +40,8 @@
             </div>
             <div class="stat-content">
                 <div class="stat-number">@Model.TotalLearningMinutes<span class="stat-unit"> phút</span></div>
-                <div class="stat-label">Tổng thời gian học</div>
-                <div class="stat-sub">Thời lượng bé đã rèn luyện</div>
+                <div class="stat-label">Tổng thời lượng rèn luyện</div>
+                <div class="stat-sub">Thời gian bé học tập</div>
             </div>
         </div>
 
@@ -62,7 +51,7 @@
             </div>
             <div class="stat-content">
                 <div class="stat-number">@Model.TotalCompletedItems<span class="stat-unit"> bài</span></div>
-                <div class="stat-label">Bài học hoàn thành</div>
+                <div class="stat-label">Bài học hoàn thành tốt</div>
                 <div class="stat-sub">Đạt chuẩn nắm vững kiến thức</div>
             </div>
         </div>
@@ -74,235 +63,288 @@
             <div class="stat-content">
                 <div class="stat-number">@Model.TotalNeedsPracticeItems<span class="stat-unit"> bài</span></div>
                 <div class="stat-label">Cần luyện thêm</div>
-                <div class="stat-sub">Cần ba mẹ hướng dẫn thêm</div>
+                <div class="stat-sub">Bé cần thêm sự khích lệ</div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="parent-grid mt-4">
-        <!-- Left: Child Profiles List -->
-        <div class="soft-card report-panel child-summary-panel">
-            <div class="panel-heading">
-                <div class="panel-title-wrap">
-                    <span class="material-symbols-outlined panel-title-icon">face</span>
-                    <h2>Hồ sơ các bé</h2>
+    <!-- BỐ CỤC 2 CỘT TỶ LỆ 7:3 TRÊN TABLET / XẾP CHỒNG TRÊN MOBILE -->
+    <div class="parent-portal-layout mt-4">
+        <!-- ==================== CỘT TRÁI (70%): BÁO CÁO & TIẾN ĐỘ BÀI HỌC ==================== -->
+        <div class="parent-portal-left-col">
+            <!-- 1. Biểu đồ hoạt động 7 ngày gần đây -->
+            <div class="soft-card report-panel chart-panel">
+                <div class="panel-heading">
+                    <div class="panel-title-wrap">
+                        <span class="material-symbols-outlined panel-title-icon">insights</span>
+                        <h2>Biểu đồ thời lượng & hoạt động 7 ngày</h2>
+                    </div>
                 </div>
-                <a class="mini-action" asp-action="Profiles">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Quản lý</span>
-                </a>
+
+                <div class="chart-container-scroll">
+                    <div class="daily-chart-v2">
+                        @foreach (var day in Model.DailyActivities)
+                        {
+                            var total = day.CompletedItems + day.NeedsPracticeItems;
+                            var heightPercent = Math.Max(14, Math.Min(100, total * 16));
+                            var hasPractice = day.NeedsPracticeItems > 0;
+                            var isEmpty = total == 0;
+
+                            <div class="daily-bar-column">
+                                <div class="daily-bar-track">
+                                    <div class="daily-bar-pillar @(isEmpty ? "is-empty" : (hasPractice ? "has-practice" : "is-completed"))"
+                                         style="height: @(isEmpty ? "10%" : $"{heightPercent}%")"
+                                         title="@day.DateLabel: @day.CompletedItems bài đạt, @day.NeedsPracticeItems bài cần luyện (@day.LearningMinutes phút)">
+                                        @if (!isEmpty)
+                                        {
+                                            <span class="bar-count-badge">@total</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="daily-bar-label">@day.DateLabel</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="chart-legend-box">
+                    <div class="legend-item">
+                        <span class="legend-dot completed-dot"></span>
+                        <span>Hoàn thành tốt</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot practice-dot"></span>
+                        <span>Cần luyện thêm</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot empty-dot"></span>
+                        <span>Chưa học</span>
+                    </div>
+                </div>
             </div>
 
-            @if (!Model.ChildSummaries.Any())
+            <!-- 2. Danh sách thanh tiến độ bài học của bé (Font 18px - 20px sắc nét) -->
+            <div class="soft-card report-panel mt-4 progress-highlight-panel">
+                <div class="panel-heading">
+                    <div class="panel-title-wrap">
+                        <span class="material-symbols-outlined panel-title-icon">military_tech</span>
+                        <h2>Tiến độ các nhóm bài học của bé</h2>
+                    </div>
+                </div>
+
+                @if (!Model.ProgressItems.Any())
+                {
+                    <div class="parent-empty-inline">
+                        <span class="material-symbols-outlined">school</span>
+                        <span>Chưa có dữ liệu tiến độ. Khi bé hoàn thành bài học đầu tiên, thanh tiến độ sẽ hiển thị chi tiết tại đây.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="skills-progress-list-v2">
+                        @foreach (var progress in Model.ProgressItems.OrderBy(x => x.SkillGroup?.SortOrder).ThenBy(x => x.SkillGroup?.Name))
+                        {
+                            <div class="skill-row-item-v2">
+                                <div class="skill-meta-line">
+                                    <span class="skill-name-bold">@(progress.SkillGroup?.Name ?? "Kỹ năng học tập")</span>
+                                    <span class="skill-badge-highlight">@progress.MasteryLevel% đạt chuẩn</span>
+                                </div>
+                                <div class="skill-track-v2">
+                                    <div class="skill-fill-v2" style="width: @Math.Min(100, Math.Max(0, progress.MasteryLevel))%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- 3. Nhật ký bài học gần đây -->
+            <div class="soft-card report-panel mt-4">
+                <div class="panel-heading">
+                    <div class="panel-title-wrap">
+                        <span class="material-symbols-outlined panel-title-icon">history</span>
+                        <h2>Nhật ký rèn luyện gần đây</h2>
+                    </div>
+                </div>
+
+                @if (!Model.RecentAttempts.Any())
+                {
+                    <div class="parent-empty-inline">
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                        <span>Chưa có lượt học nào gần đây.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="activity-timeline-list">
+                        @foreach (var attempt in Model.RecentAttempts)
+                        {
+                            var isCompleted = attempt.Status == "completed";
+                            <div class="activity-timeline-item @(isCompleted ? "status-success" : "status-warning")">
+                                <div class="activity-icon-pill">
+                                    <span class="material-symbols-outlined">@(isCompleted ? "check_circle" : "refresh")</span>
+                                </div>
+                                <div class="activity-body">
+                                    <div class="activity-title-row">
+                                        <span class="activity-title">@attempt.LearningItem?.Title</span>
+                                        <span class="activity-status-chip @(isCompleted ? "chip-success" : "chip-warning")">
+                                            @(isCompleted ? "Hoàn thành tốt" : "Cần luyện thêm")
+                                        </span>
+                                    </div>
+                                    <div class="activity-meta-row">
+                                        <span class="activity-child-name">
+                                            <span class="material-symbols-outlined">face</span>
+                                            @(attempt.ChildProfile?.Nickname ?? "Bé")
+                                        </span>
+                                        <span class="activity-time">
+                                            <span class="material-symbols-outlined">schedule</span>
+                                            @attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm")
+                                        </span>
+                                        @if (attempt.StarsEarned > 0)
+                                        {
+                                            <span class="activity-stars">
+                                                <span class="material-symbols-outlined star-icon">star</span>
+                                                +@attempt.StarsEarned sao
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ==================== CỘT PHẢI (30%): QUẢN TRỊ & HỒ SƠ BÉ ==================== -->
+        <div class="parent-portal-right-col">
+            <!-- NẾU ĐĂNG NHẬP BẰNG ADMIN TRÊN TABLET / MOBILE: HIỂN THỊ NÚT NỔI BẬT "VÀO TRANG QUẢN TRỊ" TẠI CỘT NÀY (TRÊN PC ĐÃ CÓ TRÊN THANH MENU CHÍNH) -->
+            @if (isAdmin)
             {
-                <div class="parent-empty-state">
-                    <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="empty-mascot" />
-                    <p class="empty-title">Chưa có hồ sơ bé nào</p>
-                    <p class="empty-desc">Phụ huynh vui lòng tạo hồ sơ để bắt đầu hành trình học tập và theo dõi báo cáo chi tiết cho bé.</p>
-                    <a class="dash-btn dash-btn-primary mt-3" asp-action="Profiles">
-                        <span class="material-symbols-outlined">add_circle</span>
-                        <span>Tạo hồ sơ cho bé ngay</span>
+                <div class="soft-card report-panel admin-callout-card d-lg-none mb-4">
+                    <div class="admin-callout-icon">
+                        <span class="material-symbols-outlined">shield_person</span>
+                    </div>
+                    <div class="admin-callout-body">
+                        <h3>Tài khoản Quản Trị Viên</h3>
+                        <p>Quản lý kho bài học, âm thanh voice, hình ảnh và dữ liệu hệ thống.</p>
+                        <a class="dash-btn dash-btn-admin-cta" asp-controller="Admin" asp-action="Index">
+                            <span class="material-symbols-outlined">admin_panel_settings</span>
+                            <span>Vào Trang Quản Trị (CMS)</span>
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <!-- Hồ sơ các bé & mức độ làm chủ -->
+            <div class="soft-card report-panel">
+                <div class="panel-heading">
+                    <div class="panel-title-wrap">
+                        <span class="material-symbols-outlined panel-title-icon">face</span>
+                        <h2>Hồ sơ các bé</h2>
+                    </div>
+                    <a class="mini-action" asp-action="Profiles">
+                        <span class="material-symbols-outlined">settings</span>
+                        <span>Cài đặt</span>
                     </a>
                 </div>
-            }
-            else
-            {
-                <div class="child-card-list">
-                    @foreach (var summary in Model.ChildSummaries)
-                    {
-                        <article class="child-report-card-v2">
-                            <div class="child-card-main">
-                                <div class="child-avatar-box">
-                                    <img src="@ResolveAvatar(summary.Child.AvatarKey)" alt="@summary.Child.Nickname" class="child-avatar-img" />
-                                </div>
-                                <div class="child-info-box">
-                                    <div class="child-name-row">
-                                        <h3 class="child-nickname">@summary.Child.Nickname</h3>
-                                        <span class="child-target-chip">
-                                            <span class="material-symbols-outlined">alarm</span>
-                                            @summary.Child.DailyLearningMinutes p/ngày
-                                        </span>
-                                    </div>
-                                    <div class="child-last-learned">
-                                        <span class="material-symbols-outlined">history</span>
-                                        <span>
-                                            @(summary.LastLearnedAt.HasValue
-                                                ? $"Gần nhất: {summary.LastLearnedAt.Value.LocalDateTime:dd/MM/yyyy HH:mm}"
-                                                : "Chưa có buổi học nào")
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="child-mastery-wrap">
-                                <div class="mastery-info">
-                                    <span class="mastery-label">Mức độ thành thạo</span>
-                                    <span class="mastery-percent">@summary.AverageMastery%</span>
-                                </div>
-                                <div class="mastery-bar-track">
-                                    <div class="mastery-bar-fill" style="width: @Math.Min(100, Math.Max(0, summary.AverageMastery))%"></div>
-                                </div>
-                            </div>
-
-                            <div class="child-card-actions">
-                                <a class="child-cta-primary" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@summary.Child.Id">
-                                    <span class="material-symbols-outlined">play_circle</span>
-                                    <span>Bé vào lớp ngay</span>
-                                </a>
-                                <a class="child-cta-secondary" asp-action="Report" asp-route-childId="@summary.Child.Id">
-                                    <span class="material-symbols-outlined">bar_chart</span>
-                                    <span>Xem báo cáo</span>
-                                </a>
-                            </div>
-                        </article>
-                    }
-                </div>
-            }
-        </div>
-
-        <!-- Right: 7-Day Activity Chart -->
-        <div class="soft-card report-panel chart-panel">
-            <div class="panel-heading">
-                <div class="panel-title-wrap">
-                    <span class="material-symbols-outlined panel-title-icon">insights</span>
-                    <h2>Hoạt động 7 ngày gần đây</h2>
-                </div>
-            </div>
-
-            <div class="chart-container-scroll">
-                <div class="daily-chart-v2">
-                    @foreach (var day in Model.DailyActivities)
-                    {
-                        var total = day.CompletedItems + day.NeedsPracticeItems;
-                        var heightPercent = Math.Max(12, Math.Min(100, total * 16));
-                        var isSuccess = day.NeedsPracticeItems == 0 && day.CompletedItems > 0;
-                        var hasPractice = day.NeedsPracticeItems > 0;
-                        var isEmpty = total == 0;
-
-                        <div class="daily-bar-column">
-                            <div class="daily-bar-track">
-                                <div class="daily-bar-pillar @(isEmpty ? "is-empty" : (hasPractice ? "has-practice" : "is-completed"))"
-                                     style="height: @(isEmpty ? "8%" : $"{heightPercent}%")"
-                                     title="@day.DateLabel: @day.CompletedItems hoàn thành, @day.NeedsPracticeItems cần luyện thêm (@day.LearningMinutes phút)">
-                                    @if (!isEmpty)
-                                    {
-                                        <span class="bar-count-badge">@total</span>
-                                    }
-                                </div>
-                            </div>
-                            <div class="daily-bar-label">@day.DateLabel</div>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <div class="chart-legend-box">
-                <div class="legend-item">
-                    <span class="legend-dot completed-dot"></span>
-                    <span>Hoàn thành tốt</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-dot practice-dot"></span>
-                    <span>Cần luyện thêm</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-dot empty-dot"></span>
-                    <span>Chưa học</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Core Skills Progress -->
-    <div class="soft-card report-panel mt-4">
-        <div class="panel-heading">
-            <div class="panel-title-wrap">
-                <span class="material-symbols-outlined panel-title-icon">military_tech</span>
-                <h2>Tiến độ kỹ năng cốt lõi</h2>
-            </div>
-        </div>
-
-        @if (!Model.ProgressItems.Any())
-        {
-            <div class="parent-empty-inline">
-                <span class="material-symbols-outlined">school</span>
-                <span>Chưa có dữ liệu tiến độ. Khi bé học xong bài đầu tiên, biểu đồ kỹ năng sẽ xuất hiện tại đây.</span>
-            </div>
-        }
-        else
-        {
-            <div class="skills-progress-grid">
-                @foreach (var progress in Model.ProgressItems.OrderBy(x => x.SkillGroup?.SortOrder).ThenBy(x => x.SkillGroup?.Name))
+                @if (!Model.ChildSummaries.Any())
                 {
-                    <div class="skill-item-card">
-                        <div class="skill-header-row">
-                            <span class="skill-name">@(progress.SkillGroup?.Name ?? "Kỹ năng")</span>
-                            <span class="skill-percent-badge">@progress.MasteryLevel%</span>
-                        </div>
-                        <div class="skill-track-bar">
-                            <div class="skill-fill-bar" style="width: @Math.Min(100, Math.Max(0, progress.MasteryLevel))%"></div>
-                        </div>
+                    <div class="parent-empty-state">
+                        <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="empty-mascot" />
+                        <p class="empty-title">Chưa có hồ sơ bé nào</p>
+                        <p class="empty-desc">Phụ huynh vui lòng tạo hồ sơ để bắt đầu đồng hành cùng bé.</p>
+                        <a class="dash-btn dash-btn-primary mt-3" asp-action="Profiles">
+                            <span class="material-symbols-outlined">add_circle</span>
+                            <span>Tạo hồ sơ cho bé</span>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="child-card-list">
+                        @foreach (var summary in Model.ChildSummaries)
+                        {
+                            <article class="child-report-card-v2">
+                                <div class="child-card-main">
+                                    <div class="child-avatar-box">
+                                        <img src="@ResolveAvatar(summary.Child.AvatarKey)" alt="@summary.Child.Nickname" class="child-avatar-img" />
+                                    </div>
+                                    <div class="child-info-box">
+                                        <div class="child-name-row">
+                                            <h3 class="child-nickname">@summary.Child.Nickname</h3>
+                                            <span class="child-target-chip">
+                                                <span class="material-symbols-outlined">alarm</span>
+                                                @summary.Child.DailyLearningMinutes p/ngày
+                                            </span>
+                                        </div>
+                                        <div class="child-last-learned">
+                                            <span class="material-symbols-outlined">history</span>
+                                            <span>
+                                                @(summary.LastLearnedAt.HasValue
+                                                    ? $"Gần nhất: {summary.LastLearnedAt.Value.LocalDateTime:dd/MM HH:mm}"
+                                                    : "Chưa có buổi học nào")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="child-mastery-wrap">
+                                    <div class="mastery-info">
+                                        <span class="mastery-label">Mức độ hoàn thành</span>
+                                        <span class="mastery-percent">@summary.AverageMastery%</span>
+                                    </div>
+                                    <div class="mastery-bar-track">
+                                        <div class="mastery-bar-fill" style="width: @Math.Min(100, Math.Max(0, summary.AverageMastery))%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="child-card-actions">
+                                    <a class="child-cta-primary" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@summary.Child.Id">
+                                        <span class="material-symbols-outlined">play_circle</span>
+                                        <span>Vào học</span>
+                                    </a>
+                                    <a class="child-cta-secondary" asp-action="Report" asp-route-childId="@summary.Child.Id">
+                                        <span class="material-symbols-outlined">bar_chart</span>
+                                        <span>Chi tiết</span>
+                                    </a>
+                                </div>
+                            </article>
+                        }
                     </div>
                 }
             </div>
-        }
-    </div>
 
-    <!-- Recent Activities Log -->
-    <div class="soft-card report-panel mt-4">
-        <div class="panel-heading">
-            <div class="panel-title-wrap">
-                <span class="material-symbols-outlined panel-title-icon">history</span>
-                <h2>Nhật ký hoạt động gần đây</h2>
+            <!-- Tổng hợp huy hiệu thực tế -->
+            <div class="soft-card report-panel mt-4">
+                <div class="widget-header">
+                    <div class="widget-icon-wrap" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <span class="material-symbols-outlined">emoji_events</span>
+                    </div>
+                    <div>
+                        <h3 style="font-size:16px; font-weight:800; margin:0; color:#0f172a;">Huy hiệu tích lũy</h3>
+                        <p style="font-size:12px; color:#64748b; margin:2px 0 0;">Phần thưởng đạt được</p>
+                    </div>
+                </div>
+                <div class="mt-3 p-3 text-center" style="background:#fefce8; border:1.5px solid #fef08a; border-radius:14px;">
+                    <span style="font-size:32px; font-weight:900; color:#854d0e; font-family:'Plus Jakarta Sans',sans-serif;">@Model.TotalRewards</span>
+                    <span style="display:block; font-size:13px; font-weight:700; color:#a16207; margin-top:2px;">Huy hiệu & phần thưởng 🏆</span>
+                </div>
+            </div>
+
+            <!-- Gợi ý đồng hành -->
+            <div class="soft-card report-panel mt-4" style="background:#f0f9ff; border:1.5px solid #bae6fd;">
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <span class="material-symbols-outlined" style="color:#0284c7; font-size:26px; flex-shrink:0;">lightbulb</span>
+                    <div>
+                        <strong style="display:block; font-size:14px; color:#0c4a6e; margin-bottom:4px;">Lời khuyên đồng hành</strong>
+                        <p style="font-size:13px; color:#0369a1; margin:0; line-height:1.5;">
+                            Bé mầm non 5 tuổi học hiệu quả nhất từ <strong>10 đến 15 phút mỗi ngày</strong>. Ba mẹ hãy đồng hành, khen ngợi và động viên khi bé hoàn thành các nét vẽ và câu hỏi nhé!
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
-
-        @if (!Model.RecentAttempts.Any())
-        {
-            <div class="parent-empty-inline">
-                <span class="material-symbols-outlined">hourglass_empty</span>
-                <span>Chưa có hoạt động nào được ghi nhận.</span>
-            </div>
-        }
-        else
-        {
-            <div class="activity-timeline-list">
-                @foreach (var attempt in Model.RecentAttempts)
-                {
-                    var isCompleted = attempt.Status == "completed";
-                    <div class="activity-timeline-item @(isCompleted ? "status-success" : "status-warning")">
-                        <div class="activity-icon-pill">
-                            <span class="material-symbols-outlined">@(isCompleted ? "check_circle" : "refresh")</span>
-                        </div>
-                        <div class="activity-body">
-                            <div class="activity-title-row">
-                                <span class="activity-title">@attempt.LearningItem?.Title</span>
-                                <span class="activity-status-chip @(isCompleted ? "chip-success" : "chip-warning")">
-                                    @(isCompleted ? "Hoàn thành tốt" : "Cần luyện thêm")
-                                </span>
-                            </div>
-                            <div class="activity-meta-row">
-                                <span class="activity-child-name">
-                                    <span class="material-symbols-outlined">face</span>
-                                    @(attempt.ChildProfile?.Nickname ?? "Bé")
-                                </span>
-                                <span class="activity-time">
-                                    <span class="material-symbols-outlined">schedule</span>
-                                    @attempt.StartedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm")
-                                </span>
-                                @if (attempt.StarsEarned > 0)
-                                {
-                                    <span class="activity-stars">
-                                        <span class="material-symbols-outlined star-icon">star</span>
-                                        +@attempt.StarsEarned sao
-                                    </span>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
     </div>
 </section>

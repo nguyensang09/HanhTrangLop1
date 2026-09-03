@@ -10,7 +10,8 @@
             Đăng nhập để theo dõi và cùng bé học tập mỗi ngày.
         </p>
 
-        <form asp-action="Login" method="post">
+        <form asp-action="Login" method="post" id="loginForm">
+            <input type="hidden" name="deviceType" id="deviceTypeInput" value="pc" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <label asp-for="Username">Tên tài khoản</label>
@@ -37,4 +38,27 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function() {
+            function detectDeviceType() {
+                var width = window.innerWidth || screen.width;
+                var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+                var ua = (navigator.userAgent || '').toLowerCase();
+                var isMobileUA = /mobile|iphone|ipod|android.*mobile/.test(ua);
+                var isTabletUA = /ipad|tablet|(android(?!.*mobile))/.test(ua);
+
+                if (isMobileUA || width < 768) {
+                    return 'mobile';
+                }
+                if (isTabletUA || (width >= 768 && width <= 1440) || (hasTouch && width <= 1600)) {
+                    return 'tablet';
+                }
+                return 'pc';
+            }
+            var el = document.getElementById('deviceTypeInput');
+            if (el) {
+                el.value = detectDeviceType();
+            }
+        })();
+    </script>
 }

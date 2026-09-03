@@ -1,6 +1,6 @@
 @model KidsHomeViewModel
 @{
-    ViewData["Title"] = "Khu học của bé";
+    ViewData["Title"] = "Góc của bé - Hành Trang Lớp 1";
 
     string ResolveAvatar(string? key)
     {
@@ -16,165 +16,220 @@
             _ => "/images/mascot-squirrel-3d.png"
         };
     }
+
+    // Xây dựng danh mục các thẻ hoạt động cho bé
+    var allCards = new List<(string Title, string Icon, string ColorTheme, string Badge, string Url)>();
+
+    // 1. Bài học hôm nay
+    allCards.Add(("Bài Học Hôm Nay", "play_circle", "card-theme-amber", "Mục tiêu ✨", Url.Action("Today", "Kids")!));
+    // 2. Bé tập tô
+    allCards.Add(("Góc Bé Tập Tô", "draw", "card-theme-coral", "Vẽ tự do 🎨", Url.Action("Tracing", "Kids")!));
+    // 3. Nghe song ngữ
+    allCards.Add(("Nghe Song Ngữ", "record_voice_over", "card-theme-sky", "ABC & Số 0-20 🎧", Url.Action("BilingualListen", "Kids")!));
+    // 4. Kho quà & huy hiệu
+    allCards.Add(("Kho Quà Tặng", "emoji_events", "card-theme-gold", "Huy hiệu 🏆", Url.Action("Rewards", "Kids")!));
+
+    // Thêm các nhóm kỹ năng cốt lõi
+    foreach (var g in Model.SkillGroups)
+    {
+        var (icon, theme, badge) = g.Code switch
+        {
+            "chu-cai" => ("menu_book", "card-theme-coral", "29 Chữ Cái & Nét"),
+            "chu-so" => ("pin", "card-theme-mint", "Chữ Số 0 - 9"),
+            "so-luong-toan" => ("calculate", "card-theme-amber", "Đếm & So Sánh"),
+            "tu-duy-logic" => ("extension", "card-theme-cyan", "Ghép Bóng & Logic"),
+            "ky-nang-song" => ("volunteer_activism", "card-theme-purple", "Kỹ Năng Sống"),
+            "ngon-ngu" => ("record_voice_over", "card-theme-pink", "Vốn Từ & Âm"),
+            "hinh-dang-khong-gian" => ("category", "card-theme-teal", "Hình Khối"),
+            _ => (g.IconKey ?? "school", "card-theme-coral", g.Name)
+        };
+        allCards.Add((g.Name, icon, theme, badge, Url.Action("Skill", "Kids", new { id = g.Id })!));
+    }
+
+    // Phân trang 8 thẻ / trang (cố định 2 hàng x 4 cột)
+    const int PageSize = 8;
+    var totalCards = allCards.Count;
+    var totalPages = (int)Math.Ceiling(totalCards / (double)PageSize);
 }
 
-<section class="kid-screen kid-home-screen">
-    <!-- Topbar Hồ Sơ Bé Tinh Gọn -->
-    <div class="kid-topbar home-topbar clay-card">
-        <div class="kid-header-profile">
-            <div class="squirrel-avatar-wrap">
-                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Ảnh bé" class="squirrel-avatar" />
-            </div>
-            <div>
-                <p class="eyebrow">Sóc Nâu Đồng Hành</p>
-                <h1>Chào @((Model.ChildProfile?.Nickname) ?? "bạn nhỏ")! 👋</h1>
-            </div>
-        </div>
-        <div class="kid-topbar-actions">
-            <a class="star-pill clay-button" asp-controller="Profiles" asp-action="Index" title="Đổi hồ sơ bé">
-                <span class="material-symbols-outlined">face</span>
-                <span>Bạn nhỏ khác</span>
+<div class="child-zone-shell">
+    <!-- ==================== HEADER GÓC CỦA BÉ ==================== -->
+    <header class="child-zone-header">
+        <!-- Góc trái: Avatar bé bo tròn lớn (đường kính 80px trên Tablet/PC, 48px trên Mobile) -->
+        <div class="child-header-left">
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bạn nhỏ khác">
+                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
+                <span class="child-avatar-switch-badge" title="Đổi bé">
+                    <span class="material-symbols-outlined">sync_alt</span>
+                </span>
             </a>
+            <div class="child-header-greeting">
+                <span class="child-hi-eyebrow">Chào bạn nhỏ</span>
+                <strong class="child-name-display">@((Model.ChildProfile?.Nickname) ?? "Bé yêu") 👋</strong>
+            </div>
         </div>
-    </div>
 
-  @*   <!-- Lời Chào Sóc Nâu Tự Động Thu Gọn Sau Vài Giây -->
-    <div class="mascot-greeting-toast clay-card" id="mascotGreetingToast">
-        <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu 3D" class="toast-mascot-img" />
-        <div class="toast-speech-col">
-            <div class="toast-speech-header">
-                <strong>Hôm nay mình học một chút thôi nhé! 🌟</strong>
-                <button class="sound-button clay-button" type="button" aria-label="Nghe lời chào" onclick="window.speechSynthesis && window.speechSynthesis.speak(new SpeechSynthesisUtterance('Chào bạn nhỏ! Hôm nay mình học một chút thôi nhé. Bắt đầu bằng nét chữ, rồi chơi với số và hình.'))">
-                    <span class="material-symbols-outlined">volume_up</span>
-                </button>
+        <!-- Ở giữa: Huy hiệu/ngôi sao điểm thưởng dạng icon 3D nổi bật, số font đậm 32px -->
+        <div class="child-header-center">
+            <div class="child-star-badge-3d" title="Số sao thưởng bé tích lũy được">
+                <span class="star-3d-icon">⭐</span>
+                <span class="star-number-display">@Model.Stars</span>
+                <span class="star-label-text">sao</span>
             </div>
-            <p>Bắt đầu bằng nét chữ, rồi cùng chơi với những con số và thế giới xung quanh.</p>
         </div>
-        <button type="button" class="toast-close-btn" onclick="dismissGreetingToast()" aria-label="Đóng lời chào">
-            <span class="material-symbols-outlined">close</span>
-        </button>
-    </div> *@
 
-    <!-- Các Lối Vào Bài Học Chính 3D -->
-    <div class="home-hero-actions-row">
-        <!-- Nút Bắt Đầu Bài Học Hôm Nay 3D -->
-        <a class="hero-mission-card clay-button" asp-controller="Kids" asp-action="Today">
-            <div class="hero-mission-icon-wrap">
-                <span class="material-symbols-outlined hero-play-icon">play_circle</span>
-            </div>
-            <div class="hero-mission-content">
-                <span class="hero-mission-badge">Mục tiêu hôm nay ✨</span>
-                <strong>Bắt đầu bài học ngay</strong>
-                <small>Chỉ 10 - 15 phút mỗi ngày cùng Sóc Nâu</small>
-            </div>
-            <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
-        </a>
+        <!-- Góc phải: Nút "Chuyển góc phụ huynh" (icon ổ khóa bo tròn, kích thước 72x72px trên Tablet, min 48x48px trên Mobile) -->
+        <div class="child-header-right">
+            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+                <span class="material-symbols-outlined lock-icon">lock</span>
+                <span class="lock-label-text">Ba mẹ</span>
+            </button>
+        </div>
+    </header>
 
-        <!-- Nút Góc Bé Tập Tô & Luyện Nét 3D -->
-        <a class="hero-mission-card tracing-mission-card clay-button" asp-controller="Kids" asp-action="Tracing">
-            <div class="hero-mission-icon-wrap tracing-icon-wrap">
-                <span class="material-symbols-outlined hero-play-icon">draw</span>
-            </div>
-            <div class="hero-mission-content">
-                <span class="hero-mission-badge tracing-badge">Mở tự do 100% 🎨</span>
-                <strong>Góc Bé Tập Tô</strong>
-                <small>Luyện 29 chữ cái, chữ số & nét vẽ cơ bản</small>
-            </div>
-            <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
-        </a>
-
-        <a class="hero-mission-card bilingual-mission-card clay-button" asp-controller="Kids" asp-action="BilingualListen">
-            <div class="hero-mission-icon-wrap bilingual-icon-wrap">
-                <span class="material-symbols-outlined hero-play-icon">record_voice_over</span>
-            </div>
-            <div class="hero-mission-content">
-                <span class="hero-mission-badge bilingual-badge">Nghe song ngữ</span>
-                <strong>ABC & Số 0-20</strong>
-                <small>Chạm chữ hoặc số để nghe tiếng Anh và xem hình</small>
-            </div>
-            <span class="hero-mission-arrow material-symbols-outlined">arrow_forward</span>
-        </a>
-    </div>
-
-    <!-- Lưới Khám Phá Các Nhóm Kỹ Năng Đa Dạng Sắc Màu -->
-    <div class="skill-section-header">
-        <h2 class="section-title">
-            <span class="material-symbols-outlined title-icon">category</span>
-            Khám phá các nhóm kỹ năng
-        </h2>
-        <span class="section-sub">Chọn một chủ đề bé yêu thích để bắt đầu hành trình</span>
-    </div>
-
-    <div class="skill-grid">
-        @foreach (var group in Model.SkillGroups)
-        {
-            var (badgeText, icon3d, themeClass) = group.Code switch
+    <!-- ==================== LƯỚI BÀI HỌC (2 HÀNG x 4 CỘT = 8 THẺ/TRANG) ==================== -->
+    <main class="child-zone-main">
+        <div class="child-pages-slider" id="childPagesSlider">
+            @for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
             {
-                "chu-cai" => ("29 Chữ Cái & Nét", "menu_book", "theme-coral"),
-                "chu-so" => ("Chữ Số 0 - 9", "pin", "theme-amber"),
-                "so-luong-toan" => ("Đếm & So Sánh", "calculate", "theme-mint"),
-                "tu-duy-logic" => ("Ghép Bóng & Logic", "extension", "theme-cyan"),
-                "ky-nang-song" => ("Kỹ Năng & Cảm Xúc", "volunteer_activism", "theme-purple"),
-                "ngon-ngu" => ("Vốn Từ & Âm Vần", "record_voice_over", "theme-pink"),
-                "hinh-dang-khong-gian" => ("Hình Khối & Không Gian", "category", "theme-teal"),
-                _ => ("Khám Phá Mới", group.IconKey, "theme-coral")
-            };
+                var pageCards = allCards.Skip(pageIndex * PageSize).Take(PageSize).ToList();
+                <div class="child-grid-page @(pageIndex == 0 ? "is-active" : "")" data-page-index="@pageIndex">
+                    <div class="child-cards-grid">
+                        @foreach (var card in pageCards)
+                        {
+                            <a class="child-card-tile @card.ColorTheme" href="@card.Url" onclick="playChildCardClick(event, this)">
+                                <div class="card-badge-pill">@card.Badge</div>
+                                <div class="card-illustration-box">
+                                    <span class="material-symbols-outlined card-main-icon">@card.Icon</span>
+                                </div>
+                                <div class="card-title-box">
+                                    <h3 class="card-title-text">@card.Title</h3>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
 
-            <a class="skill-tile clay-card @themeClass" asp-controller="Kids" asp-action="Skill" asp-route-id="@group.Id">
-                <div class="skill-tile-icon-wrap">
-                    <span class="material-symbols-outlined skill-tile-icon">@icon3d</span>
-                </div>
-                <div class="skill-tile-body">
-                    <div class="skill-tag-pill">@badgeText</div>
-                    <strong>@group.Name</strong>
-                    <small>@group.Description</small>
-                </div>
-                <div class="skill-tile-arrow-wrap">
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                </div>
-            </a>
-        }
-    </div>
-</section>
+        <!-- ==================== ĐIỀU HƯỚNG CHÂN TRANG (2 NÚT 88x88px Ở HAI GÓC DƯỚI) ==================== -->
+        <div class="child-zone-footer-nav">
+            <!-- Nút "Trước" (88x88px cố định góc dưới bên trái) -->
+            <button type="button" class="child-corner-nav-btn btn-prev" id="childBtnPrev" onclick="navigateChildPage(-1)" aria-label="Trang trước" title="Xem trang trước" disabled>
+                <span class="material-symbols-outlined nav-arrow-icon">arrow_back</span>
+                <span class="nav-text-small">Trước</span>
+            </button>
 
-<!-- Bottom Navigation for Kids -->
-<nav class="kid-bottom-nav">
-    <a class="active" asp-controller="Kids" asp-action="Home">
-        <span class="material-symbols-outlined">home</span>
-        <span>Trang chủ</span>
-    </a>
-    <a asp-controller="Kids" asp-action="Today">
-        <span class="material-symbols-outlined">edit_square</span>
-        <span>Bài tập</span>
-    </a>
-    <a asp-controller="Kids" asp-action="Rewards">
-        <span class="material-symbols-outlined">emoji_events</span>
-        <span>Quà tặng</span>
-    </a>
-    <a asp-controller="Parent" asp-action="Dashboard">
-        <span class="material-symbols-outlined">family_restroom</span>
-        <span>Phụ huynh</span>
-    </a>
-</nav>
-@* 
+            <!-- Chỉ số trang giữa 2 nút -->
+            <div class="child-pagination-dots" id="childPageDots">
+                @for (int i = 0; i < totalPages; i++)
+                {
+                    <span class="page-dot @(i == 0 ? "is-active" : "")" onclick="goToChildPage(@i)" title="Trang @(i + 1)"></span>
+                }
+            </div>
+
+            <!-- Nút "Sau" (88x88px cố định góc dưới bên phải) -->
+            <button type="button" class="child-corner-nav-btn btn-next" id="childBtnNext" onclick="navigateChildPage(1)" aria-label="Trang tiếp theo" title="Xem trang tiếp">
+                <span class="material-symbols-outlined nav-arrow-icon">arrow_forward</span>
+                <span class="nav-text-small">Sau</span>
+            </button>
+        </div>
+    </main>
+</div>
+
 @section Scripts {
     <script>
-        function dismissGreetingToast() {
-            const toast = document.getElementById("mascotGreetingToast");
-            if (toast) {
-                toast.classList.add("toast-dismissed");
-                setTimeout(() => {
-                    toast.style.display = "none";
-                }, 400);
-            }
-        }
+        (function () {
+            let currentPage = 0;
+            const totalPages = @totalPages;
+            let audioContext = null;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // Tự động thu gọn lời chào nhanh sau 2 giây
-            setTimeout(() => {
-                dismissGreetingToast();
-            }, 2000);
-        });
+            // Âm thanh phản hồi khi chạm vào thẻ bài học (Web Audio API)
+            window.playChildCardClick = function (e, element) {
+                try {
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, audioContext.currentTime); // D5
+                    osc.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.12); // A5
+                    gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.22);
+
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.22);
+                } catch (err) {
+                    // Ignore audio error
+                }
+            };
+
+            window.goToChildPage = function (index) {
+                if (index < 0 || index >= totalPages) return;
+                currentPage = index;
+                updateChildPages();
+            };
+
+            window.navigateChildPage = function (delta) {
+                const next = currentPage + delta;
+                if (next >= 0 && next < totalPages) {
+                    currentPage = next;
+                    updateChildPages();
+                }
+            };
+
+            function updateChildPages() {
+                const pages = document.querySelectorAll(".child-grid-page");
+                pages.forEach((p, idx) => {
+                    if (idx === currentPage) {
+                        p.classList.add("is-active");
+                    } else {
+                        p.classList.remove("is-active");
+                    }
+                });
+
+                const dots = document.querySelectorAll(".child-pagination-dots .page-dot");
+                dots.forEach((d, idx) => {
+                    if (idx === currentPage) {
+                        d.classList.add("is-active");
+                    } else {
+                        d.classList.remove("is-active");
+                    }
+                });
+
+                const btnPrev = document.getElementById("childBtnPrev");
+                const btnNext = document.getElementById("childBtnNext");
+                if (btnPrev) btnPrev.disabled = (currentPage === 0);
+                if (btnNext) btnNext.disabled = (currentPage >= totalPages - 1);
+            }
+
+            // Hỗ trợ cử chỉ vuốt lướt màn hình trên cảm ứng
+            let touchStartX = 0;
+            const slider = document.getElementById("childPagesSlider");
+            if (slider) {
+                slider.addEventListener("touchstart", function (e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                slider.addEventListener("touchend", function (e) {
+                    const touchEndX = e.changedTouches[0].screenX;
+                    const diff = touchStartX - touchEndX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            navigateChildPage(1);
+                        } else {
+                            navigateChildPage(-1);
+                        }
+                    }
+                }, { passive: true });
+            }
+        })();
     </script>
 }
- *@

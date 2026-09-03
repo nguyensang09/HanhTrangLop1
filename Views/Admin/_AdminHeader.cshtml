@@ -1,0 +1,38 @@
+@model string
+@{
+    var pageTitle = Model ?? (ViewData["Title"]?.ToString() ?? "Quản trị");
+}
+
+<header class="admin-top-navbar">
+    <div class="admin-top-left">
+        <!-- Hamburger Menu Button (Mở Drawer trên Điện thoại & Tablet nhỏ) -->
+        <button type="button" class="admin-mobile-hamburger-btn" onclick="toggleAdminDrawer()" aria-label="Mở menu quản trị" title="Menu">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="admin-page-heading-group">
+            <span class="admin-subheading">Hệ Thống Quản Trị Duy Nhất</span>
+            <h1 class="admin-heading-title">@pageTitle</h1>
+        </div>
+    </div>
+
+    <div class="admin-top-actions">
+        <!-- Nút "Xem Góc của bé / Góc phụ huynh" để kiểm tra nội dung khi cần -->
+        <div class="admin-portal-switch-group">
+            <a class="admin-switch-btn btn-kids" asp-controller="Kids" asp-action="Home" title="Kiểm tra giao diện Góc của bé" target="_blank">
+                <span class="material-symbols-outlined">school</span>
+                <span>Xem Góc Của Bé</span>
+            </a>
+            <a class="admin-switch-btn btn-parent" asp-controller="Parent" asp-action="Dashboard" title="Kiểm tra giao diện Góc phụ huynh" target="_blank">
+                <span class="material-symbols-outlined">family_restroom</span>
+                <span>Xem Góc Phụ Huynh</span>
+            </a>
+        </div>
+
+        <form asp-controller="Parent" asp-action="Logout" method="post" class="d-inline m-0">
+            <button class="admin-logout-btn" type="submit" title="Đăng xuất khỏi hệ thống quản trị">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="d-none d-sm-inline">Thoát</span>
+            </button>
+        </form>
+    </div>
+</header>

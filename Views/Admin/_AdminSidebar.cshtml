@@ -2,13 +2,23 @@
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
 }
 
+<!-- Mobile Drawer Backdrop -->
+<div class="admin-drawer-backdrop" id="adminDrawerBackdrop" onclick="closeAdminDrawer()"></div>
+
 <aside class="admin-side" id="adminSidebar">
     <div class="admin-brand-wrap">
         <a asp-controller="Admin" asp-action="Index" class="admin-brand-link" title="Trang Quản trị Sóc Nâu">
             <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Quản trị" class="admin-brand-avatar" />
+            <div class="admin-brand-texts">
+                <strong class="admin-brand-name">Sóc Nâu Admin</strong>
+                <span class="admin-brand-role">Quản Trị Duy Nhất</span>
+            </div>
         </a>
-        <button type="button" class="admin-sidebar-toggle-btn" id="adminSidebarToggle" title="Thu gọn / Mở rộng menu (tiết kiệm không gian làm việc)" aria-label="Thu gọn / Mở rộng menu">
+        <button type="button" class="admin-sidebar-toggle-btn d-none d-lg-flex" id="adminSidebarToggle" title="Thu gọn / Mở rộng menu (tiết kiệm không gian làm việc)" aria-label="Thu gọn / Mở rộng menu">
             <span class="material-symbols-outlined">menu_open</span>
+        </button>
+        <button type="button" class="admin-drawer-close-btn d-lg-none" onclick="closeAdminDrawer()" aria-label="Đóng menu">
+            <span class="material-symbols-outlined">close</span>
         </button>
     </div>
 
@@ -46,10 +56,49 @@
             <span class="nav-text">Tạo bài tô nét</span>
         </a>
     </nav>
+
+    <!-- Nút "Xem Góc của bé / Góc phụ huynh" trên thanh điều hướng để kiểm tra nội dung khi cần -->
+    <div class="admin-sidebar-portals">
+        <div class="sidebar-portals-title">Xem Nội Dung</div>
+        <a class="sidebar-portal-btn kids" asp-controller="Kids" asp-action="Home" target="_blank" title="Kiểm tra Góc của bé">
+            <span class="material-symbols-outlined">school</span>
+            <span class="nav-text">Góc của bé</span>
+        </a>
+        <a class="sidebar-portal-btn parent" asp-controller="Parent" asp-action="Dashboard" target="_blank" title="Kiểm tra Góc phụ huynh">
+            <span class="material-symbols-outlined">family_restroom</span>
+            <span class="nav-text">Góc phụ huynh</span>
+        </a>
+    </div>
 </aside>
 
 <script>
+    function toggleAdminDrawer() {
+        var sidebar = document.getElementById('adminSidebar');
+        var backdrop = document.getElementById('adminDrawerBackdrop');
+        if (sidebar) sidebar.classList.toggle('drawer-open');
+        if (backdrop) backdrop.classList.toggle('is-visible');
+    }
+
+    function closeAdminDrawer() {
+        var sidebar = document.getElementById('adminSidebar');
+        var backdrop = document.getElementById('adminDrawerBackdrop');
+        if (sidebar) sidebar.classList.remove('drawer-open');
+        if (backdrop) backdrop.classList.remove('is-visible');
+    }
+
     (function() {
+        var toggle = document.getElementById('adminSidebarToggle');
+        if (toggle) {
+            toggle.addEventListener('click', function() {
+                var layouts = document.querySelectorAll('.admin-layout');
+                layouts.forEach(function(el) {
+                    el.classList.toggle('sidebar-collapsed');
+                    var isCollapsed = el.classList.contains('sidebar-collapsed');
+                    localStorage.setItem('admin_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+                });
+            });
+        }
+
         if (localStorage.getItem('admin_sidebar_collapsed') === 'true') {
             document.querySelectorAll('.admin-layout').forEach(function(el) {
                 el.classList.add('sidebar-collapsed');

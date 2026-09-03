@@ -1,0 +1,263 @@
+@* 
+    Parent Gate Modal - Cổng mở khóa phụ huynh
+    Xử lý 100% tại Client, không gọi API.
+    Bảo vệ các khu vực phụ huynh/quản trị khỏi thao tác vô tình của trẻ nhỏ.
+*@
+
+<div id="parentGateModal" class="parent-gate-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="parent-gate-backdrop" onclick="closeParentGate()"></div>
+    <div class="parent-gate-container">
+        <div class="parent-gate-card">
+            <!-- Gate Header -->
+            <div class="parent-gate-header">
+                <div class="gate-icon-circle">
+                    <span class="material-symbols-outlined">lock</span>
+                </div>
+                <div class="gate-title-col">
+                    <h2 id="parentGateTitle">Khu Vực Phụ Huynh</h2>
+                    <p id="parentGateSubtitle">Vui lòng giải phép tính bên dưới để tiếp tục</p>
+                </div>
+                <button type="button" class="gate-close-btn" onclick="closeParentGate()" aria-label="Đóng cổng phụ huynh" title="Đóng">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Challenge Box -->
+            <div class="parent-gate-challenge">
+                <div class="gate-question-box" id="gateQuestionBox">
+                    <span class="gate-math-text" id="gateMathText">3 + 5 = ?</span>
+                    <button type="button" class="gate-refresh-btn" onclick="refreshParentGateChallenge()" title="Đổi phép tính khác" aria-label="Đổi phép tính khác">
+                        <span class="material-symbols-outlined">refresh</span>
+                    </button>
+                </div>
+                <!-- Input Display -->
+                <div class="gate-input-display" id="gateInputDisplay">
+                    <span class="gate-placeholder" id="gatePlaceholder">Nhập kết quả...</span>
+                    <span class="gate-entered-val" id="gateEnteredVal"></span>
+                </div>
+                <div class="gate-error-msg" id="gateErrorMsg" style="display:none;">
+                    <span class="material-symbols-outlined">warning</span>
+                    <span id="gateErrorText">Chưa chính xác, thử lại nhé!</span>
+                </div>
+            </div>
+
+            <!-- Numpad -->
+            <div class="parent-gate-numpad" id="gateNumpad">
+                <button type="button" class="gate-key" onclick="pressGateKey('1')">1</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('2')">2</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('3')">3</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('4')">4</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('5')">5</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('6')">6</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('7')">7</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('8')">8</button>
+                <button type="button" class="gate-key" onclick="pressGateKey('9')">9</button>
+                <button type="button" class="gate-key gate-key-fn" onclick="clearGateInput()" title="Xóa hết">
+                    <span class="material-symbols-outlined">clear</span>
+                </button>
+                <button type="button" class="gate-key" onclick="pressGateKey('0')">0</button>
+                <button type="button" class="gate-key gate-key-fn" onclick="backspaceGateInput()" title="Xóa một số">
+                    <span class="material-symbols-outlined">backspace</span>
+                </button>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="parent-gate-footer">
+                <button type="button" class="gate-submit-btn" id="gateSubmitBtn" onclick="submitParentGate()">
+                    <span class="material-symbols-outlined">lock_open</span>
+                    <span>Xác Nhận Mở Khóa</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        let expectedAnswer = 0;
+        let currentInput = "";
+        let redirectDestination = "/parent/dashboard";
+        let audioCtx = null;
+
+        function playGateTone(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'tap') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16); // G5
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                }
+            } catch (e) {
+                // Ignore audio errors
+            }
+        }
+
+        window.openParentGate = function (targetUrl) {
+            redirectDestination = targetUrl || "/parent/dashboard";
+            currentInput = "";
+            updateDisplay();
+            refreshParentGateChallenge();
+            const modal = document.getElementById("parentGateModal");
+            if (modal) {
+                modal.classList.add("is-active");
+                modal.setAttribute("aria-hidden", "false");
+                document.body.classList.add("parent-gate-open");
+            }
+        };
+
+        window.closeParentGate = function () {
+            const modal = document.getElementById("parentGateModal");
+            if (modal) {
+                modal.classList.remove("is-active");
+                modal.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("parent-gate-open");
+            }
+        };
+
+        window.refreshParentGateChallenge = function () {
+            currentInput = "";
+            hideError();
+            updateDisplay();
+            // Sinh 2 số ngẫu nhiên từ 4 đến 12 sao cho kết quả từ 8 đến 24 (trẻ 5 tuổi chưa tính được)
+            const a = Math.floor(Math.random() * 9) + 4;
+            const b = Math.floor(Math.random() * 9) + 4;
+            expectedAnswer = a + b;
+            const textEl = document.getElementById("gateMathText");
+            if (textEl) {
+                textEl.textContent = a + " + " + b + " = ?";
+            }
+        };
+
+        window.pressGateKey = function (num) {
+            playGateTone('tap');
+            hideError();
+            if (currentInput.length < 4) {
+                currentInput += num;
+                updateDisplay();
+            }
+            // Nếu độ dài bằng đáp án thì tự kiểm tra nếu chuẩn
+            if (parseInt(currentInput, 10) === expectedAnswer) {
+                submitParentGate();
+            }
+        };
+
+        window.clearGateInput = function () {
+            playGateTone('tap');
+            currentInput = "";
+            hideError();
+            updateDisplay();
+        };
+
+        window.backspaceGateInput = function () {
+            playGateTone('tap');
+            hideError();
+            if (currentInput.length > 0) {
+                currentInput = currentInput.slice(0, -1);
+                updateDisplay();
+            }
+        };
+
+        window.submitParentGate = function () {
+            const val = parseInt(currentInput, 10);
+            if (val === expectedAnswer) {
+                playGateTone('success');
+                const card = document.querySelector(".parent-gate-card");
+                if (card) {
+                    card.classList.add("is-success");
+                }
+                setTimeout(function () {
+                    window.location.href = redirectDestination;
+                }, 350);
+            } else {
+                playGateTone('error');
+                showError("Kết quả chưa đúng, hãy thử phép tính mới!");
+                const card = document.querySelector(".parent-gate-card");
+                if (card) {
+                    card.classList.add("is-shake");
+                    setTimeout(function () {
+                        card.classList.remove("is-shake");
+                    }, 500);
+                }
+                setTimeout(function () {
+                    refreshParentGateChallenge();
+                }, 600);
+            }
+        };
+
+        function updateDisplay() {
+            const entered = document.getElementById("gateEnteredVal");
+            const placeholder = document.getElementById("gatePlaceholder");
+            if (entered && placeholder) {
+                if (currentInput.length > 0) {
+                    entered.textContent = currentInput;
+                    placeholder.style.display = "none";
+                } else {
+                    entered.textContent = "";
+                    placeholder.style.display = "inline";
+                }
+            }
+        }
+
+        function showError(msg) {
+            const box = document.getElementById("gateErrorMsg");
+            const txt = document.getElementById("gateErrorText");
+            if (box && txt) {
+                txt.textContent = msg;
+                box.style.display = "flex";
+            }
+        }
+
+        function hideError() {
+            const box = document.getElementById("gateErrorMsg");
+            if (box) {
+                box.style.display = "none";
+            }
+        }
+
+        // Bắt phím bàn phím vật lý trên PC/Laptop
+        document.addEventListener("keydown", function (e) {
+            const modal = document.getElementById("parentGateModal");
+            if (!modal || !modal.classList.contains("is-active")) return;
+
+            if (e.key >= '0' && e.key <= '9') {
+                pressGateKey(e.key);
+            } else if (e.key === 'Backspace') {
+                backspaceGateInput();
+            } else if (e.key === 'Escape') {
+                closeParentGate();
+            } else if (e.key === 'Enter') {
+                submitParentGate();
+            }
+        });
+    })();
+</script>

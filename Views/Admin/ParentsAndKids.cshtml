@@ -6,6 +6,7 @@
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
     <main class="admin-main">
+        <partial name="_AdminHeader" model='ViewData["Title"]' />
         @if (TempData["SuccessMessage"] is string msg)
         {
             <div class="feedback-band success">
@@ -121,11 +122,11 @@
                                     <thead>
                                         <tr>
                                             <th>Nickname</th>
-                                            <th>Độ tuổi</th>
-                                            <th>Thời lượng</th>
+                                            <th class="col-secondary">Độ tuổi</th>
+                                            <th class="col-secondary">Thời lượng</th>
                                             <th>Tiến độ</th>
-                                            <th>Huy hiệu</th>
-                                            <th>Hoạt động gần nhất</th>
+                                            <th class="col-secondary">Huy hiệu</th>
+                                            <th class="col-secondary">Hoạt động gần nhất</th>
                                             <th>Thao tác</th>
                                         </tr>
                                     </thead>
@@ -136,18 +137,18 @@
                                                 <td>
                                                     <strong>@child.Nickname</strong>
                                                 </td>
-                                                <td>@(child.BirthYear.HasValue ? $"{DateTime.Now.Year - child.BirthYear.Value} tuổi" : "Mầm non")</td>
-                                                <td>@child.DailyLearningMinutes phút/ngày</td>
+                                                <td class="col-secondary">@(child.BirthYear.HasValue ? $"{DateTime.Now.Year - child.BirthYear.Value} tuổi" : "Mầm non")</td>
+                                                <td class="col-secondary">@child.DailyLearningMinutes phút/ngày</td>
                                                 <td>
                                                     <span class="status-chip status-published">@child.CompletedLessonsCount bài</span>
                                                     <span style="color: #ea580c; font-weight: 700;">+@child.TotalStars ⭐</span>
                                                 </td>
-                                                <td>@child.BadgesCount 🏆</td>
-                                                <td>@(child.LastActiveAt.HasValue ? child.LastActiveAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa học")</td>
+                                                <td class="col-secondary">@child.BadgesCount 🏆</td>
+                                                <td class="col-secondary">@(child.LastActiveAt.HasValue ? child.LastActiveAt.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa học")</td>
                                                 <td>
                                                     <a class="app-btn app-btn-small" asp-action="ChildDetail" asp-route-id="@child.Id">
                                                         <span class="material-symbols-outlined">visibility</span>
-                                                        Chi tiết & Xóa rác
+                                                        Chi tiết
                                                     </a>
                                                 </td>
                                             </tr>

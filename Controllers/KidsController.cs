@@ -74,11 +74,16 @@ public class KidsController : Controller
             .OrderBy(x => x.SkillGroup!.SortOrder)
             .ToListAsync();
 
+        var totalStars = await _db.LearningAttempts
+            .Where(x => x.ChildProfileId == child.Id)
+            .SumAsync(x => (int?)x.StarsEarned) ?? 0;
+
         var model = new KidsHomeViewModel
         {
             ChildProfile = child,
             SkillGroups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(),
-            TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(10).ToList()
+            TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(10).ToList(),
+            Stars = Math.Max(totalStars, 0)
         };
 
         return View(model);

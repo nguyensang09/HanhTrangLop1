@@ -315,7 +315,7 @@ public class ParentController : Controller
 
     [HttpPost("login")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model, string? deviceType = null, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
         {
@@ -348,7 +348,40 @@ public class ParentController : Controller
                 HttpContext.Session.Remove(SessionKeys.SelectedChildProfileId);
             }
 
-            return RedirectToAction(nameof(Dashboard));
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin") || string.Equals(user.UserName, "admin", StringComparison.OrdinalIgnoreCase);
+
+            // Kiểm tra loại thiết bị từ client hoặc User-Agent fallback
+            var userAgent = Request.Headers.UserAgent.ToString().ToLowerInvariant();
+            var detectedDevice = (deviceType ?? "").ToLowerInvariant();
+            if (string.IsNullOrEmpty(detectedDevice))
+            {
+                if (userAgent.Contains("ipad") || userAgent.Contains("tablet") || (userAgent.Contains("android") && !userAgent.Contains("mobile")))
+                {
+                    detectedDevice = "tablet";
+                }
+                else if (userAgent.Contains("mobile") || userAgent.Contains("iphone") || userAgent.Contains("android"))
+                {
+                    detectedDevice = "mobile";
+                }
+                else
+                {
+                    detectedDevice = "pc";
+                }
+            }
+
+            if (isAdmin)
+            {
+                // Admin đăng nhập trên PC (Môi trường chính): Vào thẳng "Trang Quản trị (Admin CMS)"
+                if (detectedDevice == "pc")
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+                // Admin đăng nhập trên Tablet / Mobile: Vẫn vào "Góc của bé"
+                return RedirectToAction("Home", "Kids");
+            }
+
+            // Tài khoản Phụ huynh thường: Sau khi Login chuyển thẳng vào "Góc của bé" để trẻ sử dụng ngay lập tức
+            return RedirectToAction("Home", "Kids");
         }
 
         ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu chưa đúng.");
