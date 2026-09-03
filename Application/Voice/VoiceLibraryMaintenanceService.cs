@@ -305,14 +305,16 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         // 3. Tìm tất cả các dòng TextToSpeechCaches không còn được bài học nào sử dụng hoặc thuộc loại legacy / title / instruction / generic rác
+        // TUYỆT ĐỐI BẢO VỆ: Không bao giờ xóa các bản ghi âm thanh song ngữ (UsageType == "bilingual")
         var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
         var redundantEntries = allCaches.Where(x =>
-            x.UsageType == "legacy" ||
-            x.UsageType == "title" ||
-            x.UsageType == "instruction" ||
-            GenericPromptsToClean.Contains(x.NormalizedText) ||
-            GenericPromptsToClean.Contains(x.OriginalText) ||
-            !activeTextHashes.Contains(x.TextHash)
+            x.UsageType != "bilingual" &&
+            (x.UsageType == "legacy" ||
+             x.UsageType == "title" ||
+             x.UsageType == "instruction" ||
+             GenericPromptsToClean.Contains(x.NormalizedText) ||
+             GenericPromptsToClean.Contains(x.OriginalText) ||
+             !activeTextHashes.Contains(x.TextHash))
         ).ToList();
 
         var deletedCount = 0;
@@ -1118,27 +1120,54 @@ public sealed class VoiceLibraryMaintenanceService
 
     public async Task PreGenerateBilingualAudioAsync(CancellationToken cancellationToken = default)
     {
-        var viPhrases = new[]
+        // 1. Chữ cái & Chữ số Tiếng Anh (giọng Nữ Jenny)
+        var enLetters = new[]
+        {
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
+        };
+
+        // 2. Chữ cái & Chữ số Tiếng Việt (giọng Nữ Hoài My)
+        var viLetters = new[]
+        {
+            "Chữ A", "Chữ B", "Chữ C", "Chữ D", "Chữ E", "Chữ F", "Chữ G", "Chữ H", "Chữ I", "Chữ J", "Chữ K", "Chữ L", "Chữ M", "Chữ N", "Chữ O", "Chữ P", "Chữ Q", "Chữ R", "Chữ S", "Chữ T", "Chữ U", "Chữ V", "Chữ W", "Chữ X", "Chữ Y", "Chữ Z",
+            "Số 0", "Số 1", "Số 2", "Số 3", "Số 4", "Số 5", "Số 6", "Số 7", "Số 8", "Số 9", "Số 10", "Số 11", "Số 12", "Số 13", "Số 14", "Số 15", "Số 16", "Số 17", "Số 18", "Số 19", "Số 20"
+        };
+
+        // 3. Từ vựng Tiếng Anh (giọng Nữ Jenny)
+        var enWords = new[]
+        {
+            "Apple", "Ball", "Cat", "Doll", "Egg", "Fan", "Garden", "Hand",
+            "Icicle", "Jam", "Kangaroo", "Lamb", "Mushroom", "Net", "Orange", "Pet",
+            "Quilt", "Rain", "Sunflower", "Train", "Underwear", "Vase", "Wagon",
+            "X-ray", "Yo-yo", "Zebra",
+            "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
+            "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen",
+            "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"
+        };
+
+        // 4. Nghĩa Tiếng Việt (giọng Nữ Hoài My)
+        var viWords = new[]
         {
             "Quả táo", "Quả bóng", "Con mèo", "Búp bê", "Quả trứng", "Chiếc quạt", "Khu vườn", "Bàn tay",
             "Cột băng", "Hũ mứt", "Chuột túi", "Cừu con", "Cây nấm", "Khung lưới", "Quả cam", "Thú cưng",
             "Chiếc chăn", "Cơn mưa", "Hoa hướng dương", "Tàu hỏa", "Quần áo nhỏ", "Bình hoa", "Xe kéo nhỏ",
             "Tia X-quang", "Đồ chơi Yo-yo", "Ngựa vằn",
-            "Số không", "Số một", "Số hai", "Số ba", "Số bốn", "Số năm", "Số sáu", "Số bảy", "Số tám",
-            "Số chín", "Số mười", "Số mười một", "Số mười hai", "Số mười ba", "Số mười bốn", "Số mười lăm",
-            "Số mười sáu", "Số mười bảy", "Số mười tám", "Số mười chín", "Số hai mươi"
+            "Không", "Một", "Hai", "Ba", "Bốn", "Năm", "Sáu", "Bảy", "Tám",
+            "Chín", "Mười", "Mười một", "Mười hai", "Mười ba", "Mười bốn", "Mười lăm",
+            "Mười sáu", "Mười bảy", "Mười tám", "Mười chín", "Hai mươi"
         };
 
-        foreach (var phrase in viPhrases)
+        foreach (var text in enLetters.Concat(enWords))
         {
             if (cancellationToken.IsCancellationRequested) break;
-            try
-            {
-                await EnsureAudioFileAsync(phrase, "vi", "-10%", cancellationToken);
-            }
-            catch
-            {
-            }
+            try { await EnsureAudioFileAsync(text, "en", "-15%", cancellationToken); } catch { }
+        }
+
+        foreach (var text in viLetters.Concat(viWords))
+        {
+            if (cancellationToken.IsCancellationRequested) break;
+            try { await EnsureAudioFileAsync(text, "vi", "-10%", cancellationToken); } catch { }
         }
     }
 
