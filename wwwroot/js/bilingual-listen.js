@@ -29,7 +29,6 @@
   const dialogExampleVi = document.getElementById("dialogExampleVi");
   const dialogSpeakBilingualBtn = document.getElementById("dialogSpeakBilingualBtn");
   const dialogSpeakSlowBtn = document.getElementById("dialogSpeakSlowBtn");
-  const playExampleAudioBtn = document.getElementById("playExampleAudioBtn");
   const dialogProgressIndicator = document.getElementById("dialogProgressIndicator");
 
   // Topbar & Toolbar elements
@@ -122,20 +121,54 @@
     window.speechSynthesis.onvoiceschanged = populateVoices;
   }
 
+  // Ưu tiên tuyệt đối GIỌNG NỮ (Hoài My / Jenny / Aria / Zira / Samantha) và loại bỏ toàn bộ giọng nam
   function findVoice(langPrefix) {
     if (!voices.length && window.speechSynthesis) {
       voices = window.speechSynthesis.getVoices();
     }
-    // Prefer natural/Google/native voice
-    return (
-      voices.find(
-        (v) =>
-          v.lang.toLowerCase().startsWith(langPrefix.toLowerCase()) &&
-          (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Premium"))
-      ) ||
-      voices.find((v) => v.lang.toLowerCase().startsWith(langPrefix.toLowerCase())) ||
-      null
-    );
+    const lp = langPrefix.toLowerCase();
+    const matching = voices.filter((v) => v.lang.toLowerCase().startsWith(lp));
+
+    const isMale = (name) => {
+      const n = name.toLowerCase();
+      return (
+        n.includes("namminh") ||
+        n.includes(" an ") ||
+        n.endsWith(" an") ||
+        n.includes("guy") ||
+        n.includes("david") ||
+        n.includes("mark") ||
+        n.includes("george") ||
+        n.includes("christopher") ||
+        (n.includes("male") && !n.includes("female"))
+      );
+    };
+
+    const isFemale = (name) => {
+      const n = name.toLowerCase();
+      return (
+        n.includes("hoaimy") ||
+        n.includes("jenny") ||
+        n.includes("aria") ||
+        n.includes("zira") ||
+        n.includes("female") ||
+        n.includes("woman") ||
+        n.includes("girl") ||
+        n.includes("samantha") ||
+        n.includes("victoria") ||
+        n.includes("karen")
+      );
+    };
+
+    // 1. Tìm giọng nữ rõ ràng
+    const femaleVoice = matching.find((v) => isFemale(v.name));
+    if (femaleVoice) return femaleVoice;
+
+    // 2. Nếu không ghi rõ, tìm giọng không phải nam
+    const nonMale = matching.find((v) => !isMale(v.name));
+    if (nonMale) return nonMale;
+
+    return matching[0] || null;
   }
 
   // Audio Cache & Neural Voice Engine with Parallel Preloading
@@ -197,14 +230,36 @@
     return requestPromise;
   }
 
-  // Tải trước toàn bộ âm thanh của 1 thẻ flashcard (nghĩa, từ, ví dụ)
+  // Trợ lý xác định tên chữ cái / chữ số để đọc riêng hoặc đọc đầu tiên
+  function getLetterPrompt(card) {
+    if (!card) return { vi: "", en: "", label: "Đọc chữ" };
+    const kind = card.dataset.kind; // 'letter' | 'number'
+    const symbol = card.dataset.symbol || "";
+    if (kind === "letter") {
+      return {
+        vi: `Chữ ${symbol}`,
+        en: symbol,
+        label: `Đọc riêng chữ ${symbol}`
+      };
+    } else {
+      return {
+        vi: `Số ${symbol}`,
+        en: symbol,
+        label: `Đọc riêng số ${symbol}`
+      };
+    }
+  }
+
+  // Tải trước toàn bộ âm thanh của 1 thẻ flashcard (riêng chữ cái, nghĩa từ vựng, từ tiếng Anh, câu ví dụ - giọng NỮ)
   function preloadCardAudio(card) {
     if (!card) return;
-    const meaning = card.dataset.meaning;
-    const word = card.dataset.word;
+    const p = getLetterPrompt(card);
+    const meaning = card.dataset.meaning || "";
+    const word = card.dataset.word || "";
     const exampleVi = card.dataset.exampleVi;
     const exampleEn = card.dataset.exampleEn;
 
+    if (p.vi) getAudioUrl(p.vi, "vi");
     if (meaning) getAudioUrl(meaning, "vi");
     if (word) {
       getAudioUrl(word, "en");
@@ -229,6 +284,42 @@
 
         activeAudio = new Audio(url);
         activeAudio.playbackRate = playbackRate;
+        document.body.classList.add("audio-is-speaking");
+
+        const cleanup = () => {
+          document.body.classList.remove("audio-is-speaking");
+          activeAudio = null;
+          resolve();
+        };
+
+        activeAudio.onended = cleanup;
+        activeAudio.onerror = cleanup;
+
+        const playPromise = activeAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => cleanup());
+        }
+      } catch (e) {
+        document.body.classList.remove("audio-is-speaking");
+        resolve();
+      }
+    });
+  }
+
+  function playPreloadedAudioPromise(audioElement) {
+    return new Promise((resolve) => {
+      if (!audioElement) {
+        resolve();
+        return;
+      }
+
+      try {
+        if (activeAudio) {
+          activeAudio.pause();
+          activeAudio.currentTime = 0;
+        }
+
+        activeAudio = audioElement;
         document.body.classList.add("audio-is-speaking");
 
         const cleanup = () => {
@@ -287,12 +378,16 @@
     }
 
     const playbackRate = isSlow ? 0.75 : 1.0;
-    const audioUrl = await getAudioUrl(text, lang, isSlow);
+    // Chờ tối đa 750ms nếu server đang tổng hợp, nếu quá 750ms thì phát ngay qua Web Speech không để chờ
+    const audioUrl = await Promise.race([
+      getAudioUrl(text, lang, isSlow),
+      new Promise((resolve) => setTimeout(() => resolve(null), 750))
+    ]);
 
     if (audioUrl) {
       await playAudioUrlPromise(audioUrl, playbackRate);
     } else {
-      // Fallback
+      // Fallback tức thì
       if (lang === "vi") {
         await speakWithWebSpeechPromise(text, "vi-VN", isSlow ? 0.65 : 0.88, 1.0);
       } else {
@@ -303,63 +398,121 @@
     if (onEndCallback) onEndCallback();
   }
 
-  // Chuỗi phát âm song ngữ chuẩn: Tải song song cả 2 ➔ Đọc tiếng Việt ➔ Chờ đúng 1s ➔ Đọc tiếng Anh
-  async function playBilingualSequence(viText, enText, isSlow = false, onEndCallback) {
+  // Chuỗi phát âm song ngữ chuẩn: Tải song song cả 2 ➔ Đọc tiếng Việt ➔ ĐỌC TIẾNG ANH LUÔN (liền mạch, 0 chờ đợi)
+  // Phát một phân đoạn giọng đọc (ưu tiên tệp âm thanh server trong 750ms, fallback Web Speech)
+  async function playVoiceItemPromise(text, lang = "vi", isSlow = false) {
+    if (!text) return;
+    const playbackRate = isSlow ? 0.72 : 1.0;
+    const audioUrl = await Promise.race([
+      getAudioUrl(text, lang, isSlow),
+      new Promise((resolve) => setTimeout(() => resolve(null), 750))
+    ]);
+
+    if (audioUrl) {
+      await playAudioUrlPromise(audioUrl, playbackRate);
+    } else {
+      if (lang === "vi") {
+        await speakWithWebSpeechPromise(text, "vi-VN", isSlow ? 0.65 : 0.88, 1.0);
+      } else {
+        await speakWithWebSpeechPromise(text, "en-US", isSlow ? 0.60 : 0.82, 1.05);
+      }
+    }
+  }
+
+  function waitGapPromise(ms) {
+    return new Promise((resolve) => {
+      sequenceTimer = setTimeout(resolve, ms);
+    });
+  }
+
+  // Chuỗi phát âm song ngữ chuẩn theo đúng yêu cầu:
+  // 1. Chữ A (giọng nữ) ➔ Dừng 1 nhịp (500ms)
+  // 2. Quả táo (giọng nữ) ➔ Dừng 1 nhịp (500ms)
+  // 3. Apple (giọng nữ) ➔ Dừng chuyển đoạn (700ms)
+  // 4. Câu ví dụ tiếng Việt (giọng nữ) ➔ Dừng 1 nhịp (500ms)
+  // 5. Câu ví dụ tiếng Anh (giọng nữ)
+  async function playIntegratedBilingualSequence(card, isSlow = false, onEndCallback) {
     stopAllAudio();
-    if (!viText && !enText) {
+    if (!card) {
       if (onEndCallback) onEndCallback();
       return;
     }
 
-    // Tải song song cả 2 âm thanh ngay từ đầu để loại bỏ hoàn toàn độ trễ mạng!
-    const viPromise = viText ? getAudioUrl(viText, "vi") : Promise.resolve(null);
-    const enPromise = enText ? getAudioUrl(enText, "en", isSlow) : Promise.resolve(null);
+    const p = getLetterPrompt(card);
+    const letterVi = p.vi || ""; // "Chữ A" hoặc "Số 1"
+    const meaningVi = card.dataset.meaning || ""; // "Quả táo" hoặc "Một"
+    const wordEn = card.dataset.word || card.dataset.symbol || ""; // "Apple" hoặc "One"
+    const exampleVi = card.dataset.exampleVi || "";
+    const exampleEn = card.dataset.exampleEn || "";
 
-    // 1. Phát tiếng Việt ngay khi file sẵn sàng
-    if (viText) {
-      const viUrl = await viPromise;
-      if (viUrl) {
-        await playAudioUrlPromise(viUrl, 1.0);
-      } else {
-        await speakWithWebSpeechPromise(viText, "vi-VN", 0.88, 1.0);
-      }
-    }
+    // Tải trước ngầm tất cả các đoạn âm thanh giọng NỮ
+    if (letterVi) getAudioUrl(letterVi, "vi");
+    if (meaningVi) getAudioUrl(meaningVi, "vi");
+    if (wordEn) getAudioUrl(wordEn, "en", isSlow);
+    if (exampleVi) getAudioUrl(exampleVi, "vi");
+    if (exampleEn) getAudioUrl(exampleEn, "en", isSlow);
 
-    // 2. Chờ đúng 1 giây (1000ms) theo yêu cầu
-    if (viText && enText) {
-      await new Promise((resolve) => {
-        sequenceTimer = setTimeout(resolve, 1000);
-      });
-    }
-
-    // 3. Phát tiếng Anh tức thì (đã tải xong trong lúc tiếng Việt đang đọc)
-    if (enText) {
-      const enUrl = await enPromise;
-      const playbackRate = isSlow ? 0.75 : 1.0;
-      if (enUrl) {
-        await playAudioUrlPromise(enUrl, playbackRate);
-      } else {
-        await speakWithWebSpeechPromise(enText, "en-US", isSlow ? 0.62 : 0.82, 1.05);
-      }
-    }
-
-    if (onEndCallback) onEndCallback();
-  }
-
-  function playCardSequence(card, isSlow) {
-    if (!card) return;
-    const meaning = card.dataset.meaning || "";
-    const word = card.dataset.word || card.dataset.symbol || "";
-
+    if (dialogSpeakBilingualBtn) dialogSpeakBilingualBtn.classList.add("is-playing");
     const audioBtn = card.querySelector(".card-audio-btn");
     if (audioBtn) audioBtn.classList.add("is-playing");
 
     markCardAsExplored(card);
 
-    // Phát âm song ngữ liền mạch: Tiếng Việt ➔ Tiếng Anh
-    playBilingualSequence(meaning, word, isSlow, () => {
+    try {
+      // 1. Đọc Chữ cái / Chữ số (Tiếng Việt - Giọng Nữ)
+      if (letterVi) {
+        await playVoiceItemPromise(letterVi, "vi", isSlow);
+      }
+
+      // Dừng lại 1 nhịp (500ms)
+      if (letterVi && meaningVi) {
+        await waitGapPromise(500);
+      }
+
+      // 2. Đọc Nghĩa Tiếng Việt (Giọng Nữ)
+      if (meaningVi) {
+        await playVoiceItemPromise(meaningVi, "vi", isSlow);
+      }
+
+      // Dừng lại 1 nhịp (500ms)
+      if (meaningVi && wordEn) {
+        await waitGapPromise(500);
+      }
+
+      // 3. Đọc Từ vựng Tiếng Anh (Giọng Nữ)
+      if (wordEn) {
+        await playVoiceItemPromise(wordEn, "en", isSlow);
+      }
+
+      // 4. Tiếp nối sang Câu ví dụ mẫu
+      if (exampleVi || exampleEn) {
+        // Dừng lại 1 nhịp chuyển tiếp sang câu ví dụ (700ms)
+        await waitGapPromise(700);
+
+        // Đọc câu ví dụ (Tiếng Việt - Giọng Nữ)
+        if (exampleVi) {
+          await playVoiceItemPromise(exampleVi, "vi", isSlow);
+        }
+
+        // Dừng lại 1 nhịp (500ms)
+        if (exampleVi && exampleEn) {
+          await waitGapPromise(500);
+        }
+
+        // Đọc câu ví dụ (Tiếng Anh - Giọng Nữ)
+        if (exampleEn) {
+          await playVoiceItemPromise(exampleEn, "en", isSlow);
+        }
+      }
+    } finally {
+      if (dialogSpeakBilingualBtn) dialogSpeakBilingualBtn.classList.remove("is-playing");
       if (audioBtn) audioBtn.classList.remove("is-playing");
-    });
+      if (onEndCallback) onEndCallback();
+    }
+  }
+
+  function playCardSequence(card, isSlow, onEndCallback) {
+    playIntegratedBilingualSequence(card, isSlow, onEndCallback);
   }
 
   // Flashcard Dialog Logic
@@ -373,6 +526,11 @@
     }
 
     updateDialogWithCard(card);
+
+    // Tải trước thẻ hiện tại và 2 thẻ liền kề để khi bé bấm lật thẻ là có âm thanh tức thì
+    preloadCardAudio(card);
+    if (idx > 0) preloadCardAudio(visibleCards[idx - 1]);
+    if (idx < visibleCards.length - 1) preloadCardAudio(visibleCards[idx + 1]);
 
     dialog.hidden = false;
     requestAnimationFrame(() => {
@@ -579,22 +737,22 @@
     });
   }
 
-  // Speech buttons in dialog (Combined bilingual flow & dedicated slow reading)
+  // 1. Nút Nghe Song Ngữ: Tích hợp đầy đủ (Chữ cái ➔ Từ vựng ➔ Câu ví dụ) với nhịp độ tự nhiên
   if (dialogSpeakBilingualBtn) {
     dialogSpeakBilingualBtn.addEventListener("click", () => {
       const card = visibleCards[currentCardIndex];
       if (!card) return;
-      // Đọc tiếng Việt trước ➔ Tự động đọc tiếng Anh sau
-      playBilingualSequence(card.dataset.meaning, card.dataset.word, false);
+      playCardSequence(card, false);
     });
   }
 
+  // 2. Nút Đọc Chậm: Đọc chậm từ vựng tiếng Anh (giọng nữ) cho bé nhại theo
   if (dialogSpeakSlowBtn) {
     dialogSpeakSlowBtn.addEventListener("click", () => {
       const card = visibleCards[currentCardIndex];
       if (!card) return;
-      // Đọc chậm tiếng Anh để bé nhại phát âm
-      fetchAndPlayVoice(card.dataset.word, "en", true);
+      const word = card.dataset.word || card.dataset.symbol || "";
+      fetchAndPlayVoice(word, "en", true);
     });
   }
 
@@ -604,16 +762,7 @@
     dialogMeaning.addEventListener("click", () => {
       const card = visibleCards[currentCardIndex];
       if (!card) return;
-      playBilingualSequence(card.dataset.meaning, card.dataset.word, false);
-    });
-  }
-
-  if (playExampleAudioBtn) {
-    playExampleAudioBtn.addEventListener("click", () => {
-      const card = visibleCards[currentCardIndex];
-      if (!card) return;
-      // Đọc câu dịch tiếng Việt trước ➔ Tự động đọc câu tiếng Anh sau
-      playBilingualSequence(card.dataset.exampleVi, card.dataset.exampleEn, currentSpeed === "slow");
+      playCardSequence(card, false);
     });
   }
 
@@ -700,7 +849,23 @@
     });
   }
 
+  // Tự động nạp ngầm toàn bộ âm thanh các thẻ khi tải trang để khi bé bấm là phát ngay tức thì
+  function startBackgroundAudioPreload() {
+    const allCards = Array.from(document.querySelectorAll("[data-listen-card]"));
+    let cardIdx = 0;
+
+    function preloadNext() {
+      if (cardIdx >= allCards.length) return;
+      const card = allCards[cardIdx++];
+      preloadCardAudio(card);
+      setTimeout(preloadNext, 400);
+    }
+
+    setTimeout(preloadNext, 600);
+  }
+
   // Initial setup
   refreshExploredStatus();
   filterCards();
+  startBackgroundAudioPreload();
 })();

@@ -1012,13 +1012,14 @@ public sealed class VoiceLibraryMaintenanceService
             ? (_configuration["VoiceLibrary:RateEn"]?.Trim() ?? "-15%")
             : (_configuration["VoiceLibrary:Rate"]?.Trim() ?? "-10%"));
 
-        // 1. Kiểm tra TextToSpeechCaches trong database
+        // 1. Kiểm tra TextToSpeechCaches trong database (chỉ nhận giọng NỮ HoaiMy / Jenny / Aria)
         try
         {
             if (!isEn)
             {
                 var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                     x.Status == "ready" &&
+                    (string.IsNullOrEmpty(x.Voice) || x.Voice.Contains("HoaiMy", StringComparison.OrdinalIgnoreCase)) &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
                     (x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
                 if (cached != null && !string.IsNullOrEmpty(cached.AudioUrl))
@@ -1034,6 +1035,7 @@ public sealed class VoiceLibraryMaintenanceService
             {
                 var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                     x.StatusEn == "ready" &&
+                    (string.IsNullOrEmpty(x.VoiceEn) || x.VoiceEn.Contains("Jenny", StringComparison.OrdinalIgnoreCase) || x.VoiceEn.Contains("Aria", StringComparison.OrdinalIgnoreCase)) &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
                     (x.TextEn == cleanText || x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
                 if (cached != null && !string.IsNullOrEmpty(cached.AudioUrlEn))
@@ -1116,10 +1118,10 @@ public sealed class VoiceLibraryMaintenanceService
     {
         var viPhrases = new[]
         {
-            "Quả táo", "Quả bóng", "Con mèo", "Con chó", "Con voi", "Con cá", "Con dê", "Ngôi nhà",
-            "Que kem", "Nước ép", "Cái diều", "Sư tử", "Mặt trăng", "Quyển vở", "Quả cam", "Bút chì",
-            "Nữ hoàng", "Con thỏ", "Mặt trời", "Cái cây", "Cây dù", "Xe ô tô tải", "Nước uống",
-            "Đàn mộc cầm", "Đồ chơi Yo-yo", "Ngựa vằn",
+            "Quả táo", "Quả bóng", "Con mèo", "Búp bê", "Quả trứng", "Chiếc quạt", "Khu vườn", "Bàn tay",
+            "Cột băng", "Hũ mứt", "Chuột túi", "Cừu con", "Cây nấm", "Khung lưới", "Quả cam", "Thú cưng",
+            "Chiếc chăn", "Cơn mưa", "Hoa hướng dương", "Tàu hỏa", "Quần áo nhỏ", "Bình hoa", "Xe kéo nhỏ",
+            "Tia X-quang", "Đồ chơi Yo-yo", "Ngựa vằn",
             "Số không", "Số một", "Số hai", "Số ba", "Số bốn", "Số năm", "Số sáu", "Số bảy", "Số tám",
             "Số chín", "Số mười", "Số mười một", "Số mười hai", "Số mười ba", "Số mười bốn", "Số mười lăm",
             "Số mười sáu", "Số mười bảy", "Số mười tám", "Số mười chín", "Số hai mươi"
@@ -1180,12 +1182,10 @@ public sealed class VoiceLibraryMaintenanceService
         {
             if (!voice.Equals("en-US-JennyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-JennyNeural");
             if (!voice.Equals("en-US-AriaNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-AriaNeural");
-            if (!voice.Equals("en-US-GuyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-GuyNeural");
         }
         else if (voice.StartsWith("vi-", StringComparison.OrdinalIgnoreCase))
         {
             if (!voice.Equals("vi-VN-HoaiMyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-HoaiMyNeural");
-            if (!voice.Equals("vi-VN-NamMinhNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-NamMinhNeural");
         }
 
         var candidates = new[]
