@@ -1,4 +1,5 @@
 using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
 using HanhTrangLop1.Models;
@@ -17,15 +18,18 @@ public class KidsController : Controller
     private readonly ApplicationDbContext _db;
     private readonly TodayLessonService _todayLessonService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly VoiceLibraryMaintenanceService _voiceLibraryService;
 
     public KidsController(
         ApplicationDbContext db,
         TodayLessonService todayLessonService,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        VoiceLibraryMaintenanceService voiceLibraryService)
     {
         _db = db;
         _todayLessonService = todayLessonService;
         _userManager = userManager;
+        _voiceLibraryService = voiceLibraryService;
     }
 
     [HttpGet("")]
@@ -318,6 +322,23 @@ public class KidsController : Controller
         }
 
         return View(child);
+    }
+
+    [HttpGet("bilingual-audio")]
+    public async Task<IActionResult> GetBilingualAudio(string text, string lang = "vi", string? rate = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return BadRequest(new { success = false, message = "Text is required" });
+        }
+
+        var audioUrl = await _voiceLibraryService.EnsureAudioFileAsync(text, lang, rate, cancellationToken);
+        if (string.IsNullOrEmpty(audioUrl))
+        {
+            return NotFound(new { success = false, message = "Could not generate audio" });
+        }
+
+        return Json(new { success = true, audioUrl });
     }
 
     [HttpGet("learn/{id:guid}")]

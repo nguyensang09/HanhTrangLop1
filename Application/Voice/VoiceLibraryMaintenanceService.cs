@@ -999,6 +999,145 @@ public sealed class VoiceLibraryMaintenanceService
         return storagePath;
     }
 
+    public async Task<string?> EnsureAudioFileAsync(string text, string lang = "vi", string? customRate = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
+        var cleanText = text.Trim();
+        var isEn = lang.StartsWith("en", StringComparison.OrdinalIgnoreCase);
+        var voice = isEn
+            ? (_configuration["VoiceLibrary:VoiceEn"]?.Trim() ?? "en-US-JennyNeural")
+            : (_configuration["VoiceLibrary:Voice"]?.Trim() ?? "vi-VN-HoaiMyNeural");
+        var rate = customRate ?? (isEn
+            ? (_configuration["VoiceLibrary:RateEn"]?.Trim() ?? "-15%")
+            : (_configuration["VoiceLibrary:Rate"]?.Trim() ?? "-10%"));
+
+        // 1. Kiểm tra TextToSpeechCaches trong database
+        try
+        {
+            if (!isEn)
+            {
+                var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                    x.Status == "ready" &&
+                    !string.IsNullOrEmpty(x.AudioUrl) &&
+                    (x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
+                if (cached != null && !string.IsNullOrEmpty(cached.AudioUrl))
+                {
+                    var localCheck = Path.Combine(_environment.WebRootPath, cached.AudioUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (File.Exists(localCheck) && new FileInfo(localCheck).Length > 0)
+                    {
+                        return cached.AudioUrl;
+                    }
+                }
+            }
+            else
+            {
+                var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                    x.StatusEn == "ready" &&
+                    !string.IsNullOrEmpty(x.AudioUrlEn) &&
+                    (x.TextEn == cleanText || x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
+                if (cached != null && !string.IsNullOrEmpty(cached.AudioUrlEn))
+                {
+                    var localCheck = Path.Combine(_environment.WebRootPath, cached.AudioUrlEn.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (File.Exists(localCheck) && new FileInfo(localCheck).Length > 0)
+                    {
+                        return cached.AudioUrlEn;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Bỏ qua nếu db đang bận
+        }
+
+        // 2. Kiểm tra file trên ổ đĩa theo hash
+        using var md5 = MD5.Create();
+        var hash = Convert.ToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes($"{lang}:{voice}:{rate}:{cleanText}"))).ToLowerInvariant();
+
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio", "bilingual");
+        Directory.CreateDirectory(folder);
+
+        var fileName = $"bilingual-{lang}-{hash}.mp3";
+        var diskPath = Path.Combine(folder, fileName);
+        var storagePath = $"/uploads/audio/bilingual/{fileName}";
+
+        if (File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
+        {
+            return storagePath;
+        }
+
+        // 3. Gọi Edge TTS tạo file âm thanh chuẩn
+        try
+        {
+            await RunEdgeTextToSpeechAsync(cleanText, voice, rate, diskPath, cancellationToken);
+            if (File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
+            {
+                try
+                {
+                    _db.TextToSpeechCaches.Add(new TextToSpeechCache
+                    {
+                        Id = Guid.NewGuid(),
+                        Provider = "edge",
+                        Voice = voice,
+                        ModelId = "neural",
+                        Format = "mp3",
+                        TextHash = hash,
+                        Name = $"bilingual-{(isEn ? "en" : "vi")}-{NormalizeCode(cleanText)}",
+                        UsageType = "bilingual",
+                        NormalizedText = cleanText,
+                        OriginalText = cleanText,
+                        AudioUrl = isEn ? string.Empty : storagePath,
+                        Status = isEn ? "missing" : "ready",
+                        TextEn = isEn ? cleanText : null,
+                        AudioUrlEn = isEn ? storagePath : null,
+                        StatusEn = isEn ? "ready" : "missing",
+                        VoiceEn = isEn ? voice : null,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                    await _db.SaveChangesAsync(cancellationToken);
+                }
+                catch
+                {
+                }
+
+                return storagePath;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Không thể tạo file âm thanh song ngữ cho text: {Text}", cleanText);
+        }
+
+        return null;
+    }
+
+    public async Task PreGenerateBilingualAudioAsync(CancellationToken cancellationToken = default)
+    {
+        var viPhrases = new[]
+        {
+            "Quả táo", "Quả bóng", "Con mèo", "Con chó", "Con voi", "Con cá", "Con dê", "Ngôi nhà",
+            "Que kem", "Nước ép", "Cái diều", "Sư tử", "Mặt trăng", "Quyển vở", "Quả cam", "Bút chì",
+            "Nữ hoàng", "Con thỏ", "Mặt trời", "Cái cây", "Cây dù", "Xe ô tô tải", "Nước uống",
+            "Đàn mộc cầm", "Đồ chơi Yo-yo", "Ngựa vằn",
+            "Số không", "Số một", "Số hai", "Số ba", "Số bốn", "Số năm", "Số sáu", "Số bảy", "Số tám",
+            "Số chín", "Số mười", "Số mười một", "Số mười hai", "Số mười ba", "Số mười bốn", "Số mười lăm",
+            "Số mười sáu", "Số mười bảy", "Số mười tám", "Số mười chín", "Số hai mươi"
+        };
+
+        foreach (var phrase in viPhrases)
+        {
+            if (cancellationToken.IsCancellationRequested) break;
+            try
+            {
+                await EnsureAudioFileAsync(phrase, "vi", "-10%", cancellationToken);
+            }
+            catch
+            {
+            }
+        }
+    }
+
     public async Task<(int Created, int Failed, int UpdatedItems)> GenerateMissingAndRelinkAsync(int maxItems = 0, CancellationToken cancellationToken = default)
     {
         var batchResult = await SyncAndGenerateBatchAsync(maxItems > 0 ? maxItems : 30, cancellationToken);

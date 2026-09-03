@@ -1,128 +1,395 @@
 @model HanhTrangLop1.Models.ChildProfile
 @{
-    ViewData["Title"] = "Nghe song ngữ";
+    ViewData["Title"] = "Góc Nghe Song Ngữ Anh - Việt";
 
-    var letters = new (string Symbol, string Word, string Image)[]
+    string ResolveAvatar(string? key)
     {
-        ("A", "Apple", "/images/photos/flashcard-apple.jpg"),
-        ("B", "Ball", "/images/photos/flashcard-letter-b.jpg"),
-        ("C", "Cat", "/images/photos/cat.jpg"),
-        ("D", "Dog", "/images/photos/dog.jpg"),
-        ("E", "Elephant", "/images/photos/flashcard-letter-e.jpg"),
-        ("F", "Fish", "/images/photos/fish.jpg"),
-        ("G", "Goat", "/images/photos/flashcard-letter-g.jpg"),
-        ("H", "House", "/images/photos/flashcard-letter-h.jpg"),
-        ("I", "Ice cream", "/images/photos/flashcard-letter-i.jpg"),
-        ("J", "Juice", "/images/photos/flashcard-letter-j.jpg"),
-        ("K", "Kite", "/images/photos/flashcard-letter-k.jpg"),
-        ("L", "Lion", "/images/photos/flashcard-letter-l.jpg"),
-        ("M", "Moon", "/images/photos/flashcard-letter-m.jpg"),
-        ("N", "Notebook", "/images/photos/flashcard-letter-n.jpg"),
-        ("O", "Orange", "/images/photos/flashcard-orange.jpg"),
-        ("P", "Pencil", "/images/photos/flashcard-letter-p.jpg"),
-        ("Q", "Queen", "/images/photos/flashcard-letter-q.jpg"),
-        ("R", "Rabbit", "/images/photos/flashcard-rabbit.jpg"),
-        ("S", "Sun", "/images/photos/flashcard-letter-s.jpg"),
-        ("T", "Tree", "/images/photos/flashcard-letter-t.jpg"),
-        ("U", "Umbrella", "/images/photos/flashcard-letter-u.jpg"),
-        ("V", "Van", "/images/photos/flashcard-letter-v.jpg"),
-        ("W", "Water", "/images/photos/flashcard-letter-w.jpg"),
-        ("X", "Xylophone", "/images/photos/flashcard-letter-x.jpg"),
-        ("Y", "Yo-yo", "/images/photos/flashcard-letter-y.jpg"),
-        ("Z", "Zebra", "/images/photos/flashcard-letter-z.jpg")
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
+
+    var letters = new (string Symbol, string Word, string Phonetic, string MeaningVi, string Emoji, string ExampleEn, string ExampleVi, string Image, string ColorTheme)[]
+    {
+        ("A", "Apple", "ép-pồ", "Quả táo", "🍎", "A is for Apple. An apple is sweet and red.", "Chữ A trong Quả táo. Quả táo đỏ thật ngọt lành.", "/images/photos/flashcard-apple.jpg", "theme-coral"),
+        ("B", "Ball", "bo-l", "Quả bóng", "⚽", "B is for Ball. Let's kick the ball together!", "Chữ B trong Quả bóng. Cùng bé đá bóng vui nào!", "/images/photos/flashcard-letter-b.jpg", "theme-cyan"),
+        ("C", "Cat", "két", "Con mèo", "🐱", "C is for Cat. The cute cat says meow meow.", "Chữ C trong Con mèo. Chú mèo con kêu meo meo.", "/images/photos/cat.jpg", "theme-amber"),
+        ("D", "Dog", "đoóc-g", "Con chó", "🐶", "D is for Dog. The friendly dog wags its tail.", "Chữ D trong Chú cún. Chú cún vui vẻ vẫy đuôi mừng bé.", "/images/photos/dog.jpg", "theme-mint"),
+        ("E", "Elephant", "e-li-phần-t", "Con voi", "🐘", "E is for Elephant. An elephant has a long trunk.", "Chữ E trong Con voi. Chú voi to có chiếc vòi dài.", "/images/photos/flashcard-letter-e.jpg", "theme-purple"),
+        ("F", "Fish", "phí-sh", "Con cá", "🐟", "F is for Fish. Little fish swims fast in the water.", "Chữ F trong Con cá. Cá nhỏ tung tăng bơi lội dưới hồ.", "/images/photos/fish.jpg", "theme-teal"),
+        ("G", "Goat", "gâu-t", "Con dê", "🐐", "G is for Goat. The goat is eating fresh green grass.", "Chữ G trong Con dê. Chú dê trắng nhai cỏ non ngon lành.", "/images/photos/flashcard-letter-g.jpg", "theme-pink"),
+        ("H", "House", "hao-s", "Ngôi nhà", "🏠", "H is for House. Welcome to our warm and cozy house.", "Chữ H trong Ngôi nhà. Ngôi nhà ấm áp yêu thương của bé.", "/images/photos/flashcard-letter-h.jpg", "theme-coral"),
+        ("I", "Ice cream", "ai-s kh-rim", "Que kem", "🍦", "I is for Ice cream. Cool and sweet ice cream for hot days.", "Chữ I trong Que kem. Kem mát lạnh xua tan ngày hè.", "/images/photos/flashcard-letter-i.jpg", "theme-cyan"),
+        ("J", "Juice", "diu-s", "Nước ép", "🧃", "J is for Juice. Fresh orange juice is full of vitamins.", "Chữ J trong Nước ép. Nước cam tươi ngon nhiều vitamin.", "/images/photos/flashcard-letter-j.jpg", "theme-amber"),
+        ("K", "Kite", "khai-t", "Cái diều", "🪁", "K is for Kite. The colorful kite flies high in the wind.", "Chữ K trong Cái diều. Cánh diều sắc màu bay cao trong gió.", "/images/photos/flashcard-letter-k.jpg", "theme-mint"),
+        ("L", "Lion", "lai-ần", "Sư tử", "🦁", "L is for Lion. The brave lion roars across the jungle.", "Chữ L trong Sư tử. Vua sư tử dũng cảm bảo vệ rừng xanh.", "/images/photos/flashcard-letter-l.jpg", "theme-purple"),
+        ("M", "Moon", "mun", "Mặt trăng", "🌙", "M is for Moon. The bright round moon lights up the night sky.", "Chữ M trong Mặt trăng. Trăng rằm sáng lung linh đêm rằm.", "/images/photos/flashcard-letter-m.jpg", "theme-teal"),
+        ("N", "Notebook", "nốt-búc", "Quyển vở", "📓", "N is for Notebook. A pretty notebook for baby to write.", "Chữ N trong Quyển vở. Vở tập viết chữ đẹp của bé.", "/images/photos/flashcard-letter-n.jpg", "theme-pink"),
+        ("O", "Orange", "o-rin-d", "Quả cam", "🍊", "O is for Orange. Ripe orange is sweet, juicy and bright.", "Chữ O trong Quả cam. Quả cam tròn mọng nước bổ dưỡng.", "/images/photos/flashcard-orange.jpg", "theme-coral"),
+        ("P", "Pencil", "pen-xồ", "Bút chì", "✏️", "P is for Pencil. Pick up your pencil and draw happy pictures.", "Chữ P trong Bút chì. Cây bút chì xinh cùng bé vẽ ước mơ.", "/images/photos/flashcard-letter-p.jpg", "theme-cyan"),
+        ("Q", "Queen", "khui-n", "Nữ hoàng", "👑", "Q is for Queen. The graceful queen wears a golden crown.", "Chữ Q trong Nữ hoàng. Nữ hoàng nhân hậu đội vương miện vàng.", "/images/photos/flashcard-letter-q.jpg", "theme-amber"),
+        ("R", "Rabbit", "ra-bít", "Con thỏ", "🐰", "R is for Rabbit. The fluffy rabbit hops cheerfully on grass.", "Chữ R trong Con thỏ. Thỏ con tai dài nhảy nhót trên bãi cỏ.", "/images/photos/flashcard-rabbit.jpg", "theme-mint"),
+        ("S", "Sun", "xăn", "Mặt trời", "☀️", "S is for Sun. The morning sun brings warm golden sunshine.", "Chữ S trong Mặt trời. Ông mặt trời thức dậy tỏa nắng ban mai.", "/images/photos/flashcard-letter-s.jpg", "theme-purple"),
+        ("T", "Tree", "th-ri", "Cái cây", "🌳", "T is for Tree. A tall green tree gives cool shade.", "Chữ T trong Cái cây. Cây xanh tỏa bóng mát che cho mọi người.", "/images/photos/flashcard-letter-t.jpg", "theme-teal"),
+        ("U", "Umbrella", "am-b-re-la", "Cây dù / Ô", "☂️", "U is for Umbrella. An umbrella keeps us dry in rainy days.", "Chữ U trong Cây dù. Chiếc ô xinh xắn che chở ngày mưa.", "/images/photos/flashcard-letter-u.jpg", "theme-pink"),
+        ("V", "Van", "ven", "Xe ô tô tải", "🚐", "V is for Van. The friendly delivery van travels along the road.", "Chữ V trong Xe tải nhỏ. Chuyến xe bon bon chở quà đến cho bé.", "/images/photos/flashcard-letter-v.jpg", "theme-coral"),
+        ("W", "Water", "wo-tờ", "Nước uống", "💧", "W is for Water. Clean water helps little kids grow strong.", "Chữ W trong Nước uống. Bé nhớ uống nước đều đặn mỗi ngày nhé!", "/images/photos/flashcard-letter-w.jpg", "theme-cyan"),
+        ("X", "Xylophone", "zai-lơ-phôn", "Đàn mộc cầm", "🎶", "X is for Xylophone. Ding dong, joyful melodies on the xylophone.", "Chữ X trong Đàn mộc cầm. Từng nốt nhạc leng keng vui tai.", "/images/photos/flashcard-letter-x.jpg", "theme-amber"),
+        ("Y", "Yo-yo", "dô-dô", "Đồ chơi Yo-yo", "🪀", "Y is for Yo-yo. Spin the yo-yo up and down so fast.", "Chữ Y trong Con quay yo-yo. Trò chơi khéo tay diệu kỳ.", "/images/photos/flashcard-letter-y.jpg", "theme-mint"),
+        ("Z", "Zebra", "dép-bra", "Ngựa vằn", "🦓", "Z is for Zebra. A zebra looks wonderful with black and white stripes.", "Chữ Z trong Ngựa vằn. Chú ngựa vằn có bộ áo kẻ sọc thật độc đáo.", "/images/photos/flashcard-letter-z.jpg", "theme-purple")
     };
+
+    var numbers = new (int Number, string Name, string Phonetic, string MeaningVi, string Emoji, string ExampleEn, string ExampleVi, string Image, string ColorTheme)[]
+    {
+        (0, "Zero", "di-rôu", "Số không", "⭕", "Number zero: Zero means none or empty basket.", "Số không: Nghĩa là chiếc giỏ chưa có quả nào cả.", "/images/photos/flashcard-number-0.svg", "theme-cyan"),
+        (1, "One", "oăn", "Số một", "1️⃣", "Number one: One bright sun shining above.", "Số một: Một ông mặt trời chiếu sáng.", "/images/photos/flashcard-number-1.jpg", "theme-coral"),
+        (2, "Two", "tu", "Số hai", "2️⃣", "Number two: Two cute little shoes on your feet.", "Số hai: Đôi giày xinh hai chiếc của bé.", "/images/photos/flashcard-number-2.jpg", "theme-amber"),
+        (3, "Three", "th-ri", "Số ba", "3️⃣", "Number three: Three little cheerful birds on branch.", "Số ba: Ba chú chim hót líu lo trên cành.", "/images/photos/flashcard-number-3.jpg", "theme-mint"),
+        (4, "Four", "pho", "Số bốn", "4️⃣", "Number four: A sturdy study table has four legs.", "Số bốn: Bốn chân bàn học vững chãi.", "/images/photos/flashcard-number-4.jpg", "theme-purple"),
+        (5, "Five", "phai-v", "Số năm", "5️⃣", "Number five: Five little fingers on one tiny hand.", "Số năm: Năm ngón tay xinh xắn trên một bàn tay.", "/images/photos/flashcard-number-5.jpg", "theme-teal"),
+        (6, "Six", "xích-s", "Số sáu", "6️⃣", "Number six: Six colorful crayons in the box.", "Số sáu: Sáu cây bút sáp tô màu rực rỡ.", "/images/photos/flashcard-number-6.jpg", "theme-pink"),
+        (7, "Seven", "xe-vần", "Số bảy", "7️⃣", "Number seven: Seven lovely colors of the rainbow.", "Số bảy: Bảy sắc cầu vồng sau cơn mưa rào.", "/images/photos/flashcard-number-7.jpg", "theme-coral"),
+        (8, "Eight", "ây-t", "Số tám", "8️⃣", "Number eight: An octopus swimming with eight arms.", "Số tám: Chú bạch tuộc có tám cái vòi linh hoạt.", "/images/photos/flashcard-number-8.jpg", "theme-cyan"),
+        (9, "Nine", "nai-n", "Số chín", "9️⃣", "Number nine: Nine twinkling stars in the evening sky.", "Số chín: Chín ngôi sao lấp lánh trên bầu trời đêm.", "/images/photos/flashcard-number-9.jpg", "theme-amber"),
+        (10, "Ten", "ten", "Số mười", "🔟", "Number ten: Ten little fingers on both hands clapping.", "Số mười: Mười ngón tay cùng vỗ tay khen ngợi bé.", "/images/photos/flashcard-number-10.jpg", "theme-mint"),
+        (11, "Eleven", "i-le-vần", "Số mười một", "1️⃣1️⃣", "Number eleven: Ten plus one makes eleven.", "Số mười một: Mười thêm một bằng mười một.", "/images/photos/flashcard-number-11.jpg", "theme-purple"),
+        (12, "Twelve", "th-queo-v", "Số mười hai", "1️⃣2️⃣", "Number twelve: A clock face has twelve numbers.", "Số mười hai: Mặt đồng hồ có mười hai số giờ.", "/images/photos/flashcard-number-12.jpg", "theme-teal"),
+        (13, "Thirteen", "thơ-tin", "Số mười ba", "1️⃣3️⃣", "Number thirteen: Thirteen delicious sweet cupcakes.", "Số mười ba: Mười ba chiếc bánh ngọt thơm lừng.", "/images/photos/flashcard-number-13.jpg", "theme-pink"),
+        (14, "Fourteen", "pho-tin", "Số mười bốn", "1️⃣4️⃣", "Number fourteen: Fourteen shiny wooden blocks.", "Số mười bốn: Mười bốn khối gỗ xếp hình.", "/images/photos/flashcard-number-14.jpg", "theme-coral"),
+        (15, "Fifteen", "phíp-tin", "Số mười lăm", "1️⃣5️⃣", "Number fifteen: Fifteen happy learning minutes a day.", "Số mười lăm: Mười lăm phút học vui mỗi ngày cùng Sóc Nâu.", "/images/photos/flashcard-number-15.jpg", "theme-cyan"),
+        (16, "Sixteen", "xích-s-tin", "Số mười sáu", "1️⃣6️⃣", "Number sixteen: Sixteen colorful glass marbles.", "Số mười sáu: Mười sáu viên bi tròn lấp lánh.", "/images/photos/flashcard-number-16.jpg", "theme-amber"),
+        (17, "Seventeen", "xe-vần-tin", "Số mười bảy", "1️⃣7️⃣", "Number seventeen: Seventeen ripe red strawberries.", "Số mười bảy: Mười bảy quả dâu tây chín mọng.", "/images/photos/flashcard-number-17.jpg", "theme-mint"),
+        (18, "Eighteen", "ây-tin", "Số mười tám", "1️⃣8️⃣", "Number eighteen: Eighteen blooming flowers in morning garden.", "Số mười tám: Mười tám bông hoa nở rộ trong vườn.", "/images/photos/flashcard-number-18.jpg", "theme-purple"),
+        (19, "Nineteen", "nain-tin", "Số mười chín", "1️⃣9️⃣", "Number nineteen: Nineteen storybooks on the wooden bookshelf.", "Số mười chín: Mười chín cuốn truyện tranh trên giá sách.", "/images/photos/flashcard-number-19.jpg", "theme-teal"),
+        (20, "Twenty", "th-goen-ti", "Số hai mươi", "2️⃣0️⃣", "Number twenty: Twenty shiny gold stars for your effort!", "Số hai mươi: Hai mươi ngôi sao vàng tặng bé chăm ngoan!", "/images/photos/flashcard-number-20.jpg", "theme-pink")
+    };
+
+    var totalItems = letters.Length + numbers.Length;
 }
 
-<section class="kid-screen bilingual-listen-screen">
-    <div class="kid-topbar home-topbar clay-card">
+<section class="kid-screen bilingual-listen-screen" data-child-id="@Model.Id">
+    <!-- Topbar Hồ Sơ Bé Chuẩn Claymorphism -->
+    <div class="kid-topbar home-topbar clay-card bilingual-topbar">
         <div class="kid-header-profile">
-            <a class="back-round-button" asp-controller="Kids" asp-action="Home" aria-label="Về trang chủ">
+            <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Về trang chủ">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
+            <div class="squirrel-avatar-wrap">
+                <img src="@ResolveAvatar(Model.AvatarKey)" alt="Ảnh bé" class="squirrel-avatar" />
+            </div>
             <div>
-                <p class="eyebrow">Nghe tiếng Anh</p>
-                <h1>ABC & Số</h1>
+                <p class="eyebrow">Âm Thanh Song Ngữ 🎧</p>
+                <h1>Bé @(Model.Nickname) Luyện Nghe 🌟</h1>
             </div>
         </div>
         <div class="kid-topbar-actions">
-            <span class="star-pill clay-button">
-                <span class="material-symbols-outlined">volume_up</span>
-                <span>Chạm để nghe</span>
-            </span>
+            <div class="star-pill clay-button bilingual-counter-pill" id="bilingualCounterPill" title="Tiến độ thẻ đã khám phá">
+                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
+                <span id="counterText">0/@totalItems đã nghe</span>
+            </div>
+            <button type="button" class="clay-button bilingual-tour-btn" id="autoplayTourBtn" title="Tự động phát lần lượt các thẻ">
+                <span class="material-symbols-outlined tour-icon">play_circle</span>
+                <span class="tour-label">Tự động phát</span>
+            </button>
         </div>
     </div>
 
-    <div class="bilingual-section">
-        <div class="bilingual-section-heading">
-            <h2>Bảng chữ cái tiếng Anh</h2>
-            <span>26 chữ, mỗi chữ có một ví dụ gần gũi</span>
+    <!-- Banner Khích Lệ Cùng Bạn Sóc Nâu -->
+    <div class="bilingual-hero-banner clay-card">
+        <div class="bilingual-hero-avatar">
+            <img src="/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="hero-mascot-img" />
+            <div class="sound-wave-badge" title="Đang sẵn sàng phát âm">
+                <span class="material-symbols-outlined">graphic_eq</span>
+            </div>
         </div>
-        <div class="listen-card-grid letter-listen-grid">
-            @foreach (var letter in letters)
+        <div class="bilingual-hero-content">
+            <div class="hero-badge-pill">
+                <span class="material-symbols-outlined">record_voice_over</span>
+                <span>Phát âm chuẩn tiếng Anh bản ngữ & Tiếng Việt</span>
+            </div>
+            <h2>Chạm thẻ để nghe đọc & xem tranh sinh động! ✨</h2>
+            <p>Bé hãy chạm vào bất kỳ thẻ chữ cái hoặc chữ số nào bên dưới để nghe cách phát âm chuẩn, học từ vựng và câu ví dụ thú vị nhé!</p>
+            
+            <div class="hero-quick-tools">
+                <!-- Tốc độ đọc -->
+                <div class="speed-toggle-group" role="group" aria-label="Tốc độ đọc">
+                    <span class="tool-label">Tốc độ:</span>
+                    <button type="button" class="speed-toggle-btn clay-button active" data-speed="normal" title="Tốc độ nghe bình thường">
+                        <span>⚡ Chuẩn</span>
+                    </button>
+                    <button type="button" class="speed-toggle-btn clay-button" data-speed="slow" title="Tốc độ đọc chậm từng âm">
+                        <span>🐢 Rùa con (Chậm)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thanh Lọc Tab & Tìm Kiếm Nhanh -->
+    <div class="bilingual-controls-bar">
+        <div class="bilingual-tab-bar" role="tablist">
+            <button type="button" class="bilingual-tab-btn clay-button active" data-tab="all" role="tab" aria-selected="true">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                <span>Tất cả</span>
+                <span class="tab-badge">@totalItems</span>
+            </button>
+            <button type="button" class="bilingual-tab-btn clay-button" data-tab="letters" role="tab" aria-selected="false">
+                <span class="material-symbols-outlined">spellcheck</span>
+                <span>Chữ cái A - Z</span>
+                <span class="tab-badge">@letters.Length</span>
+            </button>
+            <button type="button" class="bilingual-tab-btn clay-button" data-tab="numbers" role="tab" aria-selected="false">
+                <span class="material-symbols-outlined">pin</span>
+                <span>Chữ số 0 - 20</span>
+                <span class="tab-badge">@numbers.Length</span>
+            </button>
+        </div>
+
+        <div class="bilingual-search-box">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" id="bilingualSearchInput" placeholder="Tìm chữ, số hoặc từ..." aria-label="Tìm kiếm thẻ song ngữ" autocomplete="off" />
+            <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Xóa tìm kiếm" hidden>
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Thông báo khi tìm kiếm không có kết quả -->
+    <div id="noResultsNotice" class="no-results-card clay-card" hidden>
+        <span class="material-symbols-outlined notice-icon">search_off</span>
+        <h3>Không tìm thấy thẻ nào phù hợp</h3>
+        <p>Bé thử gõ chữ cái (A, B, C...) hoặc số (1, 2, 3...) xem sao nhé!</p>
+        <button type="button" class="clay-button" id="resetSearchBtn">Xem tất cả thẻ</button>
+    </div>
+
+    <!-- Khu vực 1: Bảng Chữ Cái Tiếng Anh -->
+    <div class="bilingual-section-group" data-section="letters">
+        <div class="bilingual-section-header">
+            <div class="section-title-wrap">
+                <div class="section-icon-pill icon-coral">
+                    <span class="material-symbols-outlined">menu_book</span>
+                </div>
+                <div>
+                    <h2>Bảng Chữ Cái Tiếng Anh (A - Z)</h2>
+                    <p>26 chữ cái kèm hình ảnh, từ vựng quen thuộc và phiên âm tiếng Việt dễ nhớ</p>
+                </div>
+            </div>
+            <span class="section-count-badge">26 thẻ chữ</span>
+        </div>
+
+        <div class="bilingual-cards-grid">
+            @for (var i = 0; i < letters.Length; i++)
             {
-                <button class="listen-card letter-card"
+                var item = letters[i];
+                <button class="bilingual-card letter-card @item.ColorTheme"
                         type="button"
                         data-listen-card
-                        data-symbol="@letter.Symbol"
-                        data-word="@letter.Word"
+                        data-index="@i"
                         data-kind="letter"
-                        data-image="@letter.Image"
-                        data-speak="@letter.Symbol"
-                        data-example-speak="@letter.Word">
-                    <strong>@letter.Symbol</strong>
-                    <span>@letter.Word</span>
+                        data-symbol="@item.Symbol"
+                        data-word="@item.Word"
+                        data-phonetic="@item.Phonetic"
+                        data-meaning="@item.MeaningVi"
+                        data-emoji="@item.Emoji"
+                        data-image="@item.Image"
+                        data-example-en="@item.ExampleEn"
+                        data-example-vi="@item.ExampleVi"
+                        data-speak="@item.Symbol"
+                        data-example-speak="@item.Word"
+                        aria-label="Chữ cái @item.Symbol - @item.Word">
+                    
+                    <div class="card-status-indicator" title="Đã nghe">
+                        <span class="material-symbols-outlined check-icon">check_circle</span>
+                    </div>
+
+                    <div class="card-symbol-badge">
+                        <span class="symbol-text">@item.Symbol</span>
+                    </div>
+
+                    <div class="card-thumb-wrap">
+                        <img src="@item.Image" alt="@item.Word" class="card-thumb-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <span class="card-emoji-fallback">@item.Emoji</span>
+                    </div>
+
+                    <div class="card-text-col">
+                        <strong class="card-word">@item.Word</strong>
+                        <span class="card-phonetic">/@item.Phonetic/</span>
+                        <span class="card-meaning">@item.MeaningVi</span>
+                    </div>
+
+                    <div class="card-audio-btn" title="Nghe phát âm">
+                        <span class="material-symbols-outlined audio-icon">volume_up</span>
+                        <div class="card-waves">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
                 </button>
             }
         </div>
     </div>
 
-    <div class="bilingual-section number-section">
-        <div class="bilingual-section-heading">
-            <h2>Số từ 0 đến 20</h2>
-            <span>Chạm từng số để nghe cách đọc tiếng Anh</span>
+    <!-- Khu vực 2: Chữ Số 0 - 20 -->
+    <div class="bilingual-section-group" data-section="numbers">
+        <div class="bilingual-section-header">
+            <div class="section-title-wrap">
+                <div class="section-icon-pill icon-mint">
+                    <span class="material-symbols-outlined">calculate</span>
+                </div>
+                <div>
+                    <h2>Chữ Số Từ 0 Đến 20 (Numbers)</h2>
+                    <p>Đếm số bằng tiếng Anh thật vui với hình ảnh minh họa que tính và đồ vật</p>
+                </div>
+            </div>
+            <span class="section-count-badge">21 thẻ số</span>
         </div>
-        <div class="listen-card-grid number-listen-grid">
-            @for (var number = 0; number <= 20; number++)
-            {
-                var names = new[]
-                {
-                    "Zero", "One", "Two", "Three", "Four", "Five", "Six",
-                    "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
-                    "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
-                    "Eighteen", "Nineteen", "Twenty"
-                };
-                var numberName = names[number];
-                var image = number == 0
-                    ? "/images/photos/flashcard-number-0.svg"
-                    : $"/images/photos/flashcard-number-{number}.jpg";
 
-                <button class="listen-card number-card"
+        <div class="bilingual-cards-grid">
+            @for (var i = 0; i < numbers.Length; i++)
+            {
+                var item = numbers[i];
+                var globalIndex = letters.Length + i;
+                <button class="bilingual-card number-card @item.ColorTheme"
                         type="button"
                         data-listen-card
-                        data-symbol="@number"
-                        data-word="@numberName"
+                        data-index="@globalIndex"
                         data-kind="number"
-                        data-image="@image"
-                        data-speak="@numberName">
-                    <strong>@number</strong>
-                    <span>@numberName</span>
+                        data-symbol="@item.Number"
+                        data-word="@item.Name"
+                        data-phonetic="@item.Phonetic"
+                        data-meaning="@item.MeaningVi"
+                        data-emoji="@item.Emoji"
+                        data-image="@item.Image"
+                        data-example-en="@item.ExampleEn"
+                        data-example-vi="@item.ExampleVi"
+                        data-speak="@item.Name"
+                        data-example-speak="@item.ExampleEn"
+                        aria-label="Số @item.Number - @item.Name">
+                    
+                    <div class="card-status-indicator" title="Đã nghe">
+                        <span class="material-symbols-outlined check-icon">check_circle</span>
+                    </div>
+
+                    <div class="card-symbol-badge">
+                        <span class="symbol-text">@item.Number</span>
+                    </div>
+
+                    <div class="card-thumb-wrap">
+                        <img src="@item.Image" alt="@item.Name" class="card-thumb-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <span class="card-emoji-fallback">@item.Emoji</span>
+                    </div>
+
+                    <div class="card-text-col">
+                        <strong class="card-word">@item.Name</strong>
+                        <span class="card-phonetic">/@item.Phonetic/</span>
+                        <span class="card-meaning">@item.MeaningVi</span>
+                    </div>
+
+                    <div class="card-audio-btn" title="Nghe phát âm">
+                        <span class="material-symbols-outlined audio-icon">volume_up</span>
+                        <div class="card-waves">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
                 </button>
             }
         </div>
     </div>
 </section>
 
-<div class="listen-popover-backdrop" data-listen-popover hidden>
-    <div class="listen-popover clay-card" role="status" aria-live="polite">
-        <img src="/images/photos/flashcard-apple.jpg" alt="" data-listen-image />
-        <div class="listen-popover-copy">
-            <span data-listen-kind>Letter</span>
-            <strong data-listen-symbol>A</strong>
-            <p data-listen-word>Apple</p>
+<!-- Modal / Hộp Thoại Flashcard Song Ngữ Siêu Tương Tác -->
+<div class="flashcard-dialog-backdrop" id="flashcardDialog" role="dialog" aria-modal="true" aria-labelledby="dialogSymbolTitle" hidden>
+    <div class="flashcard-dialog clay-card">
+        <!-- Nút Đóng -->
+        <button type="button" class="dialog-close-btn clay-button" id="dialogCloseBtn" aria-label="Đóng cửa sổ">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <!-- Thẻ Điều Hướng Lật Trước/Sau Nhanh Cho Trẻ -->
+        <button type="button" class="dialog-nav-btn dialog-nav-prev clay-button" id="dialogPrevBtn" aria-label="Thẻ trước đó" title="Thẻ trước (Mũi tên trái)">
+            <span class="material-symbols-outlined">arrow_back_ios_new</span>
+        </button>
+        <button type="button" class="dialog-nav-btn dialog-nav-next clay-button" id="dialogNextBtn" aria-label="Thẻ tiếp theo" title="Thẻ tiếp theo (Mũi tên phải)">
+            <span class="material-symbols-outlined">arrow_forward_ios</span>
+        </button>
+
+        <!-- Nội Dung Flashcard To Rõ Sinh Động -->
+        <div class="dialog-inner-content">
+            <!-- Cột Hình Ảnh Flashcard -->
+            <div class="dialog-image-col">
+                <div class="dialog-image-wrapper">
+                    <img src="/images/photos/flashcard-apple.jpg" alt="" id="dialogImage" class="dialog-main-image" />
+                </div>
+            </div>
+
+            <!-- Cột Nội Dung & Phát Âm -->
+            <div class="dialog-info-col">
+                <div class="dialog-badge-row">
+                    <span class="dialog-category-badge" id="dialogCategoryBadge">Chữ cái A</span>
+                </div>
+                <div class="dialog-header-text">
+                    <div class="dialog-symbol-large" id="dialogSymbolTitle">A</div>
+                    <div class="dialog-emoji-badge" id="dialogEmoji">🍎</div>
+                    <div class="dialog-word-block">
+                        <h3 class="dialog-english-word" id="dialogWord">Apple</h3>
+                        <div class="dialog-phonetic-row">
+                            <span class="phonetic-chip" id="dialogPhonetic">/ˈæp.əl/ (ép-pồ)</span>
+                            <span class="dialog-meaning-badge" id="dialogMeaning">Quả táo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Khung Câu Ví Dụ Song Ngữ Thân Thiện -->
+                <div class="dialog-example-box clay-card">
+                    <div class="example-header">
+                        <span class="material-symbols-outlined example-icon">forum</span>
+                        <strong>Câu ví dụ mẫu:</strong>
+                        <button type="button" class="example-audio-play-btn clay-button" id="playExampleAudioBtn" title="Nghe đọc ví dụ Việt ➔ Anh liền mạch">
+                            <span class="material-symbols-outlined">volume_up</span>
+                            <span>Nghe ví dụ (Việt ➔ Anh)</span>
+                        </button>
+                    </div>
+                    <p class="example-vietnamese" id="dialogExampleVi">Chữ A trong Quả táo. Quả táo đỏ thật ngọt lành.</p>
+                    <p class="example-english" id="dialogExampleEn">A is for Apple. An apple is sweet and red.</p>
+                </div>
+
+                <!-- Cụm Nút Thao Tác Đọc Phát Âm -->
+                <div class="dialog-actions-cluster">
+                    <button type="button" class="dialog-action-btn btn-speak-bilingual clay-button" id="dialogSpeakBilingualBtn" title="Nghe đọc tiếng Việt rồi đọc tiếng Anh">
+                        <span class="material-symbols-outlined btn-icon">headphones</span>
+                        <div class="btn-text-wrap">
+                            <strong>Nghe Song Ngữ</strong>
+                            <small>Đọc Việt ➔ Anh liền mạch</small>
+                        </div>
+                    </button>
+
+                    <button type="button" class="dialog-action-btn btn-speak-slow clay-button" id="dialogSpeakSlowBtn" title="Luyện đọc chậm tiếng Anh">
+                        <span class="material-symbols-outlined btn-icon">slow_motion_video</span>
+                        <div class="btn-text-wrap">
+                            <strong>Đọc Chậm</strong>
+                            <small>Bé nhại từng âm</small>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Chỉ dẫn phím tắt & Đếm số thẻ -->
+                <div class="dialog-footer-hint">
+                    <span id="dialogProgressIndicator">Thẻ 1 / 47</span>
+                    <span class="keyboard-tip">Mẹo: Dùng phím ◀ ▶ để lật thẻ, phím Space để nghe lại</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Bottom Nav Giữ Nguyên Đồng Bộ Toàn Ứng Dụng -->
 <nav class="kid-bottom-nav">
     <a class="active" asp-controller="Kids" asp-action="Home">
         <span class="material-symbols-outlined">home</span>
