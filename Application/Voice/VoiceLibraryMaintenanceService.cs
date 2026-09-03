@@ -1012,14 +1012,15 @@ public sealed class VoiceLibraryMaintenanceService
             ? (_configuration["VoiceLibrary:RateEn"]?.Trim() ?? "-15%")
             : (_configuration["VoiceLibrary:Rate"]?.Trim() ?? "-10%"));
 
-        // 1. Kiểm tra TextToSpeechCaches trong database (chỉ nhận giọng NỮ HoaiMy / Jenny / Aria)
+        // 1. Kiểm tra TextToSpeechCaches trong database (chỉ nhận đúng dòng bilingual và đúng giọng NỮ HoaiMy / Jenny / Aria)
         try
         {
             if (!isEn)
             {
                 var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                     x.Status == "ready" &&
-                    (string.IsNullOrEmpty(x.Voice) || x.Voice.Contains("HoaiMy", StringComparison.OrdinalIgnoreCase)) &&
+                    x.UsageType == "bilingual" &&
+                    x.Voice == "vi-VN-HoaiMyNeural" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
                     (x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
                 if (cached != null && !string.IsNullOrEmpty(cached.AudioUrl))
@@ -1035,7 +1036,8 @@ public sealed class VoiceLibraryMaintenanceService
             {
                 var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                     x.StatusEn == "ready" &&
-                    (string.IsNullOrEmpty(x.VoiceEn) || x.VoiceEn.Contains("Jenny", StringComparison.OrdinalIgnoreCase) || x.VoiceEn.Contains("Aria", StringComparison.OrdinalIgnoreCase)) &&
+                    x.UsageType == "bilingual" &&
+                    (x.VoiceEn == "en-US-JennyNeural" || x.VoiceEn == "en-US-AriaNeural") &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
                     (x.TextEn == cleanText || x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
                 if (cached != null && !string.IsNullOrEmpty(cached.AudioUrlEn))
@@ -1053,16 +1055,16 @@ public sealed class VoiceLibraryMaintenanceService
             // Bỏ qua nếu db đang bận
         }
 
-        // 2. Kiểm tra file trên ổ đĩa theo hash
+        // 2. Kiểm tra file trên thư mục riêng 100% giọng nữ: bilingual-female
         using var md5 = MD5.Create();
         var hash = Convert.ToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes($"{lang}:{voice}:{rate}:{cleanText}"))).ToLowerInvariant();
 
-        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio", "bilingual");
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio", "bilingual-female");
         Directory.CreateDirectory(folder);
 
-        var fileName = $"bilingual-{lang}-{hash}.mp3";
+        var fileName = $"female-{lang}-{hash}.mp3";
         var diskPath = Path.Combine(folder, fileName);
-        var storagePath = $"/uploads/audio/bilingual/{fileName}";
+        var storagePath = $"/uploads/audio/bilingual-female/{fileName}";
 
         if (File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
         {

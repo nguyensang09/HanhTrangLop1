@@ -259,14 +259,15 @@
     const exampleVi = card.dataset.exampleVi;
     const exampleEn = card.dataset.exampleEn;
 
+    if (p.en) getAudioUrl(p.en, "en");
     if (p.vi) getAudioUrl(p.vi, "vi");
-    if (meaning) getAudioUrl(meaning, "vi");
     if (word) {
       getAudioUrl(word, "en");
       getAudioUrl(word, "en", true);
     }
-    if (exampleVi) getAudioUrl(exampleVi, "vi");
+    if (meaning) getAudioUrl(meaning, "vi");
     if (exampleEn) getAudioUrl(exampleEn, "en");
+    if (exampleVi) getAudioUrl(exampleVi, "vi");
   }
 
   function playAudioUrlPromise(url, playbackRate = 1.0) {
@@ -426,11 +427,12 @@
   }
 
   // Chuỗi phát âm song ngữ chuẩn theo đúng yêu cầu:
-  // 1. Chữ A (giọng nữ) ➔ Dừng 1 nhịp (500ms)
-  // 2. Quả táo (giọng nữ) ➔ Dừng 1 nhịp (500ms)
-  // 3. Apple (giọng nữ) ➔ Dừng chuyển đoạn (700ms)
-  // 4. Câu ví dụ tiếng Việt (giọng nữ) ➔ Dừng 1 nhịp (500ms)
-  // 5. Câu ví dụ tiếng Anh (giọng nữ)
+  // 1. A (en - giọng nữ) ➔ Dừng 1 nhịp (300ms)
+  // 2. Chữ A (vn - giọng nữ) ➔ Dừng 1 nhịp (300ms)
+  // 3. Apple (en - giọng nữ) ➔ Dừng 1 nhịp (300ms)
+  // 4. Quả táo (vn - giọng nữ) ➔ Dừng 1 nhịp (300ms)
+  // 5. Câu ví dụ mẫu (en - giọng nữ) ➔ Dừng 1 nhịp (300ms)
+  // 6. Câu ví dụ mẫu (vn - giọng nữ)
   async function playIntegratedBilingualSequence(card, isSlow = false, onEndCallback) {
     stopAllAudio();
     if (!card) {
@@ -439,18 +441,20 @@
     }
 
     const p = getLetterPrompt(card);
+    const letterEn = p.en || ""; // "A" hoặc "1"
     const letterVi = p.vi || ""; // "Chữ A" hoặc "Số 1"
-    const meaningVi = card.dataset.meaning || ""; // "Quả táo" hoặc "Một"
     const wordEn = card.dataset.word || card.dataset.symbol || ""; // "Apple" hoặc "One"
-    const exampleVi = card.dataset.exampleVi || "";
+    const meaningVi = card.dataset.meaning || ""; // "Quả táo" hoặc "Một"
     const exampleEn = card.dataset.exampleEn || "";
+    const exampleVi = card.dataset.exampleVi || "";
 
     // Tải trước ngầm tất cả các đoạn âm thanh giọng NỮ
+    if (letterEn) getAudioUrl(letterEn, "en", isSlow);
     if (letterVi) getAudioUrl(letterVi, "vi");
-    if (meaningVi) getAudioUrl(meaningVi, "vi");
     if (wordEn) getAudioUrl(wordEn, "en", isSlow);
-    if (exampleVi) getAudioUrl(exampleVi, "vi");
+    if (meaningVi) getAudioUrl(meaningVi, "vi");
     if (exampleEn) getAudioUrl(exampleEn, "en", isSlow);
+    if (exampleVi) getAudioUrl(exampleVi, "vi");
 
     if (dialogSpeakBilingualBtn) dialogSpeakBilingualBtn.classList.add("is-playing");
     const audioBtn = card.querySelector(".card-audio-btn");
@@ -459,49 +463,59 @@
     markCardAsExplored(card);
 
     try {
-      // 1. Đọc Chữ cái / Chữ số (Tiếng Việt - Giọng Nữ)
+      // 1. Chữ cái / Số (Tiếng Anh - Giọng Nữ)
+      if (letterEn) {
+        await playVoiceItemPromise(letterEn, "en", isSlow);
+      }
+
+      // Dừng lại 1 nhịp (300ms) để chuyển voice
+      if (letterEn && letterVi) {
+        await waitGapPromise(300);
+      }
+
+      // 2. Chữ cái / Số (Tiếng Việt - Giọng Nữ)
       if (letterVi) {
         await playVoiceItemPromise(letterVi, "vi", isSlow);
       }
 
-      // Dừng lại 1 nhịp (500ms)
-      if (letterVi && meaningVi) {
-        await waitGapPromise(500);
+      // Dừng lại 1 nhịp (300ms) để chuyển voice
+      if (letterVi && wordEn) {
+        await waitGapPromise(300);
       }
 
-      // 2. Đọc Nghĩa Tiếng Việt (Giọng Nữ)
-      if (meaningVi) {
-        await playVoiceItemPromise(meaningVi, "vi", isSlow);
-      }
-
-      // Dừng lại 1 nhịp (500ms)
-      if (meaningVi && wordEn) {
-        await waitGapPromise(500);
-      }
-
-      // 3. Đọc Từ vựng Tiếng Anh (Giọng Nữ)
+      // 3. Từ vựng (Tiếng Anh - Giọng Nữ)
       if (wordEn) {
         await playVoiceItemPromise(wordEn, "en", isSlow);
       }
 
-      // 4. Tiếp nối sang Câu ví dụ mẫu
-      if (exampleVi || exampleEn) {
-        // Dừng lại 1 nhịp chuyển tiếp sang câu ví dụ (700ms)
-        await waitGapPromise(700);
+      // Dừng lại 1 nhịp (300ms) để chuyển voice
+      if (wordEn && meaningVi) {
+        await waitGapPromise(300);
+      }
 
-        // Đọc câu ví dụ (Tiếng Việt - Giọng Nữ)
-        if (exampleVi) {
-          await playVoiceItemPromise(exampleVi, "vi", isSlow);
-        }
+      // 4. Nghĩa từ vựng (Tiếng Việt - Giọng Nữ)
+      if (meaningVi) {
+        await playVoiceItemPromise(meaningVi, "vi", isSlow);
+      }
 
-        // Dừng lại 1 nhịp (500ms)
-        if (exampleVi && exampleEn) {
-          await waitGapPromise(500);
-        }
+      // 5. Câu ví dụ mẫu (Tiếng Anh trước ➔ 300ms ➔ Tiếng Việt sau)
+      if (exampleEn || exampleVi) {
+        // Dừng lại 1 nhịp (300ms) để chuyển sang câu ví dụ
+        await waitGapPromise(300);
 
-        // Đọc câu ví dụ (Tiếng Anh - Giọng Nữ)
+        // Câu ví dụ mẫu (Tiếng Anh - Giọng Nữ)
         if (exampleEn) {
           await playVoiceItemPromise(exampleEn, "en", isSlow);
+        }
+
+        // Dừng lại 1 nhịp (300ms) để chuyển voice
+        if (exampleEn && exampleVi) {
+          await waitGapPromise(300);
+        }
+
+        // Câu ví dụ mẫu (Tiếng Việt - Giọng Nữ)
+        if (exampleVi) {
+          await playVoiceItemPromise(exampleVi, "vi", isSlow);
         }
       }
     } finally {
