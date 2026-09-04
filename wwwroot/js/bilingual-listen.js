@@ -76,7 +76,7 @@
     });
 
     if (counterText) {
-      counterText.textContent = exploredSet.size + "/" + allCards.length + " đã nghe";
+      counterText.textContent = exploredSet.size + "/" + allCards.length;
     }
   }
 

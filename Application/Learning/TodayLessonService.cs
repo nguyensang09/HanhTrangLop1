@@ -64,11 +64,12 @@ public class TodayLessonService
         if (existingSession is not null)
         {
             var ids = ReadPlanIds(existingSession.SessionPlanJson);
-            // Nếu phiên đang học có ít hơn 10 bài, tự động mở rộng lên đủ 10 bài
-            if (ids.Count < 10 && existingSession.Status == "active")
+            // Nếu phiên đang học có ít hơn 12 bài, tự động mở rộng lên đủ 12 bài
+            if (ids.Count < 12)
             {
                 var fullPlan = await BuildDayPlanAsync(targetDay);
-                existingSession.SessionPlanJson = JsonSerializer.Serialize(fullPlan);
+                var combined = ids.Concat(fullPlan.Where(id => !ids.Contains(id))).Take(12).ToList();
+                existingSession.SessionPlanJson = JsonSerializer.Serialize(combined);
                 await _db.SaveChangesAsync();
             }
             return existingSession;
@@ -264,7 +265,7 @@ public class TodayLessonService
         var logicAndLifeItems = allItems.Where(x => x.SkillGroup?.Code == "tu-duy-logic" || x.SkillGroup?.Code == "ky-nang-song" || x.SkillGroup?.Code == "hinh-dang-khong-gian" || x.SkillGroup?.Code == "ngon-ngu").ToList();
         var tracingItems = allItems.Where(x => x.InteractionType == InteractionTypes.Tracing).ToList();
 
-        var selected = new List<Guid>(capacity: 10);
+        var selected = new List<Guid>(capacity: 12);
         var selectedIds = new HashSet<Guid>();
 
         void AddFromList(List<LearningItem> list, int offset)
@@ -280,7 +281,7 @@ public class TodayLessonService
             }
         }
 
-        // Mỗi ngày gồm 10 bài phối hợp hài hòa các môn
+        // Mỗi ngày gồm 12 bài phối hợp hài hòa các môn (4 nhóm x 3 bài = 12 bài)
         // 1. Nhận biết chữ cái (3 bài)
         AddFromList(letterItems, (dayNumber - 1) * 3);
         AddFromList(letterItems, (dayNumber - 1) * 3 + 1);
@@ -291,17 +292,19 @@ public class TodayLessonService
         AddFromList(numberItems, (dayNumber - 1) * 3 + 1);
         AddFromList(numberItems, (dayNumber - 1) * 3 + 2);
 
-        // 3. Tư duy Logic & Kỹ năng sống (2 bài)
-        AddFromList(logicAndLifeItems, (dayNumber - 1) * 2);
-        AddFromList(logicAndLifeItems, (dayNumber - 1) * 2 + 1);
+        // 3. Tư duy Logic, Không gian & Kỹ năng sống (3 bài)
+        AddFromList(logicAndLifeItems, (dayNumber - 1) * 3);
+        AddFromList(logicAndLifeItems, (dayNumber - 1) * 3 + 1);
+        AddFromList(logicAndLifeItems, (dayNumber - 1) * 3 + 2);
 
-        // 4. Luyện nét & Tập tô (2 bài)
-        AddFromList(tracingItems, (dayNumber - 1) * 2);
-        AddFromList(tracingItems, (dayNumber - 1) * 2 + 1);
+        // 4. Luyện nét & Tập tô (3 bài)
+        AddFromList(tracingItems, (dayNumber - 1) * 3);
+        AddFromList(tracingItems, (dayNumber - 1) * 3 + 1);
+        AddFromList(tracingItems, (dayNumber - 1) * 3 + 2);
 
-        // Nếu danh sách chưa đủ 10 bài, bù thêm các bài học tiếp theo
-        var stepOffset = (dayNumber - 1) * 10;
-        for (var i = 0; i < allItems.Count && selected.Count < 10; i++)
+        // Nếu danh sách chưa đủ 12 bài, bù thêm các bài học tiếp theo
+        var stepOffset = (dayNumber - 1) * 12;
+        for (var i = 0; i < allItems.Count && selected.Count < 12; i++)
         {
             var idx = (stepOffset + i) % allItems.Count;
             var item = allItems[idx];
