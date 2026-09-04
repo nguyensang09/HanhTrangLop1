@@ -16,7 +16,6 @@ public static class SeedDataInitializer
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
 
         await EnsureMigrationHistoryForLegacyDatabaseAsync(db);
         await db.Database.MigrateAsync();

@@ -1213,20 +1213,6 @@ public sealed class VoiceLibraryMaintenanceService
                 }
             }
 
-            // Kiểm tra thư mục bilingual-female
-            var femaleFolder = Path.Combine(_environment.WebRootPath, "uploads", "audio", "bilingual-female");
-            if (Directory.Exists(femaleFolder))
-            {
-                var slug = NormalizeCode(normalizedText);
-                if (!string.IsNullOrWhiteSpace(slug))
-                {
-                    var femaleFile = Directory.EnumerateFiles(femaleFolder, $"female-vi-*{slug}*.mp3").FirstOrDefault();
-                    if (femaleFile != null)
-                    {
-                        return $"/uploads/audio/bilingual-female/{Path.GetFileName(femaleFile)}";
-                    }
-                }
-            }
         }
         catch
         {
@@ -1256,7 +1242,8 @@ public sealed class VoiceLibraryMaintenanceService
              !string.IsNullOrEmpty(x.AudioUrlEn)) ||
             (x.StatusEn == "ready" &&
              !string.IsNullOrEmpty(x.AudioUrlEn) &&
-             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText || x.TextEn == rawText || x.TextEn == normalizedText)),
+             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText || x.TextEn == rawText || x.TextEn == normalizedText ||
+              (x.TextEn != null && (x.TextEn == $"Number {rawText}" || x.TextEn == $"Letter {rawText.ToUpperInvariant()}")))),
             cancellationToken);
 
         // 2. Cắt bỏ dấu câu thừa (?, ., !, :, ;)
@@ -1266,7 +1253,8 @@ public sealed class VoiceLibraryMaintenanceService
             entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                 x.StatusEn == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrlEn) &&
-                (x.NormalizedText == stripped || x.OriginalText == stripped || x.TextEn == stripped),
+                (x.NormalizedText == stripped || x.OriginalText == stripped || x.TextEn == stripped ||
+                 (x.TextEn != null && (x.TextEn == $"Number {stripped}" || x.TextEn == $"Letter {stripped.ToUpperInvariant()}"))),
                 cancellationToken);
         }
 
@@ -1274,10 +1262,12 @@ public sealed class VoiceLibraryMaintenanceService
         if (entry is null && normalizedText.Length <= 3)
         {
             var lower = normalizedText.ToLowerInvariant();
+            var numVariant = $"number {lower}";
+            var letterVariant = $"letter {lower}";
             entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                 x.StatusEn == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrlEn) &&
-                ((x.TextEn != null && x.TextEn.ToLower() == lower) ||
+                ((x.TextEn != null && (x.TextEn.ToLower() == lower || x.TextEn.ToLower() == numVariant || x.TextEn.ToLower() == letterVariant)) ||
                  x.NormalizedText.ToLower() == lower ||
                  x.OriginalText.ToLower() == lower),
                 cancellationToken);
@@ -1341,20 +1331,6 @@ public sealed class VoiceLibraryMaintenanceService
                 }
             }
 
-            // Kiểm tra thư mục bilingual-female
-            var femaleFolder = Path.Combine(_environment.WebRootPath, "uploads", "audio", "bilingual-female");
-            if (Directory.Exists(femaleFolder))
-            {
-                var slug = NormalizeCode(normalizedText);
-                if (!string.IsNullOrWhiteSpace(slug))
-                {
-                    var femaleFile = Directory.EnumerateFiles(femaleFolder, $"female-en-*{slug}*.mp3").FirstOrDefault();
-                    if (femaleFile != null)
-                    {
-                        return $"/uploads/audio/bilingual-female/{Path.GetFileName(femaleFile)}";
-                    }
-                }
-            }
         }
         catch
         {
@@ -1485,15 +1461,13 @@ public sealed class VoiceLibraryMaintenanceService
             ? (_configuration["VoiceLibrary:RateEn"]?.Trim() ?? "-15%")
             : (_configuration["VoiceLibrary:Rate"]?.Trim() ?? "-10%"));
 
-        // 1. Kiểm tra TextToSpeechCaches trong database (chỉ nhận đúng dòng bilingual và đúng giọng NỮ HoaiMy / Jenny / Aria)
+        // 1. Kiểm tra TextToSpeechCaches trong database (kiểm tra TOÀN BỘ kho voice của hệ thống)
         try
         {
             if (!isEn)
             {
                 var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                     x.Status == "ready" &&
-                    x.UsageType == "bilingual" &&
-                    x.Voice == "vi-VN-HoaiMyNeural" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
                     (x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
                 if (cached != null && !string.IsNullOrEmpty(cached.AudioUrl))
@@ -1507,12 +1481,14 @@ public sealed class VoiceLibraryMaintenanceService
             }
             else
             {
+                var lower = cleanText.ToLowerInvariant();
+                var numVariant = $"number {lower}";
+                var letterVariant = $"letter {lower}";
                 var cached = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
                     x.StatusEn == "ready" &&
-                    x.UsageType == "bilingual" &&
-                    (x.VoiceEn == "en-US-JennyNeural" || x.VoiceEn == "en-US-AriaNeural") &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
-                    (x.TextEn == cleanText || x.OriginalText == cleanText || x.NormalizedText == cleanText), cancellationToken);
+                    (x.TextEn == cleanText || x.OriginalText == cleanText || x.NormalizedText == cleanText ||
+                     (x.TextEn != null && (x.TextEn.ToLower() == numVariant || x.TextEn.ToLower() == letterVariant))), cancellationToken);
                 if (cached != null && !string.IsNullOrEmpty(cached.AudioUrlEn))
                 {
                     var localCheck = Path.Combine(_environment.WebRootPath, cached.AudioUrlEn.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
@@ -1528,16 +1504,17 @@ public sealed class VoiceLibraryMaintenanceService
             // Bỏ qua nếu db đang bận
         }
 
-        // 2. Kiểm tra file trên thư mục riêng 100% giọng nữ: bilingual-female
+        // 2. Kiểm tra file trên thư mục âm thanh duy nhất: uploads/audio
         using var md5 = MD5.Create();
         var hash = Convert.ToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes($"{lang}:{voice}:{rate}:{cleanText}"))).ToLowerInvariant();
 
-        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio", "bilingual-female");
+        var folder = Path.Combine(_environment.WebRootPath, "uploads", "audio");
         Directory.CreateDirectory(folder);
 
-        var fileName = $"female-{lang}-{hash}.mp3";
+        var slug = NormalizeCode(cleanText);
+        var fileName = $"voice-{(isEn ? "en-" : "")}{(string.IsNullOrWhiteSpace(slug) ? "audio" : slug)}-{hash[..8]}.mp3";
         var diskPath = Path.Combine(folder, fileName);
-        var storagePath = $"/uploads/audio/bilingual-female/{fileName}";
+        var storagePath = $"/uploads/audio/{fileName}";
 
         if (File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
         {
@@ -1552,26 +1529,49 @@ public sealed class VoiceLibraryMaintenanceService
             {
                 try
                 {
-                    _db.TextToSpeechCaches.Add(new TextToSpeechCache
+                    var existingEntry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                        x.OriginalText == cleanText || x.NormalizedText == cleanText, cancellationToken);
+
+                    if (existingEntry != null)
                     {
-                        Id = Guid.NewGuid(),
-                        Provider = "edge",
-                        Voice = voice,
-                        ModelId = "neural",
-                        Format = "mp3",
-                        TextHash = hash,
-                        Name = $"bilingual-{(isEn ? "en" : "vi")}-{NormalizeCode(cleanText)}",
-                        UsageType = "bilingual",
-                        NormalizedText = cleanText,
-                        OriginalText = cleanText,
-                        AudioUrl = isEn ? string.Empty : storagePath,
-                        Status = isEn ? "missing" : "ready",
-                        TextEn = isEn ? cleanText : null,
-                        AudioUrlEn = isEn ? storagePath : null,
-                        StatusEn = isEn ? "ready" : "missing",
-                        VoiceEn = isEn ? voice : null,
-                        UpdatedAt = DateTimeOffset.UtcNow
-                    });
+                        if (isEn)
+                        {
+                            existingEntry.AudioUrlEn = storagePath;
+                            existingEntry.StatusEn = "ready";
+                            existingEntry.VoiceEn = voice;
+                            existingEntry.TextEn = cleanText;
+                        }
+                        else
+                        {
+                            existingEntry.AudioUrl = storagePath;
+                            existingEntry.Status = "ready";
+                            existingEntry.Voice = voice;
+                        }
+                        existingEntry.UpdatedAt = DateTimeOffset.UtcNow;
+                    }
+                    else
+                    {
+                        _db.TextToSpeechCaches.Add(new TextToSpeechCache
+                        {
+                            Id = Guid.NewGuid(),
+                            Provider = "edge",
+                            Voice = isEn ? "vi-VN-HoaiMyNeural" : voice,
+                            ModelId = "neural",
+                            Format = "mp3",
+                            TextHash = hash,
+                            Name = $"voice-{NormalizeCode(cleanText)}",
+                            UsageType = "content",
+                            NormalizedText = cleanText,
+                            OriginalText = cleanText,
+                            AudioUrl = isEn ? string.Empty : storagePath,
+                            Status = isEn ? "missing" : "ready",
+                            TextEn = cleanText,
+                            AudioUrlEn = isEn ? storagePath : null,
+                            StatusEn = isEn ? "ready" : "missing",
+                            VoiceEn = isEn ? voice : null,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        });
+                    }
                     await _db.SaveChangesAsync(cancellationToken);
                 }
                 catch
@@ -1598,11 +1598,11 @@ public sealed class VoiceLibraryMaintenanceService
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
         };
 
-        // 2. Chữ cái & Chữ số Tiếng Việt (giọng Nữ Hoài My)
+        // 2. Chữ cái & Chữ số Tiếng Việt (giọng Nữ Hoài My) - Đọc đúng nguyên bản text, không thêm Chữ/Số
         var viLetters = new[]
         {
-            "Chữ A", "Chữ B", "Chữ C", "Chữ D", "Chữ E", "Chữ F", "Chữ G", "Chữ H", "Chữ I", "Chữ J", "Chữ K", "Chữ L", "Chữ M", "Chữ N", "Chữ O", "Chữ P", "Chữ Q", "Chữ R", "Chữ S", "Chữ T", "Chữ U", "Chữ V", "Chữ W", "Chữ X", "Chữ Y", "Chữ Z",
-            "Số 0", "Số 1", "Số 2", "Số 3", "Số 4", "Số 5", "Số 6", "Số 7", "Số 8", "Số 9", "Số 10", "Số 11", "Số 12", "Số 13", "Số 14", "Số 15", "Số 16", "Số 17", "Số 18", "Số 19", "Số 20"
+            "A", "Ă", "Â", "B", "C", "D", "Đ", "E", "Ê", "G", "H", "I", "K", "L", "M", "N", "O", "Ô", "Ơ", "P", "Q", "R", "S", "T", "U", "Ư", "V", "X", "Y",
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
         };
 
         // 3. Từ vựng Tiếng Anh (giọng Nữ Jenny)

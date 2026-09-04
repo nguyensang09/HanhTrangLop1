@@ -88,18 +88,11 @@ public static class PreschoolTranslationHelper
             return exactTrimmed;
         }
 
-        // 3. Ký tự chữ cái / số đơn lẻ
-        if (Regex.IsMatch(text, @"^[A-Za-zĂÂĐÊÔƠƯăâđêôơư]$"))
+        // 3. Ký tự chữ cái / số đơn lẻ: Đọc đúng nguyên gốc text của người dùng, không tự ý chèn thêm Letter / Number
+        if (Regex.IsMatch(text, @"^[A-Za-zĂÂĐÊÔƠƯăâđêôơư]$") || Regex.IsMatch(text, @"^\d+$"))
         {
-            var res = $"Letter {text.ToUpperInvariant()}";
-            TranslationMemory[text] = res;
-            return res;
-        }
-        if (Regex.IsMatch(text, @"^\d+$"))
-        {
-            var res = $"Number {text}";
-            TranslationMemory[text] = res;
-            return res;
+            TranslationMemory[text] = text;
+            return text;
         }
 
         // 4. Gọi Google Translate API với nhiều kênh chống lỗi 429 Too Many Requests
