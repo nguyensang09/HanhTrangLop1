@@ -15933,3 +15933,919 @@ body.audio-is-speaking .sound-wave-badge {
   color: #94a3b8;
 }
 
+/* ==========================================================================
+   BẢN ĐỒ ĐẢO PHIÊU LƯU 2 CỘT CHUẨN IPAD (BOTTOM TO TOP MAP ADVENTURE)
+   Theo đúng hình ảnh mẫu tham khảo, tối ưu trải nghiệm tablet & desktop
+   ========================================================================== */
+
+.ipad-adventure-layout {
+  width: min(1140px, 96vw) !important;
+  max-width: 1140px !important;
+  margin: 0 auto !important;
+  padding: 12px 14px 100px !important;
+}
+
+/* 1. Header Chặng Khám Phá (Chapter Overview Banner) */
+.island-overview-banner {
+  background: #ffffff;
+  border: 2.5px solid #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.02);
+  padding: 20px 24px 18px;
+  margin-bottom: 20px;
+}
+
+.island-banner-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.island-badge-col {
+  flex-shrink: 0;
+}
+
+.island-compass-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border: 3px solid #7dd3fc;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0284c7;
+}
+
+.island-compass-badge .material-symbols-outlined {
+  font-size: 30px;
+}
+
+.island-info-col {
+  flex: 1;
+  min-width: 260px;
+}
+
+.island-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.island-chapter-tag {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.island-status-tag {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.island-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  font-weight: 900;
+  color: #1e293b;
+  margin: 2px 0 4px;
+  line-height: 1.25;
+}
+
+.island-desc {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.island-stats-col {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.island-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 8px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.stat-pill-icon {
+  font-size: 1.4rem;
+}
+
+.stat-pill-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-pill-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.stat-pill-val {
+  font-size: 0.98rem;
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1.1;
+}
+
+.btn-change-map {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 2px solid #fed7aa;
+  color: #ea580c;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(234, 88, 12, 0.12);
+}
+
+.btn-change-map:hover {
+  background: #fff7ed;
+  transform: translateY(-1px);
+}
+
+/* Thanh tiến trình đa sắc màu */
+.island-progress-bar-wrap {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.island-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.progress-percent {
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #0284c7;
+}
+
+.island-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.island-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981 0%, #38bdf8 45%, #f59e0b 80%, #ea580c 100%);
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+/* 2. Khung Làm Việc 2 Cột Chuẩn iPad */
+.skill-map-workspace {
+  display: grid;
+  grid-template-columns: 1fr 370px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* CỘT TRÁI: ĐƯỜNG MÒN BẢN ĐỒ TỰ CUỘN NỘI BỘ TỪ DƯỚI LÊN */
+.skill-map-trail-col {
+  position: relative;
+  background: 
+    radial-gradient(ellipse at 50% 12%, rgba(254, 243, 199, 0.85) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 50%, rgba(220, 252, 231, 0.9) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(224, 242, 254, 0.9) 0%, transparent 50%),
+    linear-gradient(180deg, #f0fdf4 0%, #e0f2fe 35%, #fef3c7 70%, #f0fdf4 100%);
+  border: 3.5px solid #ffffff;
+  border-radius: 32px;
+  box-shadow: 0 16px 44px rgba(16, 185, 129, 0.12), inset 0 0 0 1.5px #d1fae5;
+  padding: 26px 16px 36px;
+  height: calc(100vh - 190px);
+  min-height: 560px;
+  max-height: 820px;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Thanh cuộn tinh tế cho cột bản đồ */
+.skill-map-trail-col::-webkit-scrollbar {
+  width: 6px;
+}
+
+.skill-map-trail-col::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 999px;
+}
+
+.skill-map-trail-col::-webkit-scrollbar-thumb {
+  background: #a7f3d0;
+  border-radius: 999px;
+}
+
+.adventure-trail-vertical {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  padding-bottom: 20px;
+}
+
+/* SVG đường mòn nối các trạm từ dưới lên */
+.skill-map-trail-col .adventure-svg-road {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.skill-map-trail-col .road-bg-path {
+  stroke: #ffffff;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+
+.skill-map-trail-col .road-dash-path {
+  stroke: #cbd5e1;
+  stroke-width: 6;
+  stroke-dasharray: 10 12;
+  stroke-linecap: round;
+}
+
+/* 1. Đỉnh: Lâu Đài Bí Mật */
+.map-summit-node {
+  margin-bottom: 16px;
+  z-index: 10;
+}
+
+.castle-summit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 22px;
+  background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%);
+  border: 3px solid #bfdbfe;
+  border-radius: 26px;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18), inset 0 2px 0 #ffffff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.castle-summit-card:hover {
+  transform: translateY(-3px) scale(1.04);
+}
+
+.castle-icon {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.castle-sub-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #3b82f6;
+  background: #dbeafe;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.castle-title {
+  font-size: 0.86rem;
+  font-weight: 900;
+  color: #1e3a8a;
+}
+
+/* 2. Các Trạm Học (Station Nodes) */
+.adventure-station-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0;
+  z-index: 6;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.adventure-station-node:hover {
+  transform: scale(1.08);
+}
+
+.adventure-station-node.node-selected-focus {
+  transform: scale(1.12);
+  filter: drop-shadow(0 8px 20px rgba(234, 88, 12, 0.4));
+}
+
+/* Các vị trí uốn lượn zic-zac chữ S */
+.pos-center { transform: translateX(0); }
+.pos-center-left { transform: translateX(-36px); }
+.pos-left { transform: translateX(-72px); }
+.pos-center-right { transform: translateX(36px); }
+.pos-right { transform: translateX(72px); }
+
+/* Vòng tròn trạm học */
+.station-circle-btn {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.station-core {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.station-theme-icon {
+  font-size: 2.1rem;
+  color: #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Trạm Hoàn Thành (Xanh Ngọc Lục Bảo 3D) */
+.station-completed {
+  background: linear-gradient(145deg, #34d399 0%, #10b981 40%, #059669 100%) !important;
+  border: 4px solid #ffffff !important;
+  box-shadow: 0 10px 22px rgba(5, 150, 105, 0.4), inset 0 -4px 0 rgba(0, 0, 0, 0.2), inset 0 3px 0 rgba(255, 255, 255, 0.6) !important;
+}
+
+.station-stars-crown {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.station-check-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 1.3rem;
+  color: #facc15;
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 1px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Trạm Đang Học (Cam Mật Ong 3D Phát Sáng) */
+.station-current {
+  width: 84px;
+  height: 84px;
+  background: linear-gradient(145deg, #fb923c 0%, #ea580c 45%, #c2410c 100%) !important;
+  border: 4.5px solid #ffffff !important;
+  box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.4), 0 14px 30px rgba(234, 88, 12, 0.5), inset 0 -5px 0 rgba(0, 0, 0, 0.25), inset 0 4px 0 rgba(255, 255, 255, 0.6) !important;
+  animation: pulseStationCurrent 2s infinite;
+}
+
+@keyframes pulseStationCurrent {
+  0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7), 0 14px 30px rgba(234, 88, 12, 0.5); }
+  70% { box-shadow: 0 0 0 16px rgba(249, 115, 22, 0), 0 14px 30px rgba(234, 88, 12, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0), 0 14px 30px rgba(234, 88, 12, 0.5); }
+}
+
+/* Trạm Khóa (Bạc Mờ 3D) */
+.station-locked {
+  background: linear-gradient(145deg, #f1f5f9 0%, #cbd5e1 100%) !important;
+  border: 3.5px solid #ffffff !important;
+  box-shadow: 0 6px 14px rgba(100, 116, 139, 0.15), inset 0 2px 0 #ffffff !important;
+  opacity: 0.85;
+}
+
+.station-locked .lock-icon {
+  font-size: 1.8rem;
+  color: #64748b;
+}
+
+/* Mascot Sóc Nâu & Bong Bóng Chat */
+.squirrel-chat-guide {
+  position: absolute;
+  top: -22px;
+  left: -120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.squirrel-speech-pill {
+  background: #ffffff;
+  border: 2px solid #f59e0b;
+  border-radius: 18px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #92400e;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
+  white-space: nowrap;
+}
+
+.squirrel-avatar-bubble {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fffbeb;
+  border: 2.5px solid #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.squirrel-bubble-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Nhãn Trạm Học (Label Pills) - Chống rớt chữ, hiển thị gọn gàng */
+.station-label-pill {
+  margin-top: 8px;
+  white-space: nowrap !important;
+  max-width: 220px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 2px solid #ffffff;
+  border-radius: 14px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  line-height: 1.2;
+  display: block;
+}
+
+.station-label-pill.current-pill {
+  background: #ffedd5;
+  border-color: #fed7aa;
+  color: #c2410c;
+  font-weight: 900;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25);
+}
+
+.station-label-pill.completed-pill {
+  color: #065f46;
+}
+
+.check-prefix {
+  color: #059669;
+  font-weight: 900;
+  margin-right: 2px;
+}
+
+/* Trạm Rương Bạc */
+.chest-node-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chest-circle-icon {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 3px solid #fcd34d;
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chest-emoji-art {
+  font-size: 2rem;
+}
+
+.chest-circle-icon .lock-tag {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 1rem;
+  color: #d97706;
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 3. Đáy Bản Đồ (Start Gate) */
+.map-start-node {
+  margin-top: 14px;
+  z-index: 10;
+}
+
+.start-gate-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 6px 18px;
+  color: #047857;
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.flag-icon {
+  color: #10b981;
+  font-size: 1.2rem;
+}
+
+/* ==========================================================================
+   CỘT PHẢI: BẢNG CHI TIẾT BÀI HỌC CỐ ĐỊNH (STICKY LESSON ACTION PANEL)
+   Luôn luôn hiển thị trước mắt khi người dùng cuộn xem bản đồ bên trái
+   ========================================================================== */
+
+.skill-map-preview-col {
+  position: sticky !important;
+  top: 14px !important;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 25;
+}
+
+.lesson-preview-panel {
+  background: #ffffff;
+  border: 3.5px solid #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 20px 48px rgba(249, 115, 22, 0.2), 0 6px 16px rgba(0, 0, 0, 0.05), inset 0 2px 0 rgba(255, 255, 255, 0.9);
+  padding: 18px 18px 20px;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center top;
+}
+
+.lesson-preview-panel.preview-pop-anim {
+  animation: previewPanelPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes previewPanelPop {
+  0% {
+    transform: scale(0.96) translateY(4px);
+    opacity: 0.85;
+  }
+  60% {
+    transform: scale(1.02) translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.panel-header-tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.preview-status-pill {
+  background: #ffedd5;
+  color: #c2410c;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.preview-reward-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #d97706;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.preview-reward-pill .material-symbols-outlined {
+  font-size: 1.1rem;
+  color: #f59e0b;
+}
+
+/* Khung Hero Bài Học với Sóc Nâu Đồng Hành */
+.preview-hero-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 2px solid #fed7aa;
+  border-radius: 22px;
+  margin-bottom: 14px;
+  box-shadow: inset 0 1px 0 #ffffff;
+}
+
+.preview-mascot-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #fdba74;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.preview-mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-title-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.preview-topic-name {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #ea580c;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-lesson-title {
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 2px 0 0;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 2 Chip Thông Tin Thực Tế Của Hệ Thống */
+.preview-meta-chips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.meta-chip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 8px 10px;
+}
+
+.meta-chip-icon {
+  font-size: 1.3rem;
+  color: #0284c7;
+}
+
+.meta-chip-content small {
+  display: block;
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.meta-chip-content strong {
+  display: block;
+  font-size: 0.8rem;
+  color: #1e293b;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Lời Dẫn / Hướng Dẫn Thực Tế Của Bài Học */
+.preview-instruction-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fefce8;
+  border: 1.5px solid #fef08a;
+  border-radius: 16px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.instruction-quote-icon {
+  font-size: 1.2rem;
+  color: #ca8a04;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.preview-lesson-desc {
+  font-size: 0.82rem;
+  color: #713f12;
+  line-height: 1.35;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Dải Thưởng Sao Vàng Thực Tế */
+.preview-star-award-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 16px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.award-star-badge {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.award-star-text strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #1e40af;
+  font-weight: 800;
+}
+
+.award-star-text small {
+  display: block;
+  font-size: 0.7rem;
+  color: #3b82f6;
+}
+
+/* Nút CTA Lớn 3D Nổi Bật */
+.preview-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff7a00 0%, #ea580c 100%);
+  color: #ffffff !important;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 900;
+  text-decoration: none;
+  border: 0;
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.preview-cta-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(234, 88, 12, 0.5);
+}
+
+.preview-cta-btn.btn-disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.preview-cta-btn .material-symbols-outlined {
+  font-size: 1.4rem;
+}
+
+/* Thẻ Nhắc Nhở Học Tập Tích Cực */
+.map-daily-goal-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ecfdf5;
+  border: 2px solid #a7f3d0;
+  border-radius: 20px;
+  padding: 10px 14px;
+}
+
+.daily-goal-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.daily-goal-icon-wrap .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.daily-goal-text strong {
+  display: block;
+  font-size: 0.8rem;
+  color: #065f46;
+  margin-bottom: 2px;
+}
+
+.daily-goal-text p {
+  font-size: 0.74rem;
+  color: #047857;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Responsive Cho Mobile (<992px) */
+@media (max-width: 991.98px) {
+  .skill-map-workspace {
+    grid-template-columns: 1fr;
+  }
+  .skill-map-trail-col {
+    height: auto;
+    max-height: none;
+  }
+  .skill-map-preview-col {
+    position: static;
+    top: auto;
+  }
+}
+
+
