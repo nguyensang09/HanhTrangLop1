@@ -1,4 +1,4 @@
-@model SkillLearningListViewModel
+﻿@model SkillLearningListViewModel
 @{
     ViewData["Title"] = Model.SkillGroup.Name;
     var totalItems = Model.Items.Count;
@@ -71,7 +71,6 @@
         };
     }
 
-
     string ResolveAvatar(string? key)
     {
         if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
@@ -87,8 +86,39 @@
         };
     }
 
-    // Các vị trí uốn lượn chữ S: trái, giữa, phải, giữa, trái
-    var positions = new[] { "pos-center-left", "pos-left", "pos-center-left", "pos-center", "pos-center-right", "pos-right", "pos-center-right", "pos-center" };
+    // 6 Theme màu sắc rực rỡ luân phiên để mỗi trạm bắt mắt khác biệt
+    var stationThemes = new[] { "theme-amber", "theme-emerald", "theme-sky", "theme-purple", "theme-pink", "theme-teal" };
+
+    // Dải ziczac 12 điểm lượn sóng rộng trải đều hai bên map (không bị co cụm ở giữa)
+    var zigPositions = new[] {
+        "pos-center",
+        "pos-semi-right",
+        "pos-mid-right",
+        "pos-far-right",
+        "pos-mid-right",
+        "pos-semi-right",
+        "pos-center",
+        "pos-semi-left",
+        "pos-mid-left",
+        "pos-far-left",
+        "pos-mid-left",
+        "pos-semi-left"
+    };
+
+    // Danh mục tiểu cảnh trang trí sườn bản đồ (vui nhộn, sinh động, pastel dịu mắt)
+    var flankLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass)[]
+    {
+        ("/images/avatars/avatar-bunny.png", "favorite", "Thỏ Trắng", "Bé ơi cố lên nhé! ✨", "deco-bunny"),
+        ("", "forest", "Rừng Tri Thức", "Cây xanh bóng mát 🌲", "deco-nature"),
+        ("/images/avatars/avatar-bear.png", "star", "Gấu Vàng", "Bé học chăm ngoan 🍯", "deco-bear"),
+        ("", "spa", "Thung Lũng Nấm", "Nấm đốm xinh xắn 🍄", "deco-mushroom"),
+        ("/images/avatars/avatar-dog.png", "pets", "Cún Con", "Tiến bước rộn ràng 🐾", "deco-dog"),
+        ("", "flight", "Cánh Diều Nhỏ", "Bay cao ước mơ 🪁", "deco-kite"),
+        ("/images/avatars/avatar-cat.png", "auto_stories", "Mèo Con", "Cùng nhau đọc sách 📖", "deco-cat"),
+        ("", "campground", "Trạm Dừng Chân", "Nghỉ ngơi chút xíu ⛺", "deco-camp"),
+        ("", "explore", "La Bàn Nhỏ", "Chỉ hướng đỉnh cao 🧭", "deco-compass"),
+        ("", "emoji_events", "Cột Mốc Vàng", "Sắp đến đích rồi 🏆", "deco-trophy")
+    };
     
     // Bài đang chọn mặc định
     var defaultSelectedItem = totalItems > 0 ? Model.Items[currentItemIndex] : null;
@@ -96,8 +126,8 @@
 }
 
 <section class="kid-screen skill-adventure-page ipad-adventure-layout">
-    <!-- ==================== TOPBAR CHUẨN ĐỒNG NHẤT KHÔNG GIAN BÉ ==================== -->
-    <header class="child-zone-header clay-card">
+    <!-- ==================== TOPBAR HỢP NHẤT TIẾN ĐỘ & ĐIỀU HƯỚNG BÉ ==================== -->
+    <header class="child-zone-header clay-card skill-unified-header">
         <div class="child-header-left">
             <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
                 <span class="material-symbols-outlined">arrow_back</span>
@@ -115,14 +145,27 @@
         </div>
 
         <div class="child-header-center">
-            <div class="child-star-badge-3d" title="Tiến độ bài học đã hoàn thành">
-                <span class="star-3d-icon">⭐</span>
-                <span class="star-number-display">@completedCount/@totalItems</span>
-                <span class="star-label-text">bài đạt</span>
+            <div class="header-merged-progress-chip" title="Tiến độ bài học: @completedCount/@totalItems bài (@progressPercent%)">
+                <div class="progress-chip-header">
+                    <span class="chip-flag-icon">🚩</span>
+                    <strong class="chip-count-text">Trạm @completedCount/@totalItems</strong>
+                    <span class="chip-percent-text">(@progressPercent%)</span>
+                </div>
+                <div class="chip-progress-track">
+                    <div class="chip-progress-fill" style="width: @progressPercent%;"></div>
+                </div>
             </div>
         </div>
 
         <div class="child-header-right">
+            <button type="button" class="child-header-action-btn btn-jump-active" onclick="scrollToActiveStation()" title="Nhảy đến trạm bài đang học dở">
+                <span class="material-symbols-outlined">my_location</span>
+                <span class="btn-label-text">Đến bài dở</span>
+            </button>
+            <button type="button" class="child-header-action-btn" id="headerToggleViewBtn" onclick="toggleSkillView(this)" data-current-view="map" title="Chuyển đổi Bản đồ / Danh sách">
+                <span class="material-symbols-outlined" id="headerToggleViewIcon">format_list_bulleted</span>
+                <span class="btn-label-text" id="headerToggleViewText">Danh sách</span>
+            </button>
             <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh" aria-label="Góc phụ huynh">
                 <span class="material-symbols-outlined lock-icon">lock</span>
                 <span class="lock-label-text">Ba mẹ</span>
@@ -138,36 +181,28 @@
             <p>Bé quay lại sau nhé.</p>
         </div>
     }
-
-        <!-- ==================== THANH TIỆN ÍCH TIẾN TRÌNH SIÊU TINH GỌN (THAY CHO BANNER CỒNG KỀNH) ==================== -->
-        <div class="skill-mini-strip clay-card">
-            <div class="mini-strip-progress" title="Tiến trình hoàn thành: @completedCount/@totalItems bài">
-                <span class="mini-strip-badge">🚩 Trạm @completedCount/@totalItems</span>
-                <div class="mini-progress-track">
-                    <div class="mini-progress-fill" style="width: @progressPercent%;"></div>
-                </div>
-                <strong class="mini-progress-percent">@progressPercent%</strong>
-            </div>
-            <div class="mini-strip-actions">
-                <button type="button" class="mini-strip-btn btn-jump-active" onclick="scrollToActiveStation()" title="Nhảy đến trạm bài đang học dở">
-                    <span class="material-symbols-outlined">my_location</span>
-                    <span>Đến bài dở</span>
-                </button>
-                <button type="button" class="mini-strip-btn" onclick="toggleSkillView('grid')" title="Xem dạng danh sách bài">
-                    <span class="material-symbols-outlined">format_list_bulleted</span>
-                    <span>Danh sách</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- ==================== BẢN ĐỒ PHIÊU LƯU TRẢI RỘNG TRUNG TÂM (1 CỘT RỘNG RÃI) ==================== -->
+    else
+    {
+        <!-- ==================== BẢN ĐỒ PHIÊU LƯU TRẢI RỘNG CÂN ĐỐI (1 CỘT RỘNG RÃI) ==================== -->
         <div class="skill-map-workspace" id="skillAdventureMapView">
             <div class="skill-map-trail-col clay-card" id="mapTrailScrollContainer">
-                <!-- Nền thiên nhiên 3D có mây trời và chiều sâu -->
-                <div class="adventure-scenic-overlay"></div>
-                <div class="map-cloud cloud-1"></div>
-                <div class="map-cloud cloud-2"></div>
-                <div class="map-cloud cloud-3"></div>
+                <!-- Nền thiên nhiên sinh động và mây trời nhẹ nhàng (pointer-events: none) -->
+                <div class="adventure-scenic-overlay" aria-hidden="true">
+                    <!-- Cầu vồng pastel mờ ảo phía đỉnh gần lâu đài -->
+                    <div class="ambient-pastel-rainbow"></div>
+
+                    <!-- Khinh khí cầu pastel bồng bềnh ở góc cao bên phải -->
+                    <div class="ambient-hot-air-balloon">
+                        <span class="balloon-emoji">🎈</span>
+                        <span class="balloon-label">Bay cao tri thức</span>
+                    </div>
+
+                    <!-- Mây trôi bồng bềnh ở các độ cao khác nhau -->
+                    <div class="ambient-cloud cloud-1"></div>
+                    <div class="ambient-cloud cloud-2"></div>
+                    <div class="ambient-cloud cloud-3"></div>
+                    <div class="ambient-cloud cloud-4"></div>
+                </div>
 
                 <!-- SVG Đường mòn kết nối mềm mại nối từ dưới lên -->
                 <svg class="adventure-svg-road" id="adventure-svg-road" aria-hidden="true">
@@ -186,12 +221,6 @@
                         </div>
                     </div>
 
-                    @{
-                        // 6 Theme màu sắc rực rỡ luân phiên để mỗi trạm bắt mắt khác biệt
-                        var stationThemes = new[] { "theme-amber", "theme-emerald", "theme-sky", "theme-purple", "theme-pink", "theme-teal" };
-                        var zigPositions = new[] { "pos-center", "pos-semi-right", "pos-right", "pos-semi-right", "pos-center", "pos-semi-left", "pos-left", "pos-semi-left" };
-                    }
-
                     <!-- 2. CÁC TRẠM HỌC TỪ TRÊN XUỐNG DƯỚI (VẼ TỪ BÀI CUỐI ĐẾN BÀI 1 ĐỂ BÀI 1 NẰM Ở ĐÁY) -->
                     @for (var i = totalItems - 1; i >= 0; i--)
                     {
@@ -209,86 +238,128 @@
                         // Trạm đặc biệt: Rương báu ở mốc giữa (mỗi 5 trạm)
                         var isChestStation = stepNumber % 5 == 0 && stepNumber < totalItems;
 
-                        <div class="adventure-station-node @posClass @(isCurrent ? "node-active-station" : "")"
-                             id="@(isCurrent ? "active-learning-station" : $"station-node-{stepNumber}")"
-                             data-step-num="@stepNumber"
-                             data-title="@row.Item.Title">
-
-                            @if (isCurrent)
+                        // Phân bổ tiểu cảnh ven sườn bản đồ (cứ mỗi 3 trạm đặt 1 tiểu cảnh đối diện vị trí trạm)
+                        var hasFlankDeco = (stepNumber % 3 == 0);
+                        var decoSide = "";
+                        if (hasFlankDeco)
+                        {
+                            if (posClass.Contains("right"))
                             {
-                                <!-- Mascot Sóc Nâu đứng bên cạnh trạm đang học dở vẫy tay mời bé vào học -->
-                                <a href="@learnUrl" class="squirrel-chat-guide" title="Bé bấm để vào học ngay cùng Sóc Nâu!">
-                                    <div class="squirrel-speech-pill pulse-bounce">
-                                        <span>Vào học ngay bé ơi! ▶</span>
-                                    </div>
-                                    <div class="squirrel-avatar-bubble pulse-animation">
-                                        <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="squirrel-bubble-img" />
-                                    </div>
-                                </a>
-
-                                <!-- Trạm Đang Học (Nổi Bật Nhất, Bấm Là Vào Học Luôn) -->
-                                <a href="@learnUrl"
-                                   class="station-circle-btn station-current clay-station"
-                                   title="Trạm @stepNumber: @row.Item.Title • Bấm vào học ngay! ▶"
-                                   onclick="playAudioChime('tap')">
-                                    <div class="station-core">
-                                        <span class="station-symbol-hero">@symbol</span>
-                                        <span class="station-pulse-ring"></span>
-                                        <span class="station-mini-tag material-symbols-outlined">@metaIcon</span>
-                                    </div>
-                                </a>
-                                <div class="station-label-pill current-pill">
-                                    <span>▶ Trạm @stepNumber: @row.Item.Title</span>
-                                </div>
+                                decoSide = "side-left";
                             }
-                            else if (isCompleted)
+                            else if (posClass.Contains("left"))
                             {
-                                <!-- Trạm Đã Hoàn Thành (Màu Sắc Đa Dạng Theo Theme, 3 Sao Vàng, Bấm Là Vào Học Luôn) -->
-                                <a href="@learnUrl"
-                                   class="station-circle-btn station-completed @themeClass clay-station"
-                                   title="Trạm @stepNumber: @row.Item.Title • Bấm để luyện tập lại"
-                                   onclick="playAudioChime('tap')">
-                                    <div class="station-core">
-                                        <div class="station-stars-crown">⭐⭐⭐</div>
-                                        <span class="station-symbol-char">@symbol</span>
-                                        <span class="station-check-badge material-symbols-outlined">check_circle</span>
-                                    </div>
-                                </a>
-                                <div class="station-label-pill completed-pill">
-                                    <span class="check-prefix">✔</span>
-                                    <span>Trạm @stepNumber: @row.Item.Title</span>
-                                </div>
-                            }
-                            else if (isChestStation)
-                            {
-                                <!-- Trạm Rương Bạc Khóa Mốc Thưởng -->
-                                <div class="chest-node-badge clay-card"
-                                     onclick="handleLockedStation(this, @stepNumber)"
-                                     title="Rương Thưởng • Trạm @stepNumber (Chưa mở khóa)">
-                                    <div class="chest-circle-icon">
-                                        <span class="material-symbols-outlined lock-tag">lock</span>
-                                        <span class="chest-emoji-art">🎁</span>
-                                    </div>
-                                    <div class="station-label-pill chest-pill">
-                                        <span>Rương Thưởng • Trạm @stepNumber</span>
-                                    </div>
-                                </div>
+                                decoSide = "side-right";
                             }
                             else
                             {
-                                <!-- Trạm Khóa (Nhắc Nhở Bé Khi Bấm) -->
-                                <div class="station-circle-btn station-locked clay-station"
-                                     onclick="handleLockedStation(this, @stepNumber)"
-                                     title="Trạm @stepNumber: @row.Item.Title (Chưa mở khóa)">
-                                    <div class="station-core">
-                                        <span class="material-symbols-outlined lock-icon">lock</span>
-                                        <span class="station-locked-symbol">@symbol</span>
+                                decoSide = (stepNumber % 2 == 0) ? "side-left" : "side-right";
+                            }
+                        }
+                        var decoItem = hasFlankDeco ? flankLandmarks[(stepNumber / 3) % flankLandmarks.Length] : default;
+
+                        <div class="adventure-step-row">
+                            @if (hasFlankDeco)
+                            {
+                                <div class="flank-landmark-deco @decoSide @decoItem.AccentClass" aria-hidden="true">
+                                    @if (!string.IsNullOrEmpty(decoItem.Avatar))
+                                    {
+                                        <div class="flank-avatar-wrap">
+                                            <img src="@decoItem.Avatar" alt="" class="flank-avatar-img" />
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="material-symbols-outlined flank-icon">@decoItem.Icon</span>
+                                    }
+                                    <div class="flank-text-wrap">
+                                        <span class="flank-title">@decoItem.Title</span>
+                                        <span class="flank-sub">@decoItem.Subtitle</span>
                                     </div>
                                 </div>
-                                <div class="station-label-pill locked-pill">
-                                    <span>Trạm @stepNumber: @row.Item.Title</span>
-                                </div>
                             }
+
+                            <div class="adventure-station-node @posClass @(isCurrent ? "node-active-station" : "")"
+                                 id="@(isCurrent ? "active-learning-station" : $"station-node-{stepNumber}")"
+                                 data-step-num="@stepNumber"
+                                 data-title="@row.Item.Title">
+
+                                @if (isCurrent)
+                                {
+                                    <!-- Mascot Sóc Nâu đứng bên cạnh trạm đang học dở vẫy tay mời bé vào học -->
+                                    <a href="@learnUrl" class="squirrel-chat-guide" title="Bé bấm để vào học ngay cùng Sóc Nâu!">
+                                        <div class="squirrel-speech-pill pulse-bounce">
+                                            <span>Vào học ngay bé ơi! ▶</span>
+                                        </div>
+                                        <div class="squirrel-avatar-bubble pulse-animation">
+                                            <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="squirrel-bubble-img" />
+                                        </div>
+                                    </a>
+
+                                    <!-- Trạm Đang Học (Nổi Bật Nhất, Bấm Là Vào Học Luôn - Đứng Yên Không Bị Nhảy Nút) -->
+                                    <a href="@learnUrl"
+                                       class="station-circle-btn station-current clay-station"
+                                       title="Trạm @stepNumber: @row.Item.Title • Bấm vào học ngay! ▶"
+                                       onclick="playAudioChime('tap')">
+                                        <div class="station-core">
+                                            <span class="station-symbol-hero">@symbol</span>
+                                            <span class="station-pulse-ring"></span>
+                                            <span class="station-mini-tag material-symbols-outlined">@metaIcon</span>
+                                        </div>
+                                    </a>
+                                    <div class="station-label-pill current-pill">
+                                        <span>▶ Trạm @stepNumber: @row.Item.Title</span>
+                                    </div>
+                                }
+                                else if (isCompleted)
+                                {
+                                    <!-- Trạm Đã Hoàn Thành (Màu Sắc Đa Dạng Theo Theme, 3 Sao Vàng, Bấm Là Vào Học Luôn - Không Rung Lắc) -->
+                                    <a href="@learnUrl"
+                                       class="station-circle-btn station-completed @themeClass clay-station"
+                                       title="Trạm @stepNumber: @row.Item.Title • Bấm để luyện tập lại"
+                                       onclick="playAudioChime('tap')">
+                                        <div class="station-core">
+                                            <div class="station-stars-crown">⭐⭐⭐</div>
+                                            <span class="station-symbol-char">@symbol</span>
+                                            <span class="station-check-badge material-symbols-outlined">check_circle</span>
+                                        </div>
+                                    </a>
+                                    <div class="station-label-pill completed-pill">
+                                        <span class="check-prefix">✔</span>
+                                        <span>Trạm @stepNumber: @row.Item.Title</span>
+                                    </div>
+                                }
+                                else if (isChestStation)
+                                {
+                                    <!-- Trạm Rương Bạc Khóa Mốc Thưởng -->
+                                    <div class="chest-node-badge clay-card"
+                                         onclick="handleLockedStation(this, @stepNumber)"
+                                         title="Rương Thưởng • Trạm @stepNumber (Chưa mở khóa)">
+                                        <div class="chest-circle-icon">
+                                            <span class="material-symbols-outlined lock-tag">lock</span>
+                                            <span class="chest-emoji-art">🎁</span>
+                                        </div>
+                                        <div class="station-label-pill chest-pill">
+                                            <span>Rương Thưởng • Trạm @stepNumber</span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Trạm Khóa (Nhắc Nhở Bé Khi Bấm) -->
+                                    <div class="station-circle-btn station-locked clay-station"
+                                         onclick="handleLockedStation(this, @stepNumber)"
+                                         title="Trạm @stepNumber: @row.Item.Title (Chưa mở khóa)">
+                                        <div class="station-core">
+                                            <span class="material-symbols-outlined lock-icon">lock</span>
+                                            <span class="station-locked-symbol">@symbol</span>
+                                        </div>
+                                    </div>
+                                    <div class="station-label-pill locked-pill">
+                                        <span>Trạm @stepNumber: @row.Item.Title</span>
+                                    </div>
+                                }
+                            </div>
                         </div>
                     }
 
@@ -297,6 +368,7 @@
                         <div class="start-gate-card clay-card">
                             <span class="material-symbols-outlined flag-icon">flag</span>
                             <span>Khởi đầu cuộc phiêu lưu từ Trạm 1</span>
+                            <span class="start-gate-decor">🌱</span>
                         </div>
                     </div>
                 </div>
@@ -463,20 +535,32 @@
         }
 
         // Chuyển đổi giữa Bản đồ và Danh sách bài
-        function toggleSkillView(mode) {
+        function toggleSkillView(modeOrCaller) {
             const mapView = document.getElementById("skillAdventureMapView");
             const gridView = document.getElementById("skillCompactGridView");
+            const headerIcon = document.getElementById("headerToggleViewIcon");
+            const headerText = document.getElementById("headerToggleViewText");
             const dockMap = document.getElementById("dockBtnMap");
             const dockGrid = document.getElementById("dockBtnGrid");
 
-            if (mode === 'grid') {
+            let targetMode = modeOrCaller;
+            if (typeof modeOrCaller !== 'string') {
+                const isCurrentlyMap = mapView && mapView.style.display !== 'none';
+                targetMode = isCurrentlyMap ? 'grid' : 'map';
+            }
+
+            if (targetMode === 'grid') {
                 if (mapView) mapView.style.display = 'none';
                 if (gridView) gridView.style.display = 'block';
+                if (headerIcon) headerIcon.textContent = 'explore';
+                if (headerText) headerText.textContent = 'Bản đồ';
                 if (dockMap) dockMap.classList.remove('active');
                 if (dockGrid) dockGrid.classList.add('active');
             } else {
                 if (gridView) gridView.style.display = 'none';
                 if (mapView) mapView.style.display = 'block';
+                if (headerIcon) headerIcon.textContent = 'format_list_bulleted';
+                if (headerText) headerText.textContent = 'Danh sách';
                 if (dockGrid) dockGrid.classList.remove('active');
                 if (dockMap) dockMap.classList.add('active');
                 setTimeout(() => {
@@ -496,13 +580,12 @@
                 const activeStation = document.getElementById("active-learning-station");
                 const scrollContainer = document.getElementById("mapTrailScrollContainer");
                 if (activeStation && scrollContainer) {
-                    const activeOffsetTop = activeStation.offsetTop;
-                    const containerHeight = scrollContainer.clientHeight;
-                    const stationHeight = activeStation.clientHeight;
-                    const targetScrollTop = Math.max(0, activeOffsetTop - (containerHeight / 2) + (stationHeight / 2));
+                    const containerRect = scrollContainer.getBoundingClientRect();
+                    const stationRect = activeStation.getBoundingClientRect();
+                    const targetScrollTop = scrollContainer.scrollTop + (stationRect.top - containerRect.top) - (containerRect.height / 2) + (stationRect.height / 2);
 
                     scrollContainer.scrollTo({
-                        top: targetScrollTop,
+                        top: Math.max(0, targetScrollTop),
                         behavior: smooth ? "smooth" : "auto"
                     });
 

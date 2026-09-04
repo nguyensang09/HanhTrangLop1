@@ -108,6 +108,24 @@ public class KidsController : Controller
         return View(model);
     }
 
+    [HttpGet("skills")]
+    [HttpGet("skill")]
+    public async Task<IActionResult> Skills()
+    {
+        var firstSkill = await _db.SkillGroups
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.SortOrder)
+            .FirstOrDefaultAsync();
+
+        if (firstSkill is not null)
+        {
+            return RedirectToAction(nameof(Skill), new { id = firstSkill.Id });
+        }
+
+        return RedirectToAction(nameof(Home));
+    }
+
     [HttpGet("skills/{id:guid}")]
     public async Task<IActionResult> Skill(Guid id)
     {
