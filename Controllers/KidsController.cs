@@ -976,8 +976,10 @@ public class KidsController : Controller
         var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
         var retryFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrlEn", string.Empty);
 
-        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(question?.PromptText ?? item.Title);
-        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(question?.PromptText ?? item.Title);
+        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(question?.PromptText);
+        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(item.Title);
+        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(question?.PromptText);
+        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.Title);
         if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = questionAudioUrl;
         if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = questionAudioUrlEn;
         if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = questionAudioUrl;
@@ -1033,23 +1035,15 @@ public class KidsController : Controller
     private async Task<string> ResolveActiveVoiceUrlAsync(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
-        var clean = text.Trim();
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
-            x.Status == "ready" &&
-            !string.IsNullOrEmpty(x.AudioUrl) &&
-            (x.NormalizedText == clean || x.OriginalText == clean));
-        return entry?.AudioUrl ?? string.Empty;
+        var url = await _voiceLibraryService.ResolveVoiceAudioUrlAsync(text, HttpContext.RequestAborted);
+        return url ?? string.Empty;
     }
 
     private async Task<string> ResolveActiveVoiceUrlEnAsync(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
-        var clean = text.Trim();
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
-            x.StatusEn == "ready" &&
-            !string.IsNullOrEmpty(x.AudioUrlEn) &&
-            (x.NormalizedText == clean || x.OriginalText == clean));
-        return entry?.AudioUrlEn ?? string.Empty;
+        var url = await _voiceLibraryService.ResolveVoiceAudioUrlEnAsync(text, HttpContext.RequestAborted);
+        return url ?? string.Empty;
     }
 
     private async Task<string> EnrichPayloadOptionAudioAsync(string? payloadJson)
@@ -1073,6 +1067,10 @@ public class KidsController : Controller
                 if (string.IsNullOrWhiteSpace(currentVi))
                 {
                     var url = await ResolveActiveVoiceUrlAsync(label);
+                    if (string.IsNullOrWhiteSpace(url))
+                    {
+                        url = await _voiceLibraryService.EnsureAudioFileAsync(label, "vi", cancellationToken: HttpContext.RequestAborted);
+                    }
                     if (!string.IsNullOrWhiteSpace(url))
                     {
                         audioMap[cleanLabel] = url;
@@ -1085,6 +1083,10 @@ public class KidsController : Controller
                 if (string.IsNullOrWhiteSpace(currentEn))
                 {
                     var urlEn = await ResolveActiveVoiceUrlEnAsync(label);
+                    if (string.IsNullOrWhiteSpace(urlEn))
+                    {
+                        urlEn = await _voiceLibraryService.EnsureAudioFileAsync(label, "en", cancellationToken: HttpContext.RequestAborted);
+                    }
                     if (!string.IsNullOrWhiteSpace(urlEn))
                     {
                         audioMapEn[cleanLabel] = urlEn;

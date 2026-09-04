@@ -56,6 +56,8 @@
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
     
+    <textarea class="activity-payload" data-activity-payload hidden>@(Model.CurrentQuestion?.PayloadJson ?? "{}")</textarea>
+
     <!-- Topbar Focus Mode (1 Tiêu đề chính + Nút nghe / Nút xem mẫu góc phải) -->
     <header class="learning-common-zone">
         <div class="learning-focus-topbar">

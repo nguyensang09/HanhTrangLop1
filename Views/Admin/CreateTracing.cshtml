@@ -8,17 +8,19 @@
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
     <main class="admin-main">
-        <div class="dashboard-header">
+        <partial name="_AdminHeader" model="@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")" />
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
-                <p class="eyebrow">Biên tập bài tô nét</p>
-                <h1>@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")</h1>
+                <span class="admin-subheading">Biên tập bài tập tô chữ cái & nét vẽ</span>
+                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Định nghĩa ký tự, cấu hình điểm nét vẽ đứt và âm thanh hướng dẫn phát âm.</p>
+            </div>
+            <div class="dashboard-actions d-flex gap-2 flex-wrap">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện ảnh</a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache"><span class="material-symbols-outlined">graphic_eq</span>Kiểm soát voice</a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho bài học</a>
+            </div>
         </div>
-        <div class="dashboard-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện hình ảnh</a>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache"><span class="material-symbols-outlined">graphic_eq</span>Kiểm soát voice</a>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho bài học</a>
-        </div>
-    </div>
 
     <form class="tracing-builder-layout" asp-action="CreateTracing" method="post" enctype="multipart/form-data" data-admin-learning-form data-tracing-builder>
         <input asp-for="Id" type="hidden" />

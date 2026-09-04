@@ -15,26 +15,28 @@
     <main class="admin-main activity-builder-page">
         <script type="application/json" data-voice-cache-json>@Html.Raw(voiceCacheJson)</script>
         <script type="application/json" data-image-assets-json>@Html.Raw(imageAssetsJson)</script>
-        <div class="builder-topbar">
-        <div>
-            <p class="eyebrow">Quản trị nội dung</p>
-            <h1>@(Model.Id.HasValue ? "Sửa bài học" : "Trình tạo bài học")</h1>
+        <partial name="_AdminHeader" model="@(Model.Id.HasValue ? "Sửa bài học" : "Trình tạo bài học")" />
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <span class="admin-subheading">Soạn thảo nội dung tương tác</span>
+                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Tạo câu hỏi, lựa chọn dạng tương tác và cấu hình âm thanh song ngữ.</p>
+            </div>
+            <div class="dashboard-actions d-flex gap-2 flex-wrap">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
+                    <span class="material-symbols-outlined">library_books</span>
+                    Kho bài học
+                </a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
+                    <span class="material-symbols-outlined">graphic_eq</span>
+                    Kiểm soát voice
+                </a>
+                <button class="dash-btn dash-btn-primary" type="submit" form="activity-builder-form">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</span>
+                </button>
+            </div>
         </div>
-        <div class="dashboard-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
-                <span class="material-symbols-outlined">library_books</span>
-                Kho bài học
-            </a>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
-                <span class="material-symbols-outlined">graphic_eq</span>
-                Kiểm soát voice
-            </a>
-            <button class="app-btn app-btn-small" type="submit" form="activity-builder-form">
-                <span class="material-symbols-outlined">save</span>
-                @(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")
-            </button>
-        </div>
-    </div>
 
     <form id="activity-builder-form" class="activity-builder-layout" asp-action="CreateChoice" method="post" enctype="multipart/form-data" data-admin-learning-form data-activity-builder>
         <input asp-for="Id" type="hidden" />

@@ -14,22 +14,20 @@
             </div>
         }
 
-        <div class="dashboard-header">
+        <partial name="_AdminHeader" model="@($"Hồ sơ bé {Model.Child.Nickname}")" />
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
-                <p class="eyebrow">Quản trị hồ sơ bé</p>
-                <h1>Bé @Model.Child.Nickname</h1>
+                <span class="admin-subheading">Chi tiết quá trình rèn luyện & tiến độ</span>
+                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Theo dõi năng lực tiếp thu, lịch sử làm bài và các danh hiệu của bé.</p>
+            </div>
+            <div class="hero-actions d-flex gap-2 flex-wrap">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="ParentsAndKids">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Danh sách phụ huynh & bé
+                </a>
+            </div>
         </div>
-        <div class="hero-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="ParentsAndKids">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Danh sách phụ huynh & bé
-            </a>
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">
-                <span class="material-symbols-outlined">dashboard</span>
-                Dashboard
-            </a>
-        </div>
-    </div>
 
     <!-- Stat Row -->
     <div class="stat-row">
@@ -164,10 +162,10 @@
                         <tr>
                             <th>Thời gian</th>
                             <th>Bài học</th>
-                            <th>Nhóm kỹ năng</th>
+                            <th class="col-secondary">Nhóm kỹ năng</th>
                             <th>Kết quả</th>
                             <th>Số sao</th>
-                            <th>Thời lượng</th>
+                            <th class="col-secondary">Thời lượng</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -176,14 +174,14 @@
                             <tr>
                                 <td>@att.StartedAt.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td><strong>@(att.LearningItem?.Title ?? "Bài tập")</strong></td>
-                                <td>@(att.LearningItem?.SkillGroup?.Name ?? "—")</td>
+                                <td class="col-secondary">@(att.LearningItem?.SkillGroup?.Name ?? "—")</td>
                                 <td>
                                     <span class="status-chip @(att.Status == "completed" ? "status-published" : "status-draft")">
                                         @(att.Status == "completed" ? "Đạt chuẩn" : "Cần luyện lại")
                                     </span>
                                 </td>
                                 <td>+@att.StarsEarned ⭐</td>
-                                <td>@att.DurationSeconds giây</td>
+                                <td class="col-secondary">@att.DurationSeconds giây</td>
                             </tr>
                         }
                     </tbody>

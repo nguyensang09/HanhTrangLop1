@@ -1226,6 +1226,23 @@ public class AdminController : Controller
         return RedirectToAction(nameof(VoiceCache), new { status = totalMissingAfter > 0 ? "missing" : null });
     }
 
+    [HttpPost("voice-cache/reset-rebuild")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetAndRebuildAllVoices()
+    {
+        try
+        {
+            var result = await _voiceLibraryService.ResetAndRebuildAllVoicesAsync(HttpContext.RequestAborted);
+            TempData["AdminMessage"] = $"Đã dọn dẹp và tái lập thành công toàn bộ thư viện Voice chuẩn nữ! Khởi tạo {result.TotalVoices} voice duy nhất (sinh {result.GeneratedVi} file VN, {result.GeneratedEn} file EN), liên kết {result.UpdatedLessons} bài học.";
+        }
+        catch (Exception ex)
+        {
+            TempData["AdminMessage"] = $"Lỗi khi tái lập voice: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(VoiceCache));
+    }
+
     [HttpPost("voice-cache/generate-text")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateVoiceFromText(string text, string? textEn, string? name, string? usageType, string? returnUrl = null)
@@ -2154,101 +2171,12 @@ public class AdminController : Controller
 
     private async Task<string?> ResolveVoiceAudioAsync(string text, string usageType, string? lessonTitle = null)
     {
-        var entry = await EnsureVoiceCacheEntryAsync(text, usageType, lessonTitle);
-        return entry is { Status: "ready", AudioUrl.Length: > 0 } ? entry.AudioUrl : null;
+        return await _voiceLibraryService.ResolveVoiceAudioUrlAsync(text);
     }
 
     private async Task<TextToSpeechCache?> EnsureVoiceCacheEntryAsync(string text, string usageType, string? lessonTitle = null)
     {
-        var normalizedText = NormalizeSpeechText(text);
-        if (string.IsNullOrWhiteSpace(normalizedText))
-        {
-            return null;
-        }
-
-        var cacheKey = BuildTextToSpeechCacheKey(normalizedText);
-        var pendingEntry = _db.ChangeTracker.Entries<TextToSpeechCache>()
-            .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Unchanged)
-            .Select(x => x.Entity)
-            .FirstOrDefault(x =>
-                x.Provider == cacheKey.Provider &&
-                x.Voice == cacheKey.Voice &&
-                x.ModelId == cacheKey.ModelId &&
-                x.Format == cacheKey.Format &&
-                x.TextHash == cacheKey.TextHash);
-        if (pendingEntry is not null)
-        {
-            if (string.IsNullOrWhiteSpace(pendingEntry.Name))
-            {
-                pendingEntry.Name = BuildVoiceName(usageType, lessonTitle, normalizedText);
-            }
-            if (string.IsNullOrWhiteSpace(pendingEntry.UsageType))
-            {
-                pendingEntry.UsageType = usageType;
-            }
-            pendingEntry.ReuseCount += 1;
-            pendingEntry.UpdatedAt = DateTimeOffset.UtcNow;
-            return pendingEntry;
-        }
-
-        var rawText = (text ?? string.Empty).Trim();
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
-            (x.Provider == cacheKey.Provider &&
-             x.Voice == cacheKey.Voice &&
-             x.ModelId == cacheKey.ModelId &&
-             x.Format == cacheKey.Format &&
-             x.TextHash == cacheKey.TextHash) ||
-            (x.Status == "ready" &&
-             !string.IsNullOrEmpty(x.AudioUrl) &&
-             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)));
-
-        if (entry is null)
-        {
-            var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
-            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
-                x.Status == "ready" &&
-                !string.IsNullOrEmpty(x.AudioUrl) &&
-                (x.NormalizedText == stripped || x.OriginalText == stripped));
-        }
-
-        if (entry is not null)
-        {
-            if (string.IsNullOrWhiteSpace(entry.Name))
-            {
-                entry.Name = BuildVoiceName(usageType, lessonTitle, normalizedText);
-            }
-            if (string.IsNullOrWhiteSpace(entry.UsageType))
-            {
-                entry.UsageType = usageType;
-            }
-            entry.ReuseCount += 1;
-            entry.UpdatedAt = DateTimeOffset.UtcNow;
-            return entry;
-        }
-
-        entry = new TextToSpeechCache
-        {
-            Id = Guid.NewGuid(),
-            Provider = cacheKey.Provider,
-            Voice = cacheKey.Voice,
-            VoiceEn = "en-US-JennyNeural",
-            ModelId = cacheKey.ModelId,
-            Format = cacheKey.Format,
-            TextHash = cacheKey.TextHash,
-            Name = BuildVoiceName(usageType, lessonTitle, normalizedText),
-            UsageType = usageType,
-            NormalizedText = AudioAltText(normalizedText),
-            OriginalText = AudioOriginalText(text ?? normalizedText),
-            TextEn = PreschoolTranslationHelper.TranslateToEnglish(text ?? normalizedText),
-            AudioUrl = string.Empty,
-            AudioUrlEn = string.Empty,
-            Status = "missing",
-            StatusEn = "missing",
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
-        _db.TextToSpeechCaches.Add(entry);
-        return entry;
+        return await _voiceLibraryService.EnsureVoiceEntryAsync(text, usageType, lessonTitle);
     }
 
     private async Task<string> SaveVoiceCacheFileAsync(IFormFile file, TextToSpeechCache entry)

@@ -149,10 +149,26 @@
                 try {
                     await playFile(audioUrl);
                     return;
-                } catch {
-                    // Fall back to the browser voice when a generated file cannot play.
+                } catch (e) {
+                    console.warn("[Voice] playFile was blocked by browser or delayed. Waiting for user tap instead of robotic speech.", e);
+                    // TUYỆT ĐỐI KHÔNG rơi xuống giọng robotic khi đã có file âm thanh chuẩn!
+                    return;
                 }
             }
+
+            // Nếu chưa có file sẵn, tự động gọi API sinh/lấy audio chuẩn từ hệ thống
+            if (text) {
+                try {
+                    const res = await fetch(`/kids/bilingual-audio?text=${encodeURIComponent(text)}&lang=${isEnglishVoice ? "en" : "vi"}`);
+                    const data = await res.json();
+                    if (data.success && data.audioUrl) {
+                        await playFile(data.audioUrl);
+                        return;
+                    }
+                } catch {
+                }
+            }
+
             await speak(text);
         } finally {
             setMascotSpeaking(false);

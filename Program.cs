@@ -52,18 +52,8 @@ if (args.Contains("--reset-voice-library", StringComparer.OrdinalIgnoreCase))
 {
     using var scope = app.Services.CreateScope();
     var maintenance = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
-    var result = await maintenance.ResetAndRebuildAsync();
-    app.Logger.LogInformation(
-        "Voice reset completed. DeletedVoiceRows={DeletedVoiceRows}, DeletedAudioRows={DeletedAudioRows}, DeletedAudioFiles={DeletedAudioFiles}, LearningItemsScanned={LearningItemsScanned}, VoiceRowsCreated={VoiceRowsCreated}, VoiceFilesCreated={VoiceFilesCreated}, VoiceFilesFailed={VoiceFilesFailed}, LearningItemsUpdated={LearningItemsUpdated}",
-        result.DeletedVoiceRows,
-        result.DeletedAudioRows,
-        result.DeletedAudioFiles,
-        result.LearningItemsScanned,
-        result.VoiceRowsCreated,
-        result.VoiceFilesCreated,
-        result.VoiceFilesFailed,
-        result.LearningItemsUpdated);
-    Console.WriteLine($"Voice reset completed: deleted voice rows {result.DeletedVoiceRows}, deleted audio rows {result.DeletedAudioRows}, deleted files {result.DeletedAudioFiles}, scanned lessons {result.LearningItemsScanned}, created voice rows {result.VoiceRowsCreated}, generated files {result.VoiceFilesCreated}, failed files {result.VoiceFilesFailed}, updated lessons {result.LearningItemsUpdated}.");
+    var result = await maintenance.ResetAndRebuildAllVoicesAsync();
+    Console.WriteLine($"Voice clean rebuild completed: TotalVoices={result.TotalVoices}, GeneratedVi={result.GeneratedVi}, GeneratedEn={result.GeneratedEn}, Failed={result.Failed}, UpdatedLessons={result.UpdatedLessons}");
     return;
 }
 

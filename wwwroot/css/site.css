@@ -13740,3 +13740,502 @@ body.audio-is-speaking .sound-wave-badge {
   40%, 60% { transform: translate3d(6px, 0, 0); }
 }
 
+/* ==========================================================================
+   NÂNG CẤP TOÀN BỘ CÁC CHỨC NĂNG HỆ THỐNG (FULL-SYSTEM FUNCTIONAL UPGRADES)
+   ========================================================================== */
+
+/* 1. Màn hình Chọn Hồ Sơ Bé (Profiles/Index) */
+.profile-picker-shell {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 10%, #fff7ed 0%, #fef3c7 40%, #fed7aa 100%);
+  padding: 24px 20px 60px;
+}
+
+.profile-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  padding: 14px 24px;
+  border-radius: 24px;
+  box-shadow: 0 4px 18px rgba(249, 115, 22, 0.1);
+  border: 2px solid #fed7aa;
+}
+
+.profile-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-picker-form {
+  margin: 0;
+  width: 100%;
+}
+
+.profile-picker-card {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 28px 20px 20px;
+  border: 3px solid #e2e8f0;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.profile-picker-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: #fdba74;
+  box-shadow: 0 16px 36px rgba(249, 115, 22, 0.18);
+}
+
+.profile-picker-card.is-selected {
+  border-color: #f97316;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+  box-shadow: 0 16px 36px rgba(249, 115, 22, 0.25);
+}
+
+.profile-badge-active {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f97316;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.profile-badge-active .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.profile-avatar-frame {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid #ffedd5;
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.22);
+  background: #ffffff;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.profile-avatar-3d-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-child-name {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.profile-meta-chips {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.meta-chip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.meta-chip-item .material-symbols-outlined {
+  font-size: 16px;
+  color: #ea580c;
+}
+
+.profile-cta-footer {
+  width: 100%;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 14px;
+}
+
+.profile-action-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #64748b;
+  transition: color 0.18s ease;
+}
+
+.profile-action-text.text-active,
+.profile-picker-card:hover .profile-action-text {
+  color: #ea580c;
+}
+
+/* 2. Quản Lý Hồ Sơ Bé Trong Góc Phụ Huynh (Parent/Profiles) */
+.parent-profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.parent-child-profile-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 24px;
+  padding: 24px;
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.parent-child-profile-card:hover {
+  transform: translateY(-3px);
+  border-color: #fdba74;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.profile-card-top {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.profile-avatar-wrapper {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 3.5px solid #ffedd5;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.profile-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-main-meta {
+  flex: 1;
+}
+
+.profile-name-text {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.profile-year-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.profile-year-tag .material-symbols-outlined {
+  font-size: 16px;
+  color: #f97316;
+}
+
+.profile-settings-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.profile-setting-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.profile-setting-chip .material-symbols-outlined {
+  font-size: 16px;
+  color: #0284c7;
+}
+
+.profile-card-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dash-btn-danger-outline {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.dash-btn-danger-outline:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #b91c1c;
+}
+
+/* 3. Thống Kê Chương Trình Danh Mục (Admin/Catalogs) */
+.curriculum-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.curriculum-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.curriculum-stat-card .icon-wrap {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.curriculum-stat-card strong {
+  display: block;
+  font-size: 26px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.curriculum-stat-card span {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+/* Responsive tweaks */
+@@media (max-width: 767px) {
+  .parent-profiles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-picker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   BẢN ĐỒ HÀNH TRÌNH KHÁM PHÁ (UNIFIED SKILL ADVENTURE ROADMAP)
+   ========================================================================== */
+
+.skill-adventure-page {
+  padding-bottom: 120px;
+}
+
+.child-back-home-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffffff 0%, #ffedd5 100%);
+  border: 3px solid #f97316;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ea580c;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.child-back-home-btn .material-symbols-outlined {
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.child-back-home-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 10px 22px rgba(249, 115, 22, 0.35);
+  color: #c2410c;
+}
+
+.adventure-map-container {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 44px 24px 110px;
+  background: 
+    radial-gradient(ellipse at 50% 8%, rgba(254, 243, 199, 0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 15% 35%, rgba(220, 252, 231, 0.9) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 65%, rgba(224, 242, 254, 0.9) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 90%, rgba(254, 243, 199, 0.7) 0%, transparent 50%),
+    linear-gradient(180deg, #f0fdf4 0%, #e0f2fe 30%, #fef3c7 65%, #f0fdf4 100%);
+  border-radius: 42px;
+  border: 4px solid #ffffff;
+  box-shadow: 0 20px 48px rgba(16, 185, 129, 0.1), inset 0 0 0 2px #d1fae5;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Floating corner navigation on Skill map */
+.child-corner-nav {
+  position: fixed;
+  bottom: 24px;
+  z-index: 99;
+}
+
+.child-corner-left {
+  left: 24px;
+}
+
+.child-corner-right {
+  right: 24px;
+}
+
+.corner-nav-btn {
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 3px solid #fdba74;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  gap: 2px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.corner-btn-today {
+  border-color: #38bdf8;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
+}
+
+.corner-btn-today .corner-icon {
+  color: #0284c7;
+}
+
+.corner-btn-rewards {
+  border-color: #facc15;
+  box-shadow: 0 8px 24px rgba(202, 138, 4, 0.25);
+}
+
+.corner-btn-rewards .corner-icon {
+  color: #ca8a04;
+}
+
+.corner-icon {
+  font-size: 32px;
+}
+
+.corner-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+}
+
+.corner-nav-btn:hover {
+  transform: scale(1.1) translateY(-4px);
+}
+
+@@media (min-width: 768px) {
+  .adventure-station .station-circle {
+    width: 96px;
+    height: 96px;
+  }
+  .station-stage-symbol {
+    font-size: 42px;
+  }
+  .adventure-node-wrap.pos-left {
+    align-self: flex-start;
+    margin-left: 14%;
+  }
+  .adventure-node-wrap.pos-center-left {
+    align-self: center;
+    transform: translateX(-32%);
+  }
+  .adventure-node-wrap.pos-center-right {
+    align-self: center;
+    transform: translateX(32%);
+  }
+  .adventure-node-wrap.pos-right {
+    align-self: flex-end;
+    margin-right: 14%;
+  }
+}
+
+@@media (max-width: 767px) {
+  .child-back-home-btn {
+    width: 52px;
+    height: 52px;
+  }
+  .child-back-home-btn .material-symbols-outlined {
+    font-size: 28px;
+  }
+  .corner-nav-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+  .corner-icon {
+    font-size: 24px;
+  }
+  .corner-label {
+    font-size: 9px;
+  }
+  .child-corner-left {
+    left: 12px;
+    bottom: 16px;
+  }
+  .child-corner-right {
+    right: 12px;
+    bottom: 16px;
+  }
+}
+

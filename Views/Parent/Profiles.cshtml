@@ -1,46 +1,115 @@
 @model ChildProfileListViewModel
 @{
-    ViewData["Title"] = "Quản lý hồ sơ bé";
+    ViewData["Title"] = "Quản lý hồ sơ các bé";
+
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
 }
 
-<section class="container dashboard-wrap">
-    <div class="dashboard-header">
-        <div>
-            <p class="eyebrow">Góc phụ huynh</p>
-            <h1>Hồ sơ bé</h1>
+<section class="container parent-portal-container parent-profiles-page">
+    <!-- Header banner trang hồ sơ -->
+    <div class="parent-dash-header soft-card">
+        <div class="header-info-side">
+            <div class="header-eyebrow">
+                <span class="material-symbols-outlined icon-badge">manage_accounts</span>
+                <span>Góc Phụ Huynh</span>
+            </div>
+            <h1 class="header-title">Quản lý hồ sơ các bé</h1>
+            <p class="header-desc">Thiết lập thông tin, chọn avatar 3D ngộ nghĩnh và điều chỉnh thời lượng học phù hợp cho từng bé.</p>
         </div>
-        <a class="app-btn app-btn-small" asp-action="CreateProfile">
-            <span class="material-symbols-outlined">add</span>
-            Thêm hồ sơ
-        </a>
+        <div class="header-actions-side">
+            <a class="dash-btn dash-btn-primary" asp-action="CreateProfile">
+                <span class="material-symbols-outlined">person_add</span>
+                <span>Thêm hồ sơ bé</span>
+            </a>
+            <a class="dash-btn dash-btn-outline" asp-action="Dashboard">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Tổng quan</span>
+            </a>
+        </div>
     </div>
 
     @if (!Model.Children.Any())
     {
-        <div class="soft-card empty-state">
-            <h2>Chưa có hồ sơ</h2>
-            <p>Tạo hồ sơ đầu tiên để hệ thống đề xuất bài học phù hợp cho bé.</p>
-            <a class="app-btn" asp-action="CreateProfile">Tạo hồ sơ bé</a>
+        <div class="soft-card empty-state text-center p-5 mt-4">
+            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="empty-mascot-img mb-3" style="width:120px; height:120px; object-fit:contain;" />
+            <h2 style="font-size:24px; font-weight:800; color:#0f172a;">Chưa có hồ sơ bé nào</h2>
+            <p style="color:#64748b; font-size:16px;">Phụ huynh hãy tạo hồ sơ cho bé để bắt đầu theo dõi tiến độ và nhận đề xuất bài học.</p>
+            <a class="dash-btn dash-btn-primary mt-3" asp-action="CreateProfile" style="display:inline-flex; align-items:center; gap:8px;">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span>Tạo hồ sơ cho bé ngay</span>
+            </a>
         </div>
     }
     else
     {
-        <div class="profile-grid parent-profile-grid">
+        <!-- Lưới thẻ hồ sơ bé hiện đại -->
+        <div class="parent-profiles-grid mt-4">
             @foreach (var child in Model.Children)
             {
-                <article class="soft-card parent-profile-card">
-                    <span class="profile-avatar">@child.Nickname.Substring(0, 1).ToUpperInvariant()</span>
-                    <div>
-                        <h2>@child.Nickname</h2>
-                        <p>Năm sinh: @(child.BirthYear?.ToString() ?? "Chưa đặt")</p>
-                        <p>Thời lượng: @child.DailyLearningMinutes phút mỗi ngày</p>
-                        <p>Âm thanh: @(child.SoundEnabled ? "Bật" : "Tắt") &bull; Giọng đọc: @(child.EnglishVoice ? "🇬🇧 Tiếng Anh" : "🇻🇳 Tiếng Việt")</p>
+                <article class="soft-card parent-child-profile-card">
+                    <div class="profile-card-top">
+                        <div class="profile-avatar-wrapper">
+                            <img src="@ResolveAvatar(child.AvatarKey)" alt="@child.Nickname" class="profile-avatar-image" />
+                        </div>
+                        <div class="profile-main-meta">
+                            <div class="profile-title-row">
+                                <h2 class="profile-name-text">@child.Nickname</h2>
+                                @if (child.BirthYear.HasValue)
+                                {
+                                    <span class="profile-year-tag">
+                                        <span class="material-symbols-outlined">cake</span>
+                                        @child.BirthYear (@(DateTime.Now.Year - child.BirthYear.Value) tuổi)
+                                    </span>
+                                }
+                            </div>
+                            <div class="profile-settings-summary">
+                                <span class="profile-setting-chip">
+                                    <span class="material-symbols-outlined">alarm</span>
+                                    Mục tiêu: <strong>@child.DailyLearningMinutes phút/ngày</strong>
+                                </span>
+                                <span class="profile-setting-chip">
+                                    <span class="material-symbols-outlined">volume_up</span>
+                                    @(child.SoundEnabled ? "Âm thanh: Bật" : "Âm thanh: Tắt")
+                                </span>
+                                <span class="profile-setting-chip">
+                                    <span class="material-symbols-outlined">translate</span>
+                                    @(child.EnglishVoice ? "🇬🇧 Tiếng Anh" : "🇻🇳 Tiếng Việt")
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="profile-actions">
-                        <a class="app-btn app-btn-muted app-btn-small" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@child.Id">Bé vào lớp</a>
-                        <a class="app-btn app-btn-muted app-btn-small" asp-action="EditProfile" asp-route-id="@child.Id">Sửa</a>
-                        <form asp-action="DeleteProfile" asp-route-id="@child.Id" method="post">
-                            <button class="danger-link" type="submit">Xóa</button>
+
+                    <div class="profile-card-bottom-actions">
+                        <a class="dash-btn dash-btn-primary" asp-controller="Kids" asp-action="Home" asp-route-childProfileId="@child.Id" title="Cho bé vào học với hồ sơ này">
+                            <span class="material-symbols-outlined">play_circle</span>
+                            <span>Bé vào học</span>
+                        </a>
+                        <a class="dash-btn dash-btn-outline" asp-action="Report" asp-route-childId="@child.Id" title="Xem báo cáo chi tiết">
+                            <span class="material-symbols-outlined">bar_chart</span>
+                            <span>Báo cáo</span>
+                        </a>
+                        <a class="dash-btn dash-btn-outline" asp-action="EditProfile" asp-route-id="@child.Id" title="Chỉnh sửa thông tin bé">
+                            <span class="material-symbols-outlined">edit</span>
+                            <span>Sửa</span>
+                        </a>
+                        <form asp-action="DeleteProfile" asp-route-id="@child.Id" method="post" class="d-inline m-0" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hồ sơ của bé @child.Nickname không?');">
+                            <button class="dash-btn dash-btn-danger-outline" type="submit" title="Xóa hồ sơ bé">
+                                <span class="material-symbols-outlined">delete</span>
+                                <span>Xóa</span>
+                            </button>
                         </form>
                     </div>
                 </article>

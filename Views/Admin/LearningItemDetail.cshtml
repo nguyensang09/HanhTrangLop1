@@ -7,26 +7,28 @@
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
     <main class="admin-main">
-        <div class="dashboard-header">
+        <partial name="_AdminHeader" model="@Model.Title" />
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
-                <p class="eyebrow">Chi tiết bài học</p>
-                <h1>@Model.Title</h1>
+                <span class="admin-subheading">Chi tiết cấu hình bài học</span>
+                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Xem trước thông số kỹ thuật, cấu hình câu hỏi và trạng thái xuất bản bài học.</p>
+            </div>
+            <div class="dashboard-actions d-flex gap-2 flex-wrap">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Kho nội dung
+                </a>
+                @if (Model.InteractionType == InteractionTypes.Tracing)
+                {
+                    <a class="dash-btn dash-btn-primary" asp-action="CreateTracing" asp-route-editId="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa bài tô nét</a>
+                }
+                else
+                {
+                    <a class="dash-btn dash-btn-primary" asp-action="CreateChoice" asp-route-editId="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa bài trắc nghiệm</a>
+                }
+            </div>
         </div>
-        <div class="dashboard-actions">
-            <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
-                <span class="material-symbols-outlined">arrow_back</span>
-                Kho nội dung
-            </a>
-            @if (Model.InteractionType == InteractionTypes.Tracing)
-            {
-                <a class="app-btn app-btn-small" asp-action="CreateTracing" asp-route-editId="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>
-            }
-            else
-            {
-                <a class="app-btn app-btn-small" asp-action="CreateChoice" asp-route-editId="@Model.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>
-            }
-        </div>
-    </div>
 
     <div class="admin-detail-grid">
         @if (TempData["AdminMessage"] is string message)

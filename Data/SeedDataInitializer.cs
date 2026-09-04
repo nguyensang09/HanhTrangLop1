@@ -31,13 +31,8 @@ public static class SeedDataInitializer
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
         }
 
-        // Luôn chuẩn hóa CSDL bài học và xóa sạch toàn bộ bản ghi voice thừa cùng file vật lý tương ứng trên đĩa
+        // Chuẩn hóa dữ liệu bài học nếu có nội dung cũ
         await LegacyLearningItemNormalizer.NormalizeAsync(db, logger);
-        var deletedRedundantVoices = await voiceLibrary.CleanupAllRedundantDatabaseAndVoiceFilesAsync();
-        if (deletedRedundantVoices > 0)
-        {
-            logger.LogInformation("Đã dọn dẹp sạch {DeletedCount} voice thừa và file âm thanh tương ứng khỏi CSDL & ổ đĩa.", deletedRedundantVoices);
-        }
     }
 
     private static async Task EnsureMigrationHistoryForLegacyDatabaseAsync(ApplicationDbContext db)

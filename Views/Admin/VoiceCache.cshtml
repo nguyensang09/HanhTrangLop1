@@ -38,13 +38,14 @@
             <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
         }
 
-        <div class="dashboard-header">
+        <partial name="_AdminHeader" model="@("Kiểm soát voice")" />
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
-                <p class="eyebrow">Thư viện âm thanh Song Ngữ</p>
-                <h1>Kiểm soát voice (Việt – Anh)</h1>
-                <p class="empty-note">Tổng số @totalCount mục voice. Đang hiển thị @Model.Count / @filteredCount mục.</p>
+                <span class="admin-subheading">Thư viện âm thanh Song Ngữ (Việt – Anh)</span>
+                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Tổng số @totalCount mục voice. Đang hiển thị @Model.Count / @filteredCount mục.</p>
             </div>
-            <div class="hero-actions">
+            <div class="hero-actions d-flex gap-2 flex-wrap align-items-center">
                 <button class="app-btn app-btn-muted app-btn-small" type="button" id="toggleAddVoiceBtn" title="Mở form tạo nhanh voice mới">
                     <span class="material-symbols-outlined">add_circle</span>
                     Tạo voice mới
@@ -53,6 +54,13 @@
                     <span class="material-symbols-outlined">sync</span>
                     Đồng bộ & Tự sinh Voice
                 </button>
+                <form asp-action="ResetAndRebuildAllVoices" method="post" onsubmit="return confirm('CẢNH BÁO TÁI THIẾT TOÀN BỘ:\n\nHệ thống sẽ:\n1. Xóa sạch file voice cũ và các bản ghi trùng lặp trong CSDL.\n2. Chuẩn hóa 1 Giọng Nữ duy nhất chung: Tiếng Việt (Hoài My - Nữ) và Tiếng Anh (Jenny - Nữ).\n3. Tối ưu dùng chung (Deduplication) mọi từ/câu/đáp án trùng lặp.\n4. Cập nhật URL âm thanh đồng bộ cho 100% bài học.\n\nBạn có chắc chắn muốn thực hiện?');" style="display:inline-block; margin:0;">
+                    @Html.AntiForgeryToken()
+                    <button class="app-btn app-btn-small" style="background:#ef4444; border-color:#dc2626; color:#fff;" type="submit" title="Xóa voice cũ, khử trùng lặp và sinh mới toàn bộ giọng nữ chuẩn">
+                        <span class="material-symbols-outlined">restart_alt</span>
+                        Làm mới toàn bộ Voice
+                    </button>
+                </form>
                 <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">
                     <span class="material-symbols-outlined">library_books</span>
                     Kho bài học
@@ -161,17 +169,19 @@
 
         <!-- Bảng Danh Sách Voice Song Ngữ -->
         <div class="soft-card report-panel mt-4 voice-cache-panel">
-            <table class="app-table voice-cache-table">
-                <thead>
-                <tr>
-                    <th style="width:36%;">Nội dung Tiếng Việt & Voice VI</th>
-                    <th style="width:36%;">Bản dịch Tiếng Anh & Voice EN</th>
-                    <th style="width:10%;">Loại</th>
-                    <th style="width:12%;">Trạng thái</th>
-                    <th style="width:6%; text-align:center;">Thao tác</th>
-                </tr>
-                </thead>
-                <tbody>
+            <div class="table-responsive">
+                <table class="app-table voice-cache-table">
+                    <thead>
+                    <tr>
+                        <th style="width:34%;">Nội dung Tiếng Việt & Voice VI (Hoài My - Nữ)</th>
+                        <th style="width:34%;">Bản dịch Tiếng Anh & Voice EN (Jenny - Nữ)</th>
+                        <th style="width:8%;" class="col-secondary">Loại</th>
+                        <th style="width:10%; text-align:center;">Tái sử dụng</th>
+                        <th style="width:8%;">Trạng thái</th>
+                        <th style="width:6%; text-align:center;">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
                 @foreach (var item in Model)
                 {
                     var hasVi = !string.IsNullOrWhiteSpace(item.AudioUrl) && item.Status == "ready";
@@ -215,6 +225,12 @@
                         </td>
                         <td>
                             <span class="badge-voice-type">@DisplayUsageType(item.UsageType)</span>
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="badge-reuse-count" title="Dùng chung trong @item.ReuseCount vị trí/bài học" style="display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:700; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">
+                                <span class="material-symbols-outlined" style="font-size:14px;">repeat</span>
+                                x@(item.ReuseCount)
+                            </span>
                         </td>
                         <td>
                             @if (hasVi && hasEn)
@@ -263,6 +279,7 @@
                 }
                 </tbody>
             </table>
+            </div>
 
             @if (totalPages > 1)
             {

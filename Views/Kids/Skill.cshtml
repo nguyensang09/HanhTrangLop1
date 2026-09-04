@@ -19,7 +19,6 @@
         }
         if (lastIdx >= 0)
         {
-            // Nếu bài vừa học đã xong và còn bài tiếp theo thì chuyển sang bài kế tiếp
             if (Model.Items[lastIdx].LatestStatus == "completed" && lastIdx + 1 < totalItems)
             {
                 currentItemIndex = lastIdx + 1;
@@ -53,33 +52,68 @@
         return (index + 1).ToString();
     }
 
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" or "meo-con" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" or "cun-con" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
+
     var positions = new[] { "pos-left", "pos-center-left", "pos-center-right", "pos-right", "pos-center-right", "pos-center-left" };
 }
 
 <section class="kid-screen skill-adventure-page">
-    <div class="kid-topbar skill-library-header">
-        <a class="icon-link clay-button" asp-controller="Kids" asp-action="Home" aria-label="Quay lại trang chủ">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </a>
-        <div class="skill-library-heading">
-            <span class="skill-library-icon material-symbols-outlined" style="--skill-color:@Model.SkillGroup.Color">@Model.SkillGroup.IconKey</span>
-            <div>
-                <p class="eyebrow">Hành trình khám phá</p>
-                <h1>@Model.SkillGroup.Name</h1>
+    <!-- ==================== TOPBAR CHUẨN ĐỒNG NHẤT KHÔNG GIAN BÉ ==================== -->
+    <header class="child-zone-header clay-card">
+        <!-- Góc trái: Nút Quay lại + Avatar 3D của bé -->
+        <div class="child-header-left">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
+                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
+                <span class="child-avatar-switch-badge" title="Đổi bé">
+                    <span class="material-symbols-outlined">sync_alt</span>
+                </span>
+            </a>
+            <div class="child-header-greeting">
+                <span class="child-hi-eyebrow">Hành trình khám phá</span>
+                <strong class="child-name-display">@Model.SkillGroup.Name</strong>
             </div>
         </div>
-        <div class="star-pill clay-button">
-            <span class="material-symbols-outlined star-icon">star</span>
-            <span>@completedCount/@totalItems</span>
+
+        <!-- Ở giữa: Tiến độ hoàn thành sao 3D -->
+        <div class="child-header-center">
+            <div class="child-star-badge-3d" title="Tiến độ bài học đã hoàn thành">
+                <span class="star-3d-icon">⭐</span>
+                <span class="star-number-display">@completedCount/@totalItems</span>
+                <span class="star-label-text">bài đạt</span>
+            </div>
         </div>
-    </div>
+
+        <!-- Góc phải: Nút "Góc Phụ Huynh" với ổ khóa bảo vệ Parent Gate -->
+        <div class="child-header-right">
+            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+                <span class="material-symbols-outlined lock-icon">lock</span>
+                <span class="lock-label-text">Ba mẹ</span>
+            </button>
+        </div>
+    </header>
 
     @if (totalItems == 0)
     {
         <div class="soft-card clay-card empty-state mt-4">
             <span class="material-symbols-outlined empty-icon">menu_book</span>
             <h2>Nhóm này đang chuẩn bị bài mới</h2>
-            <p>Con quay lại sau nhé.</p>
+            <p>Bé quay lại sau nhé.</p>
         </div>
     }
     else
@@ -159,23 +193,31 @@
 
                 <!-- Trạm đích Lâu đài Quà Tặng -->
                 <div class="adventure-goal-station">
-                    <div class="goal-castle-card clay-card">
+                    <a class="goal-castle-card clay-card" asp-controller="Kids" asp-action="Rewards" title="Mở kho quà tặng của bé">
                         <span class="goal-trophy material-symbols-outlined">emoji_events</span>
                         <strong>Về Đích Rực Rỡ</strong>
-                        <small>Mở rương báu quà tặng</small>
-                    </div>
+                        <small>Mở rương báu quà tặng 🏆</small>
+                    </a>
                 </div>
             </div>
         </div>
     }
-</section>
 
-<nav class="kid-bottom-nav">
-    <a class="active" asp-controller="Kids" asp-action="Home"><span class="material-symbols-outlined">home</span><span>Trang chủ</span></a>
-    <a asp-controller="Kids" asp-action="Today"><span class="material-symbols-outlined">edit_square</span><span>Bài tập</span></a>
-    <a asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">emoji_events</span><span>Quà tặng</span></a>
-    <a asp-controller="Parent" asp-action="Dashboard"><span class="material-symbols-outlined">family_restroom</span><span>Phụ huynh</span></a>
-</nav>
+    <!-- ==================== NÚT ĐIỀU HƯỚNG 2 GÓC DƯỚI (CHUẨN HOME 88x88px) ==================== -->
+    <div class="child-corner-nav child-corner-left">
+        <a class="corner-nav-btn corner-btn-today" asp-controller="Kids" asp-action="Today" title="Lộ trình học theo ngày">
+            <span class="material-symbols-outlined corner-icon">calendar_month</span>
+            <span class="corner-label">Hôm nay</span>
+        </a>
+    </div>
+
+    <div class="child-corner-nav child-corner-right">
+        <a class="corner-nav-btn corner-btn-rewards" asp-controller="Kids" asp-action="Rewards" title="Kho quà & huy hiệu của bé">
+            <span class="material-symbols-outlined corner-icon">emoji_events</span>
+            <span class="corner-label">Quà tặng</span>
+        </a>
+    </div>
+</section>
 
 @section Scripts {
     <script>
@@ -230,4 +272,3 @@
         window.addEventListener("resize", drawAdventureRoad, { passive: true });
     </script>
 }
-

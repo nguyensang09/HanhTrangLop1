@@ -3,25 +3,55 @@
     ViewData["Title"] = "Quà tặng & Huy hiệu của bé";
     var earnedCount = Model.Badges.Count(x => x.IsEarned);
     var totalCount = Model.Badges.Count;
+
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" or "meo-con" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" or "cun-con" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
 }
 
 <section class="kid-screen kid-rewards-screen">
-    <!-- Topbar -->
-    <div class="kid-topbar home-topbar clay-card">
-        <div class="kid-header-profile">
-            <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Quay lại">
+    <!-- Topbar chuẩn không gian bé -->
+    <header class="child-zone-header clay-card">
+        <div class="child-header-left">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
-            <div>
-                <p class="eyebrow">Bộ sưu tập thành tích</p>
-                <h1>Kho Quà Của Bé 🏆</h1>
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
+                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
+                <span class="child-avatar-switch-badge" title="Đổi bé">
+                    <span class="material-symbols-outlined">sync_alt</span>
+                </span>
+            </a>
+            <div class="child-header-greeting">
+                <span class="child-hi-eyebrow">Bộ sưu tập thành tích</span>
+                <strong class="child-name-display">Kho Quà Của Bé 🏆</strong>
             </div>
         </div>
-        <div class="star-pill clay-button celebration-pill">
-            <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
-            <span>@earnedCount/@totalCount đã mở</span>
+        <div class="child-header-center">
+            <div class="child-star-badge-3d" title="Số danh hiệu đã mở khóa">
+                <span class="star-3d-icon">⭐</span>
+                <span class="star-number-display">@earnedCount/@totalCount</span>
+                <span class="star-label-text">đã mở khóa</span>
+            </div>
         </div>
-    </div>
+        <div class="child-header-right">
+            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+                <span class="material-symbols-outlined lock-icon">lock</span>
+                <span class="lock-label-text">Ba mẹ</span>
+            </button>
+        </div>
+    </header>
 
     <!-- Garden Welcome Banner -->
     <div class="summary-hero-card clay-card">
@@ -107,8 +137,8 @@
         <span class="material-symbols-outlined">emoji_events</span>
         <span>Quà tặng</span>
     </a>
-    <a asp-controller="Parent" asp-action="Dashboard">
-        <span class="material-symbols-outlined">family_restroom</span>
+    <a href="#" onclick="openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
+        <span class="material-symbols-outlined">lock</span>
         <span>Phụ huynh</span>
     </a>
 </nav>

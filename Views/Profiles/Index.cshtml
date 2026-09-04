@@ -1,31 +1,54 @@
 @model ChildProfileListViewModel
 @{
     ViewData["Title"] = "Chọn hồ sơ của bé";
+    ViewData["FocusMode"] = true; // Ẩn navbar người lớn khi chọn bé vào học
+
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
 }
 
-<section class="kid-screen kid-profiles-screen">
-    <div class="kid-topbar">
-        <a class="icon-link clay-button" asp-controller="Home" asp-action="Index" title="Trang chủ">
+<section class="kid-screen kid-profiles-screen profile-picker-shell">
+    <!-- Topbar điều hướng sinh động -->
+    <div class="kid-topbar profile-picker-header">
+        <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Về Góc của bé">
             <span class="material-symbols-outlined">arrow_back</span>
         </a>
         <div class="kid-topbar-title-wrap">
-            <p class="eyebrow">Ai sẽ học hôm nay?</p>
-            <h1>Chọn hồ sơ của bé 👦👧</h1>
+            <p class="eyebrow" style="color:#ea580c; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Ai sẽ học hôm nay?</p>
+            <h1 style="font-size:26px; font-weight:900; color:#0f172a; margin:0;">Chọn bạn nhỏ vào học 👦👧</h1>
         </div>
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <a class="app-btn app-btn-small app-btn-muted clay-button" asp-controller="Parent" asp-action="CreateProfile">
+            <a class="app-btn clay-button add-child-btn" asp-controller="Parent" asp-action="CreateProfile" title="Thêm hồ sơ bé mới">
                 <span class="material-symbols-outlined">person_add</span>
-                <span>Thêm bé</span>
+                <span class="d-none d-sm-inline">Thêm bé</span>
             </a>
+        }
+        else
+        {
+            <div></div>
         }
     </div>
 
     @if (User.Identity?.IsAuthenticated != true)
     {
-        <div class="soft-card clay-card guest-notice-card">
+        <div class="soft-card guest-notice-card mt-3">
             <div class="guest-notice-body">
-                <span class="material-symbols-outlined guest-icon">family_restroom</span>
+                <div class="guest-icon-wrap">
+                    <span class="material-symbols-outlined guest-icon">family_restroom</span>
+                </div>
                 <div>
                     <h2>Góc học tập cá nhân hóa cho bé</h2>
                     <p>Phụ huynh đăng nhập hoặc đăng ký tài khoản miễn phí để lưu lại tiến độ học tập, huy hiệu và tùy chỉnh thời lượng học cho từng bé.</p>
@@ -42,11 +65,11 @@
     {
         @if (User.Identity?.IsAuthenticated == true)
         {
-            <div class="soft-card clay-card empty-state text-center p-5">
-                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="empty-mascot-img mb-3" />
-                <h2>Chưa có hồ sơ bé nào</h2>
-                <p>Tạo hồ sơ cho bé để Sóc Nâu sắp xếp lộ trình bài học phù hợp mỗi ngày.</p>
-                <a class="app-btn clay-button app-btn-hero mt-3" asp-controller="Parent" asp-action="CreateProfile">
+            <div class="soft-card clay-card empty-state text-center p-5 mt-4">
+                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="empty-mascot-img mb-3" style="width:120px; height:120px; object-fit:contain;" />
+                <h2 style="font-size:24px; font-weight:800; color:#0f172a;">Chưa có hồ sơ bé nào</h2>
+                <p style="color:#64748b; font-size:16px;">Tạo hồ sơ cho bé để Sóc Nâu sắp xếp lộ trình bài học phù hợp mỗi ngày.</p>
+                <a class="dash-btn dash-btn-primary mt-3" asp-controller="Parent" asp-action="CreateProfile" style="display:inline-flex; align-items:center; gap:8px; padding:12px 24px; font-size:16px;">
                     <span class="material-symbols-outlined">add_circle</span>
                     <span>Tạo hồ sơ bé đầu tiên</span>
                 </a>
@@ -55,28 +78,49 @@
     }
     else
     {
-        <div class="profile-grid">
+        <!-- Danh sách thẻ hồ sơ các bé với Avatar 3D to rõ -->
+        <div class="profile-picker-grid mt-4">
             @foreach (var child in Model.Children)
             {
                 var isSelected = Model.SelectedChildProfileId == child.Id;
-                <form asp-action="Select" method="post" class="profile-card clay-card @(isSelected ? "selected" : "")">
+                <form asp-action="Select" method="post" class="profile-picker-form">
                     <input type="hidden" name="childProfileId" value="@child.Id" />
-                    <button type="submit" class="profile-select-btn" title="Chọn bé @child.Nickname để vào học">
-                        <div class="profile-avatar-circle @(isSelected ? "active" : "")">
-                            @child.Nickname.Substring(0, 1).ToUpperInvariant()
-                        </div>
-                        <strong class="profile-name">@child.Nickname</strong>
-                        <span class="profile-minutes">⏱ @child.DailyLearningMinutes phút mỗi ngày</span>
+                    <button type="submit" class="profile-picker-card @(isSelected ? "is-selected" : "")" title="Chọn bé @child.Nickname để vào học">
                         @if (isSelected)
                         {
-                            <span class="profile-selected-badge">
-                                <span class="material-symbols-outlined">check_circle</span> Đang chọn • Nhấn vào học
+                            <span class="profile-badge-active">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                <span>Đang học</span>
                             </span>
                         }
-                        else
-                        {
-                            <span class="profile-tap-hint">Nhấn để chọn</span>
-                        }
+
+                        <div class="profile-avatar-frame">
+                            <img src="@ResolveAvatar(child.AvatarKey)" alt="@child.Nickname" class="profile-avatar-3d-img" />
+                        </div>
+
+                        <div class="profile-card-details">
+                            <strong class="profile-child-name">@child.Nickname</strong>
+                            <div class="profile-meta-chips">
+                                <span class="meta-chip-item">
+                                    <span class="material-symbols-outlined">timer</span>
+                                    @(child.DailyLearningMinutes)p/ngày
+                                </span>
+                                @if (child.BirthYear.HasValue)
+                                {
+                                    <span class="meta-chip-item">
+                                        <span class="material-symbols-outlined">cake</span>
+                                        @child.BirthYear
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="profile-cta-footer">
+                            <span class="profile-action-text @(isSelected ? "text-active" : "")">
+                                <span class="material-symbols-outlined">play_circle</span>
+                                @(isSelected ? "Tiếp tục học ngay" : "Chọn bạn nhỏ này")
+                            </span>
+                        </div>
                     </button>
                 </form>
             }
