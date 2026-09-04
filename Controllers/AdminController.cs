@@ -95,7 +95,7 @@ public class AdminController : Controller
     }
 
     [HttpGet("learning-items")]
-    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search)
+    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search, string? voiceStatus)
     {
         var query = _db.LearningItems
             .AsNoTracking()
@@ -136,6 +136,16 @@ public class AdminController : Controller
         var allSkillGroups = await _db.SkillGroups.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
         var allTopics = await _db.Topics.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
 
+        // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ)
+        var redundantVoiceRows = await _db.TextToSpeechCaches
+            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
+            .ToListAsync();
+        if (redundantVoiceRows.Count > 0)
+        {
+            _db.TextToSpeechCaches.RemoveRange(redundantVoiceRows);
+            await _db.SaveChangesAsync();
+        }
+
         var items = await query
             .OrderBy(x => x.SkillGroup!.SortOrder)
             .ThenBy(x => x.Topic!.SortOrder)
@@ -143,8 +153,25 @@ public class AdminController : Controller
             .ThenBy(x => x.Title)
             .ToListAsync();
 
+        if (!string.IsNullOrWhiteSpace(voiceStatus))
+        {
+            if (voiceStatus == "ready" || voiceStatus == "full")
+            {
+                items = items.Where(x => x.VoiceStatus == "full").ToList();
+            }
+            else if (voiceStatus == "missing")
+            {
+                items = items.Where(x => x.VoiceStatus != "full").ToList();
+            }
+            else if (voiceStatus == "none")
+            {
+                items = items.Where(x => x.VoiceStatus == "none").ToList();
+            }
+        }
+
         var hasFilter = !string.IsNullOrWhiteSpace(status) ||
                         !string.IsNullOrWhiteSpace(interactionType) ||
+                        !string.IsNullOrWhiteSpace(voiceStatus) ||
                         skillGroupId.HasValue ||
                         topicId.HasValue ||
                         !string.IsNullOrWhiteSpace(search);
@@ -157,6 +184,9 @@ public class AdminController : Controller
             .Where(t => (!skillGroupId.HasValue || t.SkillGroupId == skillGroupId.Value) &&
                         (!topicId.HasValue || t.Id == topicId.Value))
             .ToList();
+
+        var totalDbItems = await _db.LearningItems.AsNoTracking().Select(x => new { x.Id, x.TopicId, x.SkillGroupId }).ToListAsync();
+        var allItemsCountByTopic = totalDbItems.Where(x => x.TopicId.HasValue).GroupBy(x => x.TopicId!.Value).ToDictionary(g => g.Key, g => g.Count());
 
         var itemsByGroupId = items.ToLookup(x => x.SkillGroupId);
         var itemsByTopicId = items
@@ -206,20 +236,31 @@ public class AdminController : Controller
 
             var directItems = directItemsByGroupId[group.Id].ToList();
 
+            var groupAllStandardTopics = allTopics.Where(t => t.SkillGroupId == group.Id).ToList();
+            var groupCoverage = groupAllStandardTopics.Count == 0
+                ? 0
+                : (int)Math.Round(groupAllStandardTopics.Count(t => allItemsCountByTopic.ContainsKey(t.Id) && allItemsCountByTopic[t.Id] > 0) * 100d / groupAllStandardTopics.Count);
+
             treeGroups.Add(new AdminLearningGroupTreeItem
             {
                 SkillGroup = group,
                 LearningItemCount = groupItems.Count,
+                CoveragePercentage = groupCoverage,
                 Topics = topicTreeItems,
                 DirectItems = directItems
             });
         }
+
+        var totalStandardTopics = allTopics.Count;
+        var topicsWithLessons = allTopics.Count(t => allItemsCountByTopic.ContainsKey(t.Id) && allItemsCountByTopic[t.Id] > 0);
+        var overallCoverage = totalStandardTopics == 0 ? 0 : (int)Math.Round(topicsWithLessons * 100d / totalStandardTopics);
 
         var model = new AdminLearningItemListViewModel
         {
             Search = search,
             Status = status,
             InteractionType = interactionType,
+            VoiceFilter = voiceStatus,
             SkillGroupId = skillGroupId,
             TopicId = topicId,
             SkillGroups = allSkillGroups,
@@ -228,7 +269,9 @@ public class AdminController : Controller
             TreeGroups = treeGroups,
             TotalGroups = treeGroups.Count,
             TotalTopics = treeGroups.Sum(g => g.Topics.Count),
-            TotalItems = items.Count
+            TotalItems = items.Count,
+            StandardTopicsCount = totalStandardTopics,
+            OverallCoveragePercentage = overallCoverage
         };
 
         return View(model);
@@ -591,36 +634,212 @@ public class AdminController : Controller
         return RedirectToEditor(item);
     }
 
-    [HttpGet("catalogs")]
-    public async Task<IActionResult> Catalogs()
+    [HttpGet("learning-items/{id:guid}/voice-details")]
+    public async Task<IActionResult> GetLearningItemVoiceDetails(Guid id)
     {
-        var groups = await _db.SkillGroups
+        var item = await _db.LearningItems
             .AsNoTracking()
-            .AsSplitQuery()
-            .Include(x => x.Topics.OrderBy(topic => topic.SortOrder))
-            .Include(x => x.LearningItems)
-            .OrderBy(x => x.SortOrder)
+            .Include(x => x.Topic)
+            .Include(x => x.SkillGroup)
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null)
+        {
+            return NotFound(new { error = "Không tìm thấy bài học." });
+        }
+
+        // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ) nếu còn sót
+        var redundantVoiceRows = await _db.TextToSpeechCaches
+            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
+            .ToListAsync();
+        if (redundantVoiceRows.Count > 0)
+        {
+            _db.TextToSpeechCaches.RemoveRange(redundantVoiceRows);
+            await _db.SaveChangesAsync();
+        }
+
+        var question = item.Questions.FirstOrDefault();
+        var payload = question != null && !string.IsNullOrWhiteSpace(question.PayloadJson)
+            ? JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject()
+            : new JsonObject();
+
+        var prompts = new List<object>();
+
+        async Task AddPromptAsync(string type, string typeName, string? text, string? currentUrl, string? currentUrlEn)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            var cleanText = text.Trim();
+            var cacheEntry = await _db.TextToSpeechCaches
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.OriginalText == cleanText || x.NormalizedText == cleanText);
+
+            var audioUrl = !string.IsNullOrWhiteSpace(currentUrl) ? currentUrl : cacheEntry?.AudioUrl;
+            var audioUrlEn = !string.IsNullOrWhiteSpace(currentUrlEn) ? currentUrlEn : cacheEntry?.AudioUrlEn;
+            var textEn = cacheEntry?.TextEn ?? "";
+
+            prompts.Add(new
+            {
+                type,
+                typeName,
+                text = cleanText,
+                textEn,
+                audioUrl = audioUrl ?? "",
+                audioUrlEn = audioUrlEn ?? "",
+                hasVi = !string.IsNullOrWhiteSpace(audioUrl),
+                hasEn = !string.IsNullOrWhiteSpace(audioUrlEn)
+            });
+        }
+
+        // 1. Câu hỏi / Yêu cầu chính (chỉ giữ nội dung thực tế phát âm thanh)
+        if (question != null && !string.IsNullOrWhiteSpace(question.PromptText))
+        {
+            var promptType = item.InteractionType == InteractionTypes.Tracing ? "Tô nét chữ" : "Câu hỏi / Yêu cầu";
+            await AddPromptAsync("question", promptType, question.PromptText, payload["questionAudioUrl"]?.ToString(), payload["questionAudioUrlEn"]?.ToString());
+        }
+
+        // 2. Nội dung bài nghe riêng (dành cho dạng Nghe - chọn, Nghe truyện)
+        var speechText = ReadJsonString(payload, "speechText");
+        if (!string.IsNullOrWhiteSpace(speechText))
+        {
+            await AddPromptAsync("content", "Nội dung bài nghe", speechText, payload["audioUrl"]?.ToString(), payload["audioUrlEn"]?.ToString());
+        }
+
+        // 3. Các đáp án / lựa chọn tương tác
+        foreach (var label in CollectOptionSpeechLabels(payload))
+        {
+            var optMap = payload["optionAudio"] as JsonObject;
+            var optMapEn = payload["optionAudioEn"] as JsonObject;
+            var optUrl = optMap?[label]?.ToString();
+            var optUrlEn = optMapEn?[label]?.ToString();
+            await AddPromptAsync("option", $"Đáp án: {label}", label, optUrl, optUrlEn);
+        }
+
+        // 4. Phản hồi đúng & sai
+        if (question != null)
+        {
+            var correctText = ReadJsonString(question.FeedbackJson, "correct");
+            if (!string.IsNullOrWhiteSpace(correctText))
+            {
+                await AddPromptAsync("correct-feedback", "Phản hồi đúng", correctText, payload["correctAudioUrl"]?.ToString(), payload["correctAudioUrlEn"]?.ToString());
+            }
+
+            var retryText = ReadJsonString(question.FeedbackJson, "retry");
+            if (!string.IsNullOrWhiteSpace(retryText))
+            {
+                await AddPromptAsync("retry-feedback", "Phản hồi thử lại", retryText, payload["retryAudioUrl"]?.ToString(), payload["retryAudioUrlEn"]?.ToString());
+            }
+        }
+
+        return Ok(new
+        {
+            id = item.Id,
+            title = item.Title,
+            topicName = item.Topic?.Name ?? "",
+            skillGroupName = item.SkillGroup?.Name ?? "",
+            hasVoiceVi = item.HasVoiceVi,
+            hasVoiceEn = item.HasVoiceEn,
+            voiceStatus = item.VoiceStatus,
+            prompts
+        });
+    }
+
+    [HttpPost("learning-items/{id:guid}/generate-audio-ajax")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GenerateLearningItemAudioAjax(Guid id)
+    {
+        var item = await _db.LearningItems
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null)
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy bài học." });
+        }
+
+        // 1. Ensure voice rows exist for this lesson
+        await _voiceLibraryService.EnsureVoiceRowsForLearningItemAsync(item);
+        await _db.SaveChangesAsync();
+
+        // 2. Generate missing files for this lesson's components (chỉ sinh câu hỏi, đáp án, phản hồi)
+        var question = item.Questions.FirstOrDefault();
+        var textsToGenerate = new List<string>();
+        if (question != null)
+        {
+            if (!string.IsNullOrWhiteSpace(question.PromptText)) textsToGenerate.Add(question.PromptText);
+            var c = ReadJsonString(question.FeedbackJson, "correct");
+            if (!string.IsNullOrWhiteSpace(c)) textsToGenerate.Add(c);
+            var r = ReadJsonString(question.FeedbackJson, "retry");
+            if (!string.IsNullOrWhiteSpace(r)) textsToGenerate.Add(r);
+            if (!string.IsNullOrWhiteSpace(question.PayloadJson))
+            {
+                var payload = JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
+                var speechText = ReadJsonString(payload, "speechText");
+                if (!string.IsNullOrWhiteSpace(speechText)) textsToGenerate.Add(speechText);
+                textsToGenerate.AddRange(CollectOptionSpeechLabels(payload));
+            }
+        }
+
+        var cleanTexts = textsToGenerate.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct().ToList();
+        var cacheEntries = await _db.TextToSpeechCaches
+            .Where(x => cleanTexts.Contains(x.OriginalText) || cleanTexts.Contains(x.NormalizedText))
             .ToListAsync();
 
-        return View(new AdminCatalogViewModel
+        var generatedVi = 0;
+        var generatedEn = 0;
+        foreach (var entry in cacheEntries)
         {
-            TotalLearningItems = groups.Sum(x => x.LearningItems.Count),
-            SkillGroups = groups.Select(group => new AdminCatalogGroupViewModel
+            if (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready")
             {
-                SkillGroup = group,
-                LearningItemCount = group.LearningItems.Count,
-                Topics = group.Topics.Select(topic => new AdminCatalogTopicViewModel
+                try
                 {
-                    Topic = topic,
-                    LearningItemCount = group.LearningItems.Count(item => item.TopicId == topic.Id),
-                    AllowedTemplates = ActivityTemplateCatalog.ForTopic(topic.Code).InteractionTypes
-                        .Select(ActivityTemplateCatalog.Find)
-                        .OfType<ActivityTemplateDefinition>()
-                        .ToList(),
-                    AllowsTracing = ActivityTemplateCatalog.ForTopic(topic.Code).AllowsTracing
-                }).ToList()
-            }).ToList()
+                    entry.AudioUrl = await _voiceLibraryService.GenerateVoiceCacheFileAsync(entry);
+                    entry.Status = "ready";
+                    entry.LastError = null;
+                    generatedVi++;
+                }
+                catch (Exception ex)
+                {
+                    entry.Status = "failed";
+                    entry.LastError = ex.Message;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready")
+            {
+                try
+                {
+                    entry.AudioUrlEn = await _voiceLibraryService.GenerateVoiceCacheFileEnAsync(entry);
+                    entry.StatusEn = "ready";
+                    entry.LastErrorEn = null;
+                    generatedEn++;
+                }
+                catch (Exception ex)
+                {
+                    entry.StatusEn = "failed";
+                    entry.LastErrorEn = ex.Message;
+                }
+            }
+        }
+
+        await _db.SaveChangesAsync();
+
+        // 3. Link audio URLs into learning item payload
+        await _voiceLibraryService.LinkVoiceUrlsForLearningItemAsync(item);
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            success = true,
+            message = $"Đã đồng bộ voice cho bài “{item.Title}” ({generatedVi} voice VI mới, {generatedEn} voice EN mới).",
+            hasVoiceVi = item.HasVoiceVi,
+            hasVoiceEn = item.HasVoiceEn,
+            voiceStatus = item.VoiceStatus
         });
+    }
+
+    [HttpGet("catalogs")]
+    public IActionResult Catalogs()
+    {
+        return RedirectToAction(nameof(LearningItems));
     }
 
     [HttpGet("media")]
@@ -637,13 +856,66 @@ public class AdminController : Controller
     }
 
     [HttpGet("voice-cache")]
-    public async Task<IActionResult> VoiceCache(string? status, string? usageType, string? q, int page = 1, int pageSize = 50)
+    public async Task<IActionResult> VoiceCache(string? status, string? usageType, string? q, Guid? topicId, Guid? learningItemId, int page = 1, int pageSize = 50)
     {
+        // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ)
+        var redundantVoiceRows = await _db.TextToSpeechCaches
+            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
+            .ToListAsync();
+        if (redundantVoiceRows.Count > 0)
+        {
+            _db.TextToSpeechCaches.RemoveRange(redundantVoiceRows);
+            await _db.SaveChangesAsync();
+        }
+
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 20, 100);
         var query = _db.TextToSpeechCaches
-            .Where(x => x.UsageType != "legacy")
+            .Where(x => x.UsageType != "legacy" && x.UsageType != "title" && x.UsageType != "instruction")
             .AsQueryable();
+
+        if (learningItemId.HasValue)
+        {
+            var targetLesson = await _db.LearningItems
+                .AsNoTracking()
+                .Include(x => x.Questions)
+                .FirstOrDefaultAsync(x => x.Id == learningItemId.Value);
+            if (targetLesson != null)
+            {
+                var question = targetLesson.Questions.FirstOrDefault();
+                var filterTexts = new List<string>();
+                if (question != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(question.PromptText)) filterTexts.Add(question.PromptText.Trim());
+                    var c = ReadJsonString(question.FeedbackJson, "correct");
+                    if (!string.IsNullOrWhiteSpace(c)) filterTexts.Add(c.Trim());
+                    var r = ReadJsonString(question.FeedbackJson, "retry");
+                    if (!string.IsNullOrWhiteSpace(r)) filterTexts.Add(r.Trim());
+
+                    if (!string.IsNullOrWhiteSpace(question.PayloadJson))
+                    {
+                        var payload = JsonNode.Parse(question.PayloadJson)?.AsObject();
+                        if (payload != null)
+                        {
+                            var speechText = ReadJsonString(payload, "speechText");
+                            if (!string.IsNullOrWhiteSpace(speechText)) filterTexts.Add(speechText.Trim());
+                            filterTexts.AddRange(CollectOptionSpeechLabels(payload));
+                        }
+                    }
+                }
+                var cleanFilterTexts = filterTexts.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList();
+                query = query.Where(x => cleanFilterTexts.Contains(x.OriginalText) || cleanFilterTexts.Contains(x.NormalizedText));
+            }
+        }
+        else if (topicId.HasValue)
+        {
+            var topicLessonTitles = await _db.LearningItems
+                .AsNoTracking()
+                .Where(x => x.TopicId == topicId.Value)
+                .Select(x => x.Title)
+                .ToListAsync();
+            query = query.Where(x => topicLessonTitles.Contains(x.OriginalText) || topicLessonTitles.Contains(x.NormalizedText));
+        }
         if (status == "ready" || status == "full")
         {
             query = query.Where(x => x.AudioUrl != null && x.AudioUrl != "" && x.Status == "ready" &&
@@ -692,6 +964,10 @@ public class AdminController : Controller
         ViewBag.Keyword = q;
         ViewBag.Page = page;
         ViewBag.PageSize = pageSize;
+        ViewBag.SelectedTopicId = topicId;
+        ViewBag.SelectedLearningItemId = learningItemId;
+        ViewBag.Topics = await _db.Topics.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
+        ViewBag.LearningItems = await _db.LearningItems.AsNoTracking().OrderBy(x => x.Title).Select(x => new { x.Id, x.Title, x.TopicId }).ToListAsync();
         ViewBag.TotalVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy");
         ViewBag.MissingVoiceCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" &&
             ((x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready") ||
@@ -2012,9 +2288,7 @@ public class AdminController : Controller
 
     private async Task PopulateVoiceUrlsFromCacheAsync(CreateChoiceItemViewModel model)
     {
-        model.TitleAudioUrl = await ResolveVoiceAudioAsync(model.Title, "title", model.Title) ?? model.TitleAudioUrl;
         model.QuestionAudioUrl = await ResolveVoiceAudioAsync(model.PromptText, "question", model.Title) ?? model.QuestionAudioUrl;
-        model.InstructionAudioUrl = await ResolveVoiceAudioAsync(model.InstructionText, "instruction", model.Title) ?? model.InstructionAudioUrl;
         model.CorrectFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.CorrectFeedback, "correct-feedback", model.Title) ?? model.CorrectFeedbackAudioUrl;
         model.RetryFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.RetryFeedback, "retry-feedback", model.Title) ?? model.RetryFeedbackAudioUrl;
 
@@ -2638,20 +2912,14 @@ public class AdminController : Controller
             ["imageUrl"] = Clean(model.ImageUrl),
             ["imageAltText"] = Clean(model.ImageAltText),
             ["audioUrl"] = Clean(model.AudioUrl),
-            ["titleAudioUrl"] = Clean(model.TitleAudioUrl),
             ["questionAudioUrl"] = Clean(model.QuestionAudioUrl),
-            ["instructionAudioUrl"] = Clean(model.InstructionAudioUrl),
             ["correctAudioUrl"] = Clean(model.CorrectFeedbackAudioUrl),
             ["retryAudioUrl"] = Clean(model.RetryFeedbackAudioUrl),
             ["speechText"] = Clean(model.SpeechText),
-            ["instructionSpeechText"] = Clean(model.InstructionText),
             ["questionSpeechText"] = Clean(model.PromptText),
-            ["correctSpeechText"] = "Giỏi lắm, con làm đúng rồi!",
-            ["retrySpeechText"] = "Con thử lại nhé"
+            ["correctSpeechText"] = Clean(model.CorrectFeedback),
+            ["retrySpeechText"] = Clean(model.RetryFeedback)
         };
-
-        payload["correctSpeechText"] = Clean(model.CorrectFeedback);
-        payload["retrySpeechText"] = Clean(model.RetryFeedback);
 
         var itemMedia = ParseMappings(
             model.ItemMediaText,

@@ -26,6 +26,7 @@ public class AdminLearningItemListViewModel
     public string? InteractionType { get; set; }
     public Guid? SkillGroupId { get; set; }
     public Guid? TopicId { get; set; }
+    public string? VoiceFilter { get; set; }
     public IReadOnlyList<SkillGroup> SkillGroups { get; set; } = [];
     public IReadOnlyList<Topic> Topics { get; set; } = [];
     public IReadOnlyList<LearningItem> Items { get; set; } = [];
@@ -33,16 +34,19 @@ public class AdminLearningItemListViewModel
     public int TotalGroups { get; set; }
     public int TotalTopics { get; set; }
     public int TotalItems { get; set; }
+    public int StandardTopicsCount { get; set; }
+    public int OverallCoveragePercentage { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 25;
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
-    public bool HasActiveFilter => !string.IsNullOrWhiteSpace(Search) || !string.IsNullOrWhiteSpace(Status) || !string.IsNullOrWhiteSpace(InteractionType) || SkillGroupId.HasValue || TopicId.HasValue;
+    public bool HasActiveFilter => !string.IsNullOrWhiteSpace(Search) || !string.IsNullOrWhiteSpace(Status) || !string.IsNullOrWhiteSpace(InteractionType) || !string.IsNullOrWhiteSpace(VoiceFilter) || SkillGroupId.HasValue || TopicId.HasValue;
 }
 
 public class AdminLearningGroupTreeItem
 {
     public SkillGroup SkillGroup { get; set; } = new();
     public int LearningItemCount { get; set; }
+    public int CoveragePercentage { get; set; }
     public IReadOnlyList<AdminLearningTopicTreeItem> Topics { get; set; } = [];
     public IReadOnlyList<LearningItem> DirectItems { get; set; } = [];
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HanhTrangLop1.Models;
 
@@ -52,4 +53,19 @@ public class LearningItem
     public Topic? Topic { get; set; }
 
     public ICollection<Question> Questions { get; set; } = new List<Question>();
+
+    [NotMapped]
+    public bool HasVoiceVi => !string.IsNullOrWhiteSpace(ContentJson) &&
+        (ContentJson.Contains("\"questionAudioUrl\":\"/uploads/") ||
+         ContentJson.Contains("\"titleAudioUrl\":\"/uploads/") ||
+         ContentJson.Contains("\"audioUrl\":\"/uploads/"));
+
+    [NotMapped]
+    public bool HasVoiceEn => !string.IsNullOrWhiteSpace(ContentJson) &&
+        (ContentJson.Contains("\"questionAudioUrlEn\":\"/uploads/") ||
+         ContentJson.Contains("\"titleAudioUrlEn\":\"/uploads/") ||
+         ContentJson.Contains("\"audioUrlEn\":\"/uploads/"));
+
+    [NotMapped]
+    public string VoiceStatus => (HasVoiceVi && HasVoiceEn) ? "full" : (HasVoiceVi || HasVoiceEn ? "partial" : "none");
 }

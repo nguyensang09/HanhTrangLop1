@@ -42,10 +42,11 @@
         <input asp-for="Id" type="hidden" />
         <input asp-for="Status" type="hidden" />
         <input asp-for="IsCompatible" type="hidden" />
+        <input asp-for="InstructionText" type="hidden" />
+        <input asp-for="HintText" type="hidden" />
+        <input asp-for="EstimatedMinutes" type="hidden" value="@(Model.EstimatedMinutes > 0 ? Model.EstimatedMinutes : 5)" />
         <input asp-for="AudioUrl" type="hidden" />
         <input asp-for="QuestionAudioUrl" type="hidden" />
-        <input asp-for="TitleAudioUrl" type="hidden" />
-        <input asp-for="InstructionAudioUrl" type="hidden" />
         <input asp-for="CorrectFeedbackAudioUrl" type="hidden" />
         <input asp-for="RetryFeedbackAudioUrl" type="hidden" />
 
@@ -97,15 +98,15 @@
 
             <h2>Thông tin bài học</h2>
             <div class="builder-info-grid">
-                <div class="span-2">
+                <div class="span-3">
                     <label asp-for="PromptText">Câu hỏi / Yêu cầu chính (Phát âm thanh trong bài) *</label>
-                    <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: Bé hãy chọn tất cả các loài vật biết bay nhé!" data-preview-source="prompt" required></textarea>
+                    <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: Con hãy chọn đúng chữ cái nhé!" data-preview-source="prompt" required></textarea>
                     <span asp-validation-for="PromptText" class="text-danger"></span>
                 </div>
 
-                <div class="span-2">
+                <div class="span-3">
                     <label asp-for="Title">Tên bài hiển thị trên Bản đồ (Ngắn gọn 2-5 từ) *</label>
-                    <input asp-for="Title" class="form-control" maxlength="100" placeholder="Ví dụ: Loài vật biết bay" data-preview-source="title" required />
+                    <input asp-for="Title" class="form-control" maxlength="100" placeholder="Ví dụ: Nhận biết chữ A" data-preview-source="title" required />
                     <span asp-validation-for="Title" class="text-danger"></span>
                     <small style="color:#64748b; font-size:0.82rem;">Tên này xuất hiện trên các nút Bản đồ Map / Thẻ bài học để không bị tràn chữ.</small>
                 </div>
@@ -142,19 +143,22 @@
                         }
                     </select>
                 </div>
+
+                <div>
+                    <label asp-for="SortOrder">Thứ tự học</label>
+                    <input asp-for="SortOrder" class="form-control" type="number" min="0" max="100000" placeholder="Tự động" />
+                </div>
+
+                <div>
+                    <label asp-for="Level">Độ khó</label>
+                    <select asp-for="Level" class="form-control">
+                        <option value="1">Dễ</option>
+                        <option value="2">Trung bình</option>
+                        <option value="3">Nâng cao</option>
+                    </select>
+                </div>
             </div>
 
-            <section class="builder-config-section builder-config-section-always builder-voice-panel" data-builder-voice-panel>
-                <h3>Ki&#7875;m so&#225;t voice c&#7911;a b&#224;i</h3>
-                <div class="builder-voice-summary">
-                    <span>T&#7893;ng m&#7909;c c&#7847;n voice</span>
-                    <strong data-builder-voice-total>0</strong>
-                    <span>&#272;&#227; c&#243; text</span>
-                    <strong data-builder-voice-filled>0</strong>
-                </div>
-                <div class="builder-voice-list" data-builder-voice-list></div>
-                <p class="builder-field-help">Dòng nào có file sẽ tự được dùng khi lưu bài. Có thể đổi ngay bằng cách tìm trong kho voice hoặc chọn file âm thanh từ máy.</p>
-            </section>
 
             <h2>Cấu hình hoạt động</h2>
             <div class="builder-template-context">
@@ -249,54 +253,59 @@
                 <p class="builder-field-help">Mục này chỉ dùng cho dạng Nghe - chọn và Nghe truyện. Khi bé bấm nghe, hệ thống ưu tiên đọc nội dung này; câu hỏi, đáp án và phản hồi vẫn có voice riêng ở Kiểm soát voice.</p>
             </section>
 
-            <section class="builder-config-section builder-config-section-always">
-                <h3>Voice tự động theo nội dung</h3>
-                <p class="builder-field-help">Tên bài, lời hướng dẫn, câu hỏi, đáp án và phản hồi sẽ được rà soát trong Kiểm soát voice để dùng lại file trùng nội dung.</p>
-            </section>
-
-            <section class="builder-config-section" data-builder-fields="single_choice,multi_select,listen_choose,drag_drop,matching,ordering,counting,quantity_builder,comparison,classification,story_choice">
-                <h3>Hình minh họa</h3>
-                <label asp-for="ExistingImageAssetId">Chọn từ thư viện</label>
-                <select asp-for="ExistingImageAssetId" class="form-control">
-                    <option value="">Không dùng hình thư viện</option>
-                    @foreach (var asset in imageAssets)
-                    {
-                        <option value="@asset.Id" data-path="@asset.StoragePath">@asset.FileName</option>
-                    }
-                </select>
-                <label asp-for="ImageFile">Tải hình mới</label>
-                <input asp-for="ImageFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
-                <label asp-for="ImageUrl">Đường dẫn hình</label>
-                <input asp-for="ImageUrl" class="form-control" type="text" placeholder="/uploads/images/ten-tep.webp" />
-                <label asp-for="ImageAltText">Mô tả hình cho phụ huynh và thiết bị hỗ trợ</label>
-                <input asp-for="ImageAltText" class="form-control" type="text" maxlength="250" placeholder="Ví dụ: Năm quả táo đỏ xếp thành hai hàng" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </section>
-
-            <section class="builder-config-section" data-builder-fields="single_choice,multi_select,listen_choose,drag_drop,matching,ordering,counting,quantity_builder,comparison,classification,story_choice">
-                <h3>Ảnh riêng theo nội dung</h3>
-                <p class="builder-field-help">Nhãn phải trùng với đáp án, vật, mục sắp xếp hoặc một đầu cặp nối. Mỗi dòng theo mẫu: Táo = /uploads/images/tao.jpg</p>
-                <label asp-for="ItemMediaText">Ánh xạ nội dung và hình ảnh</label>
-                <div class="item-media-builder" data-item-media-builder>
-                    <div class="item-media-builder-head">
-                        <strong>Gợi ý nhãn từ nội dung bài</strong>
-                        <button class="mini-action" type="button" data-item-media-refresh>Làm mới nhãn</button>
+            <section class="builder-config-section builder-config-section-always builder-voice-panel" data-builder-voice-panel>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3 class="mb-0" style="font-size:1rem; font-weight:800; color:#0f172a;">
+                        <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.25rem; color:#0284c7;">record_voice_over</span>
+                        Kiểm soát Voice bài học
+                    </h3>
+                    <div class="builder-voice-summary mb-0" style="margin:0; display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; color:#64748b;">Mục cần voice:</span>
+                        <strong data-builder-voice-total style="background:#0284c7; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
+                        <span style="font-size:12px; color:#64748b; margin-left:6px;">Có text:</span>
+                        <strong data-builder-voice-filled style="background:#16a34a; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
                     </div>
-                    <div class="item-media-builder-list" data-item-media-list></div>
                 </div>
-                <textarea asp-for="ItemMediaText" class="form-control" rows="6" maxlength="8000" placeholder="Táo = /images/photos/apple.jpg&#10;Chó = /images/photos/dog.jpg"></textarea>
-                <span asp-validation-for="ItemMediaText" class="text-danger"></span>
+                <p class="builder-field-help" style="margin-bottom:10px; font-size:12px; color:#64748b;">Nghe thử phát âm, chọn file từ kho voice, tải file âm thanh từ máy hoặc bấm Tạo voice AI cho từng câu trong bài.</p>
+                <div class="builder-voice-list" data-builder-voice-list></div>
             </section>
 
-            <h2>Chấm điểm và phản hồi</h2>
+            <section class="builder-config-section builder-config-section-always builder-image-panel" data-builder-image-panel>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h3 class="mb-0" style="font-size:1rem; font-weight:800; color:#0f172a;">
+                        <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.25rem; color:#059669;">image</span>
+                        Kiểm soát Hình ảnh bài học
+                    </h3>
+                    <div class="builder-image-summary mb-0" style="margin:0; display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:12px; color:#64748b;">Mục cần ảnh:</span>
+                        <strong data-builder-image-total style="background:#059669; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
+                        <span style="font-size:12px; color:#64748b; margin-left:6px;">Đã có ảnh:</span>
+                        <strong data-builder-image-filled style="background:#16a34a; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
+                    </div>
+                </div>
+                <p class="builder-field-help" style="margin-bottom:10px; font-size:12px; color:#64748b;">Xem trước ảnh trực quan, tìm chọn ảnh trong thư viện hoặc tải ảnh từ máy tính (không cần nhập đường dẫn).</p>
+                
+                <div class="builder-image-list" data-builder-image-list></div>
+
+                <!-- Dữ liệu lưu trữ ngầm gửi lên server -->
+                <input asp-for="ExistingImageAssetId" type="hidden" id="existingImageAssetHiddenId" />
+                <input asp-for="ImageUrl" type="hidden" id="mainImageUrlHidden" />
+                <input asp-for="ImageAltText" type="hidden" id="mainImageAltTextHidden" />
+                <input asp-for="ImageFile" type="file" id="mainImageHiddenFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" />
+                <textarea asp-for="ItemMediaText" id="itemMediaTextHidden" style="display:none;"></textarea>
+            </section>
+
+            <h2>Phản hồi sư phạm</h2>
             <div class="two-column-form">
-                <div><label asp-for="SortOrder">Thứ tự học</label><input asp-for="SortOrder" class="form-control" type="number" min="0" max="100000" placeholder="Tự động" /></div>
-                <div><label asp-for="Level">Độ khó</label><select asp-for="Level" class="form-control"><option value="1">Dễ</option><option value="2">Trung bình</option><option value="3">Nâng cao</option></select></div>
-                <div><label asp-for="EstimatedMinutes">Thời lượng</label><input asp-for="EstimatedMinutes" class="form-control" type="number" min="1" max="30" /></div>
+                <div>
+                    <label asp-for="CorrectFeedback">Khi bé trả lời đúng</label>
+                    <input asp-for="CorrectFeedback" class="form-control" placeholder="Giỏi lắm, con làm đúng rồi!" />
+                </div>
+                <div>
+                    <label asp-for="RetryFeedback">Khi bé cần thử lại</label>
+                    <input asp-for="RetryFeedback" class="form-control" placeholder="Con thử lại nhé" />
+                </div>
             </div>
-            <label asp-for="HintText">Gợi ý</label><input asp-for="HintText" class="form-control" />
-            <label asp-for="CorrectFeedback">Phản hồi khi đúng</label><input asp-for="CorrectFeedback" class="form-control" />
-            <label asp-for="RetryFeedback">Phản hồi khi thử lại</label><input asp-for="RetryFeedback" class="form-control" />
 
             <button class="app-btn app-btn-wide" type="submit"><span class="material-symbols-outlined">save</span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</button>
         </aside>

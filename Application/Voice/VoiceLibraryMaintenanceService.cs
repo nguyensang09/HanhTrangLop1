@@ -329,11 +329,9 @@ public sealed class VoiceLibraryMaintenanceService
             Collect(sym, "option");
         }
 
-        // 4.3. Quét từng bài học trong CSDL
+        // 4.3. Quét từng bài học trong CSDL (chỉ quét câu hỏi, đáp án, phản hồi, bài nghe)
         foreach (var lesson in allLessons)
         {
-            Collect(lesson.Title, "title");
-            if (!string.IsNullOrWhiteSpace(lesson.InstructionText)) Collect(lesson.InstructionText, "instruction");
 
             foreach (var q in lesson.Questions)
             {
@@ -564,9 +562,8 @@ public sealed class VoiceLibraryMaintenanceService
                 }
             }
 
-            AddText(item.Title);
-            AddText(item.InstructionText);
-
+            // Chỉ thu thập voice cho nội dung thực tế phát âm thanh (câu hỏi, phản hồi, bài nghe, đáp án)
+            // Không thu thập cho Title và InstructionText của bài học
             var q = item.Questions.FirstOrDefault();
             if (q is null) continue;
 
@@ -586,9 +583,11 @@ public sealed class VoiceLibraryMaintenanceService
             }
         }
 
-        // 3. Tìm tất cả các dòng TextToSpeechCaches không còn được bài học nào sử dụng hoặc thuộc loại legacy / generic rác
+        // 3. Tìm tất cả các dòng TextToSpeechCaches không còn được bài học nào sử dụng, hoặc là title / instruction / legacy / generic rác
         var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
         var redundantEntries = allCaches.Where(x =>
+            x.UsageType == "title" ||
+            x.UsageType == "instruction" ||
             x.UsageType == "legacy" ||
             GenericPromptsToClean.Contains(x.NormalizedText) ||
             GenericPromptsToClean.Contains(x.OriginalText) ||
@@ -935,8 +934,6 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         var payload = ParsePayloadObject(question.PayloadJson);
-        await EnsureVoiceEntryAsync(item.Title, "title", item.Title, cancellationToken);
-        await EnsureVoiceEntryAsync(item.InstructionText, "instruction", item.Title, cancellationToken);
         await EnsureVoiceEntryAsync(question.PromptText, item.InteractionType == InteractionTypes.Tracing ? "tracing-prompt" : "question", item.Title, cancellationToken);
         await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "correct"), "correct-feedback", item.Title, cancellationToken);
         await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "retry"), "retry-feedback", item.Title, cancellationToken);
@@ -962,13 +959,12 @@ public sealed class VoiceLibraryMaintenanceService
 
         var payload = ParsePayloadObject(question.PayloadJson);
 
-        // Tiêu đề
-        payload["titleAudioUrl"] = await ResolveVoiceAudioUrlAsync(item.Title, cancellationToken) ?? string.Empty;
-        payload["titleAudioUrlEn"] = await ResolveVoiceAudioUrlEnAsync(item.Title, cancellationToken) ?? string.Empty;
-
-        // Lời hướng dẫn
-        payload["instructionAudioUrl"] = await ResolveVoiceAudioUrlAsync(item.InstructionText, cancellationToken) ?? string.Empty;
-        payload["instructionAudioUrlEn"] = await ResolveVoiceAudioUrlEnAsync(item.InstructionText, cancellationToken) ?? string.Empty;
+        // Xóa sạch các key cũ thừa nếu còn sót trong payload
+        payload.Remove("titleAudioUrl");
+        payload.Remove("titleAudioUrlEn");
+        payload.Remove("instructionAudioUrl");
+        payload.Remove("instructionAudioUrlEn");
+        payload.Remove("instructionSpeechText");
 
         // Phản hồi đúng
         var correctText = ReadJsonString(question.FeedbackJson, "correct");
@@ -982,14 +978,9 @@ public sealed class VoiceLibraryMaintenanceService
         payload["retryAudioUrl"] = await ResolveVoiceAudioUrlAsync(retryText, cancellationToken) ?? string.Empty;
         payload["retryAudioUrlEn"] = await ResolveVoiceAudioUrlEnAsync(retryText, cancellationToken) ?? string.Empty;
 
-        // Câu hỏi: Tìm theo promptText, nếu chưa có thì kế thừa từ tiêu đề bài học
-        var questionUrl = await ResolveVoiceAudioUrlAsync(question.PromptText, cancellationToken);
-        var questionUrlEn = await ResolveVoiceAudioUrlEnAsync(question.PromptText, cancellationToken);
-        if (string.IsNullOrWhiteSpace(questionUrl)) questionUrl = payload["titleAudioUrl"]?.ToString() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(questionUrlEn)) questionUrlEn = payload["titleAudioUrlEn"]?.ToString() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(payload["titleAudioUrl"]?.ToString())) payload["titleAudioUrl"] = questionUrl;
-        if (string.IsNullOrWhiteSpace(payload["titleAudioUrlEn"]?.ToString())) payload["titleAudioUrlEn"] = questionUrlEn;
-
+        // Câu hỏi / Yêu cầu chính
+        var questionUrl = await ResolveVoiceAudioUrlAsync(question.PromptText, cancellationToken) ?? string.Empty;
+        var questionUrlEn = await ResolveVoiceAudioUrlEnAsync(question.PromptText, cancellationToken) ?? string.Empty;
         payload["questionAudioUrl"] = questionUrl;
         payload["questionAudioUrlEn"] = questionUrlEn;
 

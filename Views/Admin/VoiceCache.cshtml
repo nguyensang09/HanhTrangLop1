@@ -12,6 +12,10 @@
     var currentPage = ViewBag.Page as int? ?? 1;
     var pageSize = ViewBag.PageSize as int? ?? 50;
     var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var selectedTopicId = ViewBag.SelectedTopicId as Guid?;
+    var selectedLearningItemId = ViewBag.SelectedLearningItemId as Guid?;
+    var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
+    var learningItems = ViewBag.LearningItems as IEnumerable<dynamic> ?? [];
 }
 @functions {
     private static string DisplayUsageType(string? usageType) => usageType switch
@@ -158,6 +162,26 @@
                     }
                 </select>
             </div>
+            <div class="filter-field">
+                <label for="filterTopicId">Chủ đề bài học</label>
+                <select id="filterTopicId" name="topicId" class="form-control">
+                    <option value="">Tất cả chủ đề</option>
+                    @foreach (var top in topics)
+                    {
+                        <option value="@top.Id" selected="@(selectedTopicId == top.Id)">@top.Name (@top.Code)</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="filterLearningItemId">Lọc theo bài học</label>
+                <select id="filterLearningItemId" name="learningItemId" class="form-control">
+                    <option value="">Tất cả bài học</option>
+                    @foreach (var lesson in learningItems)
+                    {
+                        <option value="@lesson.Id" data-topic-id="@lesson.TopicId" selected="@(selectedLearningItemId == lesson.Id)">@lesson.Title</option>
+                    }
+                </select>
+            </div>
             <div class="filter-actions-group">
                 <button class="app-btn app-btn-small" type="submit">
                     <span class="material-symbols-outlined">filter_alt</span>
@@ -292,7 +316,9 @@
                            asp-route-pageSize="@pageSize"
                            asp-route-q="@keyword"
                            asp-route-status="@currentStatus"
-                           asp-route-usageType="@currentUsageType">@p</a>
+                           asp-route-usageType="@currentUsageType"
+                           asp-route-topicId="@selectedTopicId"
+                           asp-route-learningItemId="@selectedLearningItemId">@p</a>
                     }
                 </div>
             }
@@ -433,6 +459,31 @@
         if (editModal) {
             editModal.addEventListener("click", function(e) {
                 if (e.target === editModal) closeEdit();
+            });
+        }
+
+        // Cascade topic -> learning item filter
+        const filterTopic = document.getElementById("filterTopicId");
+        const filterLesson = document.getElementById("filterLearningItemId");
+        if (filterTopic && filterLesson) {
+            filterTopic.addEventListener("change", function () {
+                const topicId = filterTopic.value;
+                const options = filterLesson.querySelectorAll("option[data-topic-id]");
+                let matched = false;
+                options.forEach(opt => {
+                    const optTopicId = opt.getAttribute("data-topic-id");
+                    if (!topicId || optTopicId === topicId) {
+                        opt.style.display = "";
+                        if (opt.selected) matched = true;
+                    } else {
+                        opt.style.display = "none";
+                        if (opt.selected) opt.selected = false;
+                    }
+                });
+                if (!matched && filterLesson.value !== "") {
+                    const defaultOpt = filterLesson.querySelector("option[value='']");
+                    if (defaultOpt) defaultOpt.selected = true;
+                }
             });
         }
     });

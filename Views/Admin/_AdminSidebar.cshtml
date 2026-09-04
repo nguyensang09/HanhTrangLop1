@@ -31,13 +31,9 @@
             <span class="material-symbols-outlined">family_restroom</span>
             <span class="nav-text">Phụ huynh & Bé</span>
         </a>
-        <a class="@(currentAction == "LearningItems" || currentAction == "LearningItemDetail" || currentAction == "EditLearningItem" ? "active" : "")" asp-controller="Admin" asp-action="LearningItems" data-tooltip="Kho nội dung" title="Kho nội dung">
-            <span class="material-symbols-outlined">library_books</span>
-            <span class="nav-text">Kho nội dung</span>
-        </a>
-        <a class="@(currentAction == "Catalogs" ? "active" : "")" asp-controller="Admin" asp-action="Catalogs" data-tooltip="Cấu trúc chương trình" title="Cấu trúc chương trình">
+        <a class="@(currentAction == "LearningItems" || currentAction == "LearningItemDetail" || currentAction == "EditLearningItem" || currentAction == "Catalogs" ? "active" : "")" asp-controller="Admin" asp-action="LearningItems" data-tooltip="Kho bài học & Chương trình" title="Kho bài học & Chương trình">
             <span class="material-symbols-outlined">account_tree</span>
-            <span class="nav-text">Cấu trúc chương trình</span>
+            <span class="nav-text">Kho bài học & Chương trình</span>
         </a>
         <a class="@(currentAction == "MediaLibrary" ? "active" : "")" asp-controller="Admin" asp-action="MediaLibrary" data-tooltip="Thư viện hình ảnh" title="Thư viện hình ảnh">
             <span class="material-symbols-outlined">perm_media</span>

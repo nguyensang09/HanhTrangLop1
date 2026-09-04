@@ -1,6 +1,6 @@
 @model AdminLearningItemListViewModel
 @{
-    ViewData["Title"] = "Kho nội dung";
+    ViewData["Title"] = "Kho bài học & Cấu trúc chương trình";
 }
 
 <section class="admin-layout">
@@ -11,16 +11,14 @@
         {
             <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
         }
+        
+        <!-- Header chính -->
         <div class="dashboard-header">
             <div>
-                <p class="eyebrow">Quản trị nội dung</p>
-                <h1>Kho bài học</h1>
+                <p class="eyebrow">Phân loại & Quản trị chương trình học</p>
+                <h1>Kho bài học & Cấu trúc chương trình</h1>
             </div>
             <div class="hero-actions">
-                <a class="app-btn app-btn-muted app-btn-small" asp-action="Catalogs">
-                    <span class="material-symbols-outlined">account_tree</span>
-                    Cấu trúc chương trình
-                </a>
                 <a class="app-btn app-btn-small" asp-action="CreateChoice" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId">
                     <span class="material-symbols-outlined">add</span>
                     Tạo bài tương tác
@@ -31,22 +29,60 @@
                 </a>
                 <button class="app-btn app-btn-small" type="button" data-sync-voice-btn title="Rà soát voice có sẵn và tự động sinh Voice VI & EN còn thiếu cho toàn bộ bài học">
                     <span class="material-symbols-outlined">sync</span>
-                    Đồng bộ & Tự sinh Voice
+                    Đồng bộ Voice toàn hệ thống
                 </button>
-                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache">
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache" title="Thư viện âm thanh và kiểm soát giọng đọc">
                     <span class="material-symbols-outlined">graphic_eq</span>
                     Kiểm soát voice
                 </a>
                 <form class="inline-action-form" asp-action="ReseedLessons" method="post">
                     <button class="app-btn app-btn-muted app-btn-small" type="submit" title="Đồng bộ lại cấu trúc kho bài học gốc">
                         <span class="material-symbols-outlined">refresh</span>
-                        Nạp lại kho bài gốc
+                        Nạp lại kho gốc
                     </button>
                 </form>
                 <a class="app-btn app-btn-muted app-btn-small" asp-action="Index">Dashboard</a>
             </div>
         </div>
 
+        <!-- Thống kê tổng thể độ phủ chương trình (Hợp nhất từ Catalogs) -->
+        <div class="curriculum-summary mb-4">
+            <div class="curriculum-stat-card">
+                <span class="material-symbols-outlined icon-wrap" style="color:#ea580c;">category</span>
+                <div>
+                    <strong>@Model.TotalGroups</strong>
+                    <span>Nhóm kỹ năng</span>
+                </div>
+            </div>
+            <div class="curriculum-stat-card">
+                <span class="material-symbols-outlined icon-wrap" style="color:#0284c7;">topic</span>
+                <div>
+                    <strong>@Model.StandardTopicsCount</strong>
+                    <span>Chủ đề chuẩn</span>
+                </div>
+            </div>
+            <div class="curriculum-stat-card">
+                <span class="material-symbols-outlined icon-wrap" style="color:#16a34a;">menu_book</span>
+                <div>
+                    <strong>@Model.TotalItems</strong>
+                    <span>Bài học hiện có</span>
+                </div>
+            </div>
+            <div class="curriculum-stat-card highlight-card">
+                <span class="material-symbols-outlined icon-wrap" style="color:#8b5cf6;">verified</span>
+                <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                        <strong>@Model.OverallCoveragePercentage%</strong>
+                        <span style="font-size:12px; color:#64748b; font-weight:600;">Độ phủ bài học</span>
+                    </div>
+                    <div class="curriculum-progress-mini">
+                        <span style="width:@Model.OverallCoveragePercentage%;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bộ Lọc & Tìm Kiếm Bài Học -->
         <form class="soft-card admin-filter learning-filter-form" asp-action="LearningItems" method="get" id="learningFilterForm">
             <div class="filter-field search-field">
                 <label for="search">Tìm kiếm bài học</label>
@@ -76,13 +112,22 @@
                 </select>
             </div>
             <div class="filter-field">
-                <label for="status">Trạng thái</label>
+                <label for="status">Trạng thái bài</label>
                 <select id="status" name="status" class="form-control">
                     <option value="">Tất cả</option>
                     <option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option>
                     <option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option>
                     <option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option>
                     <option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="voiceStatus">Trạng thái Voice</label>
+                <select id="voiceStatus" name="voiceStatus" class="form-control">
+                    <option value="">Tất cả voice</option>
+                    <option value="ready" selected="@(Model.VoiceFilter == "ready")">Đủ cả VI & EN</option>
+                    <option value="missing" selected="@(Model.VoiceFilter == "missing")">Thiếu voice (chưa đủ)</option>
+                    <option value="none" selected="@(Model.VoiceFilter == "none")">Chưa có voice</option>
                 </select>
             </div>
             <div class="filter-field">
@@ -118,6 +163,7 @@
             </div>
         </form>
 
+        <!-- Thanh điều khiển Cây Thư Mục -->
         <div class="tree-control-bar">
             <div class="tree-summary-chips">
                 <div class="tree-summary-chip">
@@ -155,6 +201,7 @@
             </div>
         </div>
 
+        <!-- Cây Phân Cấp Chương Trình & Bài Học -->
         <div class="learning-tree-container" id="learningTreeRoot">
             @if (Model.TreeGroups.Count == 0)
             {
@@ -188,6 +235,12 @@
                                 <div class="tree-group-title-row">
                                     <h2 class="tree-group-title">@groupItem.SkillGroup.Name</h2>
                                     <span class="tree-count-badge group-count">@groupItem.LearningItemCount bài</span>
+                                    <div class="group-coverage-wrap" title="Độ phủ bài học của nhóm: @groupItem.CoveragePercentage%">
+                                        <div class="group-coverage-bar">
+                                            <span class="group-coverage-fill" style="width:@groupItem.CoveragePercentage%;"></span>
+                                        </div>
+                                        <span class="group-coverage-text">@groupItem.CoveragePercentage% độ phủ</span>
+                                    </div>
                                 </div>
                                 @if (!string.IsNullOrWhiteSpace(groupItem.SkillGroup.Description))
                                 {
@@ -206,13 +259,16 @@
                             <div class="tree-topics-list">
                                 @foreach (var topicItem in groupItem.Topics)
                                 {
-                                    <div class="tree-topic-item @(Model.HasActiveFilter && topicItem.LearningItemCount > 0 ? "is-expanded" : "")" data-topic-node>
+                                    var hasLessons = topicItem.LearningItemCount > 0;
+                                    <div class="tree-topic-item @(Model.HasActiveFilter && hasLessons ? "is-expanded" : "")" data-topic-node>
                                         <header class="tree-topic-header" data-toggle-trigger>
                                             <button type="button" class="tree-toggle-btn small-toggle" aria-label="Đóng mở chủ đề" title="Đóng / Mở chủ đề">
                                                 <span class="material-symbols-outlined tree-chevron">chevron_right</span>
                                             </button>
                                             <div class="tree-topic-icon-wrap">
-                                                <span class="material-symbols-outlined tree-topic-icon">@(topicItem.LearningItemCount > 0 ? "folder_open" : "folder")</span>
+                                                <span class="material-symbols-outlined tree-topic-icon @(hasLessons ? "topic-has-content" : "topic-empty")">
+                                                    @(hasLessons ? "check_circle" : "radio_button_unchecked")
+                                                </span>
                                             </div>
                                             <div class="tree-topic-info">
                                                 <div class="tree-topic-title-row">
@@ -226,14 +282,14 @@
                                                         <div class="topic-templates-chips">
                                                             @foreach (var template in topicItem.AllowedTemplates)
                                                             {
-                                                                <span class="template-chip" title="Dạng: @template.Name">
+                                                                <span class="template-chip" title="Dạng chuẩn: @template.Name">
                                                                     <span class="material-symbols-outlined">@template.IconKey</span>
                                                                     @template.Name
                                                                 </span>
                                                             }
                                                             @if (topicItem.AllowsTracing)
                                                             {
-                                                                <span class="template-chip tracing" title="Dạng: Tô nét">
+                                                                <span class="template-chip tracing" title="Dạng chuẩn: Tô nét">
                                                                     <span class="material-symbols-outlined">draw</span>
                                                                     Tô nét
                                                                 </span>
@@ -242,16 +298,23 @@
                                                     }
                                                 </div>
                                             </div>
+                                            
+                                            <!-- Dàn nút Tạo nhanh theo từng Template chuẩn của Topic (Kế thừa trọn vẹn từ Catalogs) -->
                                             <div class="tree-topic-actions" onclick="event.stopPropagation();">
-                                                <a class="icon-button" asp-action="CreateChoice" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" title="Tạo bài cho @topicItem.Topic.Name">
-                                                    <span class="material-symbols-outlined">add_circle</span>
-                                                </a>
-                                                @if (topicItem.AllowsTracing)
-                                                {
-                                                    <a class="icon-button" asp-action="CreateTracing" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" title="Tạo bài tô nét">
-                                                        <span class="material-symbols-outlined">draw</span>
-                                                    </a>
-                                                }
+                                                <div class="topic-quick-create-bar" title="Tạo nhanh bài học chuẩn sư phạm">
+                                                    @foreach (var template in topicItem.AllowedTemplates)
+                                                    {
+                                                        <a class="icon-button" asp-action="CreateChoice" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" asp-route-interactionType="@template.InteractionType" title="Tạo bài @template.Name cho @topicItem.Topic.Name" aria-label="Tạo bài @template.Name">
+                                                            <span class="material-symbols-outlined">@template.IconKey</span>
+                                                        </a>
+                                                    }
+                                                    @if (topicItem.AllowsTracing)
+                                                    {
+                                                        <a class="icon-button" asp-action="CreateTracing" asp-route-skillGroupId="@groupItem.SkillGroup.Id" asp-route-topicId="@topicItem.Topic.Id" title="Tạo bài Tô nét cho @topicItem.Topic.Name" aria-label="Tạo bài tô nét">
+                                                            <span class="material-symbols-outlined">draw</span>
+                                                        </a>
+                                                    }
+                                                </div>
                                             </div>
                                         </header>
 
@@ -270,19 +333,20 @@
                                                     <table class="app-table tree-items-table">
                                                         <thead>
                                                         <tr>
-                                                            <th style="width: 60px;" class="col-secondary">STT</th>
+                                                            <th style="width: 55px;" class="col-secondary">STT</th>
                                                             <th>Tên bài học</th>
                                                             <th class="col-secondary">Dạng bài</th>
                                                             <th class="col-secondary">Số câu hỏi</th>
                                                             <th>Trạng thái</th>
-                                                            <th style="width: 220px; text-align: right;">Thao tác</th>
+                                                            <th style="width: 130px; text-align:center;">Voice Song Ngữ</th>
+                                                            <th style="width: 230px; text-align: right;">Thao tác</th>
                                                         </tr>
                                                         </thead>
                                                         <tbody>
                                                         @foreach (var item in topicItem.Items)
                                                         {
                                                             var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
-                                                            <tr>
+                                                            <tr data-lesson-row-id="@item.Id">
                                                                 <td class="col-secondary">
                                                                     <span class="sort-badge">#@item.SortOrder</span>
                                                                 </td>
@@ -311,6 +375,31 @@
                                                                 <td>
                                                                     <span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span>
                                                                 </td>
+                                                                <td style="text-align:center;">
+                                                                    <div class="lesson-voice-status-cell" data-voice-status-cell="@item.Id">
+                                                                        @if (item.VoiceStatus == "full")
+                                                                        {
+                                                                            <span class="badge-voice-pill voice-ready" title="Đã có đủ cả Voice Tiếng Việt & Tiếng Anh">
+                                                                                <span class="material-symbols-outlined">record_voice_over</span>
+                                                                                Đủ VI & EN
+                                                                            </span>
+                                                                        }
+                                                                        else if (item.VoiceStatus == "partial")
+                                                                        {
+                                                                            <span class="badge-voice-pill voice-partial" title="Đã có một phần voice, cần sinh bổ sung">
+                                                                                <span class="material-symbols-outlined">mic_none</span>
+                                                                                Thiếu voice
+                                                                            </span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="badge-voice-pill voice-none" title="Chưa có voice cho bài học">
+                                                                                <span class="material-symbols-outlined">voice_over_off</span>
+                                                                                Chưa có
+                                                                            </span>
+                                                                        }
+                                                                    </div>
+                                                                </td>
                                                                 <td class="table-actions">
                                                                     <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử giao diện bé học">
                                                                         <span class="material-symbols-outlined">visibility</span>
@@ -330,11 +419,11 @@
                                                                             Sửa
                                                                         </a>
                                                                     }
-                                                                    <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
-                                                                        <button class="mini-action" type="submit" title="Đồng bộ giọng đọc">
-                                                                            <span class="material-symbols-outlined">graphic_eq</span>
-                                                                        </button>
-                                                                    </form>
+                                                                    <!-- Nút kiểm soát Voice mở Modal nghe thử & sinh voice tại chỗ (AJAX) -->
+                                                                    <button class="mini-action voice-action-btn" type="button" data-lesson-voice-btn="@item.Id" title="Kiểm tra & sinh Voice bài học">
+                                                                        <span class="material-symbols-outlined">graphic_eq</span>
+                                                                        Voice
+                                                                    </button>
                                                                     <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
                                                                         <button class="mini-action danger-link" type="submit" title="Xóa bài học">
                                                                             <span class="material-symbols-outlined">delete</span>
@@ -374,19 +463,20 @@
                                                 <table class="app-table tree-items-table">
                                                     <thead>
                                                     <tr>
-                                                        <th style="width: 60px;">STT</th>
+                                                        <th style="width: 55px;">STT</th>
                                                         <th>Tên bài học</th>
                                                         <th>Dạng bài</th>
                                                         <th>Số câu hỏi</th>
                                                         <th>Trạng thái</th>
-                                                        <th style="width: 220px; text-align: right;">Thao tác</th>
+                                                        <th style="width: 130px; text-align:center;">Voice Song Ngữ</th>
+                                                        <th style="width: 230px; text-align: right;">Thao tác</th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
                                                     @foreach (var item in groupItem.DirectItems)
                                                     {
                                                         var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
-                                                        <tr>
+                                                        <tr data-lesson-row-id="@item.Id">
                                                             <td>
                                                                 <span class="sort-badge">#@item.SortOrder</span>
                                                             </td>
@@ -415,6 +505,31 @@
                                                             <td>
                                                                 <span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span>
                                                             </td>
+                                                            <td style="text-align:center;">
+                                                                <div class="lesson-voice-status-cell" data-voice-status-cell="@item.Id">
+                                                                    @if (item.VoiceStatus == "full")
+                                                                    {
+                                                                        <span class="badge-voice-pill voice-ready">
+                                                                            <span class="material-symbols-outlined">record_voice_over</span>
+                                                                            Đủ VI & EN
+                                                                        </span>
+                                                                    }
+                                                                    else if (item.VoiceStatus == "partial")
+                                                                    {
+                                                                        <span class="badge-voice-pill voice-partial">
+                                                                            <span class="material-symbols-outlined">mic_none</span>
+                                                                            Thiếu voice
+                                                                        </span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="badge-voice-pill voice-none">
+                                                                            <span class="material-symbols-outlined">voice_over_off</span>
+                                                                            Chưa có
+                                                                        </span>
+                                                                    }
+                                                                </div>
+                                                            </td>
                                                             <td class="table-actions">
                                                                 <a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id" title="Xem thử" target="_blank">
                                                                     <span class="material-symbols-outlined">visibility</span>
@@ -434,11 +549,10 @@
                                                                         Sửa
                                                                     </a>
                                                                 }
-                                                                <form class="inline-action-form" asp-action="GenerateLearningItemAudio" asp-route-id="@item.Id" method="post">
-                                                                    <button class="mini-action" type="submit" title="Đồng bộ giọng đọc">
-                                                                        <span class="material-symbols-outlined">graphic_eq</span>
-                                                                    </button>
-                                                                </form>
+                                                                <button class="mini-action voice-action-btn" type="button" data-lesson-voice-btn="@item.Id" title="Kiểm tra & sinh Voice bài học">
+                                                                    <span class="material-symbols-outlined">graphic_eq</span>
+                                                                    Voice
+                                                                </button>
                                                                 <form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete>
                                                                     <button class="mini-action danger-link" type="submit" title="Xóa bài học">
                                                                         <span class="material-symbols-outlined">delete</span>
@@ -461,6 +575,55 @@
         </div>
     </main>
 </section>
+
+<!-- Modal Kiểm Tra & Quản Trị Voice Của Riêng Bài Học (AJAX Modal) -->
+<div class="lesson-voice-modal-backdrop" id="lessonVoiceModal" style="display:none;">
+    <div class="lesson-voice-modal-box">
+        <div class="lesson-voice-modal-header">
+            <div>
+                <span class="lesson-voice-badge" id="lvModalTopicBadge">Chủ đề</span>
+                <h3 class="lesson-voice-modal-title" id="lvModalTitle">Voice Bài Học</h3>
+            </div>
+            <button type="button" class="close-card-btn" id="lvModalCloseBtn" title="Đóng">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="lesson-voice-modal-body">
+            <div id="lvLoading" style="text-align:center; padding:32px 0; color:#64748b;">
+                <span class="material-symbols-outlined" style="font-size:36px; animation:spin 1s linear infinite;">sync</span>
+                <p style="margin-top:8px; font-weight:600;">Đang nạp danh sách âm thanh bài học...</p>
+            </div>
+
+            <div id="lvContent" style="display:none;">
+                <div class="lv-summary-band mb-3">
+                    <div id="lvStatusBadgeWrap"></div>
+                    <p class="lv-summary-note mb-0">Nghe thử phát âm Tiếng Việt (Hoài My - Nữ) và Tiếng Anh (Jenny - Nữ) của từng câu trong bài.</p>
+                </div>
+
+                <div class="lv-prompts-list" id="lvPromptsList">
+                    <!-- Danh sách câu thoại sinh động bằng JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="lesson-voice-modal-footer">
+            <div class="lv-footer-left">
+                <a class="app-btn app-btn-muted app-btn-small" id="lvOpenInVoiceCacheBtn" href="#" target="_blank" title="Mở trong trang Thư viện voice để chỉnh sửa sâu">
+                    <span class="material-symbols-outlined">open_in_new</span>
+                    Mở trong Kiểm soát voice
+                </a>
+            </div>
+            <div class="lv-footer-right" style="display:flex; gap:8px;">
+                <button type="button" class="app-btn app-btn-muted app-btn-small" id="lvModalCancelBtn">Đóng</button>
+                <button type="button" class="app-btn app-btn-small" id="lvRegenerateBtn">
+                    <span class="material-symbols-outlined" id="lvRegenIcon">sync</span>
+                    <span id="lvRegenText">Sinh / Đồng bộ lại Voice bài này</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
 <script>
@@ -487,7 +650,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if (!currentTopicMatched && topicSelect.value !== "") {
-            // Keep default "Tất cả chủ đề" if current topic doesn't belong to group
             const defaultOpt = topicSelect.querySelector("option[value='']");
             if (defaultOpt) defaultOpt.selected = true;
         }
@@ -539,6 +701,166 @@ document.addEventListener("DOMContentLoaded", function () {
                 node.classList.remove("is-expanded");
             });
         });
+    }
+
+    // 4. Modal Quản trị Voice của bài học (AJAX)
+    const modal = document.getElementById("lessonVoiceModal");
+    const closeBtn = document.getElementById("lvModalCloseBtn");
+    const cancelBtn = document.getElementById("lvModalCancelBtn");
+    const loadingEl = document.getElementById("lvLoading");
+    const contentEl = document.getElementById("lvContent");
+    const titleEl = document.getElementById("lvModalTitle");
+    const topicBadgeEl = document.getElementById("lvModalTopicBadge");
+    const statusBadgeWrap = document.getElementById("lvStatusBadgeWrap");
+    const promptsListEl = document.getElementById("lvPromptsList");
+    const openInVcBtn = document.getElementById("lvOpenInVoiceCacheBtn");
+    const regenBtn = document.getElementById("lvRegenerateBtn");
+    const regenIcon = document.getElementById("lvRegenIcon");
+    const regenText = document.getElementById("lvRegenText");
+
+    let currentLessonId = null;
+
+    const closeModal = () => {
+        if (modal) modal.style.display = "none";
+        // Dừng tất cả audio đang phát
+        document.querySelectorAll("#lessonVoiceModal audio").forEach(a => a.pause());
+    };
+
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+    if (modal) {
+        modal.addEventListener("click", function(e) {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    const renderVoiceModal = (data) => {
+        titleEl.textContent = data.title || "Voice Bài Học";
+        topicBadgeEl.textContent = `${data.skillGroupName} • ${data.topicName}`;
+        openInVcBtn.href = `/admin/voice-cache?learningItemId=${data.id}`;
+
+        let statusHtml = "";
+        if (data.voiceStatus === "full") {
+            statusHtml = `<span class="badge-voice-pill voice-ready" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">record_voice_over</span> Đã có đầy đủ Voice VI & EN</span>`;
+        } else if (data.voiceStatus === "partial") {
+            statusHtml = `<span class="badge-voice-pill voice-partial" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">mic_none</span> Đang thiếu file Voice (VI hoặc EN)</span>`;
+        } else {
+            statusHtml = `<span class="badge-voice-pill voice-none" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">voice_over_off</span> Bài học chưa có file Voice nào</span>`;
+        }
+        statusBadgeWrap.innerHTML = statusHtml;
+
+        let promptsHtml = "";
+        if (!data.prompts || data.prompts.length === 0) {
+            promptsHtml = `<div style="text-align:center; padding:24px; color:#64748b;">Không có câu thoại nào trong bài học này.</div>`;
+        } else {
+            data.prompts.forEach(p => {
+                promptsHtml += `
+                    <div class="lv-prompt-card">
+                        <div class="lv-prompt-header">
+                            <span class="lv-prompt-type">${escapeHtml(p.typeName)}</span>
+                        </div>
+                        <div class="lv-prompt-cols">
+                            <div class="lv-prompt-col">
+                                <span class="lv-lang-tag vi">🇻🇳 Tiếng Việt</span>
+                                <p class="lv-prompt-text">${escapeHtml(p.text)}</p>
+                                ${p.hasVi ? `
+                                    <div class="lv-audio-wrap">
+                                        <audio controls preload="none" src="${p.audioUrl}" class="lv-audio-player"></audio>
+                                    </div>
+                                ` : `<span class="badge-missing-voice">Chưa có âm thanh VI</span>`}
+                            </div>
+                            <div class="lv-prompt-col">
+                                <span class="lv-lang-tag en">🇬🇧 English</span>
+                                <p class="lv-prompt-text en">${p.textEn ? escapeHtml(p.textEn) : `<em style="color:#94a3b8;">Chưa có bản dịch</em>`}</p>
+                                ${p.hasEn ? `
+                                    <div class="lv-audio-wrap">
+                                        <audio controls preload="none" src="${p.audioUrlEn}" class="lv-audio-player"></audio>
+                                    </div>
+                                ` : `<span class="badge-missing-voice">Chưa có âm thanh EN</span>`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        promptsListEl.innerHTML = promptsHtml;
+
+        loadingEl.style.display = "none";
+        contentEl.style.display = "block";
+    };
+
+    const loadVoiceDetails = async (lessonId) => {
+        currentLessonId = lessonId;
+        modal.style.display = "flex";
+        loadingEl.style.display = "block";
+        contentEl.style.display = "none";
+
+        try {
+            const resp = await fetch(`/admin/learning-items/${lessonId}/voice-details`);
+            if (!resp.ok) throw new Error("Không thể tải thông tin voice.");
+            const data = await resp.json();
+            renderVoiceModal(data);
+        } catch (err) {
+            loadingEl.innerHTML = `<p style="color:#ef4444; font-weight:700;">Lỗi: ${err.message}</p>`;
+        }
+    };
+
+    // Bắt sự kiện click nút Voice trên từng bài học
+    document.querySelectorAll("[data-lesson-voice-btn]").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const lessonId = btn.getAttribute("data-lesson-voice-btn");
+            if (lessonId) loadVoiceDetails(lessonId);
+        });
+    });
+
+    // Sinh voice AJAX khi bấm nút trong modal
+    if (regenBtn) {
+        regenBtn.addEventListener("click", async function () {
+            if (!currentLessonId) return;
+            regenBtn.disabled = true;
+            regenIcon.style.animation = "spin 1s linear infinite";
+            regenText.textContent = "Đang sinh Voice chuẩn...";
+
+            const csrf = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+            try {
+                const formData = new FormData();
+                formData.append("__RequestVerificationToken", csrf);
+
+                const resp = await fetch(`/admin/learning-items/${currentLessonId}/generate-audio-ajax`, {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    // Cập nhật lại badge trên bảng chính
+                    const cell = document.querySelector(`[data-voice-status-cell="${currentLessonId}"]`);
+                    if (cell) {
+                        if (result.voiceStatus === "full") {
+                            cell.innerHTML = `<span class="badge-voice-pill voice-ready"><span class="material-symbols-outlined">record_voice_over</span> Đủ VI & EN</span>`;
+                        } else if (result.voiceStatus === "partial") {
+                            cell.innerHTML = `<span class="badge-voice-pill voice-partial"><span class="material-symbols-outlined">mic_none</span> Thiếu voice</span>`;
+                        } else {
+                            cell.innerHTML = `<span class="badge-voice-pill voice-none"><span class="material-symbols-outlined">voice_over_off</span> Chưa có</span>`;
+                        }
+                    }
+                    // Tải lại chi tiết trong modal để phát ngay
+                    await loadVoiceDetails(currentLessonId);
+                } else {
+                    alert(result.message || "Không thể sinh voice.");
+                }
+            } catch (err) {
+                alert("Lỗi khi kết nối sinh voice: " + err.message);
+            } finally {
+                regenBtn.disabled = false;
+                regenIcon.style.animation = "";
+                regenText.textContent = "Sinh / Đồng bộ lại Voice bài này";
+            }
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 });
 </script>

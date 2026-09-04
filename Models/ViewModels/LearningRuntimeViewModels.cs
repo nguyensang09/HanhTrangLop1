@@ -74,10 +74,10 @@ public class CreateChoiceItemViewModel
     [Required(ErrorMessage = "Vui lòng chọn dạng tương tác.")]
     public string InteractionType { get; set; } = InteractionTypes.SingleChoice;
 
-    [Required(ErrorMessage = "Vui lòng nhập lời hướng dẫn."), MaxLength(500)]
+    [MaxLength(500)]
     public string InstructionText { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Vui lòng nhập câu hỏi."), MaxLength(500)]
+    [Required(ErrorMessage = "Vui lòng nhập câu hỏi / yêu cầu bài học."), MaxLength(500)]
     public string PromptText { get; set; } = string.Empty;
 
     public string? ChoiceA { get; set; }
