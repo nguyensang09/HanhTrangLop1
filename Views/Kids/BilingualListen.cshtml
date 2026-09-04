@@ -76,65 +76,42 @@
 }
 
 <section class="kid-screen bilingual-listen-screen" data-child-id="@Model.Id">
-    <!-- Topbar Hồ Sơ Bé Chuẩn Claymorphism -->
-    <div class="kid-topbar home-topbar clay-card bilingual-topbar">
-        <div class="kid-header-profile">
-            <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Về trang chủ">
+    <!-- ==================== TOPBAR CHUẨN ĐỒNG NHẤT KHÔNG GIAN BÉ ==================== -->
+    <header class="child-zone-header clay-card">
+        <div class="child-header-left">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
-            <div class="squirrel-avatar-wrap">
-                <img src="@ResolveAvatar(Model.AvatarKey)" alt="Ảnh bé" class="squirrel-avatar" />
-            </div>
-            <div>
-                <p class="eyebrow">Âm Thanh Song Ngữ 🎧</p>
-                <h1>Bé @(Model.Nickname) Luyện Nghe 🌟</h1>
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
+                <img src="@ResolveAvatar(Model.AvatarKey)" alt="Ảnh bé" class="child-avatar-img" />
+                <span class="child-avatar-switch-badge" title="Đổi bé">
+                    <span class="material-symbols-outlined">sync_alt</span>
+                </span>
+            </a>
+            <div class="child-header-greeting">
+                <span class="child-hi-eyebrow">Âm Thanh Song Ngữ 🎧</span>
+                <strong class="child-name-display">Bé @(Model.Nickname) Luyện Nghe</strong>
             </div>
         </div>
-        <div class="kid-topbar-actions">
-            <div class="star-pill clay-button bilingual-counter-pill" id="bilingualCounterPill" title="Tiến độ thẻ đã khám phá">
-                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
-                <span id="counterText">0/@totalItems đã nghe</span>
+
+        <div class="child-header-center">
+            <div class="child-star-badge-3d" id="bilingualCounterPill" title="Tiến độ thẻ đã khám phá">
+                <span class="star-3d-icon">⭐</span>
+                <span class="star-number-display" id="counterText">0/@totalItems</span>
+                <span class="star-label-text">đã nghe</span>
             </div>
-            <button type="button" class="clay-button bilingual-tour-btn" id="autoplayTourBtn" title="Tự động phát lần lượt các thẻ">
-                <span class="material-symbols-outlined tour-icon">play_circle</span>
-                <span class="tour-label">Tự động phát</span>
+        </div>
+
+        <div class="child-header-right">
+            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh" aria-label="Góc phụ huynh">
+                <span class="material-symbols-outlined lock-icon">lock</span>
+                <span class="lock-label-text">Ba mẹ</span>
             </button>
         </div>
-    </div>
+    </header>
 
-    <!-- Banner Khích Lệ Cùng Bạn Sóc Nâu -->
-    <div class="bilingual-hero-banner clay-card">
-        <div class="bilingual-hero-avatar">
-            <img src="/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="hero-mascot-img" />
-            <div class="sound-wave-badge" title="Đang sẵn sàng phát âm">
-                <span class="material-symbols-outlined">graphic_eq</span>
-            </div>
-        </div>
-        <div class="bilingual-hero-content">
-            <div class="hero-badge-pill">
-                <span class="material-symbols-outlined">record_voice_over</span>
-                <span>Phát âm chuẩn tiếng Anh bản ngữ & Tiếng Việt</span>
-            </div>
-            <h2>Chạm thẻ để nghe đọc & xem tranh sinh động! ✨</h2>
-            <p>Bé hãy chạm vào bất kỳ thẻ chữ cái hoặc chữ số nào bên dưới để nghe cách phát âm chuẩn, học từ vựng và câu ví dụ thú vị nhé!</p>
-            
-            <div class="hero-quick-tools">
-                <!-- Tốc độ đọc -->
-                <div class="speed-toggle-group" role="group" aria-label="Tốc độ đọc">
-                    <span class="tool-label">Tốc độ:</span>
-                    <button type="button" class="speed-toggle-btn clay-button active" data-speed="normal" title="Tốc độ nghe bình thường">
-                        <span>⚡ Chuẩn</span>
-                    </button>
-                    <button type="button" class="speed-toggle-btn clay-button" data-speed="slow" title="Tốc độ đọc chậm từng âm">
-                        <span>🐢 Rùa con (Chậm)</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thanh Lọc Tab & Tìm Kiếm Nhanh -->
-    <div class="bilingual-controls-bar">
+    <!-- Thanh Điều Khiển Tinh Gọn (Filter Tabs + Search + Speed + Autoplay) -->
+    <div class="bilingual-controls-bar clay-card">
         <div class="bilingual-tab-bar" role="tablist">
             <button type="button" class="bilingual-tab-btn clay-button active" data-tab="all" role="tab" aria-selected="true">
                 <span class="material-symbols-outlined">auto_awesome</span>
@@ -153,11 +130,29 @@
             </button>
         </div>
 
-        <div class="bilingual-search-box">
-            <span class="material-symbols-outlined search-icon">search</span>
-            <input type="text" id="bilingualSearchInput" placeholder="Tìm chữ, số hoặc từ..." aria-label="Tìm kiếm thẻ song ngữ" autocomplete="off" />
-            <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Xóa tìm kiếm" hidden>
-                <span class="material-symbols-outlined">close</span>
+        <div class="bilingual-tools-cluster">
+            <div class="bilingual-search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" id="bilingualSearchInput" placeholder="Tìm chữ, số..." aria-label="Tìm kiếm thẻ song ngữ" autocomplete="off" />
+                <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Xóa tìm kiếm" hidden>
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Tốc độ đọc tích hợp siêu gọn -->
+            <div class="speed-toggle-group-compact" role="group" aria-label="Tốc độ đọc">
+                <button type="button" class="speed-toggle-btn active" data-speed="normal" title="Tốc độ nghe bình thường">
+                    <span>⚡ Chuẩn</span>
+                </button>
+                <button type="button" class="speed-toggle-btn" data-speed="slow" title="Tốc độ đọc chậm từng âm">
+                    <span>🐢 Chậm</span>
+                </button>
+            </div>
+
+            <!-- Nút tự động phát -->
+            <button type="button" class="bilingual-tour-btn-compact" id="autoplayTourBtn" title="Tự động phát lần lượt các thẻ">
+                <span class="material-symbols-outlined tour-icon">play_circle</span>
+                <span class="tour-label">Tự động phát</span>
             </button>
         </div>
     </div>

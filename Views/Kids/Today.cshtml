@@ -1,7 +1,13 @@
 @model TodayLessonViewModel
 @{
-    ViewData["Title"] = $"Lộ trình Ngày {Model.SelectedDayNumber}";
+    ViewData["Title"] = $"Lộ trình Ngày {Model.SelectedDayNumber} - Hành Trang Lớp 1";
     var progressPercent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
+    var isAllDone = Model.TotalCount > 0 && Model.CompletedCount == Model.TotalCount;
+    var totalStarsToday = Model.Steps.Sum(x => x.StarsEarned);
+    var activeStep = Model.Steps.FirstOrDefault(x => x.Status == TodayLessonStepStatus.Active)
+                     ?? Model.Steps.FirstOrDefault(x => x.Status == TodayLessonStepStatus.NeedsPractice)
+                     ?? Model.Steps.FirstOrDefault();
+    var activeStepIndex = activeStep != null ? Model.Steps.ToList().IndexOf(activeStep) + 1 : 1;
 
     string ResolveAvatar(string? key)
     {
@@ -17,26 +23,48 @@
             _ => "/images/mascot-squirrel-3d.png"
         };
     }
+
+    (string Tag, string Icon, string ThemeClass) ResolveSubject(LearningItem item)
+    {
+        var skillCode = item.SkillGroup?.Code?.ToLowerInvariant() ?? "";
+        var interaction = item.InteractionType?.ToLowerInvariant() ?? "";
+
+        if (interaction == InteractionTypes.Tracing)
+        {
+            return ("Bé tập tô", "draw", "quest-theme-coral");
+        }
+
+        return skillCode switch
+        {
+            "chu-cai" => ("Chữ cái & Nét", "menu_book", "quest-theme-amber"),
+            "chu-so" or "so-luong-toan" => ("Toán & Chữ số", "calculate", "quest-theme-mint"),
+            "tu-duy-logic" or "hinh-dang-khong-gian" => ("Tư duy & Logic", "extension", "quest-theme-cyan"),
+            "ky-nang-song" => ("Kỹ năng sống", "volunteer_activism", "quest-theme-purple"),
+            "ngon-ngu" => ("Vốn từ & Âm", "record_voice_over", "quest-theme-pink"),
+            _ => (item.SkillGroup?.Name ?? "Bài học vui", "school", "quest-theme-amber")
+        };
+    }
 }
 
 <section class="kid-screen kid-today-screen">
-    <!-- Topbar chuẩn không gian bé -->
+    <!-- ==================== TOPBAR CHUẨN KHÔNG GIAN BÉ ==================== -->
     <header class="child-zone-header clay-card">
         <div class="child-header-left">
-            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ" onclick="playAudioChime('tap')">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
-            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác" onclick="playAudioChime('tap')">
                 <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
                 <span class="child-avatar-switch-badge" title="Đổi bé">
                     <span class="material-symbols-outlined">sync_alt</span>
                 </span>
             </a>
             <div class="child-header-greeting">
-                <span class="child-hi-eyebrow">Hành trình theo ngày</span>
-                <strong class="child-name-display">@Model.DayThemeTitle</strong>
+                <span class="child-hi-eyebrow">Hành trình 20 ngày học</span>
+                <strong class="child-name-display">Ngày @Model.SelectedDayNumber</strong>
             </div>
         </div>
+
         <div class="child-header-center">
             <div class="child-star-badge-3d" title="Số bài hoàn thành trong ngày">
                 <span class="star-3d-icon">⭐</span>
@@ -44,118 +72,365 @@
                 <span class="star-label-text">bài đạt</span>
             </div>
         </div>
+
         <div class="child-header-right">
-            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+            <button type="button" class="child-lock-gate-btn" onclick="playAudioChime('tap'); openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
                 <span class="material-symbols-outlined lock-icon">lock</span>
                 <span class="lock-label-text">Ba mẹ</span>
             </button>
         </div>
     </header>
 
-    <!-- Dải Chọn Ngày Học (Daily Roadmap Strip) -->
-    <div class="daily-roadmap-section">
-        <div class="roadmap-section-header">
-            <div class="roadmap-title-row">
-                <span class="material-symbols-outlined">calendar_month</span>
-                <strong>Lộ trình 20 ngày học chuẩn sư phạm</strong>
-            </div>
-            <span class="roadmap-sub">Bấm vào các ngày trước để học lại bất cứ lúc nào!</span>
-        </div>
-
-        <div class="roadmap-days-strip">
-            @foreach (var day in Model.RoadmapDays)
-            {
-                var isSelected = day.DayNumber == Model.SelectedDayNumber;
-                <a class="roadmap-day-node clay-button @(isSelected ? "is-selected" : "") @(day.IsCompleted ? "is-completed" : "") @(day.IsCurrent ? "is-current" : "") @(day.IsLocked ? "is-locked" : "")"
-                   asp-controller="Kids"
-                   asp-action="Today"
-                   asp-route-day="@(day.IsLocked ? Model.CurrentDayNumber : day.DayNumber)"
-                   title="@day.Title">
-                    <span class="day-badge-num">Ngày @day.DayNumber</span>
-                    <span class="material-symbols-outlined day-icon">
-                        @(day.IsCompleted ? "check_circle" : day.IsCurrent ? "play_circle" : day.IsLocked ? "lock" : "history")
-                    </span>
-                    <span class="day-status-text">
-                        @(day.IsCompleted ? "Đã xong" : day.IsCurrent ? "Hôm nay" : day.IsLocked ? "Chưa mở" : "Ôn lại")
-                    </span>
-                </a>
-            }
-        </div>
-    </div>
-
-    <!-- Progress Card Của Ngày Đang Chọn -->
-    <div class="soft-card clay-card today-progress-card">
-        <div class="progress-info-row">
-            <div class="progress-stats">
-                <span class="progress-count-pill">Hoàn thành @Model.CompletedCount/@Model.TotalCount bài học</span>
-                <span class="progress-time-hint">🌿 Mỗi ngày học 10–15 phút để hình thành thói quen tự giác!</span>
-            </div>
-            <span class="progress-percent-label">@progressPercent%</span>
-        </div>
-        <div class="progress-track">
-            <div class="progress-bar-fill" style="width:@progressPercent%"></div>
-        </div>
-    </div>
-
-    <!-- Learning Path Steps -->
-    <div class="today-line">
-        @for (var i = 0; i < Model.Steps.Count; i++)
-        {
-            var step = Model.Steps[i];
-            var statusClass = step.Status.ToString().ToLowerInvariant();
-            <article class="today-step @statusClass clay-card">
-                <div class="step-dot @statusClass">
-                    <span class="material-symbols-outlined">
-                        @(step.Status == TodayLessonStepStatus.Completed ? "check" :
-                            step.Status == TodayLessonStepStatus.NeedsPractice ? "refresh" :
-                            step.Status == TodayLessonStepStatus.Active ? "play_arrow" : "lock")
-                    </span>
-                </div>
-                <div class="step-card-content">
-                    <div class="step-status-tag @statusClass">
-                        @(step.Status == TodayLessonStepStatus.Completed ? $"✨ Hoàn thành (+{step.StarsEarned} sao)" :
-                            step.Status == TodayLessonStepStatus.NeedsPractice ? "🔄 Cần luyện thêm" :
-                            step.Status == TodayLessonStepStatus.Active ? "🔥 Đang học" : "🔒 Sắp mở")
-                    </div>
-                    <h2>@step.Item.Title</h2>
-                    <p>@step.Item.InstructionText</p>
-                    @if (step.Status != TodayLessonStepStatus.Locked)
+    <div class="today-content-wrap">
+        <!-- ==================== DẢI CHỌN 20 NGÀY SIÊU GỌN (COMPACT DAY STRIP) ==================== -->
+        <div class="today-compact-strip-bar clay-card">
+            <button type="button" class="strip-arrow-btn" onclick="scrollRoadmap(-1)" aria-label="Ngày trước" title="Lùi lại">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <div class="compact-days-track" id="roadmapStripTrack">
+                @foreach (var day in Model.RoadmapDays)
+                {
+                    if (day.IsLocked)
                     {
-                        <a class="app-btn app-btn-small clay-button step-action-btn" asp-controller="Kids" asp-action="Learn" asp-route-id="@step.Item.Id">
-                            <span class="material-symbols-outlined">@(step.Status == TodayLessonStepStatus.Completed ? "replay" : "play_circle")</span>
-                            <span>@(step.Status == TodayLessonStepStatus.Completed ? "Học lại bài" : "Vào học ngay")</span>
+                        <div class="day-pill-item is-locked" title="Ngày @day.DayNumber (Chưa mở khóa)">
+                            <span class="pill-day-label">Ngày @day.DayNumber</span>
+                            <span class="material-symbols-outlined pill-lock-icon">lock</span>
+                        </div>
+                    }
+                    else
+                    {
+                        var isSelected = day.DayNumber == Model.SelectedDayNumber;
+                        <a class="day-pill-item @(isSelected ? "is-selected" : "") @(day.IsCompleted ? "is-completed" : day.IsCurrent ? "is-current" : "")"
+                           asp-controller="Kids"
+                           asp-action="Today"
+                           asp-route-day="@day.DayNumber"
+                           onclick="playAudioChime('click')"
+                           title="@day.Title">
+                            <span class="pill-day-label">Ngày @day.DayNumber</span>
+                            @if (day.IsCompleted)
+                            {
+                                <span class="material-symbols-outlined pill-check-icon">check_circle</span>
+                            }
+                            else if (day.IsCurrent)
+                            {
+                                <span class="pill-current-dot"></span>
+                            }
                         </a>
                     }
-                </div>
-            </article>
-        }
-    </div>
+                }
+            </div>
+            <button type="button" class="strip-arrow-btn" onclick="scrollRoadmap(1)" aria-label="Ngày sau" title="Xem tiếp">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+        </div>
 
-    <!-- Summary Button -->
-    <div class="today-footer-action">
-        <a class="app-btn app-btn-muted app-btn-wide clay-button" asp-controller="Kids" asp-action="Summary">
-            <span class="material-symbols-outlined">stars</span>
-            <span>Tổng kết buổi học & Nhận thưởng</span>
-        </a>
+        <!-- ==================== THANH TIẾP TỤC BÀI HỌC TINH GỌN (FAST ACTION BAR) ==================== -->
+        @if (isAllDone)
+        {
+            <div class="today-fast-action-bar is-all-done clay-card">
+                <div class="fast-action-info">
+                    <span class="material-symbols-outlined fast-action-icon">emoji_events</span>
+                    <div class="fast-action-text-col">
+                        <span class="fast-action-eyebrow">Chúc mừng bé yêu!</span>
+                        <strong class="fast-action-title">Đã hoàn thành xuất sắc tất cả 10 bài hôm nay 🎉</strong>
+                    </div>
+                </div>
+                <a class="fast-action-btn is-summary-btn clay-button" asp-controller="Kids" asp-action="Summary" onclick="playAudioChime('celebrate')">
+                    <span class="material-symbols-outlined">military_tech</span>
+                    <span>Tổng kết & Nhận quà</span>
+                </a>
+            </div>
+        }
+        else if (activeStep != null)
+        {
+            <div class="today-fast-action-bar clay-card">
+                <div class="fast-action-info">
+                    <span class="material-symbols-outlined fast-action-icon">play_circle</span>
+                    <div class="fast-action-text-col">
+                        <span class="fast-action-eyebrow">Bài tiếp theo</span>
+                        <strong class="fast-action-title">Bài @activeStepIndex: @activeStep.Item.Title</strong>
+                    </div>
+                </div>
+                <a class="fast-action-btn clay-button pulse-button" asp-controller="Kids" asp-action="Learn" asp-route-id="@activeStep.Item.Id" onclick="playAudioChime('start')">
+                    <span>Vào học ngay</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+        }
+
+        <!-- ==================== DANH SÁCH 10 BÀI HỌC (QUEST PATH GRID) ==================== -->
+        <section class="today-quests-section">
+            <div class="quests-section-header">
+                <div class="quests-heading-col">
+                    <div class="section-tag-pill">
+                        <span class="material-symbols-outlined">checklist</span>
+                        <span>10 Thử Thách Của Ngày</span>
+                    </div>
+                    <h2 class="quests-title">Nhiệm Vụ Học Tập</h2>
+                </div>
+                <div class="quests-stats-chip">
+                    <span>Đã mở: <strong>@Model.Steps.Count(x => x.Status != TodayLessonStepStatus.Locked)/@Model.TotalCount</strong> bài</span>
+                </div>
+            </div>
+
+            <div class="today-quest-grid">
+                @for (var i = 0; i < Model.Steps.Count; i++)
+                {
+                    var step = Model.Steps[i];
+                    var stepNum = i + 1;
+                    var (subjectTag, subjectIcon, themeClass) = ResolveSubject(step.Item);
+                    var statusClass = step.Status.ToString().ToLowerInvariant();
+                    var isLocked = step.Status == TodayLessonStepStatus.Locked;
+                    var isCompleted = step.Status == TodayLessonStepStatus.Completed;
+                    var isActive = step.Status == TodayLessonStepStatus.Active;
+                    var isNeedsPractice = step.Status == TodayLessonStepStatus.NeedsPractice;
+
+                    <article class="today-quest-card @themeClass @statusClass clay-card @(!isLocked ? "is-clickable" : "")"
+                             data-step-index="@stepNum"
+                             onclick="@(!isLocked ? $"onQuestCardClick('{Url.Action("Learn", "Kids", new { id = step.Item.Id })}')" : "")">
+                        <!-- Card Top Bar: Step number & Subject pill -->
+                        <div class="quest-card-top">
+                            <span class="quest-step-pill">Bài @stepNum</span>
+                            <span class="quest-subject-badge">
+                                <span class="material-symbols-outlined subject-mini-icon">@subjectIcon</span>
+                                <span>@subjectTag</span>
+                            </span>
+                            @if (isCompleted)
+                            {
+                                <span class="quest-stars-ribbon" title="Bé đã nhận @step.StarsEarned sao">
+                                    ⭐ +@step.StarsEarned
+                                </span>
+                            }
+                        </div>
+
+                        <!-- Card Body: Icon & Info -->
+                        <div class="quest-card-body">
+                            <div class="quest-illustration-box">
+                                <span class="material-symbols-outlined quest-main-icon">
+                                    @(step.Item.InteractionType == InteractionTypes.Tracing ? "draw" :
+                                      step.Item.InteractionType == InteractionTypes.Counting ? "pin" :
+                                      step.Item.InteractionType == InteractionTypes.Matching ? "join" :
+                                      subjectIcon)
+                                </span>
+                                @if (isCompleted)
+                                {
+                                    <span class="quest-badge-check material-symbols-outlined">verified</span>
+                                }
+                                else if (isLocked)
+                                {
+                                    <span class="quest-badge-lock material-symbols-outlined">lock</span>
+                                }
+                            </div>
+
+                            <div class="quest-info-box">
+                                <h3 class="quest-title">@step.Item.Title</h3>
+                                <p class="quest-instruction">
+                                    @(string.IsNullOrWhiteSpace(step.Item.InstructionText)
+                                        ? "Cùng Sóc Nâu khám phá bài học tương tác thú vị này nhé!"
+                                        : step.Item.InstructionText)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer: Status & Action Button -->
+                        <div class="quest-card-footer">
+                            <div class="quest-status-chip @statusClass">
+                                @if (isCompleted)
+                                {
+                                    <span class="material-symbols-outlined">check_circle</span>
+                                    <span>Đã hoàn thành</span>
+                                }
+                                else if (isActive)
+                                {
+                                    <span class="material-symbols-outlined pulse-dot">radio_button_checked</span>
+                                    <span>Đang học • Tiếp theo</span>
+                                }
+                                else if (isNeedsPractice)
+                                {
+                                    <span class="material-symbols-outlined">restart_alt</span>
+                                    <span>Cùng luyện lại nhé</span>
+                                }
+                                else
+                                {
+                                    <span class="material-symbols-outlined">lock</span>
+                                    <span>Mở sau bài @(stepNum - 1)</span>
+                                }
+                            </div>
+
+                            <div class="quest-action-slot">
+                                @if (!isLocked)
+                                {
+                                    <a class="quest-play-btn clay-button @(isActive ? "btn-active" : isCompleted ? "btn-replay" : "btn-retry")"
+                                       asp-controller="Kids"
+                                       asp-action="Learn"
+                                       asp-route-id="@step.Item.Id"
+                                       onclick="event.stopPropagation(); playAudioChime('tap');">
+                                        <span class="material-symbols-outlined">
+                                            @(isCompleted ? "replay" : isActive ? "play_arrow" : "refresh")
+                                        </span>
+                                        <span>@(isCompleted ? "Học lại" : isActive ? "Vào học" : "Luyện tập")</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button type="button" class="quest-play-btn btn-locked" disabled>
+                                        <span class="material-symbols-outlined">lock</span>
+                                        <span>Chưa mở</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <!-- ==================== CELEBRATION / SUMMARY FOOTER CARD ==================== -->
+        <div class="today-summary-banner clay-card">
+            <div class="summary-banner-content">
+                <div class="summary-chest-illustration">
+                    <span class="chest-emoji">🎁</span>
+                    <span class="sparkle-emoji">✨</span>
+                </div>
+                <div class="summary-banner-text">
+                    <h3>Tổng kết kết quả & Mở khóa quà tặng</h3>
+                    <p>Mỗi bài học hoàn thành sẽ giúp bé tích lũy thêm sao vàng để mở khóa 18 huy hiệu vinh danh độc đáo!</p>
+                </div>
+            </div>
+            <a class="summary-banner-btn clay-button" asp-controller="Kids" asp-action="Summary" onclick="playAudioChime('celebrate')">
+                <span class="material-symbols-outlined">military_tech</span>
+                <span>Xem Tổng Kết & Nhận Quà</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+        </div>
     </div>
 </section>
 
-<!-- Bottom Nav -->
+<!-- ==================== BOTTOM NAV ĐỒNG BỘ CHUẨN ==================== -->
 <nav class="kid-bottom-nav">
-    <a asp-controller="Kids" asp-action="Home">
+    <a asp-controller="Kids" asp-action="Home" onclick="playAudioChime('tap')">
         <span class="material-symbols-outlined">home</span>
         <span>Trang chủ</span>
     </a>
-    <a class="active" asp-controller="Kids" asp-action="Today">
+    <a class="active" asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')">
         <span class="material-symbols-outlined">edit_square</span>
         <span>Bài tập</span>
     </a>
-    <a asp-controller="Kids" asp-action="Rewards">
+    <a asp-controller="Kids" asp-action="Rewards" onclick="playAudioChime('tap')">
         <span class="material-symbols-outlined">emoji_events</span>
         <span>Quà tặng</span>
     </a>
-    <a href="#" onclick="openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
+    <a href="#" onclick="playAudioChime('tap'); openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
         <span class="material-symbols-outlined">lock</span>
         <span>Phụ huynh</span>
     </a>
 </nav>
+
+@section Scripts {
+    <script>
+        (function () {
+            // Web Audio API Synthesizer cho trải nghiệm tương tác vui tươi
+            let audioCtx = null;
+            function getAudioContext() {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) audioCtx = new AudioContextClass();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                return audioCtx;
+            }
+
+            window.playAudioChime = function (type) {
+                try {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    if (type === 'tap') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(523.25, now); // C5
+                        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                        gain.gain.setValueAtTime(0.12, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                        osc.start(now);
+                        osc.stop(now + 0.12);
+                    } else if (type === 'click') {
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(587.33, now); // D5
+                        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+                        gain.gain.setValueAtTime(0.15, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+                        osc.start(now);
+                        osc.stop(now + 0.16);
+                    } else if (type === 'start') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(440, now); // A4
+                        osc.frequency.setValueAtTime(554.37, now + 0.08); // C#5
+                        osc.frequency.setValueAtTime(659.25, now + 0.16); // E5
+                        gain.gain.setValueAtTime(0.18, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                        osc.start(now);
+                        osc.stop(now + 0.28);
+                    } else if (type === 'celebrate') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(523.25, now);
+                        osc.frequency.setValueAtTime(659.25, now + 0.1);
+                        osc.frequency.setValueAtTime(783.99, now + 0.2);
+                        osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                        osc.start(now);
+                        osc.stop(now + 0.45);
+                    }
+                } catch (e) {
+                    console.warn('Audio chime error:', e);
+                }
+            };
+
+            // Chạm vào thẻ bài học để chuyển trang
+            window.onQuestCardClick = function (url) {
+                playAudioChime('start');
+                setTimeout(function () {
+                    window.location.href = url;
+                }, 140);
+            };
+
+            // Điều khiển cuộn dải trạm 20 ngày
+            window.scrollRoadmap = function (direction) {
+                playAudioChime('tap');
+                const track = document.getElementById('roadmapStripTrack');
+                if (!track) return;
+                const scrollAmount = 260 * direction;
+                track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            };
+
+            // Tự động căn ngày đang chọn vào khung nhìn khi tải trang
+            window.addEventListener('DOMContentLoaded', function () {
+                const track = document.getElementById('roadmapStripTrack');
+                const selectedNode = track ? track.querySelector('.day-pill-item.is-selected') : null;
+                if (track && selectedNode) {
+                    setTimeout(function () {
+                        const trackRect = track.getBoundingClientRect();
+                        const nodeRect = selectedNode.getBoundingClientRect();
+                        const offsetRelativeToTrack = nodeRect.left - trackRect.left + track.scrollLeft;
+
+                        // Nếu là các ngày đầu (offset nhỏ hơn 1/3 khung nhìn), giữ nguyên ở đầu bên trái
+                        if (offsetRelativeToTrack < track.clientWidth / 3) {
+                            track.scrollTo({ left: 0, behavior: 'smooth' });
+                        } else {
+                            const targetLeft = offsetRelativeToTrack - (track.clientWidth / 2) + (selectedNode.offsetWidth / 2);
+                            track.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+                        }
+                    }, 200);
+                }
+            });
+        })();
+    </script>
+}

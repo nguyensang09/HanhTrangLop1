@@ -52,22 +52,9 @@
         </div>
     </header>
 
-    <!-- Progress Card -->
-    <div class="soft-card clay-card tracing-progress-card">
-        <div class="progress-info-row">
-            <div class="progress-stats">
-                <span class="progress-count-pill">Bé đã hoàn thành @Model.CompletedCount/@Model.TotalCount bài tô nét</span>
-                <span class="progress-time-hint">✨ Bé chọn bất kỳ chữ hay số nào bên dưới để luyện nét nhé!</span>
-            </div>
-            <span class="progress-percent-label">@percent%</span>
-        </div>
-        <div class="progress-track">
-            <div class="progress-bar-fill" style="width:@percent%"></div>
-        </div>
-    </div>
-
-    <!-- Navigation Filter Tabs -->
-    <div class="tracing-tab-bar">
+    <!-- Navigation Filter Tabs (Compact Pill Bar) -->
+    <div class="tracing-tab-bar-wrap">
+        <div class="tracing-tab-bar">
         <button type="button" class="tracing-tab-btn clay-button active" data-tab="all">
             <span class="material-symbols-outlined">auto_awesome</span>
             <span>Tất cả</span>
@@ -98,6 +85,7 @@
             <span>Chữ số (0–9)</span>
             <span class="tab-badge">@Model.Numbers.Count</span>
         </button>
+    </div>
     </div>
 
     <!-- 1. Nét cơ bản -->
