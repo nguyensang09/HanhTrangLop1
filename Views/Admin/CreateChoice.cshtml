@@ -46,9 +46,13 @@
         <input asp-for="HintText" type="hidden" />
         <input asp-for="EstimatedMinutes" type="hidden" value="@(Model.EstimatedMinutes > 0 ? Model.EstimatedMinutes : 5)" />
         <input asp-for="AudioUrl" type="hidden" />
+        <input asp-for="AudioUrlEn" type="hidden" />
         <input asp-for="QuestionAudioUrl" type="hidden" />
+        <input asp-for="QuestionAudioUrlEn" type="hidden" />
         <input asp-for="CorrectFeedbackAudioUrl" type="hidden" />
+        <input asp-for="CorrectFeedbackAudioUrlEn" type="hidden" />
         <input asp-for="RetryFeedbackAudioUrl" type="hidden" />
+        <input asp-for="RetryFeedbackAudioUrlEn" type="hidden" />
 
         <aside class="builder-template-panel">
             <h2>Mẫu hoạt động</h2>

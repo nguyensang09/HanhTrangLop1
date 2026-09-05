@@ -345,30 +345,7 @@
 
   function speakWithWebSpeechPromise(text, lang, rate, pitch) {
     return new Promise((resolve) => {
-      if (!text || !window.speechSynthesis) {
-        resolve();
-        return;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = rate;
-      utterance.pitch = pitch;
-
-      const voice = findVoice(lang.split("-")[0]);
-      if (voice) utterance.voice = voice;
-
-      document.body.classList.add("audio-is-speaking");
-
-      const cleanup = () => {
-        document.body.classList.remove("audio-is-speaking");
-        resolve();
-      };
-
-      utterance.onend = cleanup;
-      utterance.onerror = cleanup;
-
-      window.speechSynthesis.speak(utterance);
+      resolve();
     });
   }
 
@@ -387,13 +364,6 @@
 
     if (audioUrl) {
       await playAudioUrlPromise(audioUrl, playbackRate);
-    } else {
-      // Fallback tức thì
-      if (lang === "vi") {
-        await speakWithWebSpeechPromise(text, "vi-VN", isSlow ? 0.65 : 0.88, 1.0);
-      } else {
-        await speakWithWebSpeechPromise(text, "en-US", isSlow ? 0.62 : 0.82, 1.05);
-      }
     }
 
     if (onEndCallback) onEndCallback();
@@ -411,12 +381,6 @@
 
     if (audioUrl) {
       await playAudioUrlPromise(audioUrl, playbackRate);
-    } else {
-      if (lang === "vi") {
-        await speakWithWebSpeechPromise(text, "vi-VN", isSlow ? 0.65 : 0.88, 1.0);
-      } else {
-        await speakWithWebSpeechPromise(text, "en-US", isSlow ? 0.60 : 0.82, 1.05);
-      }
     }
   }
 

@@ -49,6 +49,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     voiceCacheEntries.forEach((entry) => {
         const norm = readEntry(entry, "normalizedText");
         const orig = readEntry(entry, "originalText");
+        const textEn = readEntry(entry, "textEn");
         const name = readEntry(entry, "name");
         if (norm) {
             voiceByText.set(normalizeLookupText(norm), entry);
@@ -58,6 +59,10 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             voiceByText.set(normalizeLookupText(orig), entry);
             voiceByText.set((orig || "").trim().toLocaleLowerCase("vi-VN"), entry);
         }
+        if (textEn) {
+            voiceByText.set(normalizeLookupText(textEn), entry);
+            voiceByText.set((textEn || "").trim().toLocaleLowerCase("vi-VN"), entry);
+        }
         if (name) {
             const nameParts = name.split(" - ");
             if (nameParts.length > 1) {
@@ -66,7 +71,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         }
     });
     const readyVoiceEntries = voiceCacheEntries
-        .filter((entry) => readEntry(entry, "status") === "ready" && readEntry(entry, "audioUrl"));
+        .filter((entry) => (readEntry(entry, "status") === "ready" && readEntry(entry, "audioUrl")) ||
+            (readEntry(entry, "statusEn") === "ready" && readEntry(entry, "audioUrlEn")));
     const imageAssetEntries = imageAssets
         .filter((entry) => readEntry(entry, "storagePath"));
     const displayUsageType = (usageType) => ({
@@ -268,6 +274,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         if (previewName) previewName.textContent = templateNames[type] || type;
         if (previewMedia) {
             const supportsImage = ["story_choice", "single_choice", "multi_select", "drag_drop", "matching", "classification"].includes(type);
+            const supportsAudio = ["listen_choose", "story_choice"].includes(type);
             const imageInput = form.querySelector('[name="ExistingImageAssetId"]');
             const selectedOption = imageInput?.tagName === "SELECT" && imageInput.selectedIndex >= 0 ? imageInput.options[imageInput.selectedIndex] : null;
             const assetId = imageInput?.value || "";
@@ -450,7 +457,11 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             const match = row.text ? voiceByText.get(normalizeLookupText(row.text)) : null;
             const audioUrl = readEntry(match, "audioUrl");
             const status = readEntry(match, "status");
-            const hasAudio = Boolean(audioUrl) && status === "ready";
+            const audioUrlEn = readEntry(match, "audioUrlEn");
+            const statusEn = readEntry(match, "statusEn");
+            const hasAudioVi = Boolean(audioUrl) && status === "ready";
+            const hasAudioEn = Boolean(audioUrlEn) && statusEn === "ready";
+            const hasAudio = hasAudioVi || hasAudioEn;
 
             const kind = document.createElement("small");
             kind.textContent = row.kind;
@@ -460,7 +471,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             actions.className = "builder-voice-actions";
 
             const updateEntryAudio = (result) => {
-                if (result && result.audioUrl) {
+                if (result && (result.audioUrl || result.audioUrlEn)) {
                     const normalizedKey = normalizeLookupText(result.normalizedText || row.text);
                     voiceByText.set(normalizedKey, result);
                     if (!readyVoiceEntries.some((v) => readEntry(v, "id") === result.id)) {
@@ -612,11 +623,25 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 chip.textContent = "Thiếu text";
                 actions.append(chip);
             } else if (hasAudio) {
-                const audio = document.createElement("audio");
-                audio.controls = true;
-                audio.preload = "none";
-                audio.src = audioUrl;
-                actions.append(audio, makeInlineTools(match));
+                if (hasAudioVi) {
+                    const label = document.createElement("small");
+                    label.textContent = "VI";
+                    const audio = document.createElement("audio");
+                    audio.controls = true;
+                    audio.preload = "none";
+                    audio.src = audioUrl;
+                    actions.append(label, audio);
+                }
+                if (hasAudioEn) {
+                    const label = document.createElement("small");
+                    label.textContent = "EN";
+                    const audio = document.createElement("audio");
+                    audio.controls = true;
+                    audio.preload = "none";
+                    audio.src = audioUrlEn;
+                    actions.append(label, audio);
+                }
+                actions.append(makeInlineTools(match));
             } else {
                 const chip = document.createElement("strong");
                 chip.className = "builder-voice-chip";
@@ -1080,6 +1105,9 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
         let totalUpdated = 0;
         let batchStep = 0;
         let isDone = false;
+        let initialized = false;
+        let consecutiveErrors = 0;
+        let stalledBatches = 0;
 
         closeBtn.disabled = true;
         closeBtn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span> Đang xử lý...`;
@@ -1094,6 +1122,7 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 const formData = new FormData();
                 formData.append("__RequestVerificationToken", csrf);
                 formData.append("batchSize", "1");
+                formData.append("initialize", String(!initialized));
 
                 const response = await fetch("/admin/sync-voice-batch", {
                     method: "POST",
@@ -1105,6 +1134,8 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 }
 
                 const data = await response.json();
+                initialized = true;
+                consecutiveErrors = 0;
                 totalVi += data.createdVi || 0;
                 totalEn += data.createdEn || 0;
                 totalUpdated += data.updatedItems || 0;
@@ -1114,7 +1145,7 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 statItems.textContent = totalUpdated;
 
                 const remaining = data.remainingMissing || 0;
-                const totalEntries = data.totalVoices || (totalUpdated + remaining);
+                const totalEntries = data.totalEntries * 2 + data.scannedItems;
                 const percent = data.isCompleted || remaining === 0 ? 100 : Math.min(99, Math.round(((totalEntries - remaining) / Math.max(1, totalEntries)) * 100));
 
                 progressBar.style.width = `${percent}%`;
@@ -1139,15 +1170,24 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 if (data.isCompleted || remaining === 0) {
                     isDone = true;
                 }
+                stalledBatches = (data.createdVi || data.createdEn || data.updatedItems) ? 0 : stalledBatches + 1;
+                if (!isDone && stalledBatches >= Math.max(3, Math.ceil(data.totalEntries / 3))) break;
             } catch (err) {
-                statusLog.innerHTML = `<div style="color:#dc2626;"><strong>Lỗi:</strong> ${err.message}. Đang thử lại đợt tiếp theo...</div>` + statusLog.innerHTML;
+                const errorLine = document.createElement("div");
+                errorLine.textContent = err.message;
+                statusLog.prepend(errorLine);
+                if (++consecutiveErrors >= 3) break;
                 await new Promise((r) => setTimeout(r, 2000));
             }
         }
 
-        progressBar.style.width = "100%";
-        percentText.textContent = "100%";
-        progressText.textContent = "Đã đồng bộ và tạo file voice hoàn tất 100%!";
+        if (isDone) {
+            progressBar.style.width = "100%";
+            percentText.textContent = "100%";
+        }
+        progressText.textContent = isDone
+            ? "Đã đồng bộ và tạo file voice hoàn tất 100%!"
+            : "Đồng bộ chưa hoàn tất. Các voice đã tạo được giữ lại; vui lòng kiểm tra lỗi và chạy tiếp.";
         closeBtn.disabled = false;
         closeBtn.className = "app-btn app-btn-small celebration-btn-primary";
         closeBtn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Hoàn tất & Tải lại`;
@@ -1164,4 +1204,3 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
         });
     });
 })();
-

@@ -88,30 +88,7 @@
     const isVietnameseText = (str) => /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ]/i.test(str || "");
 
     const speak = async (text) => {
-        if (!text || !window.speechSynthesis) {
-            return;
-        }
-
-        window.speechSynthesis.cancel();
-        const voices = await loadVoices();
-        const targetLang = (isEnglishVoice && !isVietnameseText(text)) ? "en" : "vi";
-        const matchedVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(targetLang));
-        if (!matchedVoice && !voices.length) {
-            return;
-        }
-
-        return new Promise((resolve) => {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = targetLang === "en" ? "en-US" : "vi-VN";
-            utterance.rate = targetLang === "en" ? 0.85 : 0.82;
-            utterance.pitch = 1.04;
-            if (matchedVoice) {
-                utterance.voice = matchedVoice;
-            }
-            utterance.onend = resolve;
-            utterance.onerror = resolve;
-            window.speechSynthesis.speak(utterance);
-        });
+        return;
     };
 
     const playFile = (url) => new Promise((resolve, reject) => {
@@ -155,21 +132,6 @@
                     return;
                 }
             }
-
-            // Nếu chưa có file sẵn, tự động gọi API sinh/lấy audio chuẩn từ hệ thống
-            if (text) {
-                try {
-                    const res = await fetch(`/kids/bilingual-audio?text=${encodeURIComponent(text)}&lang=${isEnglishVoice ? "en" : "vi"}`);
-                    const data = await res.json();
-                    if (data.success && data.audioUrl) {
-                        await playFile(data.audioUrl);
-                        return;
-                    }
-                } catch {
-                }
-            }
-
-            await speak(text);
         } finally {
             setMascotSpeaking(false);
         }

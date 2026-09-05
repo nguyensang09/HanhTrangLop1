@@ -355,10 +355,12 @@ public class KidsController : Controller
             return BadRequest(new { success = false, message = "Text is required" });
         }
 
-        var audioUrl = await _voiceLibraryService.EnsureAudioFileAsync(text, lang, rate, cancellationToken);
+        var audioUrl = lang.StartsWith("en", StringComparison.OrdinalIgnoreCase)
+            ? await _voiceLibraryService.ResolveVoiceAudioUrlEnAsync(text, cancellationToken)
+            : await _voiceLibraryService.ResolveVoiceAudioUrlAsync(text, cancellationToken);
         if (string.IsNullOrEmpty(audioUrl))
         {
-            return NotFound(new { success = false, message = "Could not generate audio" });
+            return NotFound(new { success = false, message = "Audio is not available in TextToSpeechCaches" });
         }
 
         return Json(new { success = true, audioUrl });
@@ -981,37 +983,51 @@ public class KidsController : Controller
             questionImageUrl = ResolveQuestionImageFromItemMedia(question);
         }
 
-        var titleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty);
-        var titleAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrlEn", string.Empty);
-        var questionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty);
-        var questionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrlEn", string.Empty);
-        var instructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty);
-        var instructionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrlEn", string.Empty);
-        var tracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty);
-        var tracingAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrlEn", string.Empty);
-        var correctFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty);
-        var correctFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrlEn", string.Empty);
-        var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
-        var retryFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrlEn", string.Empty);
+        var promptText = question?.PromptText;
+        var speechText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "speechText", string.Empty);
+        var correctFeedbackText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.FeedbackJson, "correct", string.Empty);
+        if (string.IsNullOrWhiteSpace(correctFeedbackText)) correctFeedbackText = "Giỏi lắm, con làm đúng rồi!";
+        var retryFeedbackText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.FeedbackJson, "retry", string.Empty);
+        if (string.IsNullOrWhiteSpace(retryFeedbackText)) retryFeedbackText = "Con thử lại nhé";
 
-        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(question?.PromptText);
+        var questionAudioUrl = await ResolveActiveVoiceUrlAsync(promptText);
         if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(item.Title);
-        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(question?.PromptText);
+        var questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(promptText);
         if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.Title);
-        if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = questionAudioUrl;
-        if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = questionAudioUrl;
-        if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
-        if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Giỏi lắm, con làm đúng rồi!");
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Giỏi lắm, con làm đúng rồi!");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync("Con thử lại nhé");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync("Con thử lại nhé");
+        var contentAudioUrl = await ResolveActiveVoiceUrlAsync(speechText);
+        var contentAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(speechText);
+        var titleAudioUrl = questionAudioUrl;
+        var titleAudioUrlEn = questionAudioUrlEn;
+        var instructionAudioUrl = questionAudioUrl;
+        var instructionAudioUrlEn = questionAudioUrlEn;
+        var tracingAudioUrl = questionAudioUrl;
+        var tracingAudioUrlEn = questionAudioUrlEn;
+        var correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync(correctFeedbackText);
+        var correctFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(correctFeedbackText);
+        var retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync(retryFeedbackText);
+        var retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(retryFeedbackText);
 
         if (question is not null)
         {
             question.PayloadJson = await EnrichPayloadOptionAudioAsync(question.PayloadJson);
+            var payload = System.Text.Json.Nodes.JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new System.Text.Json.Nodes.JsonObject();
+            payload["questionAudioUrl"] = questionAudioUrl;
+            payload["questionAudioUrlEn"] = questionAudioUrlEn;
+            payload["correctAudioUrl"] = correctFeedbackAudioUrl;
+            payload["correctAudioUrlEn"] = correctFeedbackAudioUrlEn;
+            payload["retryAudioUrl"] = retryFeedbackAudioUrl;
+            payload["retryAudioUrlEn"] = retryFeedbackAudioUrlEn;
+            if (item.InteractionType == InteractionTypes.Tracing)
+            {
+                payload["audioUrl"] = tracingAudioUrl;
+                payload["audioUrlEn"] = tracingAudioUrlEn;
+            }
+            else if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+            {
+                payload["audioUrl"] = !string.IsNullOrWhiteSpace(contentAudioUrl) ? contentAudioUrl : questionAudioUrl;
+                payload["audioUrlEn"] = !string.IsNullOrWhiteSpace(contentAudioUrlEn) ? contentAudioUrlEn : questionAudioUrlEn;
+            }
+            question.PayloadJson = payload.ToJsonString();
         }
 
         return new LearnViewModel
@@ -1072,55 +1088,37 @@ public class KidsController : Controller
             var payload = System.Text.Json.Nodes.JsonNode.Parse(payloadJson)?.AsObject();
             if (payload is null) return payloadJson;
 
-            var audioMap = payload.TryGetPropertyValue("optionAudio", out var optNode) && optNode is System.Text.Json.Nodes.JsonObject optObj ? optObj : new System.Text.Json.Nodes.JsonObject();
-            var audioMapEn = payload.TryGetPropertyValue("optionAudioEn", out var optEnNode) && optEnNode is System.Text.Json.Nodes.JsonObject optEnObj ? optEnObj : new System.Text.Json.Nodes.JsonObject();
-
+            var audioMap = new System.Text.Json.Nodes.JsonObject();
+            var audioMapEn = new System.Text.Json.Nodes.JsonObject();
             var labels = CollectOptionLabelsFromPayload(payload).ToList();
-            var changed = false;
 
             foreach (var label in labels)
             {
                 var cleanLabel = label.Trim();
-                var currentVi = audioMap.TryGetPropertyValue(cleanLabel, out var vNode) ? vNode?.ToString() : null;
-                if (string.IsNullOrWhiteSpace(currentVi))
+                var url = await ResolveActiveVoiceUrlAsync(label);
+                if (!string.IsNullOrWhiteSpace(url))
                 {
-                    var url = await ResolveActiveVoiceUrlAsync(label);
-                    if (string.IsNullOrWhiteSpace(url))
+                    audioMap[cleanLabel] = url;
+                    if (!string.Equals(cleanLabel, label, StringComparison.Ordinal))
                     {
-                        url = await _voiceLibraryService.EnsureAudioFileAsync(label, "vi", cancellationToken: HttpContext.RequestAborted);
-                    }
-                    if (!string.IsNullOrWhiteSpace(url))
-                    {
-                        audioMap[cleanLabel] = url;
                         audioMap[label] = url;
-                        changed = true;
                     }
                 }
 
-                var currentEn = audioMapEn.TryGetPropertyValue(cleanLabel, out var veNode) ? veNode?.ToString() : null;
-                if (string.IsNullOrWhiteSpace(currentEn))
+                var urlEn = await ResolveActiveVoiceUrlEnAsync(label);
+                if (!string.IsNullOrWhiteSpace(urlEn))
                 {
-                    var urlEn = await ResolveActiveVoiceUrlEnAsync(label);
-                    if (string.IsNullOrWhiteSpace(urlEn))
+                    audioMapEn[cleanLabel] = urlEn;
+                    if (!string.Equals(cleanLabel, label, StringComparison.Ordinal))
                     {
-                        urlEn = await _voiceLibraryService.EnsureAudioFileAsync(label, "en", cancellationToken: HttpContext.RequestAborted);
-                    }
-                    if (!string.IsNullOrWhiteSpace(urlEn))
-                    {
-                        audioMapEn[cleanLabel] = urlEn;
                         audioMapEn[label] = urlEn;
-                        changed = true;
                     }
                 }
             }
 
-            if (changed || !payload.ContainsKey("optionAudio") || !payload.ContainsKey("optionAudioEn"))
-            {
-                payload["optionAudio"] = audioMap;
-                payload["optionAudioEn"] = audioMapEn;
-                return payload.ToJsonString();
-            }
-            return payloadJson;
+            payload["optionAudio"] = audioMap;
+            payload["optionAudioEn"] = audioMapEn;
+            return payload.ToJsonString();
         }
         catch
         {

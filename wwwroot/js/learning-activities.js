@@ -231,18 +231,7 @@
     const isVietnameseText = (str) => /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ]/i.test(str || "");
 
     const speak = async (text) => {
-        if (!text || !window.speechSynthesis) return;
-        const targetLang = (isEnglishVoice && !isVietnameseText(text)) ? "en" : "vi";
-        const voices = await loadBrowserVoices();
-        const matchedVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(targetLang));
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = targetLang === "en" ? "en-US" : "vi-VN";
-        utterance.rate = targetLang === "en" ? 0.85 : 0.86;
-        if (matchedVoice) {
-            utterance.voice = matchedVoice;
-        }
-        window.speechSynthesis.speak(utterance);
+        return;
     };
 
     const playPromptAudio = () => {
@@ -251,8 +240,6 @@
             : (payload.audioUrl || payload.questionAudioUrl);
         if (audioUrl) {
             new Audio(audioUrl).play().catch(() => {});
-        } else {
-            void speak(payload.speechText);
         }
     };
 
@@ -287,26 +274,7 @@
             audio.play().catch(() => {});
             return true;
         }
-
-        // Tự động gọi API lấy âm thanh chuẩn nữ nếu chưa có trong cấu hình local
-        if (value) {
-            const cleanVal = String(value).trim();
-            fetch(`/kids/bilingual-audio?text=${encodeURIComponent(cleanVal)}&lang=${isEnglishVoice ? "en" : "vi"}`)
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.success && data.audioUrl) {
-                        if (isEnglishVoice) optionAudioEn[cleanVal] = data.audioUrl;
-                        else optionAudio[cleanVal] = data.audioUrl;
-                        const audio = new Audio(data.audioUrl);
-                        audio.play().catch(() => {});
-                    } else {
-                        void speak(value);
-                    }
-                })
-                .catch(() => void speak(value));
-        }
-
-        return Boolean(value);
+        return false;
     };
 
     const createButton = (text, className = "activity-option clay-button", forceIcon = "") => {

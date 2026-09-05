@@ -571,7 +571,13 @@ public class AdminController : Controller
         try
         {
             var relinkResult = await _voiceLibraryService.EnsureVoiceRowsAndRelinkAsync(HttpContext.RequestAborted);
-            var missingCount = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready"));
+            var missingCount = await _db.TextToSpeechCaches.CountAsync(x =>
+                x.UsageType != "legacy" &&
+                x.UsageType != "custom" &&
+                x.UsageType != "title" &&
+                x.UsageType != "instruction" &&
+                (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready" ||
+                 string.IsNullOrWhiteSpace(x.AudioUrlEn) || x.StatusEn != "ready"));
 
             if (relinkResult.LearningItemsUpdated > 0 || relinkResult.LegacyAudioRowsBackfilled > 0)
             {
@@ -1429,11 +1435,11 @@ public class AdminController : Controller
 
     [HttpPost("sync-voice-batch")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SyncVoiceBatch(int batchSize = 10, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> SyncVoiceBatch(int batchSize = 10, CancellationToken cancellationToken = default, bool initialize = true)
     {
         try
         {
-            var result = await _voiceLibraryService.SyncAndGenerateBatchAsync(batchSize, cancellationToken);
+            var result = await _voiceLibraryService.SyncAndGenerateBatchAsync(batchSize, cancellationToken, initialize);
             return Json(new
             {
                 scannedItems = result.ScannedItems,
@@ -1477,8 +1483,14 @@ public class AdminController : Controller
     public async Task<IActionResult> GenerateMissingVoiceFiles(int batchSize = 30)
     {
         batchSize = Math.Clamp(batchSize, 10, 100);
+        await _voiceLibraryService.EnsureVoiceRowsAndRelinkAsync(HttpContext.RequestAborted);
         var totalMissingBefore = await _db.TextToSpeechCaches
-            .CountAsync(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+            .CountAsync(x => x.UsageType != "legacy" &&
+                             x.UsageType != "custom" &&
+                             x.UsageType != "title" &&
+                             x.UsageType != "instruction" &&
+                             (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready" ||
+                              string.IsNullOrWhiteSpace(x.AudioUrlEn) || x.StatusEn != "ready"));
 
         if (totalMissingBefore == 0)
         {
@@ -1488,7 +1500,12 @@ public class AdminController : Controller
 
         var result = await _voiceLibraryService.GenerateMissingAndRelinkAsync(batchSize, HttpContext.RequestAborted);
         var totalMissingAfter = await _db.TextToSpeechCaches
-            .CountAsync(x => string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready");
+            .CountAsync(x => x.UsageType != "legacy" &&
+                             x.UsageType != "custom" &&
+                             x.UsageType != "title" &&
+                             x.UsageType != "instruction" &&
+                             (string.IsNullOrWhiteSpace(x.AudioUrl) || x.Status != "ready" ||
+                              string.IsNullOrWhiteSpace(x.AudioUrlEn) || x.StatusEn != "ready"));
 
         if (totalMissingAfter == 0)
         {
@@ -2113,8 +2130,11 @@ public class AdminController : Controller
                 x.UsageType,
                 x.NormalizedText,
                 x.OriginalText,
+                x.TextEn,
                 x.AudioUrl,
-                x.Status
+                x.Status,
+                x.AudioUrlEn,
+                x.StatusEn
             })
             .ToListAsync();
         ViewBag.VoiceCacheJson = JsonSerializer.Serialize(voiceEntries);
@@ -2289,8 +2309,11 @@ public class AdminController : Controller
     private async Task PopulateVoiceUrlsFromCacheAsync(CreateChoiceItemViewModel model)
     {
         model.QuestionAudioUrl = await ResolveVoiceAudioAsync(model.PromptText, "question", model.Title) ?? model.QuestionAudioUrl;
+        model.QuestionAudioUrlEn = await ResolveVoiceAudioEnAsync(model.PromptText) ?? model.QuestionAudioUrlEn;
         model.CorrectFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.CorrectFeedback, "correct-feedback", model.Title) ?? model.CorrectFeedbackAudioUrl;
+        model.CorrectFeedbackAudioUrlEn = await ResolveVoiceAudioEnAsync(model.CorrectFeedback) ?? model.CorrectFeedbackAudioUrlEn;
         model.RetryFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.RetryFeedback, "retry-feedback", model.Title) ?? model.RetryFeedbackAudioUrl;
+        model.RetryFeedbackAudioUrlEn = await ResolveVoiceAudioEnAsync(model.RetryFeedback) ?? model.RetryFeedbackAudioUrlEn;
 
         if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
              model.InteractionType == InteractionTypes.StoryChoice) &&
@@ -2298,6 +2321,14 @@ public class AdminController : Controller
             !string.IsNullOrWhiteSpace(model.SpeechText))
         {
             model.AudioUrl = await ResolveVoiceAudioAsync(model.SpeechText, "content", model.Title) ?? string.Empty;
+        }
+
+        if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
+             model.InteractionType == InteractionTypes.StoryChoice) &&
+            string.IsNullOrWhiteSpace(model.AudioUrlEn) &&
+            !string.IsNullOrWhiteSpace(model.SpeechText))
+        {
+            model.AudioUrlEn = await ResolveVoiceAudioEnAsync(model.SpeechText) ?? string.Empty;
         }
     }
 
@@ -2446,6 +2477,11 @@ public class AdminController : Controller
     private async Task<string?> ResolveVoiceAudioAsync(string text, string usageType, string? lessonTitle = null)
     {
         return await _voiceLibraryService.ResolveVoiceAudioUrlAsync(text);
+    }
+
+    private async Task<string?> ResolveVoiceAudioEnAsync(string? text)
+    {
+        return await _voiceLibraryService.ResolveVoiceAudioUrlEnAsync(text);
     }
 
     private async Task<TextToSpeechCache?> EnsureVoiceCacheEntryAsync(string text, string usageType, string? lessonTitle = null)
@@ -2717,17 +2753,9 @@ public class AdminController : Controller
 
     private TextToSpeechCacheKey BuildTextToSpeechCacheKey(string normalizedText)
     {
-        var provider = _configuration["VoiceLibrary:Provider"]?.Trim();
-        var voice = _configuration["VoiceLibrary:Voice"]?.Trim();
-        var modelId = _configuration["VoiceLibrary:ModelId"]?.Trim();
-        var format = _configuration["VoiceLibrary:Format"]?.Trim();
-        provider = string.IsNullOrWhiteSpace(provider) ? "Manual" : provider;
-        voice = string.IsNullOrWhiteSpace(voice) ? "vi-VN-HoaiMyNeural" : voice;
-        modelId = string.IsNullOrWhiteSpace(modelId) ? "manual-upload" : modelId;
-        format = string.IsNullOrWhiteSpace(format) ? "mp3" : format;
-        var hashSource = $"{provider}|{voice}|{modelId}|{format}|{normalizedText.ToLowerInvariant()}";
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(hashSource))).ToLowerInvariant();
-        return new TextToSpeechCacheKey(provider, voice, modelId, format, hash);
+        var cleanText = NormalizeSpeechText(normalizedText).ToLowerInvariant();
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(cleanText))).ToLowerInvariant();
+        return new TextToSpeechCacheKey("edge", "vi-VN-HoaiMyNeural", "neural", "mp3", hash);
     }
 
     private static string BuildVoiceName(string usageType, string? lessonTitle, string normalizedText)
@@ -2797,12 +2825,19 @@ public class AdminController : Controller
             ImageUrl = ReadJsonString(payloadJson, "imageUrl"),
             ImageAltText = ReadJsonString(payloadJson, "imageAltText"),
             AudioUrl = ReadJsonString(payloadJson, "audioUrl"),
+            AudioUrlEn = ReadJsonString(payloadJson, "audioUrlEn"),
             TitleAudioUrl = ReadJsonString(payloadJson, "titleAudioUrl"),
+            TitleAudioUrlEn = ReadJsonString(payloadJson, "titleAudioUrlEn"),
             QuestionAudioUrl = ReadJsonString(payloadJson, "questionAudioUrl"),
+            QuestionAudioUrlEn = ReadJsonString(payloadJson, "questionAudioUrlEn"),
             InstructionAudioUrl = ReadJsonString(payloadJson, "instructionAudioUrl"),
+            InstructionAudioUrlEn = ReadJsonString(payloadJson, "instructionAudioUrlEn"),
             CorrectFeedbackAudioUrl = ReadJsonString(payloadJson, "correctAudioUrl"),
+            CorrectFeedbackAudioUrlEn = ReadJsonString(payloadJson, "correctAudioUrlEn"),
             RetryFeedbackAudioUrl = ReadJsonString(payloadJson, "retryAudioUrl"),
+            RetryFeedbackAudioUrlEn = ReadJsonString(payloadJson, "retryAudioUrlEn"),
             SpeechText = ReadJsonString(payloadJson, "speechText"),
+            SpeechTextEn = ReadJsonString(payloadJson, "speechTextEn"),
             LeftLabel = ReadJsonString(payloadJson, "leftLabel") is { Length: > 0 } leftLabel ? leftLabel : "Nhóm A",
             RightLabel = ReadJsonString(payloadJson, "rightLabel") is { Length: > 0 } rightLabel ? rightLabel : "Nhóm B",
             Level = item.Level,
@@ -2912,10 +2947,15 @@ public class AdminController : Controller
             ["imageUrl"] = Clean(model.ImageUrl),
             ["imageAltText"] = Clean(model.ImageAltText),
             ["audioUrl"] = Clean(model.AudioUrl),
+            ["audioUrlEn"] = Clean(model.AudioUrlEn),
             ["questionAudioUrl"] = Clean(model.QuestionAudioUrl),
+            ["questionAudioUrlEn"] = Clean(model.QuestionAudioUrlEn),
             ["correctAudioUrl"] = Clean(model.CorrectFeedbackAudioUrl),
+            ["correctAudioUrlEn"] = Clean(model.CorrectFeedbackAudioUrlEn),
             ["retryAudioUrl"] = Clean(model.RetryFeedbackAudioUrl),
+            ["retryAudioUrlEn"] = Clean(model.RetryFeedbackAudioUrlEn),
             ["speechText"] = Clean(model.SpeechText),
+            ["speechTextEn"] = Clean(model.SpeechTextEn),
             ["questionSpeechText"] = Clean(model.PromptText),
             ["correctSpeechText"] = Clean(model.CorrectFeedback),
             ["retrySpeechText"] = Clean(model.RetryFeedback)
