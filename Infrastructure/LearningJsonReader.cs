@@ -43,6 +43,14 @@ public static class LearningJsonReader
                 }
             }
 
+            // Đảo vị trí ở mỗi lượt hiển thị để trẻ không học thuộc vị trí đáp án đúng.
+            // Giá trị đáp án không đổi nên việc chấm bài vẫn chính xác theo nội dung.
+            for (var index = choices.Count - 1; index > 0; index--)
+            {
+                var swapIndex = Random.Shared.Next(index + 1);
+                (choices[index], choices[swapIndex]) = (choices[swapIndex], choices[index]);
+            }
+
             return choices;
         }
         catch (JsonException)

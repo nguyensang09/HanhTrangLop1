@@ -19,6 +19,16 @@ public static class SeedDataInitializer
 
         await EnsureMigrationHistoryForLegacyDatabaseAsync(db);
         await db.Database.MigrateAsync();
+
+        // Dữ liệu nền chỉ được tạo ở lần khởi tạo CSDL đầu tiên. Không quét lại toàn bộ
+        // bài học và kho voice trong luồng khởi động thông thường; các thao tác đồng bộ
+        // bổ sung đã có lệnh/nút quản trị riêng.
+        if (await db.LearningItems.AsNoTracking().AnyAsync())
+        {
+            logger.LogInformation("CSDL đã có dữ liệu bài học; bỏ qua seed và đồng bộ Voice khi khởi động.");
+            return;
+        }
+
         await SeedRolesAsync(roleManager);
         await SeedAdminAsync(userManager, configuration, logger);
         await SeedCurriculumCatalogAsync(db);
@@ -30,8 +40,16 @@ public static class SeedDataInitializer
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
         }
 
-        // Chuẩn hóa dữ liệu bài học nếu có nội dung cũ
-        await LegacyLearningItemNormalizer.NormalizeAsync(db, logger);
+        if (configuration.GetValue("VoiceLibrary:GenerateOnSeed", true))
+        {
+            var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
+            var voiceResult = await voiceLibrary.GenerateMissingAndRelinkAsync();
+            logger.LogInformation(
+                "Đồng bộ Voice dữ liệu ban đầu hoàn tất: tạo {Created} file VI/EN, lỗi {Failed}, cập nhật liên kết cho {UpdatedItems} bài học.",
+                voiceResult.Created,
+                voiceResult.Failed,
+                voiceResult.UpdatedItems);
+        }
     }
 
     private static async Task EnsureMigrationHistoryForLegacyDatabaseAsync(ApplicationDbContext db)

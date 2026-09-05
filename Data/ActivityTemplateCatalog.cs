@@ -34,11 +34,11 @@ public static class ActivityTemplateCatalog
             ["phan-biet-so"] = Rule(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Matching),
             ["viet-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.Matching),
 
-            ["dem-so-luong"] = Rule(InteractionTypes.Counting, InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.QuantityBuilder),
+            ["dem-so-luong"] = Rule(InteractionTypes.Counting, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.QuantityBuilder),
             ["tao-so-luong"] = Rule(InteractionTypes.QuantityBuilder, InteractionTypes.Counting, InteractionTypes.SingleChoice),
             ["ghep-so-luong"] = Rule(InteractionTypes.DragDrop, InteractionTypes.Matching, InteractionTypes.SingleChoice),
             ["so-sanh"] = Rule(InteractionTypes.Comparison, InteractionTypes.SingleChoice, InteractionTypes.DragDrop),
-            ["tach-gop"] = Rule(InteractionTypes.QuantityBuilder, InteractionTypes.DragDrop, InteractionTypes.SingleChoice, InteractionTypes.Counting),
+            ["tach-gop"] = Rule(InteractionTypes.QuantityBuilder, InteractionTypes.DragDrop, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Counting),
             ["cong-bot"] = Rule(InteractionTypes.QuantityBuilder, InteractionTypes.SingleChoice, InteractionTypes.Counting, InteractionTypes.DragDrop),
 
             ["phan-loai"] = Rule(InteractionTypes.Classification, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.DragDrop),
@@ -46,8 +46,8 @@ public static class ActivityTemplateCatalog
             ["ghep-bong"] = Rule(InteractionTypes.Matching, InteractionTypes.DragDrop, InteractionTypes.SingleChoice),
             ["tim-khac-biet"] = Rule(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification),
 
-            ["tu-phuc-vu"] = Rule(InteractionTypes.Ordering, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Matching),
-            ["an-toan"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Classification, InteractionTypes.MultiSelect, InteractionTypes.Matching),
+            ["tu-phuc-vu"] = Rule(InteractionTypes.Ordering, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Matching),
+            ["an-toan"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Classification, InteractionTypes.MultiSelect, InteractionTypes.Matching, InteractionTypes.Ordering),
             ["cam-xuc"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Classification, InteractionTypes.Matching),
             ["giao-tiep"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.ListenAndChoose, InteractionTypes.SingleChoice, InteractionTypes.Matching, InteractionTypes.Ordering),
 
@@ -69,12 +69,12 @@ public static class ActivityTemplateCatalog
             ["net-co-ban"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.Matching),
             ["tao-hinh"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.Matching),
             ["noi-diem"] = RuleWithTracing(InteractionTypes.DragDrop, InteractionTypes.Matching),
-            ["me-cung"] = Rule(InteractionTypes.DragDrop, InteractionTypes.Ordering),
-            ["kheo-tay"] = Rule(InteractionTypes.Ordering, InteractionTypes.DragDrop, InteractionTypes.SingleChoice, InteractionTypes.Matching),
+            ["me-cung"] = Rule(InteractionTypes.DragDrop, InteractionTypes.Ordering, InteractionTypes.SingleChoice),
+            ["kheo-tay"] = Rule(InteractionTypes.Ordering, InteractionTypes.DragDrop, InteractionTypes.SingleChoice, InteractionTypes.Matching, InteractionTypes.MultiSelect),
 
-            ["con-vat"] = Rule(InteractionTypes.Classification, InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.MultiSelect, InteractionTypes.SingleChoice),
+            ["con-vat"] = Rule(InteractionTypes.Classification, InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.MultiSelect, InteractionTypes.DragDrop, InteractionTypes.SingleChoice),
             ["cay-co"] = Rule(InteractionTypes.Classification, InteractionTypes.Ordering, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Matching),
-            ["thoi-tiet"] = Rule(InteractionTypes.Classification, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.Matching),
+            ["thoi-tiet"] = Rule(InteractionTypes.Classification, InteractionTypes.StoryChoice, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Matching),
             ["giao-thong"] = Rule(InteractionTypes.Classification, InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.DragDrop, InteractionTypes.SingleChoice)
         };
 

@@ -42,6 +42,12 @@ public class AdminController : Controller
         InteractionTypes.StoryChoice
     ];
 
+    private static readonly string[] InteractionTypeDisplayOrder =
+    [
+        .. SupportedInteractionTypes,
+        InteractionTypes.Tracing
+    ];
+
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _environment;
     private readonly IConfiguration _configuration;
@@ -146,28 +152,32 @@ public class AdminController : Controller
             await _db.SaveChangesAsync();
         }
 
-        var items = await query
-            .OrderBy(x => x.SkillGroup!.SortOrder)
-            .ThenBy(x => x.Topic!.SortOrder)
-            .ThenBy(x => x.SortOrder)
-            .ThenBy(x => x.Title)
-            .ToListAsync();
+        var items = await query.ToListAsync();
+        var voiceStatuses = await BuildLearningItemVoiceStatusesAsync(items);
 
         if (!string.IsNullOrWhiteSpace(voiceStatus))
         {
             if (voiceStatus == "ready" || voiceStatus == "full")
             {
-                items = items.Where(x => x.VoiceStatus == "full").ToList();
+                items = items.Where(x => voiceStatuses[x.Id].Status == "full").ToList();
             }
             else if (voiceStatus == "missing")
             {
-                items = items.Where(x => x.VoiceStatus != "full").ToList();
+                items = items.Where(x => voiceStatuses[x.Id].Status != "full").ToList();
             }
             else if (voiceStatus == "none")
             {
-                items = items.Where(x => x.VoiceStatus == "none").ToList();
+                items = items.Where(x => voiceStatuses[x.Id].Status == "none").ToList();
             }
         }
+
+        items = items
+            .OrderBy(x => x.SkillGroup?.SortOrder ?? int.MaxValue)
+            .ThenBy(x => x.Topic?.SortOrder ?? int.MaxValue)
+            .ThenBy(x => GetInteractionTypeOrder(x.InteractionType))
+            .ThenBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .ToList();
 
         var hasFilter = !string.IsNullOrWhiteSpace(status) ||
                         !string.IsNullOrWhiteSpace(interactionType) ||
@@ -185,7 +195,7 @@ public class AdminController : Controller
                         (!topicId.HasValue || t.Id == topicId.Value))
             .ToList();
 
-        var totalDbItems = await _db.LearningItems.AsNoTracking().Select(x => new { x.Id, x.TopicId, x.SkillGroupId }).ToListAsync();
+        var totalDbItems = await _db.LearningItems.AsNoTracking().Select(x => new { x.Id, x.TopicId, x.SkillGroupId, x.InteractionType }).ToListAsync();
         var allItemsCountByTopic = totalDbItems.Where(x => x.TopicId.HasValue).GroupBy(x => x.TopicId!.Value).ToDictionary(g => g.Key, g => g.Count());
 
         var itemsByGroupId = items.ToLookup(x => x.SkillGroupId);
@@ -230,7 +240,11 @@ public class AdminController : Controller
                     LearningItemCount = topicItems.Count,
                     Items = topicItems,
                     AllowedTemplates = allowedTemplates,
-                    AllowsTracing = topicRule.AllowsTracing
+                    AllowsTracing = topicRule.AllowsTracing,
+                    ActivityTypes = BuildActivityTypeCoverage(
+                        topicRule.InteractionTypes.Concat(topicRule.AllowsTracing ? [InteractionTypes.Tracing] : []),
+                        totalDbItems.Where(x => x.TopicId == topic.Id).Select(x => x.InteractionType),
+                        minimumRequired: 10)
                 });
             }
 
@@ -240,12 +254,30 @@ public class AdminController : Controller
             var groupCoverage = groupAllStandardTopics.Count == 0
                 ? 0
                 : (int)Math.Round(groupAllStandardTopics.Count(t => allItemsCountByTopic.ContainsKey(t.Id) && allItemsCountByTopic[t.Id] > 0) * 100d / groupAllStandardTopics.Count);
+            var expectedGroupActivityTypes = groupAllStandardTopics
+                .SelectMany(topic =>
+                {
+                    var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
+                    return rule.InteractionTypes.Concat(rule.AllowsTracing ? [InteractionTypes.Tracing] : []);
+                })
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var groupActivityTypes = BuildActivityTypeCoverage(
+                expectedGroupActivityTypes,
+                totalDbItems.Where(x => x.SkillGroupId == group.Id).Select(x => x.InteractionType),
+                minimumRequired: 10);
+            var expectedTopicActivityCount = topicTreeItems.Sum(topic => topic.ActivityTypes.Count(x => x.IsExpected));
+            var coveredTopicActivityCount = topicTreeItems.Sum(topic => topic.ActivityTypes.Count(x => x.IsExpected && x.IsCovered));
 
             treeGroups.Add(new AdminLearningGroupTreeItem
             {
                 SkillGroup = group,
                 LearningItemCount = groupItems.Count,
                 CoveragePercentage = groupCoverage,
+                ActivityCoveragePercentage = expectedTopicActivityCount == 0
+                    ? 0
+                    : (int)Math.Round(coveredTopicActivityCount * 100d / expectedTopicActivityCount),
+                ActivityTypes = groupActivityTypes,
                 Topics = topicTreeItems,
                 DirectItems = directItems
             });
@@ -271,10 +303,109 @@ public class AdminController : Controller
             TotalTopics = treeGroups.Sum(g => g.Topics.Count),
             TotalItems = items.Count,
             StandardTopicsCount = totalStandardTopics,
-            OverallCoveragePercentage = overallCoverage
+            OverallCoveragePercentage = overallCoverage,
+            VoiceStatuses = voiceStatuses
         };
 
         return View(model);
+    }
+
+    private async Task<Dictionary<Guid, AdminLearningItemVoiceStatus>> BuildLearningItemVoiceStatusesAsync(
+        IReadOnlyCollection<LearningItem> items)
+    {
+        var cacheRows = await _db.TextToSpeechCaches
+            .AsNoTracking()
+            .Where(x => x.UsageType != "title" && x.UsageType != "instruction" && x.UsageType != "legacy")
+            .Select(x => new { x.OriginalText, x.NormalizedText, x.AudioUrl, x.Status, x.AudioUrlEn, x.StatusEn })
+            .ToListAsync();
+        var cacheByText = new Dictionary<string, (bool Vi, bool En)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in cacheRows)
+        {
+            var availability = (
+                Vi: row.Status == "ready" && !string.IsNullOrWhiteSpace(row.AudioUrl),
+                En: row.StatusEn == "ready" && !string.IsNullOrWhiteSpace(row.AudioUrlEn));
+            foreach (var value in new[] { row.OriginalText, row.NormalizedText })
+            {
+                var key = NormalizeSpeechText(value ?? string.Empty);
+                if (string.IsNullOrWhiteSpace(key)) continue;
+                if (cacheByText.TryGetValue(key, out var existing))
+                {
+                    cacheByText[key] = (existing.Vi || availability.Vi, existing.En || availability.En);
+                }
+                else
+                {
+                    cacheByText[key] = availability;
+                }
+            }
+        }
+
+        var result = new Dictionary<Guid, AdminLearningItemVoiceStatus>();
+        foreach (var item in items)
+        {
+            var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+            var texts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (question is not null)
+            {
+                void AddText(string? value)
+                {
+                    var normalized = NormalizeSpeechText(value ?? string.Empty);
+                    if (!string.IsNullOrWhiteSpace(normalized)) texts.Add(normalized);
+                }
+
+                AddText(question.PromptText);
+                AddText(ReadJsonString(question.FeedbackJson, "correct"));
+                AddText(ReadJsonString(question.FeedbackJson, "retry"));
+                var payload = JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
+                if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+                {
+                    AddText(ReadJsonString(payload, "speechText"));
+                }
+                foreach (var label in CollectOptionSpeechLabels(payload)) AddText(label);
+            }
+
+            var status = new AdminLearningItemVoiceStatus { RequiredCount = texts.Count };
+            foreach (var text in texts)
+            {
+                if (!cacheByText.TryGetValue(text, out var availability)) continue;
+                if (availability.Vi) status.VoiceViCount++;
+                if (availability.En) status.VoiceEnCount++;
+            }
+            result[item.Id] = status;
+        }
+        return result;
+    }
+
+    private static IReadOnlyList<AdminActivityTypeCoverage> BuildActivityTypeCoverage(
+        IEnumerable<string> expectedTypes,
+        IEnumerable<string> actualTypes,
+        int minimumRequired = 1)
+    {
+        var expected = expectedTypes.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var counts = actualTypes
+            .GroupBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(x => x.Key, x => x.Count(), StringComparer.OrdinalIgnoreCase);
+        return expected.Concat(counts.Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(GetInteractionTypeOrder)
+            .Select(type => new AdminActivityTypeCoverage
+            {
+                InteractionType = type,
+                DisplayName = ActivityTemplateCatalog.GetDisplayName(type),
+                IconKey = type == InteractionTypes.Tracing
+                    ? "draw"
+                    : ActivityTemplateCatalog.Find(type)?.IconKey ?? "extension",
+                LearningItemCount = counts.GetValueOrDefault(type),
+                MinimumRequired = minimumRequired,
+                IsExpected = expected.Contains(type)
+            })
+            .ToList();
+    }
+
+    private static int GetInteractionTypeOrder(string interactionType)
+    {
+        var index = Array.FindIndex(InteractionTypeDisplayOrder, x =>
+            string.Equals(x, interactionType, StringComparison.OrdinalIgnoreCase));
+        return index < 0 ? int.MaxValue : index;
     }
 
     [HttpPost("reseed-lessons")]
@@ -282,7 +413,6 @@ public class AdminController : Controller
     public async Task<IActionResult> ReseedLessons()
     {
         var created = await LearningContentSeed.SeedAsync(_db);
-        await LegacyLearningItemNormalizer.NormalizeAsync(_db, null);
         TempData["AdminMessage"] = $"Đã đồng bộ kho bài học thành công! ({created} bài mới được tạo thêm).";
         return RedirectToAction(nameof(LearningItems));
     }
@@ -514,30 +644,7 @@ public class AdminController : Controller
 
     private static string ResolveAdminTracingFlashcardUrl(string symbol)
     {
-        if (string.Equals(symbol?.Trim(), "0", StringComparison.OrdinalIgnoreCase))
-        {
-            return "/images/photos/flashcard-number-0.svg";
-        }
-        if (int.TryParse(symbol, out var number) && number is >= 1 and <= 20)
-        {
-            return $"/images/photos/flashcard-number-{number}.jpg";
-        }
-
-        var trimmed = symbol?.Trim().ToLowerInvariant() ?? string.Empty;
-        if (trimmed.Length == 1)
-        {
-            var ch = trimmed[0];
-            if (ch is 'ă' or 'â' or 'đ' or 'ê' or 'ô' or 'ơ' or 'ư')
-            {
-                return $"/images/photos/flashcard-letter-{ch}.svg";
-            }
-            if (ch is >= 'a' and <= 'z')
-            {
-                return $"/images/photos/flashcard-letter-{ch}.jpg";
-            }
-        }
-
-        return string.Empty;
+        return LearningContentSeed.ResolveTracingFlashcardUrl(symbol ?? string.Empty);
     }
 
     private static string ResolveAdminQuestionImageFromItemMedia(Question question)
@@ -670,6 +777,9 @@ public class AdminController : Controller
             : new JsonObject();
 
         var prompts = new List<object>();
+        var requiredVoiceCount = 0;
+        var readyVoiceViCount = 0;
+        var readyVoiceEnCount = 0;
 
         async Task AddPromptAsync(string type, string typeName, string? text, string? currentUrl, string? currentUrlEn)
         {
@@ -682,6 +792,9 @@ public class AdminController : Controller
             var audioUrl = !string.IsNullOrWhiteSpace(currentUrl) ? currentUrl : cacheEntry?.AudioUrl;
             var audioUrlEn = !string.IsNullOrWhiteSpace(currentUrlEn) ? currentUrlEn : cacheEntry?.AudioUrlEn;
             var textEn = cacheEntry?.TextEn ?? "";
+            requiredVoiceCount++;
+            if (!string.IsNullOrWhiteSpace(audioUrl)) readyVoiceViCount++;
+            if (!string.IsNullOrWhiteSpace(audioUrlEn)) readyVoiceEnCount++;
 
             prompts.Add(new
             {
@@ -736,15 +849,24 @@ public class AdminController : Controller
             }
         }
 
+        var hasVoiceVi = requiredVoiceCount > 0 && readyVoiceViCount == requiredVoiceCount;
+        var hasVoiceEn = requiredVoiceCount > 0 && readyVoiceEnCount == requiredVoiceCount;
+        var voiceStatus = hasVoiceVi && hasVoiceEn
+            ? "full"
+            : readyVoiceViCount > 0 || readyVoiceEnCount > 0 ? "partial" : "none";
+
         return Ok(new
         {
             id = item.Id,
             title = item.Title,
             topicName = item.Topic?.Name ?? "",
             skillGroupName = item.SkillGroup?.Name ?? "",
-            hasVoiceVi = item.HasVoiceVi,
-            hasVoiceEn = item.HasVoiceEn,
-            voiceStatus = item.VoiceStatus,
+            hasVoiceVi,
+            hasVoiceEn,
+            voiceStatus,
+            requiredVoiceCount,
+            readyVoiceViCount,
+            readyVoiceEnCount,
             prompts
         });
     }
@@ -831,14 +953,18 @@ public class AdminController : Controller
         // 3. Link audio URLs into learning item payload
         await _voiceLibraryService.LinkVoiceUrlsForLearningItemAsync(item);
         await _db.SaveChangesAsync();
+        var updatedVoiceStatus = (await BuildLearningItemVoiceStatusesAsync([item]))[item.Id];
 
         return Ok(new
         {
             success = true,
             message = $"Đã đồng bộ voice cho bài “{item.Title}” ({generatedVi} voice VI mới, {generatedEn} voice EN mới).",
-            hasVoiceVi = item.HasVoiceVi,
-            hasVoiceEn = item.HasVoiceEn,
-            voiceStatus = item.VoiceStatus
+            hasVoiceVi = updatedVoiceStatus.HasVoiceVi,
+            hasVoiceEn = updatedVoiceStatus.HasVoiceEn,
+            voiceStatus = updatedVoiceStatus.Status,
+            requiredVoiceCount = updatedVoiceStatus.RequiredCount,
+            readyVoiceViCount = updatedVoiceStatus.VoiceViCount,
+            readyVoiceEnCount = updatedVoiceStatus.VoiceEnCount
         });
     }
 

@@ -7146,6 +7146,46 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   color: #c2410c !important;
 }
 
+/* Ưu tiên nội dung hình ảnh trong màn hình học: ảnh chính và ảnh đáp án phải đủ lớn để bé quan sát. */
+.learning-focus-shell .lesson-content-zone {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.learning-focus-shell .lesson-support-image {
+  width: min(100%, 820px) !important;
+  height: auto !important;
+  max-height: min(60vh, 640px) !important;
+  padding: clamp(8px, 1.5vw, 16px) !important;
+}
+
+.learning-focus-shell .interaction-multi_select .activity-option-grid.grid-text-options {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important;
+  max-width: 980px !important;
+  gap: clamp(12px, 2vw, 20px) !important;
+}
+
+.learning-focus-shell .interaction-multi_select .activity-option-grid.grid-text-options .activity-option {
+  min-height: 150px !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 14px !important;
+}
+
+.learning-focus-shell .interaction-multi_select .activity-option .answer-photo,
+.learning-focus-shell .interaction-multi_select .activity-option .answer-pictogram {
+  width: clamp(104px, 14vw, 156px) !important;
+  height: clamp(104px, 14vw, 156px) !important;
+}
+
+.learning-focus-shell .interaction-multi_select .activity-option .answer-shape,
+.learning-focus-shell .interaction-multi_select .activity-option .answer-color-swatch {
+  width: clamp(96px, 13vw, 144px) !important;
+  height: clamp(96px, 13vw, 144px) !important;
+}
+
 @media (max-width: 640px) {
   .activity-option-grid.grid-text-options {
     grid-template-columns: 1fr !important;
@@ -7164,6 +7204,20 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   .activity-option.is-long-phrase .answer-label {
     text-align: left !important;
     font-size: 1.05rem !important;
+  }
+
+  .learning-focus-shell .lesson-support-image {
+    width: 100% !important;
+    max-height: min(55vh, 460px) !important;
+  }
+
+  .learning-focus-shell .interaction-multi_select .activity-option-grid.grid-text-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .learning-focus-shell .interaction-multi_select .activity-option-grid.grid-text-options .activity-option {
+    min-height: 132px !important;
+    padding: 10px !important;
   }
 }
 
@@ -11324,6 +11378,18 @@ body.focus-mode-active,
   background: #f8fafc;
 }
 
+.tree-items-table td.table-actions {
+  display: table-cell;
+  min-width: 300px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tree-items-table td.table-actions > * {
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .sort-badge {
   display: inline-block;
   padding: 2px 7px;
@@ -11668,6 +11734,80 @@ body.focus-mode-active,
 body.audio-is-speaking .sound-wave-badge {
   animation: pulseGlow 1s infinite;
   background: #10b981;
+}
+
+/* Kiểm soát độ phủ bài học theo dạng tương tác trong trang quản trị. */
+.activity-coverage-summary {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.activity-coverage-summary > strong {
+  color: #334155;
+  font-size: 0.78rem;
+}
+
+.activity-coverage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.activity-count-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: #166534;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.activity-count-chip .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.activity-count-chip.is-missing,
+.template-chip.is-missing {
+  border-color: #fecaca !important;
+  background: #fff1f2 !important;
+  color: #be123c !important;
+}
+
+.template-chip.is-covered {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.activity-type-divider-row td {
+  background: linear-gradient(90deg, #eff6ff, #f8fafc) !important;
+  border-top: 2px solid #bfdbfe !important;
+  border-bottom: 1px solid #dbeafe !important;
+  color: #1e3a8a;
+  padding: 9px 14px !important;
+}
+
+.activity-type-divider-row td,
+.activity-type-divider-row td > span,
+.activity-type-divider-row td > strong {
+  vertical-align: middle;
+}
+
+.activity-type-divider-row .material-symbols-outlined {
+  margin-right: 6px;
+  font-size: 19px;
+}
+
+.activity-type-divider-row td > span:last-child {
+  margin-left: 8px;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .bilingual-hero-content {

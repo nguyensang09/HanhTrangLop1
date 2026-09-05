@@ -36,6 +36,8 @@ public class AdminLearningItemListViewModel
     public int TotalItems { get; set; }
     public int StandardTopicsCount { get; set; }
     public int OverallCoveragePercentage { get; set; }
+    public IReadOnlyDictionary<Guid, AdminLearningItemVoiceStatus> VoiceStatuses { get; set; } =
+        new Dictionary<Guid, AdminLearningItemVoiceStatus>();
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 25;
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
@@ -47,6 +49,8 @@ public class AdminLearningGroupTreeItem
     public SkillGroup SkillGroup { get; set; } = new();
     public int LearningItemCount { get; set; }
     public int CoveragePercentage { get; set; }
+    public int ActivityCoveragePercentage { get; set; }
+    public IReadOnlyList<AdminActivityTypeCoverage> ActivityTypes { get; set; } = [];
     public IReadOnlyList<AdminLearningTopicTreeItem> Topics { get; set; } = [];
     public IReadOnlyList<LearningItem> DirectItems { get; set; } = [];
 }
@@ -58,6 +62,30 @@ public class AdminLearningTopicTreeItem
     public IReadOnlyList<LearningItem> Items { get; set; } = [];
     public IReadOnlyList<ActivityTemplateDefinition> AllowedTemplates { get; set; } = [];
     public bool AllowsTracing { get; set; }
+    public IReadOnlyList<AdminActivityTypeCoverage> ActivityTypes { get; set; } = [];
+}
+
+public class AdminActivityTypeCoverage
+{
+    public string InteractionType { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string IconKey { get; set; } = "extension";
+    public int LearningItemCount { get; set; }
+    public int MinimumRequired { get; set; } = 1;
+    public bool IsExpected { get; set; }
+    public bool IsCovered => !IsExpected || LearningItemCount >= MinimumRequired;
+}
+
+public class AdminLearningItemVoiceStatus
+{
+    public int RequiredCount { get; set; }
+    public int VoiceViCount { get; set; }
+    public int VoiceEnCount { get; set; }
+    public bool HasVoiceVi => RequiredCount > 0 && VoiceViCount == RequiredCount;
+    public bool HasVoiceEn => RequiredCount > 0 && VoiceEnCount == RequiredCount;
+    public string Status => HasVoiceVi && HasVoiceEn
+        ? "full"
+        : VoiceViCount > 0 || VoiceEnCount > 0 ? "partial" : "none";
 }
 
 public class EditLearningItemViewModel

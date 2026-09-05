@@ -246,6 +246,18 @@
                                 {
                                     <p class="tree-group-desc">@groupItem.SkillGroup.Description</p>
                                 }
+                                <div class="activity-coverage-summary" title="Mỗi dạng bài trong từng chủ đề cần có ít nhất 10 bài">
+                                    <strong>@groupItem.ActivityCoveragePercentage% dạng bài trong chủ đề đạt tối thiểu 10 bài</strong>
+                                    <div class="activity-coverage-chips">
+                                        @foreach (var activity in groupItem.ActivityTypes)
+                                        {
+                                            <span class="activity-count-chip @(activity.IsCovered ? "is-covered" : "is-missing")">
+                                                <span class="material-symbols-outlined">@activity.IconKey</span>
+                                                @activity.DisplayName: <b>@activity.LearningItemCount/@activity.MinimumRequired</b>
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
                             </div>
                             <div class="tree-group-actions" onclick="event.stopPropagation();">
                                 <a class="app-btn app-btn-muted app-btn-small" asp-action="CreateChoice" asp-route-skillGroupId="@groupItem.SkillGroup.Id" title="Tạo bài tương tác cho @groupItem.SkillGroup.Name">
@@ -277,21 +289,14 @@
                                                     <span class="tree-count-badge topic-count">@topicItem.LearningItemCount bài</span>
                                                 </div>
                                                 <div class="tree-topic-meta">
-                                                    @if (topicItem.AllowedTemplates.Any())
+                                                    @if (topicItem.ActivityTypes.Any())
                                                     {
                                                         <div class="topic-templates-chips">
-                                                            @foreach (var template in topicItem.AllowedTemplates)
+                                                            @foreach (var activity in topicItem.ActivityTypes)
                                                             {
-                                                                <span class="template-chip" title="Dạng chuẩn: @template.Name">
-                                                                    <span class="material-symbols-outlined">@template.IconKey</span>
-                                                                    @template.Name
-                                                                </span>
-                                                            }
-                                                            @if (topicItem.AllowsTracing)
-                                                            {
-                                                                <span class="template-chip tracing" title="Dạng chuẩn: Tô nét">
-                                                                    <span class="material-symbols-outlined">draw</span>
-                                                                    Tô nét
+                                                                <span class="template-chip @(activity.IsCovered ? "is-covered" : "is-missing")" title="@activity.DisplayName: @activity.LearningItemCount/@activity.MinimumRequired bài trong chủ đề">
+                                                                    <span class="material-symbols-outlined">@activity.IconKey</span>
+                                                                    @activity.DisplayName · @activity.LearningItemCount/@activity.MinimumRequired bài
                                                                 </span>
                                                             }
                                                         </div>
@@ -336,16 +341,30 @@
                                                             <th style="width: 55px;" class="col-secondary">STT</th>
                                                             <th>Tên bài học</th>
                                                             <th class="col-secondary">Dạng bài</th>
-                                                            <th class="col-secondary">Số câu hỏi</th>
                                                             <th>Trạng thái</th>
                                                             <th style="width: 130px; text-align:center;">Voice Song Ngữ</th>
-                                                            <th style="width: 230px; text-align: right;">Thao tác</th>
+                                                            <th style="width: 300px; text-align: right;">Thao tác</th>
                                                         </tr>
                                                         </thead>
                                                         <tbody>
+                                                        @{ string? currentInteractionType = null; }
                                                         @foreach (var item in topicItem.Items)
                                                         {
                                                             var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
+                                                            var voiceStatus = Model.VoiceStatuses.GetValueOrDefault(item.Id) ?? new AdminLearningItemVoiceStatus();
+                                                            if (!string.Equals(currentInteractionType, item.InteractionType, StringComparison.OrdinalIgnoreCase))
+                                                            {
+                                                                currentInteractionType = item.InteractionType;
+                                                                var activity = topicItem.ActivityTypes.FirstOrDefault(x => string.Equals(x.InteractionType, item.InteractionType, StringComparison.OrdinalIgnoreCase));
+                                                                var visibleTypeCount = topicItem.Items.Count(x => string.Equals(x.InteractionType, item.InteractionType, StringComparison.OrdinalIgnoreCase));
+                                                                <tr class="activity-type-divider-row">
+                                                                    <td colspan="6">
+                                                                        <span class="material-symbols-outlined">@(activity?.IconKey ?? "extension")</span>
+                                                                        <strong>@ActivityTemplateCatalog.GetDisplayName(item.InteractionType)</strong>
+                                                                        <span>@visibleTypeCount bài đang hiển thị</span>
+                                                                    </td>
+                                                                </tr>
+                                                            }
                                                             <tr data-lesson-row-id="@item.Id">
                                                                 <td class="col-secondary">
                                                                     <span class="sort-badge">#@item.SortOrder</span>
@@ -366,29 +385,23 @@
                                                                         <span class="status-chip status-warning" title="Dạng bài cần điều chỉnh cho phù hợp chủ đề">Cần chuẩn hóa</span>
                                                                     }
                                                                 </td>
-                                                                <td class="col-secondary">
-                                                                    <span class="questions-count">
-                                                                        <span class="material-symbols-outlined">help_outline</span>
-                                                                        @item.Questions.Count câu
-                                                                    </span>
-                                                                </td>
                                                                 <td>
                                                                     <span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span>
                                                                 </td>
                                                                 <td style="text-align:center;">
                                                                     <div class="lesson-voice-status-cell" data-voice-status-cell="@item.Id">
-                                                                        @if (item.VoiceStatus == "full")
+                                                                        @if (voiceStatus.Status == "full")
                                                                         {
                                                                             <span class="badge-voice-pill voice-ready" title="Đã có đủ cả Voice Tiếng Việt & Tiếng Anh">
                                                                                 <span class="material-symbols-outlined">record_voice_over</span>
-                                                                                Đủ VI & EN
+                                                                                Đủ VI & EN (@voiceStatus.RequiredCount/@voiceStatus.RequiredCount)
                                                                             </span>
                                                                         }
-                                                                        else if (item.VoiceStatus == "partial")
+                                                                        else if (voiceStatus.Status == "partial")
                                                                         {
                                                                             <span class="badge-voice-pill voice-partial" title="Đã có một phần voice, cần sinh bổ sung">
                                                                                 <span class="material-symbols-outlined">mic_none</span>
-                                                                                Thiếu voice
+                                                                                VI @voiceStatus.VoiceViCount/@voiceStatus.RequiredCount · EN @voiceStatus.VoiceEnCount/@voiceStatus.RequiredCount
                                                                             </span>
                                                                         }
                                                                         else
@@ -466,16 +479,16 @@
                                                         <th style="width: 55px;">STT</th>
                                                         <th>Tên bài học</th>
                                                         <th>Dạng bài</th>
-                                                        <th>Số câu hỏi</th>
                                                         <th>Trạng thái</th>
                                                         <th style="width: 130px; text-align:center;">Voice Song Ngữ</th>
-                                                        <th style="width: 230px; text-align: right;">Thao tác</th>
+                                                        <th style="width: 300px; text-align: right;">Thao tác</th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
                                                     @foreach (var item in groupItem.DirectItems)
                                                     {
                                                         var isCompatible = ActivityTemplateCatalog.IsItemAllowed(item);
+                                                        var voiceStatus = Model.VoiceStatuses.GetValueOrDefault(item.Id) ?? new AdminLearningItemVoiceStatus();
                                                         <tr data-lesson-row-id="@item.Id">
                                                             <td>
                                                                 <span class="sort-badge">#@item.SortOrder</span>
@@ -497,28 +510,22 @@
                                                                 }
                                                             </td>
                                                             <td>
-                                                                <span class="questions-count">
-                                                                    <span class="material-symbols-outlined">help_outline</span>
-                                                                    @item.Questions.Count câu
-                                                                </span>
-                                                            </td>
-                                                            <td>
                                                                 <span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span>
                                                             </td>
                                                             <td style="text-align:center;">
                                                                 <div class="lesson-voice-status-cell" data-voice-status-cell="@item.Id">
-                                                                    @if (item.VoiceStatus == "full")
+                                                                    @if (voiceStatus.Status == "full")
                                                                     {
                                                                         <span class="badge-voice-pill voice-ready">
                                                                             <span class="material-symbols-outlined">record_voice_over</span>
-                                                                            Đủ VI & EN
+                                                                            Đủ VI & EN (@voiceStatus.RequiredCount/@voiceStatus.RequiredCount)
                                                                         </span>
                                                                     }
-                                                                    else if (item.VoiceStatus == "partial")
+                                                                    else if (voiceStatus.Status == "partial")
                                                                     {
                                                                         <span class="badge-voice-pill voice-partial">
                                                                             <span class="material-symbols-outlined">mic_none</span>
-                                                                            Thiếu voice
+                                                                            VI @voiceStatus.VoiceViCount/@voiceStatus.RequiredCount · EN @voiceStatus.VoiceEnCount/@voiceStatus.RequiredCount
                                                                         </span>
                                                                     }
                                                                     else
@@ -741,13 +748,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let statusHtml = "";
         if (data.voiceStatus === "full") {
-            statusHtml = `<span class="badge-voice-pill voice-ready" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">record_voice_over</span> Đã có đầy đủ Voice VI & EN</span>`;
+            statusHtml = `<span class="badge-voice-pill voice-ready" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">record_voice_over</span> Đã đủ Voice VI & EN (${data.requiredVoiceCount}/${data.requiredVoiceCount})</span>`;
         } else if (data.voiceStatus === "partial") {
-            statusHtml = `<span class="badge-voice-pill voice-partial" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">mic_none</span> Đang thiếu file Voice (VI hoặc EN)</span>`;
+            statusHtml = `<span class="badge-voice-pill voice-partial" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">mic_none</span> VI ${data.readyVoiceViCount}/${data.requiredVoiceCount} · EN ${data.readyVoiceEnCount}/${data.requiredVoiceCount}</span>`;
         } else {
             statusHtml = `<span class="badge-voice-pill voice-none" style="font-size:13px; padding:6px 14px;"><span class="material-symbols-outlined">voice_over_off</span> Bài học chưa có file Voice nào</span>`;
         }
         statusBadgeWrap.innerHTML = statusHtml;
+
+        const listStatusCell = document.querySelector(`[data-voice-status-cell="${data.id}"]`);
+        if (listStatusCell) listStatusCell.innerHTML = statusHtml;
 
         let promptsHtml = "";
         if (!data.prompts || data.prompts.length === 0) {

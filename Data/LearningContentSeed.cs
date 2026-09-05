@@ -269,6 +269,10 @@ public static class LearningContentSeed
             if (existingSeedItems.TryGetValue(definition.Code, out var existingItem))
             {
                 var changed = false;
+                var existingQuestion = existingItem.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+                payloadJson = PreserveVoiceLinks(
+                    payloadJson,
+                    existingQuestion?.PayloadJson ?? existingItem.ContentJson);
                 if (existingItem.SortOrder != definition.SortOrder) { existingItem.SortOrder = definition.SortOrder; changed = true; }
                 if (existingItem.Title != definition.Title) { existingItem.Title = definition.Title; changed = true; }
                 if (existingItem.SkillGroupId != topic.SkillGroupId) { existingItem.SkillGroupId = topic.SkillGroupId; changed = true; }
@@ -278,7 +282,6 @@ public static class LearningContentSeed
                 if (existingItem.InstructionText != definition.Instruction) { existingItem.InstructionText = definition.Instruction; changed = true; }
                 if (existingItem.ContentJson != payloadJson) { existingItem.ContentJson = payloadJson; changed = true; }
 
-                var existingQuestion = existingItem.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
                 if (existingQuestion is not null)
                 {
                     if (ApplyQuestionDefinition(existingQuestion, definition, payloadJson))
@@ -383,6 +386,51 @@ public static class LearningContentSeed
 
         await db.SaveChangesAsync();
         return createdCount;
+    }
+
+    private static string PreserveVoiceLinks(string newPayloadJson, string? existingPayloadJson)
+    {
+        if (string.IsNullOrWhiteSpace(existingPayloadJson)) return newPayloadJson;
+
+        try
+        {
+            var newPayload = JsonNode.Parse(newPayloadJson)?.AsObject() ?? new JsonObject();
+            var existingPayload = JsonNode.Parse(existingPayloadJson)?.AsObject();
+            if (existingPayload is null) return newPayloadJson;
+
+            var voiceKeys = new[]
+            {
+                "questionAudioUrl", "questionAudioUrlEn",
+                "audioUrl", "audioUrlEn",
+                "correctAudioUrl", "correctAudioUrlEn",
+                "retryAudioUrl", "retryAudioUrlEn",
+                "optionAudio", "optionAudioEn"
+            };
+            foreach (var key in voiceKeys)
+            {
+                if (existingPayload[key] is not JsonNode existingValue || !HasVoiceValue(existingValue)) continue;
+                newPayload[key] = existingValue.DeepClone();
+            }
+
+            return newPayload.ToJsonString();
+        }
+        catch (JsonException)
+        {
+            return newPayloadJson;
+        }
+    }
+
+    private static bool HasVoiceValue(JsonNode value)
+    {
+        if (value is JsonValue jsonValue && jsonValue.TryGetValue<string>(out var url))
+        {
+            return !string.IsNullOrWhiteSpace(url);
+        }
+
+        return value is JsonObject map && map.Any(entry =>
+            entry.Value is JsonValue mapValue &&
+            mapValue.TryGetValue<string>(out var mapUrl) &&
+            !string.IsNullOrWhiteSpace(mapUrl));
     }
 
     private static bool ApplyQuestionDefinition(Question question, SeedLesson definition, string payloadJson)
@@ -523,9 +571,10 @@ public static class LearningContentSeed
         lessons.AddRange(BuildStoryLessons());
         lessons.AddRange(BuildReadingComprehensionLessons());
         lessons.AddRange(BuildCoverageLessons());
+        EnsureMinimumActivityCoverage(lessons, minimumPerTopicAndActivity: 10);
 
         var topicOrders = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        return lessons.Select(lesson =>
+        var enrichedLessons = lessons.Select(lesson =>
         {
             topicOrders.TryGetValue(lesson.TopicCode, out var currentOrder);
             currentOrder += 10;
@@ -536,7 +585,440 @@ public static class LearningContentSeed
                 PayloadJson = EnrichLessonMedia(lesson)
             };
         }).ToList();
+
+        ValidateSeedCoverage(enrichedLessons);
+        return enrichedLessons;
     }
+
+    private static void ValidateSeedCoverage(IReadOnlyCollection<SeedLesson> lessons)
+    {
+        const int minimumLessonsPerGroup = 10;
+        const int minimumLessonsPerActivity = 10;
+
+        var groupsBelowMinimum = CurriculumCatalog.Groups
+            .Select(group => new
+            {
+                group.Code,
+                LessonCount = lessons.Count(lesson => group.Topics.Any(topic =>
+                    string.Equals(topic.Code, lesson.TopicCode, StringComparison.OrdinalIgnoreCase)))
+            })
+            .Where(group => group.LessonCount < minimumLessonsPerGroup)
+            .Select(group => $"{group.Code} ({group.LessonCount}/{minimumLessonsPerGroup})")
+            .ToArray();
+
+        if (groupsBelowMinimum.Length > 0)
+        {
+            throw new InvalidOperationException($"Kho bài học gốc chưa đủ tối thiểu {minimumLessonsPerGroup} bài/nhóm: {string.Join(", ", groupsBelowMinimum)}.");
+        }
+
+        var missingTopics = CurriculumCatalog.Groups
+            .SelectMany(group => group.Topics)
+            .Where(topic => !lessons.Any(lesson =>
+                string.Equals(lesson.TopicCode, topic.Code, StringComparison.OrdinalIgnoreCase)))
+            .Select(topic => topic.Code)
+            .ToArray();
+
+        if (missingTopics.Length > 0)
+        {
+            throw new InvalidOperationException($"Kho bài học gốc chưa phủ các chủ đề: {string.Join(", ", missingTopics)}.");
+        }
+
+        var missingTopicActivities = CurriculumCatalog.Groups
+            .SelectMany(group => group.Topics)
+            .SelectMany(topic =>
+            {
+                var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
+                var expectedTypes = rule.InteractionTypes.Concat(rule.AllowsTracing ? [InteractionTypes.Tracing] : []);
+                return expectedTypes.Select(interactionType => new
+                {
+                    topic.Code,
+                    InteractionType = interactionType,
+                    LessonCount = lessons.Count(lesson =>
+                        string.Equals(lesson.TopicCode, topic.Code, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(lesson.InteractionType, interactionType, StringComparison.OrdinalIgnoreCase))
+                });
+            })
+            .Where(activity => activity.LessonCount < minimumLessonsPerActivity)
+            .Select(activity => $"{activity.Code}/{activity.InteractionType} ({activity.LessonCount}/{minimumLessonsPerActivity})")
+            .ToArray();
+
+        if (missingTopicActivities.Length > 0)
+        {
+            throw new InvalidOperationException($"Kho bài học gốc chưa đủ tối thiểu {minimumLessonsPerActivity} bài cho từng dạng bài trong từng chủ đề: {string.Join(", ", missingTopicActivities)}.");
+        }
+    }
+
+    private static void EnsureMinimumActivityCoverage(List<SeedLesson> lessons, int minimumPerTopicAndActivity)
+    {
+        foreach (var group in CurriculumCatalog.Groups)
+        {
+            foreach (var topic in group.Topics)
+            {
+                var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
+                var expectedTypes = rule.InteractionTypes
+                    .Concat(rule.AllowsTracing ? [InteractionTypes.Tracing] : [])
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                foreach (var interactionType in expectedTypes)
+                {
+                    var currentCount = lessons.Count(lesson =>
+                        string.Equals(lesson.TopicCode, topic.Code, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(lesson.InteractionType, interactionType, StringComparison.OrdinalIgnoreCase));
+
+                    for (var ordinal = currentCount + 1; ordinal <= minimumPerTopicAndActivity; ordinal++)
+                    {
+                        lessons.Add(BuildMinimumCoverageLesson(group.Code, topic.Code, topic.Name, interactionType, ordinal));
+                    }
+                }
+            }
+        }
+    }
+
+    private static SeedLesson BuildMinimumCoverageLesson(
+        string groupCode,
+        string topicCode,
+        string topicName,
+        string interactionType,
+        int ordinal)
+    {
+        var code = $"seed-minimum-{NormalizeSeedCode(topicCode)}-{NormalizeSeedCode(interactionType.Replace('_', '-'))}-{ordinal:00}";
+        var number = ((ordinal - 1) % 10) + 1;
+        var nextNumber = number == 10 ? 1 : number + 1;
+        var thirdNumber = nextNumber == 10 ? 1 : nextNumber + 1;
+        var profile = GetTopicCoverageProfile(topicCode, groupCode);
+        var primary = profile.CorrectItems[(ordinal - 1) % profile.CorrectItems.Length];
+        var secondary = profile.CorrectItems[ordinal % profile.CorrectItems.Length];
+        var distractor1 = profile.Distractors[(ordinal - 1) % profile.Distractors.Length];
+        var distractor2 = profile.Distractors[ordinal % profile.Distractors.Length];
+        var orderingScenario = BuildOrderingScenario(topicCode, ordinal, primary, profile);
+        var targetImage = ResolveSemanticImageUrl(primary, groupCode);
+
+        return interactionType switch
+        {
+            InteractionTypes.SingleChoice => SemanticChoice(code, $"Nhận biết {primary}", topicCode, interactionType,
+                $"Quan sát và chọn đúng {primary}.", $"Đâu là {primary}?",
+                [distractor1, primary, distractor2], primary, targetImage),
+            InteractionTypes.MultiSelect => SemanticMulti(code, $"Tìm {profile.Criterion}", topicCode,
+                $"Chọn tất cả {profile.Criterion}.", [primary, distractor1, secondary, distractor2], [primary, secondary]),
+            InteractionTypes.ListenAndChoose => SemanticChoice(code, $"Nghe để tìm {primary}", topicCode, interactionType,
+                "Nghe kỹ rồi chọn đúng nội dung được nhắc đến.", $"Con vừa nghe thấy nội dung nào?",
+                [distractor1, primary, distractor2], primary, targetImage, $"Con hãy chọn {primary}."),
+            InteractionTypes.DragDrop => SemanticChoice(code, $"Đưa {primary} về đúng chỗ", topicCode, interactionType,
+                $"Kéo {primary} vào vùng đích.", $"Vật nào cần đưa vào vùng {profile.Criterion}?",
+                [distractor1, primary, distractor2], primary, string.Empty, targetLabel: profile.Criterion),
+            InteractionTypes.Matching => Mapping(code, $"Ghép đúng trong bài {topicName}", topicCode, interactionType,
+                [(primary, BuildSemanticPairLabel(topicCode, primary)),
+                 (secondary, BuildSemanticPairLabel(topicCode, secondary)),
+                 (distractor1, BuildSemanticPairLabel(topicCode, distractor1))], suppressAutoImage: true),
+            InteractionTypes.Ordering => SemanticOrdering(code, orderingScenario.Title, topicCode,
+                orderingScenario.Prompt, orderingScenario.Items),
+            InteractionTypes.Counting => Counting(code, $"Đếm {number} {profile.CountingObject}", topicCode,
+                GetCoverageSymbol(groupCode), number),
+            InteractionTypes.QuantityBuilder => Quantity(code, $"Tạo nhóm {number} {profile.CountingObject}", topicCode,
+                GetCoverageSymbol(groupCode), number),
+            InteractionTypes.Comparison => Comparison(code, $"So sánh hai nhóm {profile.CountingObject}", topicCode,
+                GetCoverageSymbol(groupCode), $"{number + 1} {profile.CountingObject}", number + 1, $"{number} {profile.CountingObject}", number),
+            InteractionTypes.Classification => Mapping(code, $"Phân loại: {profile.Criterion}", topicCode, interactionType,
+                [(primary, profile.Criterion), (secondary, profile.Criterion),
+                 (distractor1, $"Không phải {profile.Criterion}"), (distractor2, $"Không phải {profile.Criterion}")], suppressAutoImage: true),
+            InteractionTypes.StoryChoice => Story(code, $"Câu chuyện về {primary}", topicCode,
+                $"Trong hoạt động {topicName.ToLowerInvariant()}, bạn nhỏ quan sát và nhận ra {primary}. Bạn gọi đúng tên là {primary}.",
+                targetImage, $"Bạn nhỏ đã nhận ra nội dung nào?", [distractor1, primary, distractor2], primary),
+            InteractionTypes.Tracing => Tracing(code, $"Tô {GetCoverageTracingSymbol(groupCode, ordinal)} theo nét", topicCode,
+                GetCoverageTracingSymbol(groupCode, ordinal), Math.Clamp(number, 1, 4)),
+            _ => throw new InvalidOperationException($"Chưa có mẫu bổ sung cho dạng bài {interactionType}.")
+        };
+    }
+
+    private static SeedLesson SemanticChoice(
+        string code, string title, string topicCode, string type, string instruction, string prompt,
+        string[] choices, string answer, string imageUrl, string speechText = "", string targetLabel = "") =>
+        Lesson(code, title, topicCode, type, instruction, prompt,
+            new { choices, targetLabel, audioUrl = string.Empty, speechText, imageUrl }, answer);
+
+    private static SeedLesson SemanticMulti(
+        string code, string title, string topicCode, string prompt, string[] choices, string[] answers) =>
+        Lesson(code, title, topicCode, InteractionTypes.MultiSelect,
+            "Con chọn tất cả đáp án đúng rồi bấm Hoàn thành.", prompt,
+            new
+            {
+                choices,
+                correctCount = answers.Length,
+                imageUrl = string.Empty,
+                suppressAutoImage = true,
+                audioUrl = string.Empty,
+                speechText = string.Empty
+            },
+            string.Join('|', answers.OrderBy(x => x)));
+
+    private static SeedLesson SemanticOrdering(
+        string code, string title, string topicCode, string prompt, string[] items) =>
+        Lesson(code, title, topicCode, InteractionTypes.Ordering,
+            "Con sắp xếp các mục theo trình tự đúng.", prompt,
+            new { items = ShuffleValuesDeterministically(items, code), imageUrl = string.Empty, suppressAutoImage = true, audioUrl = string.Empty, speechText = string.Empty },
+            string.Join('|', items));
+
+    private static string[] ShuffleValuesDeterministically(string[] values, string seed)
+    {
+        var result = values.ToArray();
+        var hash = seed.Aggregate(17, (current, character) => unchecked(current * 31 + character));
+        var random = new Random(hash);
+        for (var index = result.Length - 1; index > 0; index--)
+        {
+            var swapIndex = random.Next(index + 1);
+            (result[index], result[swapIndex]) = (result[swapIndex], result[index]);
+        }
+        if (result.SequenceEqual(values) && result.Length > 1)
+        {
+            (result[0], result[1]) = (result[1], result[0]);
+        }
+        return result;
+    }
+
+    private static OrderingScenario BuildOrderingScenario(
+        string topicCode,
+        int ordinal,
+        string primary,
+        TopicCoverageProfile profile)
+    {
+        var number = ((ordinal - 1) % 7) + 1;
+        if (topicCode == "so-0-9" || topicCode == "thu-tu-so")
+        {
+            var values = Enumerable.Range(number, 4).Select(value => $"Số {value}").ToArray();
+            return new($"Xếp các số từ {number} đến {number + 3}", "Sắp xếp các số từ bé đến lớn.", values);
+        }
+        if (topicCode == "so-10-20")
+        {
+            var start = 10 + ((ordinal - 1) % 8);
+            var values = Enumerable.Range(start, 4).Select(value => $"Số {value}").ToArray();
+            return new($"Xếp các số từ {start} đến {start + 3}", "Sắp xếp các số từ bé đến lớn.", values);
+        }
+        if (topicCode == "quy-luat")
+        {
+            var first = ordinal % 2 == 0 ? "Hình tròn" : "Hình vuông";
+            var second = first == "Hình tròn" ? "Hình vuông" : "Hình tròn";
+            return new($"Hoàn thành quy luật {first} – {second}", "Sắp xếp để hai hình luân phiên nhau.", [first, second, first, second]);
+        }
+
+        var scenarios = topicCode switch
+        {
+            "tu-phuc-vu" => new[]
+            {
+                Scenario("Các bước rửa tay", "Làm ướt tay", "Lấy xà phòng", "Chà sạch hai tay", "Xả nước và lau khô"),
+                Scenario("Các bước đánh răng", "Lấy bàn chải", "Cho kem đánh răng", "Chải đều các mặt răng", "Súc miệng sạch"),
+                Scenario("Cất đồ chơi gọn gàng", "Phân loại đồ chơi", "Cho vào đúng hộp", "Đặt hộp lên kệ", "Kiểm tra sàn nhà"),
+                Scenario("Chuẩn bị ba lô", "Xem thời khóa biểu", "Lấy sách vở", "Cho đồ vào ba lô", "Kéo khóa ba lô")
+            },
+            "an-toan" => new[]
+            {
+                Scenario("Qua đường an toàn", "Dừng lại bên lề", "Quan sát hai phía", "Nắm tay người lớn", "Đi trên vạch sang đường"),
+                Scenario("Khi thấy ổ điện nguy hiểm", "Không chạm vào ổ điện", "Lùi ra xa", "Báo cho người lớn", "Chờ người lớn xử lý"),
+                Scenario("Khi thấy nước nóng", "Không đưa tay chạm", "Đứng cách xa", "Gọi người lớn", "Chờ nước nguội"),
+                Scenario("Cất kéo an toàn", "Cầm vào phần cán", "Khép lưỡi kéo", "Đưa cán kéo về phía trước", "Cất vào hộp có nắp")
+            },
+            "giao-tiep" => new[]
+            {
+                Scenario("Chào hỏi lễ phép", "Nhìn người đối diện", "Mỉm cười", "Nói lời chào", "Lắng nghe lời đáp"),
+                Scenario("Nói lời cảm ơn", "Nhận sự giúp đỡ", "Nhìn người giúp mình", "Nói lời cảm ơn", "Mỉm cười thân thiện"),
+                Scenario("Nói lời xin lỗi", "Nhận ra việc chưa đúng", "Đến gần bạn", "Nói lời xin lỗi", "Cùng sửa lại việc đó"),
+                Scenario("Xin phép mượn đồ", "Đến gần bạn", "Hỏi mượn lịch sự", "Chờ bạn đồng ý", "Dùng xong rồi trả lại")
+            },
+            "nghe-hieu" => new[]
+            {
+                Scenario($"Nghe và tìm {primary}", "Ngồi yên để nghe", $"Nghe câu có từ {primary}", "Ghi nhớ từ quan trọng", $"Chọn đúng {primary}")
+            },
+            "ke-chuyen" => new[]
+            {
+                Scenario($"Kể chuyện về {primary}", $"Giới thiệu {primary}", "Kể sự việc bắt đầu", "Kể điều xảy ra tiếp theo", "Nói kết thúc câu chuyện")
+            },
+            "doc-hieu" => new[]
+            {
+                Scenario($"Đọc hiểu về {primary}", "Đọc từ đầu câu chuyện", $"Tìm đoạn nói về {primary}", "Nhớ sự việc quan trọng", "Trả lời câu hỏi")
+            },
+            "ghi-nho" => new[]
+            {
+                Scenario($"Ghi nhớ {primary}", $"Quan sát kỹ {primary}", "Ghi nhớ màu và vị trí", "Che hình lại", $"Chọn lại đúng {primary}")
+            },
+            "lam-theo-yeu-cau" => new[]
+            {
+                Scenario($"Thực hiện yêu cầu với {primary}", "Nghe hết yêu cầu", $"Tìm đúng {primary}", $"Đưa {primary} vào vị trí được nói", "Kiểm tra rồi hoàn thành")
+            },
+            "me-cung" => new[]
+            {
+                Scenario("Tìm đường qua mê cung", "Tìm điểm bắt đầu", "Quan sát các lối đi", "Tránh đường cụt", "Đi đến đích")
+            },
+            "kheo-tay" => new[]
+            {
+                Scenario($"Thao tác an toàn với {primary}", $"Chuẩn bị {primary}", "Quan sát hình mẫu", "Thực hiện chậm và cẩn thận", "Cất dụng cụ đúng chỗ")
+            },
+            "cay-co" => new[]
+            {
+                Scenario("Quá trình cây lớn lên", "Gieo hạt xuống đất", "Tưới nước", "Hạt nảy mầm", "Cây lớn lên")
+            },
+            _ => new[]
+            {
+                new OrderingScenario($"Trình tự: {primary}", "Sắp xếp các bước theo trình tự hợp lý.", profile.OrderedItems)
+            }
+        };
+
+        return scenarios[(ordinal - 1) % scenarios.Length];
+    }
+
+    private static OrderingScenario Scenario(string title, params string[] items) =>
+        new(title, "Sắp xếp các bước theo trình tự hợp lý.", items);
+
+    private sealed record OrderingScenario(string Title, string Prompt, string[] Items);
+
+    private static TopicCoverageProfile GetTopicCoverageProfile(string topicCode, string groupCode) => topicCode switch
+    {
+        "kham-pha-chu" => Profile("các chữ cái", ["Chữ A", "Chữ B", "Chữ C", "Chữ D", "Chữ E", "Chữ G"], ["Số 1", "Số 2", "Hình tròn", "Ngôi sao"], ["Nghe tên chữ", "Quan sát chữ", "Chọn chữ đúng", "Đọc lại chữ"], "chữ cái"),
+        "chu-in-hoa" => Profile("các chữ in hoa", ["A", "B", "C", "D", "E", "G"], ["a", "b", "c", "d", "e", "g"], ["Quan sát chữ mẫu", "Đặt bút đúng điểm", "Tô theo nét", "Đọc tên chữ"], "chữ"),
+        "chu-in-thuong" => Profile("các chữ in thường", ["a", "b", "c", "d", "e", "g"], ["A", "B", "C", "D", "E", "G"], ["Quan sát chữ mẫu", "Nhận ra nét chữ", "Chọn chữ thường", "Đọc tên chữ"], "chữ"),
+        "ghep-hoa-thuong" => Profile("các chữ cái", ["A", "B", "C", "D", "E", "G"], ["1", "2", "3", "4"], ["Chọn chữ hoa", "Tìm chữ thường", "Ghép thành cặp", "Đọc tên chữ"], "cặp chữ"),
+        "phan-biet-chu" => Profile("các chữ cái", ["b", "d", "p", "q", "m", "n"], ["6", "9", "2", "5"], ["Quan sát hướng nét", "So sánh hai chữ", "Tìm điểm khác", "Chọn chữ đúng"], "chữ"),
+
+        "so-0-9" => Profile("các số từ 0 đến 9", ["Số 0", "Số 1", "Số 2", "Số 3", "Số 4", "Số 5"], ["Chữ A", "Chữ B", "Hình tròn", "Ngôi sao"], ["Số 0", "Số 1", "Số 2", "Số 3", "Số 4"], "chấm tròn"),
+        "so-10-20" => Profile("các số từ 10 đến 20", ["Số 10", "Số 11", "Số 12", "Số 13", "Số 14", "Số 15"], ["Số 2", "Số 4", "Chữ A", "Chữ B"], ["Số 10", "Số 11", "Số 12", "Số 13", "Số 14"], "chấm tròn"),
+        "thu-tu-so" => Profile("các chữ số", ["Số 2", "Số 3", "Số 4", "Số 5", "Số 6", "Số 7"], ["Chữ A", "Chữ B", "Hình vuông", "Bông hoa"], ["Số 1", "Số 2", "Số 3", "Số 4", "Số 5"], "thẻ số"),
+        "phan-biet-so" => Profile("các chữ số", ["Số 2", "Số 5", "Số 6", "Số 9", "Số 3", "Số 8"], ["Chữ S", "Chữ G", "Hình tròn", "Hình vuông"], ["Quan sát chữ số", "So sánh nét", "Tìm điểm khác", "Chọn số đúng"], "chữ số"),
+        "viet-so" => Profile("các chữ số", ["0", "1", "2", "3", "4", "5"], ["A", "B", "C", "D"], ["Quan sát số mẫu", "Đặt bút đúng điểm", "Tô theo nét", "Đọc tên số"], "chữ số"),
+
+        "dem-so-luong" => Profile("các nhóm đồ vật có thể đếm", ["Ba quả táo", "Bốn ngôi sao", "Hai con cá", "Năm chiếc bút", "Một quả bóng", "Sáu bông hoa"], ["Rửa tay", "Trời mưa", "Chữ A", "Màu xanh"], ["Chỉ từng đồ vật", "Đếm từ trái sang phải", "Nói số lượng", "Chọn chữ số"], "đồ vật"),
+        "tao-so-luong" => Profile("các nhóm có số lượng xác định", ["Hai quả táo", "Ba ngôi sao", "Bốn con cá", "Năm chiếc bút", "Sáu bông hoa", "Một quả bóng"], ["Chữ A", "Trời nắng", "Rửa tay", "Hình vuông"], ["Đọc số mục tiêu", "Thêm từng đồ vật", "Đếm lại", "Xác nhận kết quả"], "đồ vật"),
+        "ghep-so-luong" => Profile("các nhóm số lượng", ["Một quả bóng", "Hai con cá", "Ba quả táo", "Bốn ngôi sao", "Năm chiếc bút", "Sáu bông hoa"], ["Chữ A", "Chữ B", "Trời mưa", "Rửa tay"], ["Quan sát nhóm", "Đếm đồ vật", "Tìm thẻ số", "Ghép số với nhóm"], "đồ vật"),
+        "so-sanh" => Profile("các nhóm đồ vật", ["Nhóm ba quả táo", "Nhóm bốn ngôi sao", "Nhóm hai con cá", "Nhóm năm chiếc bút", "Nhóm sáu bông hoa", "Nhóm một quả bóng"], ["Chữ A", "Trời nắng", "Rửa tay", "Màu đỏ"], ["Đếm nhóm thứ nhất", "Đếm nhóm thứ hai", "So sánh hai số", "Chọn nhiều hơn"], "đồ vật"),
+        "tach-gop" => Profile("các nhóm đồ vật", ["Hai quả táo", "Ba ngôi sao", "Bốn con cá", "Năm chiếc bút", "Sáu bông hoa", "Một quả bóng"], ["Chữ A", "Trời mưa", "Rửa tay", "Màu vàng"], ["Quan sát nhóm ban đầu", "Tách thành hai phần", "Đếm từng phần", "Gộp và kiểm tra"], "đồ vật"),
+        "cong-bot" => Profile("các nhóm đồ vật", ["Hai quả táo", "Ba ngôi sao", "Bốn con cá", "Năm chiếc bút", "Sáu bông hoa", "Một quả bóng"], ["Chữ A", "Trời nắng", "Đánh răng", "Hình tròn"], ["Đếm số ban đầu", "Thêm hoặc bớt", "Đếm lại", "Chọn kết quả"], "đồ vật"),
+
+        "phan-loai" => Profile("các con vật", ["Con mèo", "Con chó", "Con cá", "Con vịt", "Con gà", "Con thỏ"], ["Quả táo", "Bút chì", "Xe đạp", "Cái bát"], ["Quan sát từng vật", "Tìm đặc điểm chung", "Chọn nhóm phù hợp", "Kiểm tra lại"], "thẻ hình"),
+        "quy-luat" => Profile("các hình dạng", ["Hình tròn", "Hình vuông", "Hình tam giác", "Ngôi sao", "Trái tim", "Hình chữ nhật"], ["Con mèo", "Bút chì", "Quả táo", "Xe đạp"], ["Hình tròn", "Hình vuông", "Hình tròn", "Hình vuông"], "hình"),
+        "ghep-bong" => Profile("các đồ vật", ["Quả táo", "Con mèo", "Con cá", "Bút chì", "Chiếc ô", "Xe đạp"], ["Số 1", "Chữ A", "Màu đỏ", "Trời nắng"], ["Quan sát đồ vật", "Quan sát đường viền", "Tìm bóng giống nhau", "Ghép đúng cặp"], "đồ vật"),
+        "tim-khac-biet" => Profile("các hình dạng", ["Hình tròn", "Hình vuông", "Hình tam giác", "Ngôi sao", "Trái tim", "Hình chữ nhật"], ["Con mèo", "Quả táo", "Bút chì", "Xe đạp"], ["Quan sát toàn bộ hình", "So sánh màu sắc", "So sánh hình dạng", "Chọn hình khác"], "hình"),
+
+        "tu-phuc-vu" => Profile("các việc bé tự làm", ["Rửa tay", "Đánh răng", "Xếp đồ chơi", "Cất giày dép", "Mặc áo", "Cất ba lô"], ["Nghịch ổ điện", "Chạy qua đường", "Thức khuya", "Vứt rác bừa bãi"], ["Chuẩn bị đồ dùng", "Thực hiện từng bước", "Cất đồ gọn gàng", "Rửa tay sạch"], "việc tốt"),
+        "an-toan" => Profile("các hành động an toàn", ["Đội mũ bảo hiểm", "Đi cùng người lớn", "Tránh xa ổ điện", "Cất dao kéo", "Ngồi đúng chỗ", "Báo người lớn"], ["Nghịch ổ điện", "Tự bật bếp", "Chạy qua đường", "Chạm nước sôi"], ["Dừng lại quan sát", "Nắm tay người lớn", "Đi đúng vạch", "Sang đường an toàn"], "hành động an toàn"),
+        "cam-xuc" => Profile("các cảm xúc tích cực", ["Vui vẻ", "Bình tĩnh", "Tự hào", "Yêu thương", "Hào hứng", "Thân thiện"], ["Cái bát", "Xe đạp", "Bút chì", "Quả táo"], ["Nhìn nét mặt", "Lắng nghe giọng nói", "Gọi tên cảm xúc", "Chia sẻ với người lớn"], "cảm xúc"),
+        "giao-tiep" => Profile("các lời nói lịch sự", ["Con chào cô ạ", "Con cảm ơn ạ", "Con xin lỗi", "Mời bạn cùng chơi", "Bạn có cần giúp không", "Con xin phép ạ"], ["Tránh ra", "Không thích", "Đưa đây", "Im đi"], ["Nhìn người đối diện", "Lắng nghe", "Nói lời lịch sự", "Chờ bạn trả lời"], "lời nói lịch sự"),
+
+        "von-tu" => Profile("các từ chỉ đồ vật", ["Bút chì", "Quyển sách", "Ba lô", "Chiếc ô", "Cái bát", "Đôi giày"], ["Vui vẻ", "Chạy nhanh", "Màu đỏ", "Số ba"], ["Quan sát hình", "Gọi tên đồ vật", "Nói đặc điểm", "Dùng từ trong câu"], "từ"),
+        "nghe-hieu" => Profile("các đồ vật được nhắc đến", ["Quả táo", "Con mèo", "Bút chì", "Quyển sách", "Bông hoa", "Chiếc ô"], ["Số 1", "Chữ A", "Màu xanh", "Hình vuông"], ["Ngồi yên", "Nghe hết câu", "Nhớ từ quan trọng", "Chọn đáp án"], "nội dung"),
+        "ke-chuyen" => Profile("các nhân vật câu chuyện", ["Bạn thỏ", "Chú mèo", "Bạn gấu", "Cô bé", "Chú cá", "Bạn ong"], ["Cái bát", "Bút chì", "Số 2", "Hình vuông"], ["Mở đầu câu chuyện", "Sự việc xảy ra", "Nhân vật giải quyết", "Kết thúc câu chuyện"], "nhân vật"),
+        "am-van" => Profile("các tiếng bắt đầu bằng âm b", ["Bút", "Bát", "Bóng", "Bé", "Bò", "Bướm"], ["Cá", "Táo", "Mèo", "Ô"], ["Nghe âm đầu", "Nhắc lại âm", "Ghép với tiếng", "Đọc trọn tiếng"], "tiếng"),
+        "doc-hieu" => Profile("các nhân vật trong câu chuyện", ["Bạn An", "Bạn Bình", "Chú mèo", "Bạn thỏ", "Cô giáo", "Mẹ"], ["Cái bát", "Số 3", "Hình tròn", "Màu đỏ"], ["Đọc câu chuyện", "Tìm nhân vật", "Nhớ sự việc", "Trả lời câu hỏi"], "nhân vật"),
+
+        "hinh-dang" => Profile("các hình dạng", ["Hình tròn", "Hình vuông", "Hình tam giác", "Hình chữ nhật", "Ngôi sao", "Trái tim"], ["Con mèo", "Bút chì", "Số 2", "Chữ A"], ["Quan sát đường viền", "Đếm số cạnh", "Đếm số góc", "Gọi tên hình"], "hình"),
+        "vi-tri" => Profile("các từ chỉ vị trí", ["Ở phía trên", "Ở phía dưới", "Ở bên trái", "Ở bên phải", "Ở phía trước", "Ở phía sau"], ["Màu đỏ", "Số 2", "Con mèo", "Hình tròn"], ["Quan sát vật làm mốc", "Xác định hướng", "Nói vị trí", "Đặt vật đúng chỗ"], "vị trí"),
+        "kich-thuoc" => Profile("các từ chỉ kích thước", ["Lớn hơn", "Nhỏ hơn", "Dài hơn", "Ngắn hơn", "Cao hơn", "Thấp hơn"], ["Màu đỏ", "Số 2", "Con mèo", "Hình tròn"], ["Đặt hai vật cạnh nhau", "Quan sát kích thước", "So sánh", "Chọn kết quả"], "hình"),
+        "ghep-hinh" => Profile("các hình dùng để ghép", ["Hình tròn", "Hình vuông", "Hình tam giác", "Hình chữ nhật", "Nửa hình tròn", "Ngôi sao"], ["Con mèo", "Số 2", "Chữ A", "Màu đỏ"], ["Quan sát hình mẫu", "Chọn mảnh ghép", "Xoay đúng hướng", "Đặt vào vị trí"], "mảnh ghép"),
+
+        "ghi-nho" => Profile("các đồ vật cần ghi nhớ", ["Quả táo đỏ", "Con cá xanh", "Ngôi sao vàng", "Bông hoa tím", "Chiếc bút", "Quả bóng"], ["Số 2", "Chữ A", "Trời mưa", "Vui vẻ"], ["Quan sát các vật", "Nhắm mắt ghi nhớ", "Nhắc lại vị trí", "Chọn vật đúng"], "thẻ hình"),
+        "tap-trung" => Profile("các hình mục tiêu", ["Ngôi sao vàng", "Quả táo đỏ", "Con cá xanh", "Bông hoa tím", "Chiếc bút", "Quả bóng"], ["Số 2", "Chữ A", "Trời mưa", "Vui vẻ"], ["Nghe yêu cầu", "Quan sát kỹ", "Bỏ qua vật gây nhiễu", "Chọn hình mục tiêu"], "hình"),
+        "lam-theo-yeu-cau" => Profile("các đồ vật được yêu cầu", ["Bút chì", "Quyển sách", "Quả bóng", "Chiếc ô", "Ba lô", "Đôi giày"], ["Vui vẻ", "Màu đỏ", "Số 2", "Trời mưa"], ["Nghe yêu cầu thứ nhất", "Thực hiện yêu cầu thứ nhất", "Nghe yêu cầu thứ hai", "Hoàn thành"], "đồ vật"),
+
+        "net-co-ban" => Profile("các nét cơ bản", ["Nét thẳng", "Nét ngang", "Nét xiên", "Nét cong", "Nét móc", "Nét khuyết"], ["Quả táo", "Con mèo", "Số 2", "Màu đỏ"], ["Quan sát nét mẫu", "Đặt bút", "Đi theo chiều mũi tên", "Dừng ở điểm cuối"], "nét"),
+        "tao-hinh" => Profile("các dụng cụ tạo hình", ["Bút chì", "Bút màu", "Giấy màu", "Đất nặn", "Hồ dán", "Kéo thủ công"], ["Cái bát", "Đôi giày", "Xe đạp", "Quả táo"], ["Chọn hình mẫu", "Vẽ đường viền", "Tô màu", "Hoàn thiện bức hình"], "dụng cụ"),
+        "noi-diem" => Profile("các điểm cần nối", ["Điểm 1", "Điểm 2", "Điểm 3", "Điểm 4", "Điểm 5", "Điểm 6"], ["Chữ A", "Màu đỏ", "Con mèo", "Quả táo"], ["Tìm điểm 1", "Nối đến điểm 2", "Nối đến điểm 3", "Hoàn thành đường nét"], "điểm"),
+        "me-cung" => Profile("các lối đi trong mê cung", ["Lối bên trái", "Lối bên phải", "Lối đi thẳng", "Lối lên trên", "Lối xuống dưới", "Lối về đích"], ["Màu đỏ", "Số 2", "Bút chì", "Quả táo"], ["Tìm điểm bắt đầu", "Quan sát các lối", "Tránh đường cụt", "Đi đến đích"], "lối đi"),
+        "kheo-tay" => Profile("các dụng cụ thủ công", ["Bút chì", "Bút màu", "Giấy màu", "Đất nặn", "Hồ dán", "Kéo thủ công"], ["Cái bát", "Đôi giày", "Xe đạp", "Quả táo"], ["Chuẩn bị dụng cụ", "Làm theo mẫu", "Thao tác cẩn thận", "Cất đồ gọn gàng"], "dụng cụ"),
+
+        "con-vat" => Profile("các con vật", ["Con mèo", "Con chó", "Con cá", "Con vịt", "Con gà", "Con thỏ"], ["Quả táo", "Bút chì", "Xe đạp", "Cái bát"], ["Quan sát con vật", "Tìm đặc điểm", "Gọi tên", "Nói nơi sống"], "con vật"),
+        "cay-co" => Profile("các cây và bộ phận của cây", ["Cây xanh", "Bông hoa", "Chiếc lá", "Quả táo", "Hạt giống", "Rễ cây"], ["Con mèo", "Bút chì", "Xe đạp", "Cái bát"], ["Gieo hạt", "Tưới nước", "Hạt nảy mầm", "Cây lớn lên"], "cây"),
+        "thoi-tiet" => Profile("các hiện tượng thời tiết", ["Trời nắng", "Trời mưa", "Gió mạnh", "Đám mây", "Cầu vồng", "Trời lạnh"], ["Con mèo", "Bút chì", "Cái bát", "Xe đạp"], ["Quan sát bầu trời", "Nhận biết thời tiết", "Chọn trang phục", "Chuẩn bị ra ngoài"], "hiện tượng"),
+        "giao-thong" => Profile("các phương tiện giao thông", ["Xe đạp", "Ô tô", "Xe buýt", "Máy bay", "Thuyền", "Tàu hỏa"], ["Quả táo", "Con mèo", "Bút chì", "Cái bát"], ["Quan sát phương tiện", "Nhận biết nơi di chuyển", "Gọi tên phương tiện", "Chọn cách đi an toàn"], "phương tiện"),
+
+        _ => GetGroupCoverageProfile(groupCode)
+    };
+
+    private static TopicCoverageProfile GetGroupCoverageProfile(string groupCode) => groupCode switch
+    {
+        "chu-cai" => Profile("các chữ cái", ["Chữ A", "Chữ B", "Chữ C", "Chữ D"], ["Số 1", "Số 2", "Hình tròn", "Ngôi sao"], ["Quan sát", "Nhận biết", "Chọn đáp án", "Đọc lại"], "chữ"),
+        "chu-so" or "so-luong-toan" => Profile("các nhóm số lượng", ["Một đồ vật", "Hai đồ vật", "Ba đồ vật", "Bốn đồ vật"], ["Chữ A", "Màu đỏ", "Trời mưa", "Vui vẻ"], ["Quan sát", "Đếm", "Chọn số", "Kiểm tra"], "đồ vật"),
+        _ => Profile("các nội dung phù hợp", ["Quả táo", "Con mèo", "Bút chì", "Quyển sách"], ["Số 1", "Chữ A", "Màu đỏ", "Trời mưa"], ["Quan sát", "Suy nghĩ", "Chọn đáp án", "Kiểm tra"], "đồ vật")
+    };
+
+    private static TopicCoverageProfile Profile(
+        string criterion, string[] correctItems, string[] distractors, string[] orderedItems, string countingObject) =>
+        new(criterion, correctItems, distractors, orderedItems, countingObject);
+
+    private static string BuildSemanticPairLabel(string topicCode, string value)
+    {
+        if (topicCode == "ghep-hoa-thuong" && value.Length == 1)
+        {
+            return value.ToLower(new System.Globalization.CultureInfo("vi-VN"));
+        }
+        if (topicCode == "chu-in-hoa" && value.Length == 1) return $"Chữ hoa {value}";
+        if (topicCode == "chu-in-thuong" && value.Length == 1) return $"Chữ thường {value}";
+        if (value.StartsWith("Số ", StringComparison.OrdinalIgnoreCase)) return $"Tên gọi của {value.ToLowerInvariant()}";
+        if (value.StartsWith("Hình ", StringComparison.OrdinalIgnoreCase)) return $"Đồ vật có dạng {value.ToLowerInvariant()}";
+        return $"Hình minh họa đúng của {value.ToLowerInvariant()}";
+    }
+
+    private static string ResolveSemanticImageUrl(string value, string groupCode)
+    {
+        if (TryResolveObservationPhoto(value, out var imageUrl)) return imageUrl;
+
+        var cleanValue = value
+            .Replace("Chữ hoa ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Chữ thường ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Chữ ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Số ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Trim();
+        if (groupCode == "chu-cai") return ResolveLetterFlashcardUrl(cleanValue);
+        if (groupCode is "chu-so" or "so-luong-toan") return ResolveNumberFlashcardUrl(cleanValue);
+        return string.Empty;
+    }
+
+    private sealed record TopicCoverageProfile(
+        string Criterion,
+        string[] CorrectItems,
+        string[] Distractors,
+        string[] OrderedItems,
+        string CountingObject);
+
+    private static string GetCoverageItem(string groupCode, int index)
+    {
+        var items = groupCode switch
+        {
+            "chu-cai" => new[] { "Chữ A", "Chữ B", "Chữ C", "Chữ D", "Chữ E", "Chữ G" },
+            "chu-so" => new[] { "Số 1", "Số 2", "Số 3", "Số 4", "Số 5", "Số 6" },
+            "so-luong-toan" => new[] { "Ba quả táo", "Bốn ngôi sao", "Hai con cá", "Năm chiếc bút", "Một quả bóng", "Sáu bông hoa" },
+            "tu-duy-logic" => new[] { "Hình tròn đỏ", "Hình vuông xanh", "Hình tam giác vàng", "Mảnh ghép lớn", "Mảnh ghép nhỏ", "Chiếc bóng đúng" },
+            "ky-nang-song" => new[] { "Rửa tay", "Đánh răng", "Xếp đồ chơi", "Chào hỏi", "Đội mũ bảo hiểm", "Cất giày dép" },
+            "ngon-ngu" => new[] { "Quả táo", "Con mèo", "Bút chì", "Quyển sách", "Bông hoa", "Chiếc ô" },
+            "hinh-dang-khong-gian" => new[] { "Hình tròn", "Hình vuông", "Hình tam giác", "Ở phía trên", "Ở phía dưới", "Ở bên trái" },
+            "ghi-nho-tap-trung" => new[] { "Ngôi sao vàng", "Quả táo đỏ", "Con cá xanh", "Bông hoa tím", "Chiếc bút", "Quả bóng" },
+            "van-dong-tinh" => new[] { "Bút chì", "Bút màu", "Đường nét thẳng", "Đường nét cong", "Mảnh ghép", "Chấm tròn" },
+            "kham-pha" => new[] { "Con mèo", "Con cá", "Cây xanh", "Bông hoa", "Xe đạp", "Đám mây" },
+            _ => new[] { "Đáp án một", "Đáp án hai", "Đáp án ba", "Đáp án bốn", "Đáp án năm", "Đáp án sáu" }
+        };
+        return items[Math.Abs(index) % items.Length];
+    }
+
+    private static string GetCoverageSymbol(string groupCode) => groupCode switch
+    {
+        "chu-cai" => "A",
+        "chu-so" or "so-luong-toan" => "●",
+        "hinh-dang-khong-gian" => "★",
+        "kham-pha" => "🐟",
+        _ => "●"
+    };
+
+    private static string GetCoverageTracingSymbol(string groupCode, int ordinal) => groupCode switch
+    {
+        "chu-cai" => VietnameseAlphabet[(ordinal - 1) % VietnameseAlphabet.Length],
+        "chu-so" => ((ordinal - 1) % 10).ToString(),
+        _ => ordinal % 2 == 0 ? "C" : "O"
+    };
+
+    private static string GetCoverageImage(string groupCode) => groupCode switch
+    {
+        "chu-cai" => "/images/photos/flashcard-letter-a.jpg",
+        "chu-so" or "so-luong-toan" => "/images/photos/flashcard-number-3.jpg",
+        "hinh-dang-khong-gian" => "/images/photos/flashcard-shape-circle.svg",
+        "kham-pha" => "/images/photos/fish.jpg",
+        _ => "/images/photos/flashcard-apple.jpg"
+    };
 
     private static string EnrichLessonMedia(SeedLesson lesson)
     {
@@ -548,11 +1030,8 @@ public static class LearningContentSeed
             tracingPayload["expectedStrokeCount"] = lesson.ExpectedStrokeCount;
             tracingPayload["guideMode"] = "outline";
             var tracingImage = ResolveTracingFlashcardUrl(sym);
-            if (!string.IsNullOrWhiteSpace(tracingImage))
-            {
-                tracingPayload["imageUrl"] = tracingImage;
-                tracingPayload["imageAltText"] = $"Thẻ học {sym}";
-            }
+            tracingPayload["imageUrl"] = tracingImage;
+            tracingPayload["imageAltText"] = $"Hình mẫu tô theo nét {sym}";
             return tracingPayload.ToJsonString();
         }
 
@@ -572,13 +1051,19 @@ public static class LearningContentSeed
         }
 
         var currentImage = payload["imageUrl"]?.GetValue<string>() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(currentImage))
+        var suppressAutoImage = payload["suppressAutoImage"]?.GetValue<bool>() == true;
+        if (string.IsNullOrWhiteSpace(currentImage) && !suppressAutoImage)
         {
             currentImage = ResolveQuestionImageUrl(lesson, payload);
             if (!string.IsNullOrWhiteSpace(currentImage))
             {
                 payload["imageUrl"] = currentImage;
             }
+        }
+        if (string.IsNullOrWhiteSpace(currentImage) && lesson.InteractionType == InteractionTypes.StoryChoice)
+        {
+            currentImage = $"/learning-media/topic/{Uri.EscapeDataString(lesson.TopicCode)}";
+            payload["imageUrl"] = currentImage;
         }
 
         var imageAltText = currentImage switch
@@ -751,14 +1236,10 @@ public static class LearningContentSeed
         }
 
         var clean = symbol.Trim();
-        if (ObservationPhotos.TryGetValue(clean, out var url))
-        {
-            return url;
-        }
-
-        var letter = char.ToUpperInvariant(clean[0]);
-        return letter is >= 'A' and <= 'Z'
-            ? $"/images/photos/flashcard-letter-{char.ToLowerInvariant(letter)}.jpg"
+        var culture = new System.Globalization.CultureInfo("vi-VN");
+        var upper = clean.ToUpper(culture);
+        return VietnameseAlphabet.Contains(upper, StringComparer.OrdinalIgnoreCase)
+            ? $"/learning-media/letter/{Uri.EscapeDataString(upper)}"
             : string.Empty;
     }
 
@@ -781,9 +1262,13 @@ public static class LearningContentSeed
     public static string ResolveTracingFlashcardUrl(string symbol)
     {
         var numberImageUrl = ResolveNumberFlashcardUrl(symbol);
-        return string.IsNullOrWhiteSpace(numberImageUrl)
-            ? ResolveLetterFlashcardUrl(symbol)
-            : numberImageUrl;
+        if (!string.IsNullOrWhiteSpace(numberImageUrl)) return numberImageUrl;
+        var letterImageUrl = ResolveLetterFlashcardUrl(symbol);
+        return !string.IsNullOrWhiteSpace(letterImageUrl)
+            ? letterImageUrl
+            : string.IsNullOrWhiteSpace(symbol)
+                ? string.Empty
+                : $"/learning-media/tracing?symbol={Uri.EscapeDataString(symbol.Trim())}";
     }
 
     private static int ResolvePedagogicalOrder(string code, int fallbackOrder)
@@ -839,6 +1324,12 @@ public static class LearningContentSeed
         yield return Multi("seed-multi-safety-actions", "Chọn các hành động an toàn khi ở nhà", "an-toan", ["Tránh xa ổ điện", "Không nghịch dao kéo", "Tự bật bếp gas", "Nghịch nước sôi"], ["Tránh xa ổ điện", "Không nghịch dao kéo"]);
         yield return Multi("seed-multi-good-habits", "Chọn các thói quen tốt mỗi ngày", "tu-phuc-vu", ["Đánh răng mỗi sáng", "Rửa tay trước khi ăn", "Thức khuya xem điện thoại", "Vứt rác bừa bãi"], ["Đánh răng mỗi sáng", "Rửa tay trước khi ăn"]);
         yield return Multi("seed-multi-summer-clothes", "Chọn trang phục mùa hè mát mẻ", "thoi-tiet", ["Áo phông", "Quần đùi", "Mũ rộng vành", "Áo len dày", "Khăn quàng cổ"], ["Áo phông", "Quần đùi", "Mũ rộng vành"]);
+
+        // 6. Tiền tập đọc & ngôn ngữ
+        yield return Multi("seed-multi-words-sound-b", "Chọn các từ bắt đầu bằng âm B", "von-tu", ["Bút chì", "Bát", "Bông hoa", "Con cá", "Quả táo"], ["Bút chì", "Bát", "Bông hoa"]);
+
+        // 7. Vận động tinh
+        yield return Multi("seed-multi-drawing-tools", "Chọn đồ dùng để vẽ và tô màu", "kheo-tay", ["Bút chì", "Bút màu", "Quyển vở", "Bát", "Thìa"], ["Bút chì", "Bút màu", "Quyển vở"]);
     }
 
     private static IEnumerable<SeedLesson> BuildListenLessons()
@@ -876,6 +1367,8 @@ public static class LearningContentSeed
     private static IEnumerable<SeedLesson> BuildDragLessons()
     {
         // 1. Ghép chữ hoa - thường
+        // Bản ghi mã cũ vẫn được quản lý để sửa payload thiếu lựa chọn trên CSDL hiện hữu.
+        yield return Drag("seed-drag-uppercase", "Kéo chữ hoa A đúng", "ghep-hoa-thuong", "Chữ hoa A", ["A", "a", "ă"], "A");
         yield return Drag("seed-drag-uppercase-a", "Kéo chữ hoa A đúng", "ghep-hoa-thuong", "Chữ hoa A", ["A", "a", "ă"], "A");
         yield return Drag("seed-drag-uppercase-b", "Kéo chữ hoa B đúng", "ghep-hoa-thuong", "Chữ hoa B", ["B", "b", "d"], "B");
         yield return Drag("seed-drag-uppercase-c", "Kéo chữ hoa C đúng", "ghep-hoa-thuong", "Chữ hoa C", ["C", "c", "o"], "C");
@@ -1423,6 +1916,66 @@ public static class LearningContentSeed
             imageUrl: "/images/photos/chicken.jpg");
         yield return Choice("seed-world-animals-milk", "Loài vật cho sữa thơm ngon", "con-vat", InteractionTypes.SingleChoice,
             "Con chọn con vật mang lại nguồn sữa cho bé.", "Con vật nào cho chúng ta nguồn sữa tươi thơm ngon?", ["Bò sữa", "Con thỏ", "Con vịt"], "Bò sữa");
+
+        // Bổ sung các chủ đề còn trống để độ phủ chương trình luôn đạt 100%.
+        yield return Mapping("seed-coverage-shadow-pairs", "Ghép đồ vật với bóng tương ứng", "ghep-bong", InteractionTypes.Matching,
+            [("Quả táo", "Bóng quả táo"), ("Con cá", "Bóng con cá"), ("Chiếc ô", "Bóng chiếc ô")]);
+        yield return Listen("seed-coverage-listen-request", "Nghe và chọn đồ vật được nhắc đến", "nghe-hieu",
+            "Con hãy chọn chiếc bút chì để chuẩn bị học bài.", ["Bút chì", "Quả táo", "Con cá"], "Bút chì");
+        yield return Drag("seed-coverage-build-house", "Chọn mảnh ghép làm mái nhà", "ghep-hinh", "Mái nhà",
+            ["Hình tam giác", "Hình tròn", "Hình vuông"], "Hình tam giác");
+        yield return Listen("seed-coverage-follow-request", "Nghe và làm theo yêu cầu", "lam-theo-yeu-cau",
+            "Con hãy chọn quả bóng rồi chọn nút hoàn thành.", ["Quả bóng", "Quyển sách", "Chiếc ô"], "Quả bóng");
+        yield return Mapping("seed-coverage-connect-dots", "Nối các điểm theo thứ tự", "noi-diem", InteractionTypes.Matching,
+            [("Điểm 1", "Điểm 2"), ("Điểm 3", "Điểm 4"), ("Điểm 5", "Điểm 6")]);
+
+        // Phủ đủ mọi dạng bài được phép trong từng nhóm kỹ năng.
+        yield return Story("seed-coverage-letter-story", "Câu chuyện chữ A và quả táo", "kham-pha-chu",
+            "Bạn An tìm thấy một quả táo đỏ. Chữ A là chữ đầu trong tên bạn An.", "/images/photos/flashcard-letter-a.jpg",
+            "Chữ nào đứng đầu tên bạn An?", ["A", "B", "C"], "A");
+
+        yield return Listen("seed-coverage-number-listen", "Nghe và chọn số mười hai", "so-10-20",
+            "Đây là số mười hai.", ["11", "12", "13"], "12");
+        yield return Counting("seed-coverage-number-count", "Đếm năm chấm và chọn chữ số", "so-0-9", "●", 5);
+        yield return Drag("seed-coverage-number-order", "Đưa số 8 vào sau số 7", "thu-tu-so",
+            "Vị trí sau số 7", ["6", "8", "9"], "8");
+        yield return Mapping("seed-coverage-number-match", "Nối các số dễ nhầm với tên gọi", "phan-biet-so", InteractionTypes.Matching,
+            [("6", "Số sáu"), ("9", "Số chín"), ("2", "Số hai")]);
+
+        yield return Listen("seed-coverage-math-listen", "Nghe và chọn nhóm có ba đồ vật", "dem-so-luong",
+            "Con hãy chọn số ba.", ["2", "3", "4"], "3");
+
+        yield return Mapping("seed-coverage-life-classify", "Phân loại hành động an toàn", "an-toan", InteractionTypes.Classification,
+            [("Đội mũ bảo hiểm", "An toàn"), ("Đi cùng người lớn", "An toàn"), ("Nghịch ổ điện", "Nguy hiểm")]);
+        yield return Listen("seed-coverage-life-listen", "Nghe lời chào lịch sự", "giao-tiep",
+            "Con chào cô ạ.", ["Lời chào lễ phép", "Lời từ chối", "Lời xin lỗi"], "Lời chào lễ phép");
+
+        yield return Mapping("seed-coverage-language-classify", "Phân loại từ chỉ con vật và đồ vật", "von-tu", InteractionTypes.Classification,
+            [("Con mèo", "Con vật"), ("Con cá", "Con vật"), ("Bút chì", "Đồ vật"), ("Quyển vở", "Đồ vật")]);
+
+        yield return Mapping("seed-coverage-shape-classify", "Phân loại hình có góc và không có góc", "hinh-dang", InteractionTypes.Classification,
+            [("Hình tròn", "Không có góc"), ("Hình vuông", "Có góc"), ("Hình tam giác", "Có góc")]);
+        yield return Story("seed-coverage-position-story", "Chú chim ở trên cành cây", "vi-tri",
+            "Chú chim nhỏ bay lên và đậu trên cành cây xanh.", "/images/pictograms/bird.svg",
+            "Chú chim đang ở đâu?", ["Trên cành cây", "Dưới hồ nước", "Trong ngôi nhà"], "Trên cành cây");
+        yield return Comparison("seed-coverage-size-compare", "So sánh hai nhóm hình lớn và nhỏ", "kich-thuoc", "●",
+            "Nhóm hình lớn", 6, "Nhóm hình nhỏ", 3, "more");
+
+        yield return Choice("seed-coverage-memory-choice", "Nhớ vị trí quả táo", "ghi-nho", InteractionTypes.SingleChoice,
+            "Con nhớ vị trí vừa quan sát rồi chọn đáp án.", "Quả táo vừa nằm ở đâu?", ["Bên trái", "Ở giữa", "Bên phải"], "Ở giữa",
+            imageUrl: "/images/photos/flashcard-apple.jpg");
+        yield return Counting("seed-coverage-focus-count", "Tập trung đếm bốn ngôi sao", "tap-trung", "★", 4);
+        yield return Story("seed-coverage-follow-story", "Bé làm theo hai yêu cầu", "lam-theo-yeu-cau",
+            "Mẹ nhờ bé lấy quyển vở rồi đặt bút chì lên bàn. Bé lắng nghe và làm đúng cả hai việc.", "/images/pictograms/notebook.svg",
+            "Bé lấy đồ vật nào trước?", ["Quyển vở", "Bút chì", "Quả bóng"], "Quyển vở");
+        yield return Drag("seed-coverage-follow-drag", "Làm theo yêu cầu đưa bút vào cặp", "lam-theo-yeu-cau",
+            "Trong cặp sách", ["Bút chì", "Cái bát", "Quả bóng"], "Bút chì");
+
+        yield return Story("seed-coverage-animal-story", "Chú cá tìm đường về hồ", "con-vat",
+            "Chú cá nhỏ bơi theo dòng nước trong và tìm được đường về hồ cùng các bạn.", "/images/photos/fish.jpg",
+            "Chú cá sống ở đâu?", ["Trong hồ nước", "Trên cành cây", "Trong tổ ong"], "Trong hồ nước");
+        yield return Ordering("seed-coverage-plant-order", "Sắp xếp quá trình cây lớn lên", "cay-co",
+            ["Gieo hạt", "Tưới nước", "Hạt nảy mầm", "Cây lớn lên"]);
     }
 
     private static string NormalizeSeedCode(string value) => value
@@ -1479,12 +2032,18 @@ public static class LearningContentSeed
     private static SeedLesson Drag(string code, string title, string topicCode, string target, string[] choices, string answer) =>
         Lesson(code, title, topicCode, InteractionTypes.DragDrop, "Con chọn hoặc kéo vật đúng vào vùng đích.", title, new { choices, targetLabel = target, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, answer);
 
-    private static SeedLesson Mapping(string code, string title, string topicCode, string type, (string Left, string Right)[] mappings)
+    private static SeedLesson Mapping(
+        string code,
+        string title,
+        string topicCode,
+        string type,
+        (string Left, string Right)[] mappings,
+        bool suppressAutoImage = false)
     {
         var orderedAnswer = string.Join('|', mappings.OrderBy(x => x.Left).Select(x => $"{x.Left}=>{x.Right}"));
         var payload = type == InteractionTypes.Classification
-            ? JsonSerializer.Serialize(new { mappings = mappings.Select(x => new { left = x.Left, right = x.Right }), categories = mappings.Select(x => x.Right).Distinct(), imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty })
-            : JsonSerializer.Serialize(new { pairs = mappings.Select(x => new { left = x.Left, right = x.Right }), imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty });
+            ? JsonSerializer.Serialize(new { mappings = mappings.Select(x => new { left = x.Left, right = x.Right }), categories = mappings.Select(x => x.Right).Distinct(), imageUrl = string.Empty, suppressAutoImage, audioUrl = string.Empty, speechText = string.Empty })
+            : JsonSerializer.Serialize(new { pairs = mappings.Select(x => new { left = x.Left, right = x.Right }), imageUrl = string.Empty, suppressAutoImage, audioUrl = string.Empty, speechText = string.Empty });
         return new(code, title, topicCode, type,
             type == InteractionTypes.Classification ? "Con đưa từng vật vào đúng nhóm màu." : "Con chọn hai mục phù hợp để tạo đường nối.",
             title,

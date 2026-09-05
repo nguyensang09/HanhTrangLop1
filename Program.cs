@@ -74,13 +74,6 @@ if (args.Contains("--generate-missing-voice-files", StringComparer.OrdinalIgnore
     return;
 }
 
-if (args.Contains("--normalize-legacy-learning-items", StringComparer.OrdinalIgnoreCase))
-{
-    await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
-    Console.WriteLine("Normalized legacy learning items and relinked available voice files.");
-    return;
-}
-
 await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
 
 // Configure the HTTP request pipeline.

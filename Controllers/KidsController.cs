@@ -1220,21 +1220,7 @@ public class KidsController : Controller
             return string.Empty;
         }
 
-        var trimmed = symbol.Trim().ToLowerInvariant();
-        if (trimmed.Length == 1)
-        {
-            var ch = trimmed[0];
-            if (ch is 'ă' or 'â' or 'đ' or 'ê' or 'ô' or 'ơ' or 'ư')
-            {
-                return $"/images/photos/flashcard-letter-{ch}.svg";
-            }
-            if (ch is >= 'a' and <= 'z')
-            {
-                return $"/images/photos/flashcard-letter-{ch}.jpg";
-            }
-        }
-
-        return string.Empty;
+        return LearningContentSeed.ResolveLetterFlashcardUrl(symbol);
     }
 
     private static string ResolveNumberFlashcardUrl(string symbol)
@@ -1250,10 +1236,7 @@ public class KidsController : Controller
 
     private static string ResolveTracingFlashcardUrl(string symbol)
     {
-        var numberImageUrl = ResolveNumberFlashcardUrl(symbol);
-        return string.IsNullOrWhiteSpace(numberImageUrl)
-            ? ResolveLetterFlashcardUrl(symbol)
-            : numberImageUrl;
+        return LearningContentSeed.ResolveTracingFlashcardUrl(symbol);
     }
 
     private static string ResolveQuestionImageFromItemMedia(Question question)

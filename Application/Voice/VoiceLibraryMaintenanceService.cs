@@ -271,8 +271,6 @@ public sealed class VoiceLibraryMaintenanceService
         await _db.Database.MigrateAsync(cancellationToken);
         _logger.LogInformation("[VoiceRebuild] Bắt đầu dọn dẹp và tái thiết lập toàn bộ kho Voice chuẩn nữ...");
 
-        // 1. Chuẩn hóa dữ liệu bài học cũ
-        await LegacyLearningItemNormalizer.NormalizeAsync(_db);
         var protectedAudioPaths = await GetManualVoiceStoragePathsAsync(cancellationToken);
 
         // 2. Dọn sạch các file audio cũ trong wwwroot/uploads/audio/
@@ -571,10 +569,7 @@ public sealed class VoiceLibraryMaintenanceService
 
     public async Task<int> CleanupAllRedundantDatabaseAndVoiceFilesAsync(CancellationToken cancellationToken = default)
     {
-        // 1. Chuẩn hóa tất cả bài học trong DB (thay thế câu generic bằng nội dung có nghĩa)
-        await LegacyLearningItemNormalizer.NormalizeAsync(_db);
-
-        // 2. Thu thập danh sách tất cả các chuỗi text thực sự đang được dùng trong các bài học
+        // Thu thập danh sách tất cả các chuỗi text thực sự đang được dùng trong các bài học.
         var activeTextHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         var lessons = await _db.LearningItems
@@ -1650,8 +1645,59 @@ public sealed class VoiceLibraryMaintenanceService
 
     public async Task<(int Created, int Failed, int UpdatedItems)> GenerateMissingAndRelinkAsync(int maxItems = 0, CancellationToken cancellationToken = default)
     {
-        var batchResult = await SyncAndGenerateBatchAsync(maxItems > 0 ? maxItems : 30, cancellationToken);
-        return (batchResult.CreatedVi + batchResult.CreatedEn, batchResult.Failed, batchResult.UpdatedItems);
+        // Luồng sinh bổ sung không dọn/xóa kho voice hiện có. Trước tiên chỉ tạo các dòng
+        // cache còn thiếu và liên kết lại những file đã sẵn sàng.
+        var initialRelink = await EnsureVoiceRowsAndRelinkAsync(cancellationToken);
+
+        if (maxItems > 0)
+        {
+            var limitedResult = await SyncAndGenerateBatchAsync(maxItems, cancellationToken, initialize: false);
+            return (
+                limitedResult.CreatedVi + limitedResult.CreatedEn,
+                limitedResult.Failed,
+                initialRelink.LearningItemsUpdated + limitedResult.UpdatedItems);
+        }
+
+        var created = 0;
+        var failed = 0;
+        var updatedItems = initialRelink.LearningItemsUpdated;
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var batchResult = await SyncAndGenerateBatchAsync(
+                batchSize: 10,
+                cancellationToken,
+                initialize: false);
+
+            created += batchResult.CreatedVi + batchResult.CreatedEn;
+            failed += batchResult.Failed;
+            updatedItems += batchResult.UpdatedItems;
+
+            if (batchResult.IsCompleted)
+            {
+                break;
+            }
+
+            var madeProgress = batchResult.CreatedVi > 0 ||
+                               batchResult.CreatedEn > 0 ||
+                               batchResult.UpdatedItems > 0;
+            if (!madeProgress)
+            {
+                _logger.LogWarning(
+                    "Dừng đồng bộ Voice vì không thể tạo thêm file. Còn thiếu VI={MissingVi}, EN={MissingEn}, tổng phần việc={RemainingMissing}.",
+                    batchResult.MissingVi,
+                    batchResult.MissingEn,
+                    batchResult.RemainingMissing);
+                break;
+            }
+        }
+
+        // Luôn liên kết lại các voice đã sẵn sàng, kể cả khi nhà cung cấp TTS tạm thời lỗi.
+        var relinkResult = await EnsureVoiceRowsAndRelinkAsync(cancellationToken);
+        updatedItems += relinkResult.LearningItemsUpdated;
+
+        return (created, failed, updatedItems);
     }
 
     private static async Task RunEdgeTextToSpeechAsync(string text, string voice, string rate, string outputPath, CancellationToken cancellationToken)
