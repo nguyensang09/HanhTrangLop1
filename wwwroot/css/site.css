@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f4fbff;
   --surface: #ffffff;
   --surface-strong: #fff7cf;
@@ -18375,7 +18375,23 @@ body.audio-is-speaking .sound-wave-badge {
   font-size: 18px;
 }
 
-/* Khung LÃƒÂ m ViÃ¡Â»â€¡c BÃ¡ÂºÂ£n Ã„ÂÃ¡Â»â€œ TrÃ¡ÂºÂ£i RÃ¡Â»â„¢ng CÃƒÂ¢n Ã„ÂÃ¡Â»â€˜i (1160px) */
+/* Hàng bước bản đồ ziczac: Bao bọc trạm học và các tiểu cảnh 2 bên sườn */
+.adventure-step-row {
+  position: relative;
+  width: 100%;
+  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.adventure-step-row.reward-milestone-row {
+  min-height: 110px;
+  margin: 16px 0;
+}
+
+/* Khung Làm Việc Bản Đồ Trải Rộng Cân Đối (1160px) */
 .skill-map-workspace {
   display: block;
   max-width: 1160px !important;
@@ -18654,7 +18670,7 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Tráº¡m Äang Há»c Dá»Ÿ (Lá»›n Nháº¥t, PhÃ¡t SÃ¡ng HÃ o Quang, Báº¥m LÃ  VÃ o Há»c Ngay) */
+/* Tráº¡m Ä ang Há» c Dá»Ÿ (Lá»›n Nháº¥t, PhÃ¡t SÃ¡ng HÃ o Quang, Báº¥m LÃ  VÃ o Há» c Ngay) */
 .station-current {
   width: 86px !important;
   height: 86px !important;
@@ -18743,6 +18759,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* Tráº¡m RÆ°Æ¡ng ThÆ°á»Ÿng Má»‘c (má»—i 5 tráº¡m) */
+/* Trạm Rương Thưởng Mốc (mỗi 5 trạm) */
 .chest-node-badge {
   display: flex;
   flex-direction: column;
@@ -18786,7 +18803,63 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* Tráº¡m KhÃ³a */
+.flank-landmark-deco.side-left {
+  align-items: flex-start;
+}
+
+.flank-landmark-deco.side-right {
+  align-items: flex-end;
+}
+
+/* Tiểu Cảnh Thiên Nhiên Phân Bổ Ngẫu Nhiên Tự Nhiên */
+.flank-scenery-cluster {
+  position: absolute;
+  pointer-events: auto;
+  user-select: none;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+}
+
+.flank-scenery-cluster:hover {
+  transform: scale(1.18) rotate(3deg);
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.15));
+}
+
+.flank-scenery-cluster:active {
+  transform: scale(0.94);
+}
+
+.flank-scenery-cluster.side-left {
+  align-items: flex-start;
+}
+
+.flank-scenery-cluster.side-right {
+  align-items: flex-end;
+}
+
+/* Hạt hoa cỏ / bướm lượn vi mô tạo nét thiên nhiên nhẹ nhàng */
+.micro-nature-sprinkle {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  font-size: 1.4rem;
+  opacity: 0.8;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  animation: sprinkleWiggle 4s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+@keyframes sprinkleWiggle {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-6px) rotate(8deg); }
+}
+
+/* Trạm Khóa */
 .station-locked {
   background: linear-gradient(145deg, #f1f5f9 0%, #cbd5e1 100%) !important;
   border: 3.5px solid #ffffff !important;
@@ -18841,7 +18914,7 @@ body.audio-is-speaking .sound-wave-badge {
   margin-right: 2px;
 }
 
-/* 3. ÄÃ¡y Báº£n Äá»“ (Start Gate) */
+/* 3. Ä Ã¡y Báº£n Ä Ä‚á»€ (Start Gate) */
 .map-start-node {
   margin-top: 14px;
   z-index: 10;
@@ -18864,6 +18937,163 @@ body.audio-is-speaking .sound-wave-badge {
 .flag-icon {
   color: #10b981;
   font-size: 1.2rem;
+}
+
+/* ==================== TIỂU CẢNH & NHÂN VẬT SINH ĐỘNG VEN SƯỜN BẢN ĐỒ ==================== */
+.flank-landmark-deco {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  user-select: none;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 260px;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  animation: flankGentleHover 5s ease-in-out infinite alternate;
+}
+
+.flank-landmark-deco:hover {
+  transform: translateY(-50%) scale(1.08);
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.16));
+}
+
+.flank-landmark-deco:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+@keyframes flankGentleHover {
+  0% { transform: translateY(-50%) translateY(0); }
+  50% { transform: translateY(-50%) translateY(-6px); }
+  100% { transform: translateY(-50%) translateY(0); }
+}
+
+.flank-landmark-deco.side-left {
+  left: 20px;
+  align-items: flex-start;
+}
+
+.flank-landmark-deco.side-right {
+  right: 20px;
+  align-items: flex-end;
+}
+
+/* Tiểu Cảnh Thiên Nhiên Bên Sườn Đối Diện (Lấp đầy khoảng trống) */
+.flank-scenery-cluster {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  user-select: none;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+}
+
+.flank-scenery-cluster:hover {
+  transform: translateY(-50%) scale(1.18) rotate(3deg);
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.15));
+}
+
+.flank-scenery-cluster:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.flank-scenery-cluster.side-left {
+  left: 32px;
+  align-items: flex-start;
+}
+
+.flank-scenery-cluster.side-right {
+  right: 32px;
+  align-items: flex-end;
+}
+
+.scenery-emoji-art {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+  line-height: 1;
+  display: block;
+}
+
+.scenery-tag-pill {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #475569;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Hiệu ứng nhún nhảy vui tươi khi bé bấm chạm vào thú hoặc cảnh */
+.deco-clicked-bounce {
+  animation: decoClickJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@keyframes decoClickJump {
+  0% { transform: translateY(-50%) scale(1); }
+  40% { transform: translateY(-50%) translateY(-18px) scale(1.22) rotate(-5deg); }
+  70% { transform: translateY(-50%) translateY(4px) scale(0.95) rotate(3deg); }
+  100% { transform: translateY(-50%) scale(1) rotate(0); }
+}
+
+/* Cổng Chào Phân Tầng Biome (Meadow -> Forest/Dino -> Sky -> Castle) */
+.biome-checkpoint-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 22px 0 14px;
+  z-index: 5;
+}
+
+.biome-gate-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2.5px solid #e2e8f0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 2px 0 #ffffff;
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+.biome-gate-banner.gate-meadow {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  color: #15803d;
+}
+
+.biome-gate-banner.gate-forest {
+  border-color: #fdba74;
+  background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+  color: #c2410c;
+}
+
+.biome-gate-banner.gate-sky {
+  border-color: #7dd3fc;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  color: #0369a1;
+}
+
+.biome-gate-banner.gate-cosmic {
+  border-color: #d8b4fe;
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+  color: #7e22ce;
 }
 
 /* Toast ThÃ´ng BÃ¡o Khi BÃ© Báº¥m Tráº¡m KhÃ³a */
@@ -20266,3 +20496,1019 @@ body.audio-is-speaking .sound-wave-badge {
 @media (prefers-reduced-motion: reduce) {
   .chest-node-badge.is-claimable .chest-circle-icon { animation: none; }
 }
+
+/* ==========================================================================
+   TRANG CHỦ BÉ HỌC V2 (KID HOME V2 ADVENTURE HUB) - PHONG CÁCH CLAYMORPHISM 3D
+   ========================================================================== */
+.kid-home-v2-screen {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 1. TOPBAR BÉ HỌC */
+.kid-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 3px solid #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), inset 0 2px 0 #ffffff;
+}
+
+.kid-home-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.kid-home-avatar-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #fed7aa);
+  border: 3.5px solid #f97316;
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kid-home-avatar-wrap:hover {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.kid-home-avatar-img {
+  width: 90%;
+  height: 90%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.kid-avatar-switch-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  background: #ea580c;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.kid-avatar-switch-badge .material-symbols-outlined {
+  font-size: 13px;
+}
+
+.kid-greeting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kid-greeting-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kid-greeting-name {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.kid-home-stats {
+  display: flex;
+  align-items: center;
+}
+
+.kid-star-badge-3d {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%);
+  border: 3px solid #fbbf24;
+  border-radius: 999px;
+  padding: 8px 20px;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.3), inset 0 2px 0 #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.kid-star-badge-3d:hover {
+  transform: scale(1.08);
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.45);
+}
+
+.star-3d-glow {
+  font-size: 1.85rem;
+  filter: drop-shadow(0 3px 6px rgba(217, 119, 6, 0.5));
+}
+
+.star-count-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.star-count-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #b45309;
+}
+
+.star-count-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #d97706;
+}
+
+/* 2. HERO MISSION BANNER: NHIỆM VỤ HÔM NAY */
+.kid-hero-quest-banner {
+  position: relative;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 35%, #ecfdf5 100%);
+  border: 3.5px solid #ffffff;
+  border-radius: 36px;
+  box-shadow: 0 16px 40px rgba(245, 158, 11, 0.15), inset 0 2px 0 #ffffff;
+  padding: 24px 32px;
+  overflow: hidden;
+}
+
+.hero-quest-bg-decor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-rainbow-arc {
+  position: absolute;
+  top: -60px;
+  right: -30px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 14px solid transparent;
+  border-top-color: rgba(244, 114, 182, 0.35);
+  box-shadow: 
+    0 -10px 0 0 rgba(251, 191, 36, 0.3),
+    0 -20px 0 0 rgba(52, 211, 153, 0.25),
+    0 -30px 0 0 rgba(56, 189, 248, 0.25);
+  filter: blur(1.5px);
+}
+
+.hero-sparkle {
+  position: absolute;
+  font-size: 1.4rem;
+  opacity: 0.75;
+  animation: sparkleFloat 4s ease-in-out infinite alternate;
+}
+.hero-sparkle.sp-1 { top: 20px; left: 35%; animation-delay: 0s; }
+.hero-sparkle.sp-2 { bottom: 25px; left: 28%; animation-delay: 1.2s; }
+.hero-sparkle.sp-3 { top: 30px; right: 22%; animation-delay: 2s; }
+
+@keyframes sparkleFloat {
+  0% { transform: translateY(0) rotate(0); }
+  100% { transform: translateY(-10px) rotate(15deg); }
+}
+
+.hero-quest-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 36px;
+}
+
+.hero-mascot-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  width: 180px;
+}
+
+.mascot-speech-bubble {
+  background: #ffffff;
+  border: 2.5px solid #f59e0b;
+  border-radius: 18px;
+  padding: 6px 10px;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.18);
+  margin-bottom: 6px;
+  position: relative;
+  text-align: center;
+  width: 100%;
+  max-width: 180px;
+  box-sizing: border-box;
+}
+
+.mascot-speech-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 7px 0;
+  border-style: solid;
+  border-color: #f59e0b transparent transparent;
+}
+
+.mascot-speech-bubble .speech-text {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #92400e;
+  line-height: 1.3;
+  display: block;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.mascot-img-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mascot-hero-3d {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(180, 83, 9, 0.3));
+}
+
+.mascot-tap-hint {
+  position: absolute;
+  bottom: -6px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #b45309;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+
+.mascot-happy-jump {
+  animation: mascotJumpAnim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes mascotJumpAnim {
+  0%, 100% { transform: scale(1); }
+  40% { transform: translateY(-16px) scale(1.15) rotate(4deg); }
+}
+
+.hero-quest-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hero-quest-header-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #fed7aa;
+  border-radius: 999px;
+  padding: 4px 14px;
+  width: fit-content;
+}
+
+.quest-fire-icon {
+  font-size: 1rem;
+}
+
+.quest-pill-text {
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #ea580c;
+  letter-spacing: 0.5px;
+}
+
+.quest-badge-stars {
+  background: #ffedd5;
+  color: #c2410c;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+.hero-quest-title {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.hero-quest-desc {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+  line-height: 1.45;
+  max-width: 680px;
+}
+
+.hero-quest-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-start-learning-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #ff7a00 0%, #ea580c 50%, #c2410c 100%);
+  border: 3.5px solid #ffffff;
+  border-radius: 999px;
+  padding: 12px 28px;
+  box-shadow: 0 12px 28px rgba(234, 88, 12, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+
+.hero-start-learning-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 16px 36px rgba(234, 88, 12, 0.55), inset 0 2px 0 rgba(255, 255, 255, 0.8);
+  color: #ffffff;
+}
+
+.hero-start-learning-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.play-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.play-icon-circle .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.btn-cta-text {
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.btn-arrow-icon {
+  font-size: 20px;
+}
+
+.hero-daily-goal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: #047857;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.check-goal-icon {
+  font-size: 18px;
+  color: #10b981;
+}
+
+/* 3. LƯỚI THẾ GIỚI KHÁM PHÁ (6 THẺ CLAY 3D) */
+.kid-section-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.kid-section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-badge-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.kid-section-heading {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+}
+
+.kid-section-sub {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+}
+
+.kid-learning-worlds-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.world-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  border: 3.5px solid #ffffff;
+  padding: 22px 20px 18px;
+  text-decoration: none;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08), inset 0 2px 0 #ffffff;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  cursor: pointer;
+}
+
+.world-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.14), inset 0 2px 0 #ffffff;
+}
+
+.world-card:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.world-card-glow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  opacity: 0.35;
+  filter: blur(25px);
+  pointer-events: none;
+}
+
+.world-card-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.world-card-art {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.world-emoji-3d {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.14));
+  transition: transform 0.25s ease;
+}
+
+.world-card:hover .world-emoji-3d {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.world-art-mini-tag {
+  font-size: 0.76rem;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 3px 8px;
+  color: #475569;
+}
+
+.world-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.world-card-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.world-card-desc {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  color: #475569;
+}
+
+.world-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.world-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.pill-arrow {
+  font-size: 16px;
+}
+
+.world-card:hover .world-action-pill {
+  transform: translateX(4px);
+}
+
+/* Themes màu sắc cho 6 thẻ học */
+/* 1. Cam - Chữ cái */
+.world-card-orange {
+  background: linear-gradient(145deg, #fff7ed 0%, #ffedd5 50%, #fed7aa 100%);
+  border-color: #ffedd5;
+}
+.world-card-orange .world-card-title { color: #9a3412; }
+.world-card-orange .world-card-badge { color: #c2410c; }
+.world-card-orange .world-action-pill { background: linear-gradient(135deg, #fb923c, #ea580c); }
+
+/* 2. Xanh lá - Chữ số */
+.world-card-green {
+  background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+  border-color: #dcfce7;
+}
+.world-card-green .world-card-title { color: #166534; }
+.world-card-green .world-card-badge { color: #15803d; }
+.world-card-green .world-action-pill { background: linear-gradient(135deg, #34d399, #059669); }
+
+/* 3. Xanh dương - Toán & Logic */
+.world-card-blue {
+  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+  border-color: #e0f2fe;
+}
+.world-card-blue .world-card-title { color: #075985; }
+.world-card-blue .world-card-badge { color: #0284c7; }
+.world-card-blue .world-action-pill { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+
+/* 4. Hồng - Bé tập tô */
+.world-card-pink {
+  background: linear-gradient(145deg, #fff1f2 0%, #ffe4e6 50%, #fecdd3 100%);
+  border-color: #ffe4e6;
+}
+.world-card-pink .world-card-title { color: #9f1239; }
+.world-card-pink .world-card-badge { color: #be123c; }
+.world-card-pink .world-action-pill { background: linear-gradient(135deg, #fb7185, #e11d48); }
+
+/* 5. Tím - Nghe song ngữ */
+.world-card-purple {
+  background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%);
+  border-color: #f3e8ff;
+}
+.world-card-purple .world-card-title { color: #6b21a8; }
+.world-card-purple .world-card-badge { color: #7e22ce; }
+.world-card-purple .world-action-pill { background: linear-gradient(135deg, #c084fc, #9333ea); }
+
+/* 6. Vàng kim - Kho quà */
+.world-card-gold {
+  background: linear-gradient(145deg, #fefce8 0%, #fef9c3 50%, #fef08a 100%);
+  border-color: #fef9c3;
+}
+.world-card-gold .world-card-title { color: #854d0e; }
+.world-card-gold .world-card-badge { color: #b45309; }
+.world-card-gold .world-action-pill { background: linear-gradient(135deg, #facc15, #d97706); }
+
+/* 4. KỸ NĂNG BỔ TRỢ TOÀN DIỆN */
+.kid-extra-skills-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.extra-skill-pill-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2.5px solid #ffffff;
+  border-radius: 20px;
+  padding: 12px 16px;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.extra-skill-pill-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+
+.extra-pill-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.extra-pill-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.extra-pill-name {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.extra-pill-tag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.extra-pill-arrow {
+  font-size: 20px;
+  color: #94a3b8;
+}
+
+/* RESPONSIVE CHO TABLET & MOBILE */
+@media (max-width: 1024px) {
+  .kid-learning-worlds-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hero-quest-content {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .kid-home-v2-screen {
+    padding: 12px 14px 40px;
+    gap: 16px;
+  }
+  .kid-home-header {
+    padding: 10px 16px;
+  }
+  .kid-greeting-name {
+    font-size: 1.2rem;
+  }
+  .hero-quest-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .hero-mascot-col {
+    width: 160px;
+  }
+  .hero-quest-header-pill {
+    margin: 0 auto;
+  }
+  .hero-quest-title {
+    font-size: 1.35rem;
+  }
+  .hero-quest-cta-row {
+    justify-content: center;
+  }
+  .kid-learning-worlds-grid {
+    grid-template-columns: 1fr;
+  }
+  .kid-extra-skills-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   GIAO DIỆN CHUNG IPAD TRANG CHỦ BÉ (IPAD HOME HUB UNIFIED GRID)
+   ========================================================================== */
+.kid-screen.kid-home-screen,
+.kid-home-screen,
+.kid-screen.ipad-home-hub-screen,
+.ipad-home-hub-screen {
+  width: 100% !important;
+  max-width: 1360px !important;
+  margin: 0 auto !important;
+  padding: 12px 20px 36px !important;
+  box-sizing: border-box !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: radial-gradient(circle at 10% 10%, rgba(254, 243, 199, 0.45) 0%, transparent 40%),
+              radial-gradient(circle at 90% 30%, rgba(224, 242, 254, 0.45) 0%, transparent 40%),
+              linear-gradient(180deg, #fffbeb 0%, #fef3c7 35%, #f0fdf4 100%);
+  font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Khu vực chính: Lưới thống nhất tất cả hoạt động */
+.ipad-hub-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.ipad-hub-headline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.headline-mascot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #fed7aa;
+  border-radius: 999px;
+  padding: 4px 14px 4px 6px;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+  cursor: pointer;
+}
+
+.chip-squirrel-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.chip-bubble-text {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #9a3412;
+}
+
+.headline-counter-chip {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+
+/* LƯỚI TẤT CẢ CÁC THẺ HOẠT ĐỘNG (CHUẨN IPAD 4 CỘT RỘNG RÃI, TO ĐẸP, THÔNG TIN RÕ RÀNG) */
+.ipad-unified-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ipad-card-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 24px;
+  border: 3px solid #ffffff;
+  padding: 16px 20px 16px;
+  text-decoration: none;
+  min-height: 126px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07), inset 0 2px 0 #ffffff;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.ipad-card-tile:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12), inset 0 2px 0 #ffffff;
+}
+
+.ipad-card-tile:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.tile-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tile-emoji-art {
+  font-size: 2.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ipad-card-tile:hover .tile-emoji-art {
+  transform: scale(1.15) rotate(4deg);
+}
+
+.tile-badge-pill {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+}
+
+.tile-content-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tile-title-text {
+  font-size: 1.25rem;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.tile-desc-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Color Themes cho các thẻ */
+.ipad-card-tile.card-theme-amber {
+  background: linear-gradient(145deg, #fffbeb 0%, #fef3c7 50%, #fed7aa 100%);
+  border-color: #fef3c7;
+}
+.ipad-card-tile.card-theme-amber .tile-title-text { color: #9a3412; }
+.ipad-card-tile.card-theme-amber .tile-badge-pill { color: #c2410c; }
+.ipad-card-tile.card-theme-amber .tile-action-btn { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+.ipad-card-tile.card-theme-coral {
+  background: linear-gradient(145deg, #fff7ed 0%, #ffedd5 50%, #fed7aa 100%);
+  border-color: #ffedd5;
+}
+.ipad-card-tile.card-theme-coral .tile-title-text { color: #9a3412; }
+.ipad-card-tile.card-theme-coral .tile-badge-pill { color: #ea580c; }
+.ipad-card-tile.card-theme-coral .tile-action-btn { background: linear-gradient(135deg, #fb923c, #ea580c); }
+
+.ipad-card-tile.card-theme-emerald {
+  background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+  border-color: #dcfce7;
+}
+.ipad-card-tile.card-theme-emerald .tile-title-text { color: #166534; }
+.ipad-card-tile.card-theme-emerald .tile-badge-pill { color: #15803d; }
+.ipad-card-tile.card-theme-emerald .tile-action-btn { background: linear-gradient(135deg, #34d399, #059669); }
+
+.ipad-card-tile.card-theme-sky {
+  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+  border-color: #e0f2fe;
+}
+.ipad-card-tile.card-theme-sky .tile-title-text { color: #075985; }
+.ipad-card-tile.card-theme-sky .tile-badge-pill { color: #0284c7; }
+.ipad-card-tile.card-theme-sky .tile-action-btn { background: linear-gradient(135deg, #38bdf8, #0284c7); }
+
+.ipad-card-tile.card-theme-cyan {
+  background: linear-gradient(145deg, #ecfeff 0%, #cffafe 50%, #a5f3fc 100%);
+  border-color: #cffafe;
+}
+.ipad-card-tile.card-theme-cyan .tile-title-text { color: #0e7490; }
+.ipad-card-tile.card-theme-cyan .tile-badge-pill { color: #0891b2; }
+.ipad-card-tile.card-theme-cyan .tile-action-btn { background: linear-gradient(135deg, #22d3ee, #0891b2); }
+
+.ipad-card-tile.card-theme-rose {
+  background: linear-gradient(145deg, #fff1f2 0%, #ffe4e6 50%, #fecdd3 100%);
+  border-color: #ffe4e6;
+}
+.ipad-card-tile.card-theme-rose .tile-title-text { color: #9f1239; }
+.ipad-card-tile.card-theme-rose .tile-badge-pill { color: #be123c; }
+.ipad-card-tile.card-theme-rose .tile-action-btn { background: linear-gradient(135deg, #fb7185, #e11d48); }
+
+.ipad-card-tile.card-theme-purple {
+  background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%);
+  border-color: #f3e8ff;
+}
+.ipad-card-tile.card-theme-purple .tile-title-text { color: #6b21a8; }
+.ipad-card-tile.card-theme-purple .tile-badge-pill { color: #7e22ce; }
+.ipad-card-tile.card-theme-purple .tile-action-btn { background: linear-gradient(135deg, #c084fc, #9333ea); }
+
+.ipad-card-tile.card-theme-teal {
+  background: linear-gradient(145deg, #f0fdfa 0%, #ccfbf1 50%, #99f6e4 100%);
+  border-color: #ccfbf1;
+}
+.ipad-card-tile.card-theme-teal .tile-title-text { color: #115e59; }
+.ipad-card-tile.card-theme-teal .tile-badge-pill { color: #0f766e; }
+.ipad-card-tile.card-theme-teal .tile-action-btn { background: linear-gradient(135deg, #2dd4bf, #0f766e); }
+
+.ipad-card-tile.card-theme-gold {
+  background: linear-gradient(145deg, #fefce8 0%, #fef9c3 50%, #fef08a 100%);
+  border-color: #fef9c3;
+}
+.ipad-card-tile.card-theme-gold .tile-title-text { color: #854d0e; }
+.ipad-card-tile.card-theme-gold .tile-badge-pill { color: #b45309; }
+.ipad-card-tile.card-theme-gold .tile-action-btn { background: linear-gradient(135deg, #facc15, #d97706); }
+
+/* Đảm bảo trang trí bản đồ phiêu lưu phân bổ ngẫu nhiên tự do, không bị bó cứng */
+.flank-landmark-deco.side-left,
+.flank-landmark-deco.side-right,
+.flank-scenery-cluster.side-left,
+.flank-scenery-cluster.side-right {
+  left: auto;
+  right: auto;
+}
+
+/* Responsive cho iPad dọc & Mobile */
+@media (max-width: 989px) and (min-width: 680px) {
+  .ipad-unified-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 679px) {
+  .kid-screen.kid-home-screen,
+  .ipad-home-hub-screen {
+    padding: 10px 12px 30px !important;
+    gap: 10px;
+  }
+  .ipad-unified-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .ipad-card-tile {
+    min-height: 125px;
+    padding: 10px 12px;
+  }
+  .tile-emoji-art {
+    font-size: 2rem;
+  }
+  .tile-title-text {
+    font-size: 1.05rem;
+  }
+}
+

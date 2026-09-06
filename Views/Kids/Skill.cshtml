@@ -6,7 +6,6 @@
     var progressPercent = totalItems > 0 ? (int)Math.Round((double)completedCount / totalItems * 100) : 0;
 
     // Trạm hiện tại luôn là bài đầu tiên chưa từng hoàn thành.
-    // Kết quả luyện lại không được làm lùi hoặc khóa lại hành trình.
     var currentItemIndex = Model.CurrentItemId.HasValue
         ? Model.Items.ToList().FindIndex(x => x.Item.Id == Model.CurrentItemId.Value)
         : -1;
@@ -58,7 +57,7 @@
     // 6 Theme màu sắc rực rỡ luân phiên để mỗi trạm bắt mắt khác biệt
     var stationThemes = new[] { "theme-amber", "theme-emerald", "theme-sky", "theme-purple", "theme-pink", "theme-teal" };
 
-    // Dải ziczac 12 điểm lượn sóng rộng trải đều hai bên map (không bị co cụm ở giữa)
+    // Dải ziczac 12 điểm lượn sóng rộng trải đều hai bên map
     var zigPositions = new[] {
         "pos-center",
         "pos-semi-right",
@@ -74,25 +73,59 @@
         "pos-semi-left"
     };
 
-    // Danh mục các nhân vật & tiểu cảnh phong phú hai bên sườn (Khủng Long, Robot, Xe đua, Tên lửa, Máy bay, Thú cưng, Cây nấm...)
-    var flankLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
+    // Danh mục các nhân vật & tiểu cảnh phong phú phân bổ theo 4 Tầng Địa Hình (Biomes)
+    var meadowLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
     {
-        ("/images/decorations/dinosaur.svg", "pets", "Khủng Long Xanh", "Cố lên bạn nhỏ! 🦕", "deco-dino", "Bé học siêu quá! ✨"),
-        ("/images/decorations/robot.svg", "smart_toy", "Robot Tí Hon", "Nạp năng lượng tri thức 🤖", "deco-robot", "Chào bạn nhỏ! ⚡"),
-        ("/images/decorations/cute-car.svg", "directions_car", "Xe Đua Tốc Độ", "Vút bay về đích nào! 🚗", "deco-car", "Bé chạy thật nhanh! 🏁"),
-        ("/images/decorations/rocket.svg", "rocket_launch", "Tên Lửa Vũ Trụ", "Vươn tới các vì sao 🚀", "deco-rocket", "Bay cao ước mơ! 🌟"),
-        ("/images/decorations/cute-plane.svg", "flight", "Máy Bay Nhỏ", "Lướt trên mây trắng ✈️", "deco-plane", "Khám phá bầu trời! ☁️"),
-        ("/images/avatars/avatar-bunny.png", "favorite", "Thỏ Trắng", "Nhảy múa rộn ràng 🥕", "deco-bunny", "Tuyệt vời bé ơi! 🥕"),
-        ("/images/avatars/avatar-bear.png", "star", "Gấu Vàng", "Bé học chăm ngoan 🍯", "deco-bear", "Học vui mỗi ngày! 🍯"),
+        ("/images/avatars/avatar-bunny.png", "favorite", "Thỏ Trắng", "Nhảy múa rộn ràng 🥕", "deco-bunny", "Bé học siêu quá! 🥕"),
         ("/images/avatars/avatar-dog.png", "pets", "Cún Con", "Tiến bước rộn ràng 🐾", "deco-dog", "Gâu gâu, cố lên! 🐾"),
-        ("/images/avatars/avatar-cat.png", "auto_stories", "Mèo Con", "Cùng nhau đọc sách 📖", "deco-cat", "Meo meo, thật giỏi! 📖"),
-        ("", "forest", "Rừng Tri Thức", "Cây xanh bóng mát 🌲", "deco-nature", "Không khí mát lành 🌲"),
         ("", "spa", "Thung Lũng Nấm", "Nấm đốm xinh xắn 🍄", "deco-mushroom", "Vườn nấm rực rỡ 🍄"),
-        ("", "campground", "Trạm Dừng Chân", "Nghỉ ngơi chút xíu ⛺", "deco-camp", "Trạm tiếp năng lượng ⛺"),
-        ("", "emoji_events", "Cột Mốc Vàng", "Sắp đến đích rồi 🏆", "deco-trophy", "Chiến thắng vinh quang 🏆")
+        ("", "forest", "Vườn Táo Ngọt", "Trái chín trĩu cành 🍎", "deco-nature", "Hái táo cùng bé 🍎"),
+        ("/images/avatars/avatar-bear.png", "star", "Gấu Vàng", "Bé học chăm ngoan 🍯", "deco-bear", "Học vui mỗi ngày! 🍯")
     };
-    
-    // Bài đang chọn mặc định
+
+    var forestLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
+    {
+        ("/images/decorations/dinosaur.svg", "pets", "Khủng Long Xanh", "Cố lên bạn nhỏ! 🦕", "deco-dino", "Bé dũng cảm quá! 🦕"),
+        ("/images/decorations/cute-car.svg", "directions_car", "Xe Đua Vượt Núi", "Vút bay về đích! 🚗", "deco-car", "Bé chạy thật nhanh! 🏁"),
+        ("", "campground", "Trạm Cắm Trại", "Nghỉ chân bên suối ⛺", "deco-camp", "Trạm tiếp năng lượng ⛺"),
+        ("/images/avatars/avatar-cat.png", "auto_stories", "Mèo Con", "Cùng nhau đọc sách 📖", "deco-cat", "Meo meo, thật giỏi! 📖")
+    };
+
+    var skyLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
+    {
+        ("/images/decorations/robot.svg", "smart_toy", "Robot Tí Hon", "Nạp năng lượng trí tuệ 🤖", "deco-robot", "Chào bạn nhỏ! ⚡"),
+        ("/images/decorations/cute-plane.svg", "flight", "Máy Bay Nhỏ", "Lướt trên mây trắng ✈️", "deco-plane", "Khám phá bầu trời! ☁️"),
+        ("", "cloud", "Xứ Sở Mây Bông", "Bồng bềnh diệu kỳ ⛅", "deco-nature", "Mây trắng mỉm cười ⛅"),
+        ("", "visibility", "Đài Thiên Văn", "Ngắm ngàn vì sao 🔭", "deco-robot", "Khám phá vũ trụ! 🔭")
+    };
+
+    var cosmicLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
+    {
+        ("/images/decorations/rocket.svg", "rocket_launch", "Tên Lửa Vũ Trụ", "Vươn tới các vì sao 🚀", "deco-rocket", "Bay cao ước mơ! 🌟"),
+        ("/images/avatars/avatar-cat.png", "pets", "Mèo Phi Hành Gia", "Khám phá ngân hà 🌌", "deco-cat", "Tới đích rồi bé ơi! 🌠"),
+        ("", "emoji_events", "Cột Mốc Vàng", "Sắp đến đích rồi 🏆", "deco-trophy", "Chiến thắng vinh quang 🏆"),
+        ("", "military_tech", "Vương Miện Tri Thức", "Đỉnh cao lâu đài 👑", "deco-trophy", "Bé là nhà vô địch! 👑")
+    };
+
+    // Danh mục tiểu cảnh thiên nhiên lấp đầy bên sườn đối diện
+    var natureClusters = new (string Art, string Tag, string Cheer)[]
+    {
+        ("🌻 🌸", "Hoa Hướng Dương", "Hoa nở chào đón bé! 🌸"),
+        ("🍄 ✨", "Nấm Đốm Đỏ", "Bụi nấm cổ tích phát sáng! 🍄"),
+        ("🌾 🏡", "Cối Xay Gió", "Gió mát thổi bay khó khăn! 🌾"),
+        ("🦋 🌼", "Cánh Bướm Bay", "Bướm lượn bên trang sách! 🦋"),
+        ("⛺ 🔥", "Lửa Trại Nhỏ", "Ấm áp tình bạn nhỏ! ⛺"),
+        ("🌲 🌰", "Cây Thông Xanh", "Vươn cao đón ánh nắng! 🌲"),
+        ("🌈 ☁️", "Cầu Vồng Mây", "Lung linh bảy sắc thần tiên! 🌈"),
+        ("🎈 ✨", "Khinh Khí Cầu", "Bay cao tới ước mơ! 🎈"),
+        ("🕊️ ⛅", "Chim Bồ Câu", "Hót vang khúc ca vui! 🕊️"),
+        ("✨ 🌠", "Mưa Sao Băng", "Một điều ước cho bé giỏi! 🌠"),
+        ("👑 🌟", "Cúp Vinh Quang", "Bé chinh phục bài học! 🏆"),
+        ("💎 🔮", "Pha Lê Tri Thức", "Trí tuệ bé tỏa sáng! 💎")
+    };
+
+    var sprinkles = new string[] { "🦋", "🌸", "🍄", "✨", "🍀", "🌼", "🐞", "⭐", "🌿", "🌈" };
+
     var defaultSelectedItem = currentItemIndex >= 0 ? Model.Items[currentItemIndex] : Model.Items.LastOrDefault();
     var (defaultMetaLabel, defaultMetaIcon) = GetInteractionMeta(defaultSelectedItem?.Item.InteractionType);
 }
@@ -101,10 +134,10 @@
     <!-- ==================== TOPBAR HỢP NHẤT TIẾN ĐỘ & ĐIỀU HƯỚNG BÉ ==================== -->
     <header class="child-zone-header clay-card skill-unified-header">
         <div class="child-header-left">
-            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ" onclick="playAudioChime('tap')">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
-            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác" onclick="playAudioChime('tap')">
                 <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
                 <span class="child-avatar-switch-badge" title="Đổi bé">
                     <span class="material-symbols-outlined">sync_alt</span>
@@ -158,32 +191,21 @@
         <!-- ==================== BẢN ĐỒ PHIÊU LƯU TRẢI RỘNG CÂN ĐỐI (1 CỘT RỘNG RÃI) ==================== -->
         <div class="skill-map-workspace" id="skillAdventureMapView">
             <div class="skill-map-trail-col clay-card" id="mapTrailScrollContainer">
-                <!-- Nền thiên nhiên sinh động và mây trời nhẹ nhàng (pointer-events: none) -->
+                <!-- Nền thiên nhiên sinh động và mây trời nhẹ nhàng -->
                 <div class="adventure-scenic-overlay" aria-hidden="true">
-                    <!-- Cầu vồng pastel mờ ảo phía đỉnh gần lâu đài -->
                     <div class="ambient-pastel-rainbow"></div>
-
-                    <!-- Khinh khí cầu pastel bồng bềnh ở góc cao bên phải -->
                     <div class="ambient-hot-air-balloon">
                         <span class="balloon-emoji">🎈</span>
                         <span class="balloon-label">Bay cao tri thức</span>
                     </div>
-
-                    <!-- Tên lửa vũ trụ bay lượn ở góc trên bên trái -->
                     <div class="ambient-rocket-float">
                         <img src="~/images/decorations/rocket.svg" alt="" class="ambient-rocket-img" />
                     </div>
-
-                    <!-- Máy bay tí hon lướt mây góc giữa bên phải -->
                     <div class="ambient-plane-float">
                         <img src="~/images/decorations/cute-plane.svg" alt="" class="ambient-plane-img" />
                     </div>
-
-                    <!-- Bướm lượn chập chờn -->
                     <div class="ambient-butterfly bfly-1">🦋</div>
                     <div class="ambient-butterfly bfly-2">🦋</div>
-
-                    <!-- Mây trôi bồng bềnh ở các độ cao khác nhau -->
                     <div class="ambient-cloud cloud-1"></div>
                     <div class="ambient-cloud cloud-2"></div>
                     <div class="ambient-cloud cloud-3"></div>
@@ -222,15 +244,47 @@
                         var (metaLabel, metaIcon) = GetInteractionMeta(row.Item.InteractionType);
                         var learnUrl = Url.Action("Learn", "Kids", new { id = row.Item.Id, skillGroupId = Model.SkillGroup.Id });
 
+                        // Phân chia theo 4 tầng Biome
+                        var ratio = (double)stepNumber / totalItems;
+                        var isBiomeMeadow = ratio <= 0.28;
+                        var isBiomeForest = ratio > 0.28 && ratio <= 0.55;
+                        var isBiomeSky = ratio > 0.55 && ratio <= 0.80;
+                        var isBiomeCosmic = ratio > 0.80;
+
+                        var charItem = isBiomeMeadow ? meadowLandmarks[i % meadowLandmarks.Length] :
+                                       isBiomeForest ? forestLandmarks[i % forestLandmarks.Length] :
+                                       isBiomeSky    ? skyLandmarks[i % skyLandmarks.Length] :
+                                                       cosmicLandmarks[i % cosmicLandmarks.Length];
+
+                        var natureItem = natureClusters[i % natureClusters.Length];
+
                         var milestone = stepNumber % 10 == 0
                             ? Model.Milestones.FirstOrDefault(x => x.MilestoneValue == stepNumber)
                             : null;
 
-                        // Định vị tiểu cảnh bên sườn bản đồ: Đặt ở phía đối diện trạm để lấp đầy khoảng trống hài hòa
-                        var decoSide = posClass.Contains("right") ? "side-left" :
-                                       posClass.Contains("left") ? "side-right" :
-                                       ((stepNumber % 2 == 0) ? "side-left" : "side-right");
-                        var decoItem = flankLandmarks[i % flankLandmarks.Length];
+                        // Randomization & Organic Placement:
+                        // Tính toán vị trí ngẫu nhiên giả lập (deterministic seed) theo stepNumber
+                        var seed = (stepNumber * 47 + 23) % 100;
+                        var isNodeRight = posClass.Contains("right");
+                        var isNodeLeft = posClass.Contains("left");
+
+                        // Luôn đặt trang trí ở phía đối diện của trạm học để đảm bảo TUYỆT ĐỐI không đè vào vùng click trạm
+                        var decoSide = isNodeRight ? "left" : isNodeLeft ? "right" : ((seed % 2 == 0) ? "left" : "right");
+                        var sideClass = decoSide == "left" ? "side-left" : "side-right";
+
+                        // Dao động ngẫu nhiên: lề ngang 4% - 20%, độ lệch dọc -16px đến +16px, góc nghiêng -6deg đến +6deg
+                        var hOffset = 4 + (seed % 16);
+                        var vJitter = ((seed % 9) - 4) * 4;
+                        var tiltDeg = ((seed % 7) - 3) * 2;
+
+                        // Nhịp điệu xuất hiện tự nhiên (Rhythm):
+                        // Cứ mỗi 3 bước: 1 bước Nhân vật, 1 bước Cụm tiểu cảnh, 1 bước Hạt mầm thiên nhiên/khoảng thở thoáng đãng
+                        var rowPattern = stepNumber % 3;
+
+                        // Cổng mốc phân tầng chuyển cảnh (Biome Gateway)
+                        var gateThreshold = (int)Math.Round(totalItems * 0.75);
+                        var gateThresholdMid = (int)Math.Round(totalItems * 0.50);
+                        var gateThresholdLow = (int)Math.Round(totalItems * 0.25);
 
                         @if (milestone is not null)
                         {
@@ -266,35 +320,95 @@
                                 </div>
                             </div>
                         }
-
-                        <div class="adventure-step-row">
-                            <!-- Tiểu cảnh phong cảnh & nhân vật hoạt hình ven sườn bản đồ -->
-                            <div class="flank-landmark-deco @decoSide @decoItem.AccentClass" aria-hidden="true">
-                                <div class="flank-vignette-scenery">
-                                    <div class="flank-avatar-wrap">
-                                        @if (!string.IsNullOrEmpty(decoItem.Avatar))
-                                        {
-                                            <img src="@decoItem.Avatar" alt="" class="flank-avatar-img" />
-                                        }
-                                        else
-                                        {
-                                            <span class="material-symbols-outlined flank-icon">@decoItem.Icon</span>
-                                        }
-                                    </div>
-                                    <div class="flank-speech-cloud">
-                                        <span class="flank-bubble-text">@decoItem.Bubble</span>
-                                    </div>
-                                </div>
-                                <div class="flank-info-chip">
-                                    <span class="flank-title">@decoItem.Title</span>
-                                    <span class="flank-sub">@decoItem.Subtitle</span>
-                                </div>
-                                <div class="flank-ground-patch">
-                                    <span class="patch-grass">🌱</span>
-                                    <span class="patch-flower">🌸</span>
+                        else if (stepNumber == gateThreshold)
+                        {
+                            <div class="biome-checkpoint-row">
+                                <div class="biome-gate-banner gate-cosmic" onclick="interactFlankDeco(this, 'Bé vừa tiến vào Xứ Sở Ánh Sao! 🌌')">
+                                    <span>🚀</span>
+                                    <span>Cổng 3: Xứ Sở Ánh Sao & Lâu Đài</span>
+                                    <span>⭐</span>
                                 </div>
                             </div>
+                        }
+                        else if (stepNumber == gateThresholdMid)
+                        {
+                            <div class="biome-checkpoint-row">
+                                <div class="biome-gate-banner gate-sky" onclick="interactFlankDeco(this, 'Chào mừng bé đến Vương Quốc Mây Trời! ☁️')">
+                                    <span>☁️</span>
+                                    <span>Cổng 2: Vương Quốc Bầu Trời & Mây Trắng</span>
+                                    <span>🎈</span>
+                                </div>
+                            </div>
+                        }
+                        else if (stepNumber == gateThresholdLow)
+                        {
+                            <div class="biome-checkpoint-row">
+                                <div class="biome-gate-banner gate-forest" onclick="interactFlankDeco(this, 'Bé tiến vào Rừng Rậm & Đồi Khủng Long! 🦕')">
+                                    <span>🦕</span>
+                                    <span>Cổng 1: Rừng Rậm & Đồi Khủng Long</span>
+                                    <span>🌲</span>
+                                </div>
+                            </div>
+                        }
 
+                        <div class="adventure-step-row">
+                            <!-- 1. CÁC PHẦN TRANG TRÍ XUẤT HIỆN RANDOM TỰ NHIÊN, KHÔNG ĐÈ LÊN VÙNG BÀI HỌC -->
+                            @if (rowPattern == 0)
+                            {
+                                <!-- A. NHÂN VẬT HOẠT HÌNH CÓ BÓNG THOẠI & ÂM THANH VUI NHỘN -->
+                                <div class="flank-landmark-deco @sideClass @charItem.AccentClass"
+                                     style="@(decoSide): @(hOffset)%; top: calc(50% + @(vJitter)px); transform: translateY(-50%) rotate(@(tiltDeg)deg);"
+                                     onclick="interactFlankDeco(this, '@charItem.Bubble')"
+                                     title="Bấm vào để chơi cùng @charItem.Title!">
+                                    <div class="flank-vignette-scenery">
+                                        <div class="flank-avatar-wrap">
+                                            @if (!string.IsNullOrEmpty(charItem.Avatar))
+                                            {
+                                                <img src="@charItem.Avatar" alt="" class="flank-avatar-img" />
+                                            }
+                                            else
+                                            {
+                                                <span class="material-symbols-outlined flank-icon">@charItem.Icon</span>
+                                            }
+                                        </div>
+                                        <div class="flank-speech-cloud">
+                                            <span class="flank-bubble-text">@charItem.Bubble</span>
+                                        </div>
+                                    </div>
+                                    <div class="flank-info-chip">
+                                        <span class="flank-title">@charItem.Title</span>
+                                        <span class="flank-sub">@charItem.Subtitle</span>
+                                    </div>
+                                    <div class="flank-ground-patch">
+                                        <span class="patch-grass">🌱</span>
+                                        <span class="patch-flower">🌸</span>
+                                    </div>
+                                </div>
+                            }
+                            else if (rowPattern == 1)
+                            {
+                                <!-- B. TIỂU CẢNH THIÊN NHIÊN (HOA, CỐI XAY GIÓ, KHINH KHÍ CẦU, NẤM THẦN) -->
+                                <div class="flank-scenery-cluster @sideClass"
+                                     style="@(decoSide): @(hOffset)%; top: calc(50% + @(vJitter)px); transform: translateY(-50%) rotate(@(tiltDeg)deg);"
+                                     onclick="interactFlankDeco(this, '@natureItem.Cheer')"
+                                     title="@natureItem.Tag • Bấm vào xem phép thuật!">
+                                    <span class="scenery-emoji-art">@natureItem.Art</span>
+                                    <span class="scenery-tag-pill">@natureItem.Tag</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <!-- C. HẠT THIÊN NHIÊN VI MÔ (BƯỚM LƯỢN / HOA CỎ / SAO NHỎ) TẠO KHOẢNG THỞ SINH ĐỘNG -->
+                                var sprinkleEmoji = sprinkles[seed % sprinkles.Length];
+                                var sprinkleOffset = 5 + ((seed * 3) % 15);
+                                <div class="micro-nature-sprinkle"
+                                     style="@(decoSide): @(sprinkleOffset)%; top: calc(50% + @(vJitter)px);"
+                                     title="Thiên nhiên tươi đẹp">
+                                    <span>@sprinkleEmoji</span>
+                                </div>
+                            }
+
+                            <!-- 3. TRẠM BÀI HỌC Ở GIỮA / ZICZAC -->
                             <div class="adventure-station-node @posClass @(isCurrent ? "node-active-station" : "")"
                                  id="@(isCurrent ? "active-learning-station" : $"station-node-{stepNumber}")"
                                  data-step-num="@stepNumber"
@@ -303,7 +417,7 @@
                                 @if (isCurrent)
                                 {
                                     <!-- Mascot Sóc Nâu đứng bên cạnh trạm đang học dở vẫy tay mời bé vào học -->
-                                    <a href="@learnUrl" class="squirrel-chat-guide" title="Bé bấm để vào học ngay cùng Sóc Nâu!">
+                                    <a href="@learnUrl" class="squirrel-chat-guide" title="Bé bấm để vào học ngay cùng Sóc Nâu!" onclick="playAudioChime('start')">
                                         <div class="squirrel-speech-pill pulse-bounce">
                                             <span>Vào học ngay bé ơi! ▶</span>
                                         </div>
@@ -312,7 +426,7 @@
                                         </div>
                                     </a>
 
-                                    <!-- Trạm Đang Học (Nổi Bật Nhất, Bấm Là Vào Học Luôn - Đứng Yên Không Bị Nhảy Nút) -->
+                                    <!-- Trạm Đang Học (Nổi Bật Nhất, Bấm Là Vào Học Luôn) -->
                                     <a href="@learnUrl"
                                        class="station-circle-btn station-current clay-station"
                                        title="Trạm @stepNumber: @row.Item.Title • Bấm vào học ngay! ▶"
@@ -329,7 +443,7 @@
                                 }
                                 else if (isCompleted)
                                 {
-                                    <!-- Trạm Đã Hoàn Thành (Màu Sắc Đa Dạng Theo Theme, 3 Sao Vàng, Bấm Là Vào Học Luôn - Không Rung Lắc) -->
+                                    <!-- Trạm Đã Hoàn Thành (Theme màu sắc, 3 Sao Vàng) -->
                                     <a href="@learnUrl"
                                        class="station-circle-btn station-completed @themeClass clay-station"
                                        title="Trạm @stepNumber: @row.Item.Title • Bấm để luyện tập lại"
@@ -347,7 +461,7 @@
                                 }
                                 else
                                 {
-                                    <!-- Trạm Khóa (Nhắc Nhở Bé Khi Bấm) -->
+                                    <!-- Trạm Khóa -->
                                     <div class="station-circle-btn station-locked clay-station"
                                          onclick="handleLockedStation(this, @stepNumber)"
                                          title="Trạm @stepNumber: @row.Item.Title (Chưa mở khóa)">
@@ -366,7 +480,7 @@
 
                     <!-- 3. ĐÁY BẢN ĐỒ (BOTTOM): CỔNG KHỞI HÀNH -->
                     <div class="map-start-node">
-                        <div class="start-gate-card clay-card">
+                        <div class="start-gate-card clay-card" onclick="playAudioChime('celebrate')">
                             <span class="material-symbols-outlined flag-icon">flag</span>
                             <span>Khởi đầu cuộc phiêu lưu từ Trạm 1</span>
                             <span class="start-gate-decor">🌱</span>
@@ -396,6 +510,7 @@
 
                             <a class="skill-grid-card clay-card @(isCompleted ? "is-completed" : isCurrent ? "is-current" : "is-locked")"
                                href="@(!isLocked ? Url.Action("Learn", "Kids", new { id = itemRow.Item.Id, skillGroupId = Model.SkillGroup.Id }) : "javascript:void(0)")"
+                               onclick="playAudioChime('tap')"
                                title="@itemRow.Item.Title">
                                 <div class="grid-card-top">
                                     <span class="grid-card-num">Bài @(idx + 1)</span>
@@ -448,7 +563,7 @@
 
     <!-- ==================== FLOATING NAVIGATION DOCK TIỆN ÍCH CHO MAP ==================== -->
     <nav class="kid-bottom-nav skill-floating-dock" aria-label="Thanh điều hướng học tập">
-        <a asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học">
+        <a asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" onclick="playAudioChime('tap')">
             <span class="material-symbols-outlined">home</span>
             <span>Trang chủ</span>
         </a>
@@ -464,7 +579,7 @@
             <span class="material-symbols-outlined">my_location</span>
             <span>Đang học</span>
         </a>
-        <a asp-controller="Kids" asp-action="Rewards" title="Kho quà tặng & thành tích">
+        <a asp-controller="Kids" asp-action="Rewards" title="Kho quà tặng & thành tích" onclick="playAudioChime('celebrate')">
             <span class="material-symbols-outlined">emoji_events</span>
             <span>Quà tặng</span>
         </a>
@@ -473,6 +588,83 @@
 
 @section Scripts {
     <script>
+        let audioCtx = null;
+
+        // Bộ âm thanh Web Audio API sinh động cho trẻ em
+        window.playAudioChime = function (type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'start') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        g.gain.setValueAtTime(0.15, now + idx * 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.22);
+                        o.start(now + idx * 0.08);
+                        o.stop(now + idx * 0.08 + 0.22);
+                    });
+                    return;
+                }
+
+                if (type === 'celebrate') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.1);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                }
+            } catch (e) {
+                // Audio context error ignore
+            }
+        };
+
+        // Tương tác khi chạm vào nhân vật hoặc tiểu cảnh thiên nhiên trên map
+        window.interactFlankDeco = function (elem, cheerMsg) {
+            playAudioChime('celebrate');
+            elem.classList.remove("deco-clicked-bounce");
+            void elem.offsetWidth; // Trigger reflow
+            elem.classList.add("deco-clicked-bounce");
+
+            let toast = document.getElementById("flankDecoToast");
+            if (!toast) {
+                toast = document.createElement("div");
+                toast.id = "flankDecoToast";
+                toast.className = "locked-station-toast clay-card";
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<span class="material-symbols-outlined">sentiment_satisfied</span><span>${cheerMsg || "Bé giỏi quá! ✨"}</span>`;
+            toast.classList.add("show");
+            clearTimeout(window._decoToastTimeout);
+            window._decoToastTimeout = setTimeout(() => toast.classList.remove("show"), 2200);
+        };
+
         // Vẽ đường nối cong SVG mềm mại chạy từ trạm dưới lên trạm trên
         function drawAdventureRoad() {
             const svg = document.getElementById("adventure-svg-road");
@@ -486,7 +678,7 @@
             svg.setAttribute("width", containerRect.width);
             svg.setAttribute("height", containerRect.height);
 
-            // Thu thập tọa độ tâm các trạm theo thứ tự từ dưới lên trên (DOM ngược từ start-gate lên)
+            // Thu thập tọa độ tâm các trạm theo thứ tự từ dưới lên trên
             const points = [];
             for (let i = nodes.length - 1; i >= 0; i--) {
                 const node = nodes[i];
@@ -521,7 +713,6 @@
             btn.classList.add("station-shake-anim");
             setTimeout(() => btn.classList.remove("station-shake-anim"), 600);
 
-            // Hiển thị toast nhắc nhở nhẹ nhàng
             let toast = document.getElementById("lockedStationToast");
             if (!toast) {
                 toast = document.createElement("div");

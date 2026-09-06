@@ -1,6 +1,6 @@
 @model KidsHomeViewModel
 @{
-    ViewData["Title"] = "Góc của bé - Hành Trang Lớp 1";
+    ViewData["Title"] = "Góc Khám Phá Của Bé - Hành Trang Lớp 1";
 
     string ResolveAvatar(string? key)
     {
@@ -17,219 +17,211 @@
         };
     }
 
-    // Xây dựng danh mục các thẻ hoạt động cho bé
-    var allCards = new List<(string Title, string Icon, string ColorTheme, string Badge, string Url)>();
+    var childName = Model.ChildProfile?.Nickname ?? "Bé yêu";
 
-    // 1. Bài học hôm nay
-    allCards.Add(("Bài Học Hôm Nay", "play_circle", "card-theme-amber", "Mục tiêu ✨", Url.Action("Today", "Kids")!));
-    // 2. Bé tập tô
-    allCards.Add(("Góc Bé Tập Tô", "draw", "card-theme-coral", "Vẽ tự do 🎨", Url.Action("Tracing", "Kids")!));
-    // 3. Nghe song ngữ
-    allCards.Add(("Nghe Song Ngữ", "record_voice_over", "card-theme-sky", "ABC & Số 0-20 🎧", Url.Action("BilingualListen", "Kids")!));
-    // 4. Kho quà & huy hiệu
-    allCards.Add(("Kho Quà Tặng", "emoji_events", "card-theme-gold", "Huy hiệu 🏆", Url.Action("Rewards", "Kids")!));
-
-    // Thêm các nhóm kỹ năng cốt lõi
-    foreach (var g in Model.SkillGroups)
+    // Helper trích xuất thông tin nhóm kỹ năng
+    (string Title, string Icon, string Emoji, string Theme, string Badge, string Desc, string Url) GetSkillGroupCard(SkillGroup g)
     {
-        var (icon, theme, badge) = g.Code switch
+        var (icon, emoji, theme, badge, desc) = g.Code switch
         {
-            "chu-cai" => ("menu_book", "card-theme-coral", "33 Chữ Việt–Anh & Nét"),
-            "chu-so" => ("pin", "card-theme-mint", "Chữ Số 0 - 20"),
-            "so-luong-toan" => ("calculate", "card-theme-amber", "Đếm & So Sánh"),
-            "tu-duy-logic" => ("extension", "card-theme-cyan", "Ghép Bóng & Logic"),
-            "ky-nang-song" => ("volunteer_activism", "card-theme-purple", "Kỹ Năng Sống"),
-            "ngon-ngu" => ("record_voice_over", "card-theme-pink", "Vốn Từ & Âm"),
-            "hinh-dang-khong-gian" => ("category", "card-theme-teal", "Hình Khối"),
-            _ => (g.IconKey ?? "school", "card-theme-coral", g.Name)
+            "chu-cai" => ("menu_book", "📖", "card-theme-coral", "33 Chữ Việt – Anh & Nét", "Mặt chữ, nét chuẩn & phát âm"),
+            "chu-so" => ("pin", "🔢", "card-theme-emerald", "Chữ Số 0 - 20", "Đếm số lượng & tập viết số đẹp"),
+            "so-luong-toan" => ("calculate", "🧮", "card-theme-sky", "Đếm & So Sánh", "So sánh lớn bé, tách gộp nhóm"),
+            "tu-duy-logic" => ("extension", "💡", "card-theme-cyan", "Tư Duy & Ghép Bóng", "Quy luật, phân loại & tư duy"),
+            "ky-nang-song" => ("volunteer_activism", "💖", "card-theme-rose", "Kỹ Năng & Tự Lập", "Tự phục vụ, an toàn & cảm xúc"),
+            "ngon-ngu" => ("auto_stories", "📚", "card-theme-purple", "Vốn Từ & Âm Vần", "Nghe hiểu, kể chuyện & từ vựng"),
+            "hinh-dang-khong-gian" => ("category", "🔺", "card-theme-teal", "Hình Khối & Không Gian", "Nhận biết hình học & định hướng"),
+            "ghi-nho-tap-trung" => ("psychology", "🧠", "card-theme-amber", "Ghi Nhớ & Tập Trung", "Rèn trí nhớ & khả năng quan sát"),
+            _ => (g.IconKey ?? "school", "🌟", "card-theme-coral", g.Name, g.Description ?? "Hành trình khám phá tri thức")
         };
-        allCards.Add((g.Name, icon, theme, badge, Url.Action("Skill", "Kids", new { id = g.Id })!));
+
+        return (g.Name, icon, emoji, theme, badge, desc, Url.Action("Skill", "Kids", new { id = g.Id })!);
     }
 
-    // Phân trang 8 thẻ / trang (cố định 2 hàng x 4 cột)
-    const int PageSize = 8;
-    var totalCards = allCards.Count;
-    var totalPages = (int)Math.Ceiling(totalCards / (double)PageSize);
+    // Tách các nhóm kỹ năng cụ thể
+    var chuCaiGroup = Model.SkillGroups.FirstOrDefault(g => g.Code == "chu-cai");
+    var chuSoGroup = Model.SkillGroups.FirstOrDefault(g => g.Code == "chu-so");
+    var soLuongToanGroup = Model.SkillGroups.FirstOrDefault(g => g.Code == "so-luong-toan");
+    var otherSkillGroups = Model.SkillGroups
+        .Where(g => g.Code != "chu-cai" && g.Code != "chu-so" && g.Code != "so-luong-toan")
+        .ToList();
+
+    // Sắp xếp thứ tự chính xác theo yêu cầu:
+    // bé tập tô nét -> Chữ cái -> chữ số -> số lượng toán học -> bài hôm nay -> nghe song ngữ -> các mục khác -> kho quà của bé
+    var activityCards = new List<(string Title, string Icon, string Emoji, string Theme, string Badge, string Desc, string Url)>();
+
+    // 1. Bé tập tô nét
+    activityCards.Add((
+        "Bé Tập Tô Nét",
+        "draw",
+        "🎨",
+        "card-theme-coral",
+        "Xưởng Vẽ Sáng Tạo",
+        "Luyện nét chữ, tô chữ cái và vẽ hình",
+        Url.Action("Tracing", "Kids")!
+    ));
+
+    // 2. Chữ cái
+    if (chuCaiGroup != null)
+    {
+        activityCards.Add(GetSkillGroupCard(chuCaiGroup));
+    }
+
+    // 3. Chữ số
+    if (chuSoGroup != null)
+    {
+        activityCards.Add(GetSkillGroupCard(chuSoGroup));
+    }
+
+    // 4. Số lượng và toán học
+    if (soLuongToanGroup != null)
+    {
+        activityCards.Add(GetSkillGroupCard(soLuongToanGroup));
+    }
+
+    // 5. Bài học hôm nay
+    activityCards.Add((
+        "Bài Học Hôm Nay",
+        "play_circle",
+        "⭐",
+        "card-theme-amber",
+        $"Ngày {Model.CurrentDayNumber} • Mục Tiêu",
+        Model.TodayTheme?.Title ?? "Bài học rèn luyện trong ngày",
+        Url.Action("Today", "Kids")!
+    ));
+
+    // 6. Nghe song ngữ
+    activityCards.Add((
+        "Nghe Song Ngữ",
+        "record_voice_over",
+        "🎧",
+        "card-theme-purple",
+        "Phát Âm Bản Xứ",
+        "Luyện nghe chuẩn ABC & Số 0-20",
+        Url.Action("BilingualListen", "Kids")!
+    ));
+
+    // 7. Các mục khác (các nhóm kỹ năng còn lại)
+    foreach (var g in otherSkillGroups)
+    {
+        activityCards.Add(GetSkillGroupCard(g));
+    }
+
+    // 8. Kho quà của bé (ở cuối cùng)
+    activityCards.Add((
+        "Kho Quà Của Bé",
+        "emoji_events",
+        "🏆",
+        "card-theme-gold",
+        $"{Model.Stars} Sao Vàng ⭐",
+        "Mở rương báu, đổi quà & huy hiệu",
+        Url.Action("Rewards", "Kids")!
+    ));
 }
 
-<div class="child-zone-shell">
-    <!-- ==================== HEADER GÓC CỦA BÉ ==================== -->
-    <header class="child-zone-header">
-        <!-- Góc trái: Avatar bé bo tròn lớn (đường kính 80px trên Tablet/PC, 48px trên Mobile) -->
+<section class="kid-screen kid-home-screen ipad-home-hub-screen">
+    <!-- ==================== TOPBAR CHUẨN ĐỒNG NHẤT VỚI CÁC CHỨC NĂNG ==================== -->
+    <header class="child-zone-header clay-card">
         <div class="child-header-left">
-            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bạn nhỏ khác">
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bạn nhỏ khác" onclick="playAudioChime('tap')">
                 <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
                 <span class="child-avatar-switch-badge" title="Đổi bé">
                     <span class="material-symbols-outlined">sync_alt</span>
                 </span>
             </a>
             <div class="child-header-greeting">
-                <span class="child-hi-eyebrow">Chào bạn nhỏ</span>
-                <strong class="child-name-display">@((Model.ChildProfile?.Nickname) ?? "Bé yêu") 👋</strong>
+                <span class="child-hi-eyebrow">Hành Trang Lớp 1</span>
+                <strong class="child-name-display">Chào bạn nhỏ @childName 👋</strong>
             </div>
         </div>
 
-        <!-- Ở giữa: Huy hiệu/ngôi sao điểm thưởng dạng icon 3D nổi bật, số font đậm 32px -->
         <div class="child-header-center">
-            <div class="child-star-badge-3d" title="Số sao thưởng bé tích lũy được">
+            <a asp-controller="Kids" asp-action="Rewards" class="child-star-badge-3d" title="Số sao thưởng bé tích lũy được • Bấm xem kho quà" onclick="playAudioChime('celebrate')">
                 <span class="star-3d-icon">⭐</span>
                 <span class="star-number-display">@Model.Stars</span>
-                <span class="star-label-text">sao</span>
-            </div>
+                <span class="star-label-text">sao vàng</span>
+            </a>
         </div>
 
-        <!-- Góc phải: Nút "Chuyển góc phụ huynh" (icon ổ khóa bo tròn, kích thước 72x72px trên Tablet, min 48x48px trên Mobile) -->
         <div class="child-header-right">
-            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+            <button type="button" class="child-lock-gate-btn" onclick="playAudioChime('tap'); openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
                 <span class="material-symbols-outlined lock-icon">lock</span>
                 <span class="lock-label-text">Ba mẹ</span>
             </button>
         </div>
     </header>
 
-    <!-- ==================== LƯỚI BÀI HỌC (2 HÀNG x 4 CỘT = 8 THẺ/TRANG) ==================== -->
-    <main class="child-zone-main">
-        <div class="child-pages-slider" id="childPagesSlider">
-            @for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
+    <!-- ==================== LƯỚI TẤT CẢ HOẠT ĐỘNG & 10 NHÓM BÀI HỌC (CHUẨN IPAD) ==================== -->
+    <main class="ipad-hub-main">
+        <div class="ipad-hub-headline-row">
+            <div class="headline-mascot-chip" onclick="playAudioChime('celebrate')" title="Sóc Nâu đồng hành">
+                <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="chip-squirrel-img" />
+                <span class="chip-bubble-text">Bé chọn bài học để khám phá nhé! 🌰</span>
+            </div>
+            <div class="headline-counter-chip">
+                <span>Tổng cộng: @activityCards.Count mục học tập</span>
+            </div>
+        </div>
+
+        <div class="ipad-unified-cards-grid">
+            @foreach (var card in activityCards)
             {
-                var pageCards = allCards.Skip(pageIndex * PageSize).Take(PageSize).ToList();
-                <div class="child-grid-page @(pageIndex == 0 ? "is-active" : "")" data-page-index="@pageIndex">
-                    <div class="child-cards-grid">
-                        @foreach (var card in pageCards)
-                        {
-                            <a class="child-card-tile @card.ColorTheme" href="@card.Url" onclick="playChildCardClick(event, this)">
-                                <div class="card-badge-pill">@card.Badge</div>
-                                <div class="card-illustration-box">
-                                    <span class="material-symbols-outlined card-main-icon">@card.Icon</span>
-                                </div>
-                                <div class="card-title-box">
-                                    <h3 class="card-title-text">@card.Title</h3>
-                                </div>
-                            </a>
-                        }
+                <a class="ipad-card-tile clay-card @card.Theme" href="@card.Url" onclick="playAudioChime('tap')" title="@card.Title • @card.Badge">
+                    <div class="tile-top-bar">
+                        <span class="tile-emoji-art">@card.Emoji</span>
+                        <span class="tile-badge-pill">@card.Badge</span>
                     </div>
-                </div>
+                    <div class="tile-content-box">
+                        <h3 class="tile-title-text">@card.Title</h3>
+                        <p class="tile-desc-text">@card.Desc</p>
+                    </div>
+                </a>
             }
         </div>
-
-        <!-- ==================== ĐIỀU HƯỚNG CHÂN TRANG (2 NÚT 88x88px Ở HAI GÓC DƯỚI) ==================== -->
-        <div class="child-zone-footer-nav">
-            <!-- Nút "Trước" (88x88px cố định góc dưới bên trái) -->
-            <button type="button" class="child-corner-nav-btn btn-prev" id="childBtnPrev" onclick="navigateChildPage(-1)" aria-label="Trang trước" title="Xem trang trước" disabled>
-                <span class="material-symbols-outlined nav-arrow-icon">arrow_back</span>
-                <span class="nav-text-small">Trước</span>
-            </button>
-
-            <!-- Chỉ số trang giữa 2 nút -->
-            <div class="child-pagination-dots" id="childPageDots">
-                @for (int i = 0; i < totalPages; i++)
-                {
-                    <span class="page-dot @(i == 0 ? "is-active" : "")" onclick="goToChildPage(@i)" title="Trang @(i + 1)"></span>
-                }
-            </div>
-
-            <!-- Nút "Sau" (88x88px cố định góc dưới bên phải) -->
-            <button type="button" class="child-corner-nav-btn btn-next" id="childBtnNext" onclick="navigateChildPage(1)" aria-label="Trang tiếp theo" title="Xem trang tiếp">
-                <span class="material-symbols-outlined nav-arrow-icon">arrow_forward</span>
-                <span class="nav-text-small">Sau</span>
-            </button>
-        </div>
     </main>
-</div>
+</section>
 
 @section Scripts {
     <script>
         (function () {
-            let currentPage = 0;
-            const totalPages = @totalPages;
-            let audioContext = null;
+            let audioCtx = null;
 
-            // Âm thanh phản hồi khi chạm vào thẻ bài học (Web Audio API)
-            window.playChildCardClick = function (e, element) {
+            window.playAudioChime = function (type) {
                 try {
-                    if (!audioContext) {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     }
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
                     }
-                    const osc = audioContext.createOscillator();
-                    const gain = audioContext.createGain();
+
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
                     osc.connect(gain);
-                    gain.connect(audioContext.destination);
+                    gain.connect(audioCtx.destination);
 
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(587.33, audioContext.currentTime); // D5
-                    osc.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.12); // A5
-                    gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.22);
-
-                    osc.start();
-                    osc.stop(audioContext.currentTime + 0.22);
-                } catch (err) {
+                    if (type === 'celebrate') {
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(523.25, now);
+                        osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                        osc.start(now);
+                        osc.stop(now + 0.35);
+                    } else {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(587.33, now);
+                        osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.12);
+                        gain.gain.setValueAtTime(0.18, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                        osc.start(now);
+                        osc.stop(now + 0.18);
+                    }
+                } catch (e) {
                     // Ignore audio error
                 }
             };
-
-            window.goToChildPage = function (index) {
-                if (index < 0 || index >= totalPages) return;
-                currentPage = index;
-                updateChildPages();
-            };
-
-            window.navigateChildPage = function (delta) {
-                const next = currentPage + delta;
-                if (next >= 0 && next < totalPages) {
-                    currentPage = next;
-                    updateChildPages();
-                }
-            };
-
-            function updateChildPages() {
-                const pages = document.querySelectorAll(".child-grid-page");
-                pages.forEach((p, idx) => {
-                    if (idx === currentPage) {
-                        p.classList.add("is-active");
-                    } else {
-                        p.classList.remove("is-active");
-                    }
-                });
-
-                const dots = document.querySelectorAll(".child-pagination-dots .page-dot");
-                dots.forEach((d, idx) => {
-                    if (idx === currentPage) {
-                        d.classList.add("is-active");
-                    } else {
-                        d.classList.remove("is-active");
-                    }
-                });
-
-                const btnPrev = document.getElementById("childBtnPrev");
-                const btnNext = document.getElementById("childBtnNext");
-                if (btnPrev) btnPrev.disabled = (currentPage === 0);
-                if (btnNext) btnNext.disabled = (currentPage >= totalPages - 1);
-            }
-
-            // Hỗ trợ cử chỉ vuốt lướt màn hình trên cảm ứng
-            let touchStartX = 0;
-            const slider = document.getElementById("childPagesSlider");
-            if (slider) {
-                slider.addEventListener("touchstart", function (e) {
-                    touchStartX = e.changedTouches[0].screenX;
-                }, { passive: true });
-
-                slider.addEventListener("touchend", function (e) {
-                    const touchEndX = e.changedTouches[0].screenX;
-                    const diff = touchStartX - touchEndX;
-                    if (Math.abs(diff) > 50) {
-                        if (diff > 0) {
-                            navigateChildPage(1);
-                        } else {
-                            navigateChildPage(-1);
-                        }
-                    }
-                }, { passive: true });
-            }
         })();
     </script>
 }

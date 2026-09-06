@@ -82,12 +82,21 @@ public class KidsController : Controller
             .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch)
             .SumAsync(x => (int?)x.BestStars) ?? 0;
 
+        var currentDay = await _todayLessonService.GetCurrentDayNumberAsync(child);
+        var todayTheme = TodayLessonService.DayThemes.FirstOrDefault(x => x.Day == currentDay);
+        var completedLessonsCount = await _db.ChildLessonProgresses
+            .CountAsync(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.FirstCompletedAt != null);
+
         var model = new KidsHomeViewModel
         {
             ChildProfile = child,
             SkillGroups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(),
             TodayItems = todayItems.Where(ActivityTemplateCatalog.IsItemAllowed).Take(10).ToList(),
-            Stars = Math.Max(totalStars, 0)
+            Stars = Math.Max(totalStars, 0),
+            CurrentDayNumber = currentDay,
+            TodayTheme = todayTheme,
+            CompletedLessonsCount = completedLessonsCount,
+            TotalLessonsCount = todayItems.Count
         };
 
         return View(model);

@@ -6,6 +6,10 @@ public class KidsHomeViewModel
     public IReadOnlyList<SkillGroup> SkillGroups { get; set; } = [];
     public IReadOnlyList<LearningItem> TodayItems { get; set; } = [];
     public int Stars { get; set; } = 125;
+    public int CurrentDayNumber { get; set; } = 1;
+    public (int Day, string Title, string Description, string Icon, string Color)? TodayTheme { get; set; }
+    public int CompletedLessonsCount { get; set; } = 0;
+    public int TotalLessonsCount { get; set; } = 0;
 }
 
 public class KidsTracingHubViewModel
