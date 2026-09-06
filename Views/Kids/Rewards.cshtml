@@ -1,9 +1,21 @@
 @model KidsRewardsViewModel
 @{
-    ViewData["Title"] = "Quà tặng & Huy hiệu của bé";
+    ViewData["Title"] = "Kho Quà & Thành Tích Của Bé";
     var earnedCount = Model.Badges.Count(x => x.IsEarned);
     var totalCount = Model.Badges.Count;
     var inventoryCount = Model.Badges.Count(x => x.IsEarned && x.Definition.RewardType == "item");
+    var gardenItems = Model.Badges.Where(x => x.Definition.RewardType == "item").ToList();
+    var totalGardenItems = gardenItems.Count;
+    var badgesOnlyCount = Model.Badges.Count(x => x.Definition.RewardType == "badge");
+
+    // Level calculation from TotalStars
+    var (levelName, levelBadge, levelIcon) = Model.TotalStars switch
+    {
+        >= 150 => ("Phù Thủy Tí Hon Đại Tài", "Hạng Kim Cương", "💎"),
+        >= 80  => ("Hiệp Sĩ Tri Thức", "Hạng Vàng", "🥇"),
+        >= 30  => ("Nhà Thám Hiểm Nhí", "Hạng Bạc", "🥈"),
+        _      => ("Bé Tập Sự Thông Thái", "Hạng Đồng", "🥉")
+    };
 
     string ResolveAvatar(string? key)
     {
@@ -19,20 +31,33 @@
             _ => "/images/mascot-squirrel-3d.png"
         };
     }
+
+    string ResolveRewardIcon(string? iconKey)
+    {
+        if (string.IsNullOrWhiteSpace(iconKey)) return "military_tech";
+        return iconKey.Trim().ToLowerInvariant() switch
+        {
+            "royalty" => "crown",
+            "trophy" => "emoji_events",
+            "nature" => "park",
+            _ => iconKey
+        };
+    }
 }
 
 <section class="kid-screen kid-rewards-screen">
     @if (TempData["RewardMessage"] is string rewardMessage)
     {
-        <div class="reward-success-notice clay-card" role="status">
+        <div class="reward-success-notice clay-card" id="rewardNotice" role="status">
             <span class="material-symbols-outlined">celebration</span>
             <strong>@rewardMessage</strong>
         </div>
     }
-    <!-- Topbar chuẩn không gian bé -->
+
+    <!-- Topbar chuẩn không gian bé 1200px -->
     <header class="child-zone-header clay-card">
         <div class="child-header-left">
-            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ" onclick="playAudioChime('click')">
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
             <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
@@ -42,8 +67,8 @@
                 </span>
             </a>
             <div class="child-header-greeting">
-                <span class="child-hi-eyebrow">Bộ sưu tập thành tích</span>
-                <strong class="child-name-display">Kho Quà Của Bé 🏆</strong>
+                <span class="child-hi-eyebrow">Kho Quà Vinh Dự</span>
+                <strong class="child-name-display">Bộ Sưu Tập Của Bé 🏆</strong>
             </div>
         </div>
         <div class="child-header-center">
@@ -61,51 +86,155 @@
         </div>
     </header>
 
-    <!-- Garden Welcome Banner -->
-    <div class="summary-hero-card clay-card">
-        <div class="summary-mascot-wrap">
-            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="summary-mascot-img pulse-animation" />
+    <!-- Hero Profile & Level Card -->
+    <div class="rewards-hero-card clay-card">
+        <div class="rewards-hero-left">
+            <div class="rewards-hero-mascot-wrap">
+                <img src="~/images/soc-nau-mascot.png" onerror="this.src='/images/mascot-squirrel-3d.png'" alt="Sóc Nâu" class="rewards-hero-mascot" />
+            </div>
+            <div class="rewards-hero-copy">
+                <div class="rewards-level-pill">
+                    <span>@levelIcon</span>
+                    <span>@levelBadge • @levelName</span>
+                </div>
+                <h1 class="rewards-hero-title">Khu Vườn Danh Dự Của Bé! ✨</h1>
+                <p class="rewards-hero-speech">
+                    "Chào mừng bé đến với phòng trưng bày vinh quang! Cứ mỗi 10 bài học mới hoàn thành, một chiếc rương báu thần kỳ sẽ xuất hiện để bé mở quà đó!"
+                </p>
+            </div>
         </div>
-        <div class="summary-hero-copy">
-            <h2>Khu Vườn Danh Dự Của Bé! ✨</h2>
-            <p>Bé đã có <strong>@Model.TotalStars sao thành tích</strong>, mở khóa <strong>@earnedCount/@totalCount phần thưởng</strong> và sưu tập <strong>@inventoryCount vật phẩm</strong>. Cứ 10 bài khác nhau trong mỗi nhóm, một rương mới sẽ chờ bé!</p>
+        <div class="rewards-hero-stats">
+            <div class="rewards-mini-stat clay-card">
+                <span class="mini-icon">⭐</span>
+                <strong>@Model.TotalStars</strong>
+                <span>Tổng sao</span>
+            </div>
+            <div class="rewards-mini-stat clay-card">
+                <span class="mini-icon">🎖️</span>
+                <strong>@earnedCount/@totalCount</strong>
+                <span>Huy hiệu</span>
+            </div>
+            <div class="rewards-mini-stat clay-card">
+                <span class="mini-icon">🌻</span>
+                <strong>@inventoryCount/@totalGardenItems</strong>
+                <span>Kỳ quan</span>
+            </div>
         </div>
     </div>
 
-    @if (Model.ClaimableGrants.Count > 0)
-    {
-        <section class="reward-awaiting-section clay-card">
-            <div class="reward-section-heading">
-                <span class="material-symbols-outlined">redeem</span>
-                <div><h2>Quà đang chờ bé</h2><p>Bé đã đủ mốc. Hãy mở rương nhé!</p></div>
+    <!-- Section: Rương Báu Đang Chờ Mở (Claimable Chests) -->
+    <section class="rewards-chests-section clay-card @(Model.ClaimableGrants.Count > 0 ? "has-chests" : "")">
+        <div class="rewards-section-title-wrap">
+            <div class="rewards-section-title">
+                <div class="rewards-section-icon-badge">
+                    <span class="material-symbols-outlined">redeem</span>
+                </div>
+                <div>
+                    <h2>@(Model.ClaimableGrants.Count > 0 ? "Rương Báu Đang Chờ Bé Mở! 🎁" : "Hộp Quà Thần Bí Đang Chờ Đón")</h2>
+                    <p>@(Model.ClaimableGrants.Count > 0 ? "Bé đã xuất sắc đạt mốc học tập. Chạm vào rương để mở quà nhé!" : "Cứ hoàn thành 10 bài trong mỗi nhóm môn, bé sẽ nhận được một chiếc rương báu!")</p>
+                </div>
             </div>
-            <div class="reward-awaiting-grid">
+            @if (Model.ClaimableGrants.Count > 0)
+            {
+                <span class="garden-badge-pill" style="background: #fef08a; color: #854d0e;">
+                    ✨ Có @Model.ClaimableGrants.Count rương sẵn sàng
+                </span>
+            }
+        </div>
+
+        @if (Model.ClaimableGrants.Count > 0)
+        {
+            <div class="rewards-chest-grid">
                 @foreach (var item in Model.ClaimableGrants)
                 {
-                    <article class="reward-awaiting-card">
-                        <span class="material-symbols-outlined reward-awaiting-icon">@item.Reward.IconKey</span>
-                        <div><strong>@item.Reward.Name</strong><small>@item.SkillName • Mốc @item.Grant.MilestoneValue bài</small></div>
-                        <form asp-action="ClaimReward" asp-route-grantId="@item.Grant.Id" method="post">
-                            <button type="submit" class="app-btn clay-button reward-claim-btn">Mở quà</button>
+                    <article class="rewards-chest-card clay-card">
+                        <div class="chest-3d-visual">
+                            <span class="material-symbols-outlined">@ResolveRewardIcon(item.Reward.IconKey)</span>
+                        </div>
+                        <div class="rewards-chest-info">
+                            <strong>@item.Reward.Name</strong>
+                            <small>@item.SkillName • Mốc @item.Grant.MilestoneValue bài</small>
+                        </div>
+                        <form asp-action="ClaimReward" asp-route-grantId="@item.Grant.Id" method="post" class="rewards-chest-form" onsubmit="onClaimChest(event, this)">
+                            <button type="submit" class="app-btn clay-button rewards-claim-btn">
+                                <span>Mở ngay</span>
+                                <span class="material-symbols-outlined" style="font-size: 1.15rem;">auto_awesome</span>
+                            </button>
                         </form>
                     </article>
                 }
             </div>
-        </section>
-    }
-    else
-    {
-        <section class="reward-empty-state clay-card" aria-label="Không có quà đang chờ">
-            <span class="material-symbols-outlined">inventory_2</span>
-            <div><strong>Chưa có rương đang chờ</strong><p>Tiếp tục hành trình, cứ 10 bài khác nhau trong một nhóm bé sẽ mở khóa một rương.</p></div>
-        </section>
-    }
+        }
+        else
+        {
+            <div class="rewards-chest-empty">
+                <span class="material-symbols-outlined empty-chest-icon">lock_open</span>
+                <div class="rewards-chest-empty-copy">
+                    <strong>Chưa có rương báu nào đang chờ mở lúc này</strong>
+                    <p>Bé hãy tiếp tục học thêm các bài mới ở phần Bài Học nhé. Mỗi nhóm môn cứ đủ 10 bài là rương vàng sẽ tự động xuất hiện tại đây!</p>
+                </div>
+            </div>
+        }
+    </section>
 
-    <section class="reward-skill-journey">
-        <div class="reward-section-heading">
-            <span class="material-symbols-outlined">map</span>
-            <div><h2>Hành trình các nhóm</h2><p>Mỗi nhóm có tiến độ rương riêng.</p></div>
+    <!-- Section: Khu Vườn Của Bé (Magical Garden Canvas) -->
+    <section class="magical-garden-section clay-card">
+        <div class="rewards-section-title-wrap">
+            <div class="rewards-section-title">
+                <div class="rewards-section-icon-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <span class="material-symbols-outlined">park</span>
+                </div>
+                <div>
+                    <h2>Khu Vườn Của Bé 🌻</h2>
+                    <p>Mỗi vật phẩm kỳ diệu được ươm mầm khi bé đạt các mốc 10 bài học</p>
+                </div>
+            </div>
+            <span class="garden-badge-pill">
+                🌸 Đã nở hoa @inventoryCount/@totalGardenItems kỳ quan
+            </span>
         </div>
+
+        <div class="garden-items-container">
+            @foreach (var badge in gardenItems)
+            {
+                var icon = ResolveRewardIcon(badge.Definition.IconKey);
+                <div class="garden-slot-card @(badge.IsEarned ? "is-unlocked" : "is-locked")"
+                     onclick="openBadgeModalFromData('@badge.Definition.Name', 'Vật phẩm khu vườn', '@icon', '@badge.Definition.RuleJson', @(badge.IsEarned ? "true" : "false"), '@(badge.EarnedAt.HasValue ? badge.EarnedAt.Value.ToString("dd/MM/yyyy") : "")')"
+                     title="Bấm để xem chi tiết @badge.Definition.Name">
+                    <div class="garden-slot-pedestal">
+                        <span class="material-symbols-outlined garden-slot-icon">@icon</span>
+                        @if (badge.IsEarned)
+                        {
+                            <span class="garden-slot-sparkle">✨</span>
+                        }
+                        else
+                        {
+                            <span class="garden-slot-lock-icon material-symbols-outlined">lock</span>
+                        }
+                    </div>
+                    <strong class="garden-slot-name">@badge.Definition.Name</strong>
+                    <span class="garden-slot-status">
+                        @(badge.IsEarned ? "Đã nở hoa" : "Chưa ươm mầm")
+                    </span>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Section: Hành Trình Mở Rương Theo Nhóm Môn (Skill Milestones) -->
+    <section class="reward-skill-journey">
+        <div class="rewards-section-title-wrap">
+            <div class="rewards-section-title">
+                <div class="rewards-section-icon-badge" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <span class="material-symbols-outlined">map</span>
+                </div>
+                <div>
+                    <h2>Hành Trình Mở Rương Theo Nhóm 🗺️</h2>
+                    <p>Theo dõi tiến độ hoàn thành bài học để chạm tới rương quà tiếp theo</p>
+                </div>
+            </div>
+        </div>
+
         <div class="reward-skill-progress-grid">
             @foreach (var skill in Model.SkillProgress)
             {
@@ -114,34 +243,48 @@
                 var segmentPercent = skill.TotalLessons < 10
                     ? (skill.TotalLessons == 0 ? 0 : (int)Math.Round(skill.UniqueCompleted * 100d / skill.TotalLessons))
                     : skill.CurrentSegmentProgress * 10;
-                <a class="reward-skill-progress-card clay-card" asp-controller="Kids" asp-action="Skill" asp-route-id="@skill.SkillGroupId" style="--skill-color:@skill.Color">
-                    <span class="material-symbols-outlined reward-skill-icon">@skill.IconKey</span>
+
+                <a class="reward-skill-progress-card clay-card" asp-controller="Kids" asp-action="Skill" asp-route-id="@skill.SkillGroupId" style="--skill-color:@skill.Color" onclick="playAudioChime('tap')">
+                    <div class="reward-skill-icon-bubble">
+                        <span class="material-symbols-outlined">@skill.IconKey</span>
+                    </div>
                     <div class="reward-skill-copy">
                         <strong>@skill.SkillName</strong>
-                        <span>@skill.UniqueCompleted/@skill.TotalLessons bài đã hoàn thành</span>
-                        <div class="reward-progress-track"><span style="width:@Math.Clamp(segmentPercent, 0, 100)%"></span></div>
-                        <small>@(skill.TotalLessons < 10 ? "Hoàn thành nhóm để nhận huy hiệu" : remaining == 0 ? "Rương đã sẵn sàng" : $"Còn {remaining} bài đến rương mốc {target}")</small>
+                        <span>Đã làm: @skill.UniqueCompleted/@skill.TotalLessons bài</span>
+                        <div class="reward-progress-track">
+                            <span style="width:@Math.Clamp(segmentPercent, 0, 100)%"></span>
+                        </div>
+                        <small>@(skill.TotalLessons < 10 ? "Hoàn thành nhóm để nhận huy hiệu" : remaining == 0 ? "🎉 Rương đã sẵn sàng!" : $"Còn {remaining} bài nữa để mở rương mốc {target}")</small>
                     </div>
-                    <span class="material-symbols-outlined">arrow_forward</span>
+                    <span class="material-symbols-outlined reward-skill-chevron">arrow_forward</span>
                 </a>
             }
         </div>
     </section>
 
+    <!-- Section: Rương Vừa Mở Gần Đây (Recent Claimed Grants) -->
     @if (Model.RecentClaimedGrants.Count > 0)
     {
         <section class="reward-history-section clay-card">
-            <div class="reward-section-heading">
-                <span class="material-symbols-outlined">history</span>
-                <div><h2>Rương vừa mở</h2><p>Những dấu mốc gần nhất của bé.</p></div>
+            <div class="rewards-section-title">
+                <div class="rewards-section-icon-badge" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); width: 38px; height: 38px;">
+                    <span class="material-symbols-outlined" style="font-size: 1.3rem;">history</span>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.15rem; margin: 0;">Rương Vừa Mở Gần Đây ✨</h2>
+                    <p style="font-size: 0.82rem; margin: 0;">Những dấu mốc chiến tích đáng tự hào của bé</p>
+                </div>
             </div>
             <div class="reward-history-list">
                 @foreach (var item in Model.RecentClaimedGrants)
                 {
                     <div class="reward-history-item">
-                        <span class="material-symbols-outlined">@item.Reward.IconKey</span>
-                        <div><strong>@item.Reward.Name</strong><small>@item.SkillName • Mốc @item.Grant.MilestoneValue bài</small></div>
-                        <time datetime="@item.Grant.ClaimedAt?.ToString("O")">@item.Grant.ClaimedAt?.ToString("dd/MM/yyyy")</time>
+                        <span class="material-symbols-outlined">@ResolveRewardIcon(item.Reward.IconKey)</span>
+                        <div>
+                            <strong>@item.Reward.Name</strong>
+                            <small>@item.SkillName • Mốc @item.Grant.MilestoneValue bài</small>
+                        </div>
+                        <time datetime="@item.Grant.ClaimedAt?.ToString("O")">@item.Grant.ClaimedAt?.ToString("dd/MM")</time>
                     </div>
                 }
             </div>
@@ -156,27 +299,42 @@
         </button>
         <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('badge', this)">
             <span class="material-symbols-outlined">military_tech</span>
-            <span>Huy hiệu (@Model.Badges.Count(x => x.Definition.RewardType == "badge"))</span>
+            <span>Huy hiệu học tập (@badgesOnlyCount)</span>
         </button>
         <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('item', this)">
             <span class="material-symbols-outlined">park</span>
-            <span>Vật phẩm (@Model.Badges.Count(x => x.Definition.RewardType == "item"))</span>
+            <span>Vật phẩm khu vườn (@totalGardenItems)</span>
         </button>
         <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('earned', this)">
             <span class="material-symbols-outlined">check_circle</span>
             <span>Đã đạt (@earnedCount)</span>
         </button>
+        <button type="button" class="reward-tab-btn clay-button" onclick="filterRewards('locked', this)">
+            <span class="material-symbols-outlined">lock</span>
+            <span>Chưa mở (@(totalCount - earnedCount))</span>
+        </button>
     </div>
 
-    <!-- Rewards & Badges Grid -->
+    <!-- Rewards & Badges Collection Grid -->
     <div class="rewards-collection-grid" id="rewardsCollectionGrid">
         @foreach (var badge in Model.Badges)
         {
+            var isItem = badge.Definition.RewardType == "item";
+            var categoryLabel = isItem ? "Vật phẩm khu vườn" : "Huy hiệu vinh dự";
+            var icon = ResolveRewardIcon(badge.Definition.IconKey);
+
             <div class="reward-badge-card clay-card @(badge.IsEarned ? "is-unlocked" : "is-locked")"
                  data-reward-type="@badge.Definition.RewardType"
-                 data-is-earned="@(badge.IsEarned ? "true" : "false")">
+                 data-is-earned="@(badge.IsEarned ? "true" : "false")"
+                 data-badge-name="@badge.Definition.Name"
+                 data-badge-category="@categoryLabel"
+                 data-badge-icon="@icon"
+                 data-badge-rule="@badge.Definition.RuleJson"
+                 data-earned-at="@(badge.EarnedAt.HasValue ? badge.EarnedAt.Value.ToString("dd/MM/yyyy") : "")"
+                 onclick="openBadgeModal(this)">
+                
                 <div class="badge-medal-wrap">
-                    <span class="material-symbols-outlined badge-icon">@badge.Definition.IconKey</span>
+                    <span class="material-symbols-outlined badge-icon">@icon</span>
                     @if (badge.IsEarned)
                     {
                         <span class="badge-status-sparkle">✨</span>
@@ -186,8 +344,11 @@
                         <span class="badge-lock-tag material-symbols-outlined">lock</span>
                     }
                 </div>
+
                 <strong class="badge-name">@badge.Definition.Name</strong>
+                <span class="badge-category-tag">@categoryLabel</span>
                 <p class="badge-rule">@badge.Definition.RuleJson</p>
+
                 @if (badge.IsEarned)
                 {
                     <span class="badge-earned-pill">
@@ -207,13 +368,49 @@
     </div>
 </section>
 
+<!-- Badge Detail Modal (Popup) -->
+<div class="badge-modal-overlay" id="badgeDetailModal" onclick="onModalOverlayClick(event)">
+    <div class="badge-modal-card clay-card">
+        <button type="button" class="badge-modal-close-btn" onclick="closeBadgeModal()" aria-label="Đóng chi tiết">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <div class="modal-medal-halo" id="modalHalo">
+            <span class="material-symbols-outlined" id="modalIcon">military_tech</span>
+        </div>
+
+        <h3 class="modal-badge-name" id="modalTitle">Tên huy hiệu</h3>
+        <span class="modal-badge-category" id="modalCategory">Huy hiệu vinh dự</span>
+
+        <div class="modal-badge-rule-box">
+            <div class="modal-rule-label">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">target</span>
+                <span>Điều kiện đạt được</span>
+            </div>
+            <p class="modal-rule-text" id="modalRule">Quy tắc mở khóa...</p>
+        </div>
+
+        <div class="modal-mascot-speech-bubble">
+            <img src="~/images/soc-nau-mascot.png" onerror="this.src='/images/mascot-squirrel-3d.png'" alt="Sóc Nâu" />
+            <p id="modalSpeech">"Bé hãy cố gắng nhé! Sóc Nâu luôn đồng hành cùng bé trên từng bài học!"</p>
+        </div>
+
+        <button type="button" class="modal-dismiss-btn clay-button" onclick="closeBadgeModal()">
+            Đã hiểu rồi bé cảm ơn Sóc Nâu! ✨
+        </button>
+    </div>
+</div>
+
+<!-- Canvas cho hiệu ứng pháo hoa Confetti -->
+<canvas id="confettiCanvas"></canvas>
+
 <!-- Bottom Navigation for Kids -->
 <nav class="kid-bottom-nav">
-    <a asp-controller="Kids" asp-action="Home">
+    <a asp-controller="Kids" asp-action="Home" onclick="playAudioChime('tap')">
         <span class="material-symbols-outlined">home</span>
         <span>Trang chủ</span>
     </a>
-    <a asp-controller="Kids" asp-action="Today">
+    <a asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')">
         <span class="material-symbols-outlined">edit_square</span>
         <span>Bài tập</span>
     </a>
@@ -229,27 +426,224 @@
 
 @section Scripts {
     <script>
-        function filterRewards(filter, btn) {
-            document.querySelectorAll(".reward-tab-btn").forEach(el => el.classList.remove("active"));
-            if (btn) btn.classList.add("active");
+        (function () {
+            // Web Audio API Synthesizer
+            let audioCtx = null;
+            function getAudioContext() {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) audioCtx = new AudioContextClass();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                return audioCtx;
+            }
 
-            const cards = document.querySelectorAll(".reward-badge-card");
-            cards.forEach(card => {
-                const type = card.getAttribute("data-reward-type");
+            window.playAudioChime = function (type) {
+                try {
+                    const ctx = getAudioContext();
+                    if (!ctx) return;
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    if (type === 'tap') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(523.25, now);
+                        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
+                        gain.gain.setValueAtTime(0.15, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                    } else if (type === 'click') {
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(440, now);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                        osc.start(now);
+                        osc.stop(now + 0.06);
+                    } else if (type === 'start') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(440, now);
+                        osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+                        gain.gain.setValueAtTime(0.18, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                        osc.start(now);
+                        osc.stop(now + 0.22);
+                    } else if (type === 'celebrate') {
+                        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                        notes.forEach((freq, idx) => {
+                            const o = ctx.createOscillator();
+                            const g = ctx.createGain();
+                            o.type = 'triangle';
+                            o.frequency.setValueAtTime(freq, now + idx * 0.07);
+                            g.gain.setValueAtTime(0.18, now + idx * 0.07);
+                            g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.18);
+                            o.connect(g);
+                            g.connect(ctx.destination);
+                            o.start(now + idx * 0.07);
+                            o.stop(now + idx * 0.07 + 0.18);
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Audio chime error:", e);
+                }
+            };
+
+            // Confetti Particle System
+            window.launchConfetti = function () {
+                const canvas = document.getElementById('confettiCanvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444', '#facc15'];
+                const particles = [];
+                for (let i = 0; i < 90; i++) {
+                    particles.push({
+                        x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+                        y: canvas.height / 2 - 100,
+                        vx: (Math.random() - 0.5) * 16,
+                        vy: (Math.random() - 1) * 14 - 3,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        size: Math.random() * 8 + 6,
+                        tilt: Math.random() * 10,
+                        tiltAngle: Math.random() * Math.PI,
+                        tiltAngleInc: Math.random() * 0.08 + 0.04,
+                        opacity: 1
+                    });
+                }
+
+                let animationFrameId;
+                const startTime = Date.now();
+
+                function render() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    let alive = false;
+
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.35; // gravity
+                        p.tiltAngle += p.tiltAngleInc;
+                        p.tilt = Math.sin(p.tiltAngle) * 12;
+
+                        if (p.y < canvas.height && p.opacity > 0) {
+                            alive = true;
+                            ctx.fillStyle = p.color;
+                            ctx.beginPath();
+                            ctx.ellipse(p.x, p.y, p.size, p.size / 2, p.tiltAngle, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    });
+
+                    if (alive && Date.now() - startTime < 3500) {
+                        animationFrameId = requestAnimationFrame(render);
+                    } else {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                }
+
+                cancelAnimationFrame(animationFrameId);
+                render();
+            };
+
+            // Filter Tabs
+            window.filterRewards = function (filter, btn) {
+                playAudioChime('click');
+                document.querySelectorAll(".reward-tab-btn").forEach(el => el.classList.remove("active"));
+                if (btn) btn.classList.add("active");
+
+                const cards = document.querySelectorAll("#rewardsCollectionGrid .reward-badge-card");
+                cards.forEach(card => {
+                    const type = card.getAttribute("data-reward-type");
+                    const isEarned = card.getAttribute("data-is-earned") === "true";
+
+                    if (filter === "all") {
+                        card.style.display = "flex";
+                    } else if (filter === "badge" && type === "badge") {
+                        card.style.display = "flex";
+                    } else if (filter === "item" && type === "item") {
+                        card.style.display = "flex";
+                    } else if (filter === "earned" && isEarned) {
+                        card.style.display = "flex";
+                    } else if (filter === "locked" && !isEarned) {
+                        card.style.display = "flex";
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+            };
+
+            // Modal Popup Handling
+            window.openBadgeModal = function (card) {
+                if (!card) return;
+                playAudioChime('tap');
+                const name = card.getAttribute("data-badge-name") || "Huy hiệu";
+                const category = card.getAttribute("data-badge-category") || "Huy hiệu vinh dự";
+                const icon = card.getAttribute("data-badge-icon") || "military_tech";
+                const rule = card.getAttribute("data-badge-rule") || "";
                 const isEarned = card.getAttribute("data-is-earned") === "true";
+                const earnedAt = card.getAttribute("data-earned-at") || "";
 
-                if (filter === "all") {
-                    card.style.display = "flex";
-                } else if (filter === "badge" && type === "badge") {
-                    card.style.display = "flex";
-                } else if (filter === "item" && type === "item") {
-                    card.style.display = "flex";
-                } else if (filter === "earned" && isEarned) {
-                    card.style.display = "flex";
+                openBadgeModalFromData(name, category, icon, rule, isEarned, earnedAt);
+            };
+
+            window.openBadgeModalFromData = function (name, category, icon, rule, isEarned, earnedAt) {
+                playAudioChime('tap');
+                const modal = document.getElementById("badgeDetailModal");
+                if (!modal) return;
+
+                document.getElementById("modalTitle").textContent = name;
+                document.getElementById("modalCategory").textContent = category;
+                document.getElementById("modalIcon").textContent = icon;
+                document.getElementById("modalRule").textContent = rule || "Chăm chỉ học tập các bài học tương ứng để mở khóa!";
+
+                const halo = document.getElementById("modalHalo");
+                const speech = document.getElementById("modalSpeech");
+
+                if (isEarned) {
+                    halo.classList.remove("is-locked");
+                    const dateMsg = earnedAt ? ` vào ngày ${earnedAt}` : "";
+                    speech.textContent = `Tuyệt vời lắm bé yêu! Bé đã xuất sắc mở khóa danh hiệu này${dateMsg}. Hãy tự hào về nỗ lực của mình nhé!`;
                 } else {
-                    card.style.display = "none";
+                    halo.classList.add("is-locked");
+                    speech.textContent = `Bé ơi, danh hiệu này đang chờ bé rinh về đó! Hãy hoàn thành các bài học tương ứng để mở khóa nhé!`;
+                }
+
+                modal.classList.add("is-active");
+            };
+
+            window.closeBadgeModal = function () {
+                playAudioChime('click');
+                const modal = document.getElementById("badgeDetailModal");
+                if (modal) modal.classList.remove("is-active");
+            };
+
+            window.onModalOverlayClick = function (e) {
+                if (e.target.id === 'badgeDetailModal') {
+                    closeBadgeModal();
+                }
+            };
+
+            // Chest Claim Action
+            window.onClaimChest = function (e, form) {
+                playAudioChime('celebrate');
+                launchConfetti();
+            };
+
+            // Trigger celebration on load if there's a success notice
+            document.addEventListener('DOMContentLoaded', () => {
+                const notice = document.getElementById('rewardNotice');
+                if (notice) {
+                    playAudioChime('celebrate');
+                    launchConfetti();
                 }
             });
-        }
+        })();
     </script>
 }
