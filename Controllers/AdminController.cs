@@ -1553,6 +1553,7 @@ public class AdminController : Controller
                 updatedItems = result.UpdatedItems,
                 remainingMissing = result.RemainingMissing,
                 isCompleted = result.IsCompleted,
+                canContinue = result.CanContinue,
                 errorMessages = result.ErrorMessages
             });
         }

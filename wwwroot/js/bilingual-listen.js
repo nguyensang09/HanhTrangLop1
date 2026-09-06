@@ -250,24 +250,35 @@
     }
   }
 
+  function getBilingualSequence(card) {
+    const prompt = getLetterPrompt(card);
+    const symbol = card?.dataset.symbol || "";
+    const word = card?.dataset.word || symbol;
+    const isNumber = card?.dataset.kind === "number";
+    return {
+      en1: prompt.en,
+      vi1: prompt.vi,
+      en2: isNumber ? `Number ${word}` : word,
+      vi2: isNumber ? symbol : (card?.dataset.meaning || ""),
+      en3: card?.dataset.exampleEn || "",
+      vi3: card?.dataset.exampleVi || ""
+    };
+  }
+
   // Tải trước toàn bộ âm thanh của 1 thẻ flashcard (riêng chữ cái, nghĩa từ vựng, từ tiếng Anh, câu ví dụ - giọng NỮ)
   function preloadCardAudio(card) {
     if (!card) return;
-    const p = getLetterPrompt(card);
-    const meaning = card.dataset.meaning || "";
-    const word = card.dataset.word || "";
-    const exampleVi = card.dataset.exampleVi;
-    const exampleEn = card.dataset.exampleEn;
+    const sequence = getBilingualSequence(card);
 
-    if (p.en) getAudioUrl(p.en, "en");
-    if (p.vi) getAudioUrl(p.vi, "vi");
-    if (word) {
-      getAudioUrl(word, "en");
-      getAudioUrl(word, "en", true);
+    if (sequence.en1) getAudioUrl(sequence.en1, "en");
+    if (sequence.vi1) getAudioUrl(sequence.vi1, "vi");
+    if (sequence.en2) {
+      getAudioUrl(sequence.en2, "en");
+      getAudioUrl(sequence.en2, "en", true);
     }
-    if (meaning) getAudioUrl(meaning, "vi");
-    if (exampleEn) getAudioUrl(exampleEn, "en");
-    if (exampleVi) getAudioUrl(exampleVi, "vi");
+    if (sequence.vi2) getAudioUrl(sequence.vi2, "vi");
+    if (sequence.en3) getAudioUrl(sequence.en3, "en");
+    if (sequence.vi3) getAudioUrl(sequence.vi3, "vi");
   }
 
   function playAudioUrlPromise(url, playbackRate = 1.0) {
@@ -404,13 +415,13 @@
       return;
     }
 
-    const p = getLetterPrompt(card);
-    const letterEn = p.en || ""; // "A" hoặc "1"
-    const letterVi = p.vi || ""; // "Chữ A" hoặc "Số 1"
-    const wordEn = card.dataset.word || card.dataset.symbol || ""; // "Apple" hoặc "One"
-    const meaningVi = card.dataset.meaning || ""; // "Quả táo" hoặc "Một"
-    const exampleEn = card.dataset.exampleEn || "";
-    const exampleVi = card.dataset.exampleVi || "";
+    const sequence = getBilingualSequence(card);
+    const letterEn = sequence.en1;
+    const letterVi = sequence.vi1;
+    const wordEn = sequence.en2;
+    const meaningVi = sequence.vi2;
+    const exampleEn = sequence.en3;
+    const exampleVi = sequence.vi3;
 
     // Tải trước ngầm tất cả các đoạn âm thanh giọng NỮ
     if (letterEn) getAudioUrl(letterEn, "en", isSlow);
@@ -729,7 +740,7 @@
     dialogSpeakSlowBtn.addEventListener("click", () => {
       const card = visibleCards[currentCardIndex];
       if (!card) return;
-      const word = card.dataset.word || card.dataset.symbol || "";
+      const word = getBilingualSequence(card).en2;
       fetchAndPlayVoice(word, "en", true);
     });
   }

@@ -1147,15 +1147,21 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
         let initialized = false;
         let consecutiveErrors = 0;
         let stalledBatches = 0;
+        let stopRequested = false;
 
-        closeBtn.disabled = true;
-        closeBtn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span> Đang xử lý...`;
+        closeBtn.disabled = false;
+        closeBtn.textContent = "Dừng sau lượt hiện tại";
+        closeBtn.onclick = () => {
+            stopRequested = true;
+            closeBtn.disabled = true;
+            closeBtn.textContent = "Đang lưu lượt hiện tại...";
+        };
         progressText.textContent = "Đang quét toàn bộ kho bài học...";
         statusLog.innerHTML = `<div>&bull; Bắt đầu quét và đồng bộ voice...</div>`;
 
         const csrf = getCsrfToken();
 
-        while (!isDone) {
+        while (!isDone && !stopRequested) {
             batchStep++;
             try {
                 const formData = new FormData();
@@ -1209,8 +1215,9 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 if (data.isCompleted || remaining === 0) {
                     isDone = true;
                 }
+                if (!isDone && (data.canContinue === false || data.processedInBatch === 0)) break;
                 stalledBatches = (data.createdVi || data.createdEn || data.updatedItems) ? 0 : stalledBatches + 1;
-                if (!isDone && stalledBatches >= Math.max(3, Math.ceil(data.totalEntries / 3))) break;
+                if (!isDone && stalledBatches >= Math.max(3, data.totalEntries * 2)) break;
             } catch (err) {
                 const errorLine = document.createElement("div");
                 errorLine.textContent = err.message;
@@ -1218,6 +1225,8 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
                 if (++consecutiveErrors >= 3) break;
                 await new Promise((r) => setTimeout(r, 2000));
             }
+            while (statusLog.childElementCount > 50) statusLog.lastElementChild.remove();
+            if (!isDone) await new Promise((resolve) => setTimeout(resolve, 300));
         }
 
         if (isDone) {

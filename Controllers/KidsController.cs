@@ -387,9 +387,7 @@ public class KidsController : Controller
             return BadRequest(new { success = false, message = "Text is required" });
         }
 
-        var audioUrl = lang.StartsWith("en", StringComparison.OrdinalIgnoreCase)
-            ? await _voiceLibraryService.ResolveVoiceAudioUrlEnAsync(text, cancellationToken)
-            : await _voiceLibraryService.ResolveVoiceAudioUrlAsync(text, cancellationToken);
+        var audioUrl = await _voiceLibraryService.ResolveBilingualListenAudioUrlAsync(text, lang, cancellationToken);
         if (string.IsNullOrEmpty(audioUrl))
         {
             return NotFound(new { success = false, message = "Audio is not available in TextToSpeechCaches" });

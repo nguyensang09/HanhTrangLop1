@@ -37,7 +37,8 @@ public sealed record VoiceLibrarySyncBatchResult(
     int UpdatedItems,
     int RemainingMissing,
     bool IsCompleted,
-    IReadOnlyList<string> ErrorMessages);
+    IReadOnlyList<string> ErrorMessages,
+    bool CanContinue = true);
 
 public sealed record VoiceAuditStatsResult(
     int TotalVoices,
@@ -59,6 +60,7 @@ public sealed record VoiceLibraryRebuildResult(
 public sealed class VoiceLibraryMaintenanceService
 {
     private const string ManualUsageType = "custom";
+    private const string BilingualListenUsageType = "bilingual-listen";
 
     private sealed record BilingualListenVoicePair(string TextVi, string TextEn, string UsageType);
 
@@ -159,13 +161,31 @@ public sealed class VoiceLibraryMaintenanceService
         return builder.ToString();
     }
 
+    private static readonly SemaphoreSlim SyncGate = new(1, 1);
+
     public async Task<VoiceLibrarySyncBatchResult> SyncAndGenerateBatchAsync(int batchSize = 1, CancellationToken cancellationToken = default, bool initialize = true)
     {
-        batchSize = Math.Clamp(batchSize, 1, 10);
+        await SyncGate.WaitAsync(cancellationToken);
+        try
+        {
+            return await SyncOneVoiceAsync(cancellationToken, initialize);
+        }
+        finally
+        {
+            SyncGate.Release();
+        }
+    }
+
+    private async Task<VoiceLibrarySyncBatchResult> SyncOneVoiceAsync(CancellationToken cancellationToken, bool initialize)
+    {
+        const int batchSize = 1;
 
         // 1. Chuẩn hóa dữ liệu bài học và dọn dẹp sạch toàn bộ voice thừa trong CSDL lẫn file vật lý
         if (initialize)
-            await CleanupAllRedundantDatabaseAndVoiceFilesAsync(cancellationToken);
+        {
+            await RecoverInterruptedVoiceFilesAsync(Path.Combine(_environment.WebRootPath, "uploads", "audio"), cancellationToken);
+            _db.ChangeTracker.Clear();
+        }
 
         var createdVi = 0;
         var createdEn = 0;
@@ -173,17 +193,23 @@ public sealed class VoiceLibraryMaintenanceService
         var updatedItems = 0;
         var errors = new List<string>();
 
-        // 2. Quét tất cả bài học để đảm bảo các đoạn text đều có một dòng cache duy nhất trước khi sinh file.
-        var allLessons = await _db.LearningItems
-            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Title)
-            .ToListAsync(cancellationToken);
+        var totalLessons = await _db.LearningItems.CountAsync(cancellationToken);
 
         if (initialize)
         {
-            foreach (var lesson in allLessons)
-                await EnsureAndGetVoiceEntriesForLessonAsync(lesson, cancellationToken);
+            // Chỉ quét toàn bộ một lần ở request khởi tạo. Các request sau chỉ nạp
+            // những bài liên quan đến voice vừa xử lý để tránh debugger giữ cả đồ thị JSON.
+            for (var offset = 0; offset < totalLessons; offset += 20)
+            {
+                var page = await _db.LearningItems.AsNoTracking()
+                    .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+                    .OrderBy(x => x.Id).Skip(offset).Take(20)
+                    .ToListAsync(cancellationToken);
+                foreach (var lesson in page)
+                    await EnsureAndGetVoiceEntriesForLessonAsync(lesson, cancellationToken);
+                await _db.SaveChangesAsync(cancellationToken);
+                _db.ChangeTracker.Clear();
+            }
             await EnsureBilingualListenVoiceRowsAsync(cancellationToken);
             foreach (var entry in await _db.TextToSpeechCaches.Where(x => x.UsageType != ManualUsageType).ToListAsync(cancellationToken))
             {
@@ -191,6 +217,7 @@ public sealed class VoiceLibraryMaintenanceService
                 if (!HasVoiceFile(entry.AudioUrlEn)) entry.StatusEn = "missing";
             }
             await _db.SaveChangesAsync(cancellationToken);
+            _db.ChangeTracker.Clear();
         }
 
         // 3. Quét và tạo file cho các dòng còn thiếu Voice VI hoặc Voice EN trong TextToSpeechCaches
@@ -199,19 +226,28 @@ public sealed class VoiceLibraryMaintenanceService
                         x.UsageType != ManualUsageType &&
                         x.UsageType != "title" &&
                         x.UsageType != "instruction" &&
-                        ((x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready") ||
-                         (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready")))
+                        (((x.Status == null || x.Status != "failed") && (x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready")) ||
+                         ((x.StatusEn == null || x.StatusEn != "failed") && (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready"))))
             .OrderBy(x => x.UpdatedAt).ThenBy(x => x.Id);
 
-        var missingVoicesBatch = await missingVoicesQuery.Take(batchSize * 3).ToListAsync(cancellationToken);
+        var missingVoicesBatch = await missingVoicesQuery.Take(1).ToListAsync(cancellationToken);
 
         foreach (var entry in missingVoicesBatch)
         {
             if (cancellationToken.IsCancellationRequested) break;
-            if (!IsSpeakableText(entry.NormalizedText)) continue;
+            if (!IsSpeakableText(entry.NormalizedText))
+            {
+                entry.Status = "failed";
+                entry.StatusEn = "failed";
+                entry.LastError = entry.LastErrorEn = "Nội dung voice không hợp lệ.";
+                errors.Add(entry.LastError);
+                failed++;
+                await _db.SaveChangesAsync(cancellationToken);
+                continue;
+            }
 
             // Sinh Voice VI
-            if (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready")
+            if (entry.Status != "failed" && (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready"))
             {
                 try
                 {
@@ -224,14 +260,14 @@ public sealed class VoiceLibraryMaintenanceService
                 {
                     entry.AudioUrl = string.Empty;
                     entry.Status = "failed";
-                    entry.LastError = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                    entry.LastError = CompactErrorMessage(ex.Message, 1000);
                     failed++;
-                    errors.Add($"VI [{entry.Name}]: {ex.Message}");
+                    errors.Add($"VI [{entry.Name}]: {CompactErrorMessage(ex.Message)}");
                 }
             }
 
             // Sinh Voice EN
-            if (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready")
+            if (createdVi + failed == 0 && entry.StatusEn != "failed" && (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready"))
             {
                 try
                 {
@@ -244,9 +280,9 @@ public sealed class VoiceLibraryMaintenanceService
                 {
                     entry.AudioUrlEn = string.Empty;
                     entry.StatusEn = "failed";
-                    entry.LastErrorEn = ex.Message.Length > 1000 ? ex.Message[..1000] : ex.Message;
+                    entry.LastErrorEn = CompactErrorMessage(ex.Message, 1000);
                     failed++;
-                    errors.Add($"EN [{entry.Name}]: {ex.Message}");
+                    errors.Add($"EN [{entry.Name}]: {CompactErrorMessage(ex.Message)}");
                 }
             }
 
@@ -255,31 +291,54 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         // 4. Lấy bài học cần liên kết URL
-        var unlinkedLessons = await missingVoicesQuery.AnyAsync(cancellationToken)
-            ? new List<LearningItem>()
-            : allLessons;
+        var stillHasMissingVoices = await missingVoicesQuery.AnyAsync(cancellationToken);
+        var processedTexts = missingVoicesBatch
+            .Select(x => NormalizeSpeechText(string.IsNullOrWhiteSpace(x.OriginalText) ? x.NormalizedText : x.OriginalText))
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        List<LearningItem> unlinkedLessons;
+        if (stillHasMissingVoices)
+        {
+            var affectedIds = await FindLearningItemIdsUsingVoiceTextsAsync(processedTexts, cancellationToken);
+            unlinkedLessons = await LoadLearningItemsByIdsAsync(affectedIds.Take(20).ToHashSet(), cancellationToken);
+        }
+        else
+        {
+            // Khi file voice đã đủ, liên kết nốt theo trang nhỏ thay vì đưa toàn bộ
+            // bài học vào bộ nhớ trong một request cuối rất lớn.
+            var pageIds = await GetUnlinkedLearningItemIdsAsync(batchSize * 3, cancellationToken);
+            unlinkedLessons = await LoadLearningItemsByIdsAsync(pageIds, cancellationToken);
+        }
         foreach (var lesson in unlinkedLessons)
         {
             if (cancellationToken.IsCancellationRequested) break;
 
             // Đảm bảo các voice của bài học này tồn tại trong CSDL
-            if (await LinkVoiceUrlsForLearningItemAsync(lesson, cancellationToken))
+            try
             {
-                updatedItems++;
-                await _db.SaveChangesAsync(cancellationToken);
+                if (await LinkVoiceUrlsForLearningItemAsync(lesson, cancellationToken))
+                {
+                    updatedItems++;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                failed++;
+                errors.Add($"Đồng bộ [{lesson.Title}]: {CompactErrorMessage(ex.Message)}");
             }
         }
+        await _db.SaveChangesAsync(cancellationToken);
 
         var totalEntries = await _db.TextToSpeechCaches.CountAsync(cancellationToken);
         var remainingMissingVi = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && x.UsageType != ManualUsageType && x.UsageType != "title" && x.UsageType != "instruction" && (x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready"), cancellationToken);
         var remainingMissingEn = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && x.UsageType != ManualUsageType && x.UsageType != "title" && x.UsageType != "instruction" && (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready"), cancellationToken);
-        var remainingUnlinkedLessons = allLessons.Count(l => !IsLessonFullySynced(l));
+        var remainingUnlinkedLessons = await CountUnlinkedLearningItemsAsync(cancellationToken);
 
         var remainingTotal = remainingMissingVi + remainingMissingEn + remainingUnlinkedLessons;
         var isCompleted = remainingTotal == 0;
 
-        return new VoiceLibrarySyncBatchResult(
-            allLessons.Count,
+        var result = new VoiceLibrarySyncBatchResult(
+            totalLessons,
             totalEntries,
             remainingMissingVi,
             remainingMissingEn,
@@ -290,7 +349,10 @@ public sealed class VoiceLibraryMaintenanceService
             updatedItems,
             remainingTotal,
             isCompleted,
-            errors);
+            errors,
+            stillHasMissingVoices || updatedItems > 0);
+        _db.ChangeTracker.Clear();
+        return result;
     }
 
     public async Task<VoiceLibraryRebuildResult> ResetAndRebuildAllVoicesAsync(CancellationToken cancellationToken = default)
@@ -402,11 +464,6 @@ public sealed class VoiceLibraryMaintenanceService
             }
         }
 
-        foreach (var pair in CollectBilingualListenVoicePairs())
-        {
-            Collect(pair.TextVi, pair.UsageType, pair.TextEn);
-        }
-
         // 5. Khởi tạo danh sách bản ghi duy nhất trong TextToSpeechCaches
         var voiceVi = "vi-VN-HoaiMyNeural";
         var voiceEn = "en-US-JennyNeural";
@@ -442,6 +499,11 @@ public sealed class VoiceLibraryMaintenanceService
 
         _db.TextToSpeechCaches.AddRange(newEntries);
         await _db.SaveChangesAsync(cancellationToken);
+        await EnsureBilingualListenVoiceRowsAsync(cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
+        newEntries.AddRange(await _db.TextToSpeechCaches
+            .Where(x => x.UsageType == BilingualListenUsageType)
+            .ToListAsync(cancellationToken));
         _logger.LogInformation("[VoiceRebuild] Đã nạp {Count} bản ghi Voice duy nhất.", newEntries.Count);
 
         // 6. Sinh file âm thanh Nữ song ngữ (Hoài My - VN, Jenny - EN)
@@ -576,6 +638,108 @@ public sealed class VoiceLibraryMaintenanceService
                hasOptionVi;
     }
 
+    private async Task<HashSet<Guid>> FindLearningItemIdsUsingVoiceTextsAsync(
+        HashSet<string> texts,
+        CancellationToken cancellationToken)
+    {
+        var result = new HashSet<Guid>();
+        foreach (var text in texts)
+        {
+            var ids = await _db.Questions
+                .AsNoTracking()
+                .Where(x => x.PromptText == text ||
+                            x.FeedbackJson.Contains(text) ||
+                            x.PayloadJson.Contains(text))
+                .Select(x => x.LearningItemId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            result.UnionWith(ids);
+        }
+
+        return result;
+    }
+
+    private async Task<List<LearningItem>> LoadLearningItemsByIdsAsync(
+        HashSet<Guid> ids,
+        CancellationToken cancellationToken)
+    {
+        if (ids.Count == 0) return new List<LearningItem>();
+
+        return await _db.LearningItems
+            .Where(x => ids.Contains(x.Id))
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .ToListAsync(cancellationToken);
+    }
+
+    private async Task<HashSet<Guid>> GetUnlinkedLearningItemIdsAsync(
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        var ids = await UnlinkedLearningItemsQuery()
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Title)
+            .Select(x => x.Id)
+            .Take(Math.Max(1, limit))
+            .ToListAsync(cancellationToken);
+        return ids.ToHashSet();
+    }
+
+    private Task<int> CountUnlinkedLearningItemsAsync(CancellationToken cancellationToken)
+    {
+        return UnlinkedLearningItemsQuery().CountAsync(cancellationToken);
+    }
+
+    private IQueryable<LearningItem> UnlinkedLearningItemsQuery()
+    {
+        const string questionVi = "\"questionAudioUrl\":\"/uploads/audio/";
+        const string questionEn = "\"questionAudioUrlEn\":\"/uploads/audio/";
+        const string optionVi = "\"optionAudio\":";
+        const string optionEn = "\"optionAudioEn\":";
+
+        return _db.LearningItems.Where(item => item.Questions.Any(q =>
+            !q.PayloadJson.Contains(questionVi) ||
+            !q.PayloadJson.Contains(questionEn) ||
+            !q.PayloadJson.Contains(optionVi) ||
+            !q.PayloadJson.Contains(optionEn)));
+    }
+
+    private static bool LearningItemUsesAnyVoiceText(LearningItem item, HashSet<string> texts)
+    {
+        if (texts.Count == 0) return false;
+
+        static bool Matches(string? value, HashSet<string> candidates)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return false;
+            return candidates.Contains(NormalizeSpeechText(value));
+        }
+
+        foreach (var question in item.Questions)
+        {
+            if (Matches(question.PromptText, texts) ||
+                Matches(ReadJsonString(question.FeedbackJson, "correct"), texts) ||
+                Matches(ReadJsonString(question.FeedbackJson, "retry"), texts))
+            {
+                return true;
+            }
+
+            var payload = ParsePayloadObject(question.PayloadJson);
+            if (item.InteractionType == InteractionTypes.StoryChoice &&
+                Matches(ReadJsonString(payload, "speechText"), texts))
+            {
+                return true;
+            }
+
+            if (CollectOptionSpeechLabels(payload).Any(x => Matches(x, texts)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static readonly HashSet<string> GenericPromptsToClean = new(StringComparer.OrdinalIgnoreCase)
     {
         "Những đáp án nào phù hợp?",
@@ -638,7 +802,7 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         foreach (var pair in CollectBilingualListenVoicePairs())
-            activeTextHashes.Add(BuildTextToSpeechCacheKey(NormalizeSpeechText(pair.TextVi)).TextHash);
+            activeTextHashes.Add(BuildBilingualListenCacheKey(pair).TextHash);
 
         // 3. Tìm tất cả các dòng TextToSpeechCaches không còn được bài học nào sử dụng, hoặc là title / instruction / legacy / generic rác
         var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
@@ -679,6 +843,10 @@ public sealed class VoiceLibraryMaintenanceService
             return 0;
         }
 
+        // Một request có thể dừng sau khi edge-tts đã ghi xong file nhưng trước SaveChanges.
+        // Khôi phục URL theo tên file xác định trước khi xem file đó là mồ côi.
+        await RecoverInterruptedVoiceFilesAsync(folder, cancellationToken);
+
         // Gom tất cả các URL âm thanh hợp lệ đang được lưu trong CSDL
         var activeUrls = await GetActiveVoiceStoragePathsAsync(cancellationToken);
 
@@ -704,6 +872,72 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         return deletedCount;
+    }
+
+    private async Task<int> RecoverInterruptedVoiceFilesAsync(string folder, CancellationToken cancellationToken)
+    {
+        var candidates = await _db.TextToSpeechCaches
+            .Where(x => x.UsageType != "legacy" && x.UsageType != ManualUsageType &&
+                        ((x.AudioUrl == null || x.AudioUrl == "" || x.Status != "ready") ||
+                         (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn != "ready")))
+            .ToListAsync(cancellationToken);
+
+        var voiceVi = _configuration["VoiceLibrary:Voice"]?.Trim();
+        if (string.IsNullOrWhiteSpace(voiceVi)) voiceVi = "vi-VN-HoaiMyNeural";
+        var rateVi = _configuration["VoiceLibrary:Rate"]?.Trim();
+        if (string.IsNullOrWhiteSpace(rateVi)) rateVi = "-10%";
+        var voiceEn = _configuration["VoiceLibrary:VoiceEn"]?.Trim();
+        if (string.IsNullOrWhiteSpace(voiceEn)) voiceEn = "en-US-JennyNeural";
+        var rateEn = _configuration["VoiceLibrary:RateEn"]?.Trim();
+        if (string.IsNullOrWhiteSpace(rateEn)) rateEn = "-18%";
+
+        var recovered = 0;
+        foreach (var entry in candidates)
+        {
+            if (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready")
+            {
+                var textVi = ResolveTextForSpeechSynthesis(NormalizeSpeechText(
+                    string.IsNullOrWhiteSpace(entry.OriginalText) ? entry.NormalizedText : entry.OriginalText));
+                if (!string.IsNullOrWhiteSpace(textVi))
+                {
+                    var fileName = BuildDeterministicVoiceFileName("voice", entry.Name, textVi, voiceVi, rateVi);
+                    var filePath = Path.Combine(folder, fileName);
+                    if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
+                    {
+                        entry.AudioUrl = $"/uploads/audio/{fileName}";
+                        entry.Status = "ready";
+                        entry.LastError = null;
+                        entry.UpdatedAt = DateTimeOffset.UtcNow;
+                        await EnsureMediaAssetForAudioAsync(entry.AudioUrl, fileName, AudioCacheKey(entry.NormalizedText), cancellationToken);
+                        recovered++;
+                    }
+                }
+            }
+
+            if ((string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready") &&
+                !string.IsNullOrWhiteSpace(entry.TextEn))
+            {
+                var fileName = BuildDeterministicVoiceFileName("voice-en", entry.Name, entry.TextEn, voiceEn, rateEn);
+                var filePath = Path.Combine(folder, fileName);
+                if (File.Exists(filePath) && new FileInfo(filePath).Length > 0)
+                {
+                    entry.AudioUrlEn = $"/uploads/audio/{fileName}";
+                    entry.StatusEn = "ready";
+                    entry.LastErrorEn = null;
+                    entry.UpdatedAt = DateTimeOffset.UtcNow;
+                    await EnsureMediaAssetForAudioAsync(entry.AudioUrlEn, fileName, AudioCacheKey($"en:{entry.NormalizedText}"), cancellationToken);
+                    recovered++;
+                }
+            }
+        }
+
+        if (recovered > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("[VoiceSync] Đã khôi phục {Count} file tạo xong trước khi tiến trình bị gián đoạn.", recovered);
+        }
+
+        return recovered;
     }
 
     private async Task<int> CleanupRedundantAudioAssetRowsAsync(CancellationToken cancellationToken)
@@ -1014,29 +1248,119 @@ public sealed class VoiceLibraryMaintenanceService
 
     private async Task<int> EnsureBilingualListenVoiceRowsAsync(CancellationToken cancellationToken)
     {
-        var addedOrUpdated = 0;
-        foreach (var pair in CollectBilingualListenVoicePairs())
+        var pairs = CollectBilingualListenVoicePairs();
+        var allCaches = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
+        var validHashes = pairs
+            .Select(x => BuildBilingualListenCacheKey(x).TextHash)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var obsoleteRows = allCaches
+            .Where(x => x.UsageType == BilingualListenUsageType && !validHashes.Contains(x.TextHash))
+            .ToList();
+        var addedOrUpdated = obsoleteRows.Count;
+        foreach (var obsolete in obsoleteRows)
         {
-            var entry = await EnsureVoiceEntryAsync(pair.TextVi, pair.UsageType, "Nghe song ngữ", cancellationToken);
-            if (entry is null)
+            // Nếu khóa cũ còn tồn tại sau bước dọn dẹp thì nội dung này cũng đang được
+            // bài học thường sử dụng. Giữ voice VI, trả bản ghi về nhóm chung và tạo lại EN,
+            // tránh xóa nhầm dữ liệu của bài học đã từng bị cấu trúc song ngữ cũ dùng chung.
+            obsolete.UsageType = "content";
+            obsolete.TextEn = string.Empty;
+            obsolete.AudioUrlEn = string.Empty;
+            obsolete.StatusEn = "missing";
+            obsolete.LastErrorEn = null;
+            obsolete.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        var reusableViByText = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var reusableEnByText = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var cached in allCaches)
+        {
+            if (cached.Status == "ready" && HasVoiceFile(cached.AudioUrl))
             {
-                continue;
+                var original = NormalizeSpeechText(cached.OriginalText);
+                var normalized = NormalizeSpeechText(cached.NormalizedText);
+                if (!string.IsNullOrWhiteSpace(original)) reusableViByText.TryAdd(original, cached.AudioUrl);
+                if (!string.IsNullOrWhiteSpace(normalized)) reusableViByText.TryAdd(normalized, cached.AudioUrl);
             }
 
-            if (!string.IsNullOrWhiteSpace(pair.TextEn) &&
-                !string.Equals(entry.TextEn, pair.TextEn, StringComparison.Ordinal))
+            if (cached.StatusEn == "ready" && HasVoiceFile(cached.AudioUrlEn))
             {
-                if (IsManualVoiceEntry(entry)) continue;
-                entry.TextEn = pair.TextEn;
-                entry.AudioUrlEn = string.Empty;
-                entry.StatusEn = "missing";
-                entry.VoiceEn = string.IsNullOrWhiteSpace(entry.VoiceEn) ? "en-US-JennyNeural" : entry.VoiceEn;
-                entry.UpdatedAt = DateTimeOffset.UtcNow;
-                addedOrUpdated++;
+                var english = NormalizeSpeechText(cached.TextEn ?? string.Empty);
+                if (!string.IsNullOrWhiteSpace(english)) reusableEnByText.TryAdd(english, cached.AudioUrlEn!);
             }
         }
 
+        foreach (var pair in pairs)
+        {
+            var key = BuildBilingualListenCacheKey(pair);
+            var entry = allCaches.FirstOrDefault(x =>
+                x.UsageType == BilingualListenUsageType && x.TextHash == key.TextHash);
+            if (entry is null)
+            {
+                var voiceVi = _configuration["VoiceLibrary:Voice"]?.Trim();
+                var voiceEn = _configuration["VoiceLibrary:VoiceEn"]?.Trim();
+                entry = new TextToSpeechCache
+                {
+                    Id = Guid.NewGuid(),
+                    Provider = key.Provider,
+                    Voice = string.IsNullOrWhiteSpace(voiceVi) ? "vi-VN-HoaiMyNeural" : voiceVi,
+                    VoiceEn = string.IsNullOrWhiteSpace(voiceEn) ? "en-US-JennyNeural" : voiceEn,
+                    ModelId = key.ModelId,
+                    Format = key.Format,
+                    TextHash = key.TextHash,
+                    Name = BuildVoiceName(BilingualListenUsageType, $"{pair.TextEn}-{pair.TextVi}"),
+                    UsageType = BilingualListenUsageType,
+                    NormalizedText = AudioAltText(pair.TextVi),
+                    OriginalText = AudioOriginalText(pair.TextVi),
+                    TextEn = pair.TextEn,
+                    AudioUrl = string.Empty,
+                    AudioUrlEn = string.Empty,
+                    Status = "missing",
+                    StatusEn = "missing",
+                    ReuseCount = 1,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _db.TextToSpeechCaches.Add(entry);
+                allCaches.Add(entry);
+                addedOrUpdated++;
+            }
+
+            entry.UsageType = BilingualListenUsageType;
+            entry.NormalizedText = AudioAltText(pair.TextVi);
+            entry.OriginalText = AudioOriginalText(pair.TextVi);
+            entry.TextEn = pair.TextEn;
+
+            // Dòng cache là riêng cho bài nghe; file trùng khớp tuyệt đối vẫn được tái sử dụng.
+            if (!HasVoiceFile(entry.AudioUrl))
+            {
+                var hasReusableVi = reusableViByText.TryGetValue(pair.TextVi, out var reusableViUrl);
+                entry.AudioUrl = hasReusableVi ? reusableViUrl! : string.Empty;
+                entry.Status = hasReusableVi ? "ready" : "missing";
+                if (hasReusableVi) entry.ReuseCount++;
+            }
+            if (entry.Status == "ready" && HasVoiceFile(entry.AudioUrl))
+                reusableViByText.TryAdd(pair.TextVi, entry.AudioUrl);
+
+            if (!HasVoiceFile(entry.AudioUrlEn))
+            {
+                var hasReusableEn = reusableEnByText.TryGetValue(pair.TextEn, out var reusableEnUrl);
+                entry.AudioUrlEn = hasReusableEn ? reusableEnUrl! : string.Empty;
+                entry.StatusEn = hasReusableEn ? "ready" : "missing";
+                if (hasReusableEn) entry.ReuseCount++;
+            }
+            if (entry.StatusEn == "ready" && HasVoiceFile(entry.AudioUrlEn))
+                reusableEnByText.TryAdd(pair.TextEn, entry.AudioUrlEn!);
+
+            entry.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
         return addedOrUpdated;
+    }
+
+    private TextToSpeechCacheKey BuildBilingualListenCacheKey(BilingualListenVoicePair pair)
+    {
+        return BuildTextToSpeechCacheKey($"{BilingualListenUsageType}|{pair.TextEn}|{pair.TextVi}");
     }
 
     private bool HasVoiceFile(string? url)
@@ -1059,7 +1383,7 @@ public sealed class VoiceLibraryMaintenanceService
                 return;
             }
 
-            pairs.TryAdd(cleanVi, new BilingualListenVoicePair(cleanVi, cleanEn, usageType));
+            pairs.TryAdd($"{cleanEn}\n{cleanVi}", new BilingualListenVoicePair(cleanVi, cleanEn, usageType));
         }
 
         foreach (var letter in BilingualListenCatalog.Letters)
@@ -1072,7 +1396,7 @@ public sealed class VoiceLibraryMaintenanceService
         foreach (var number in BilingualListenCatalog.Numbers)
         {
             AddPair($"Số {number.Number}", number.Number.ToString(System.Globalization.CultureInfo.InvariantCulture));
-            AddPair(number.MeaningVi, number.Name);
+            AddPair(number.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), $"Number {number.Name}");
             AddPair(number.ExampleVi, number.ExampleEn);
         }
 
@@ -1243,6 +1567,7 @@ public sealed class VoiceLibraryMaintenanceService
         // 1. Kiểm tra trong ChangeTracker trước để tránh trùng lặp trong cùng 1 request
         var tracked = _db.ChangeTracker.Entries<TextToSpeechCache>()
             .Select(x => x.Entity)
+            .Where(x => x.UsageType != BilingualListenUsageType)
             .FirstOrDefault(x => x.TextHash == key.TextHash ||
                                  x.NormalizedText.ToLower() == cleanLower ||
                                  x.OriginalText.ToLower() == cleanLower);
@@ -1254,7 +1579,7 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         // 2. Kiểm tra trong Database
-        var existing = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+        var existing = await _db.TextToSpeechCaches.Where(x => x.UsageType != BilingualListenUsageType).FirstOrDefaultAsync(x =>
             x.TextHash == key.TextHash ||
             x.NormalizedText.ToLower() == cleanLower ||
             x.OriginalText.ToLower() == cleanLower,
@@ -1297,6 +1622,35 @@ public sealed class VoiceLibraryMaintenanceService
         return entry;
     }
 
+    public async Task<string?> ResolveBilingualListenAudioUrlAsync(
+        string? text,
+        string lang,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedText = NormalizeSpeechText(text ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(normalizedText)) return null;
+
+        var isEnglish = lang.StartsWith("en", StringComparison.OrdinalIgnoreCase);
+        var entry = isEnglish
+            ? await _db.TextToSpeechCaches
+                .Where(x => x.UsageType == BilingualListenUsageType &&
+                            x.StatusEn == "ready" &&
+                            !string.IsNullOrEmpty(x.AudioUrlEn) &&
+                            x.TextEn == normalizedText)
+                .OrderByDescending(x => x.UpdatedAt)
+                .FirstOrDefaultAsync(cancellationToken)
+            : await _db.TextToSpeechCaches
+                .Where(x => x.UsageType == BilingualListenUsageType &&
+                            x.Status == "ready" &&
+                            !string.IsNullOrEmpty(x.AudioUrl) &&
+                            (x.NormalizedText == normalizedText || x.OriginalText == normalizedText))
+                .OrderByDescending(x => x.UpdatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        var audioUrl = isEnglish ? entry?.AudioUrlEn : entry?.AudioUrl;
+        return HasVoiceFile(audioUrl) ? audioUrl : null;
+    }
+
     public async Task<string?> ResolveVoiceAudioUrlAsync(string? text, CancellationToken cancellationToken = default)
     {
         var rawText = (text ?? string.Empty).Trim();
@@ -1306,9 +1660,12 @@ public sealed class VoiceLibraryMaintenanceService
             return null;
         }
 
+        var generalCaches = _db.TextToSpeechCaches
+            .Where(x => x.UsageType != BilingualListenUsageType);
+
         // 1. Khớp chính xác theo TextHash và chuỗi chuẩn hóa
         var key = BuildTextToSpeechCacheKey(normalizedText);
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+        var entry = await generalCaches.FirstOrDefaultAsync(x =>
             (x.Provider == key.Provider &&
              x.Voice == key.Voice &&
              x.ModelId == key.ModelId &&
@@ -1325,7 +1682,7 @@ public sealed class VoiceLibraryMaintenanceService
         if (entry is null)
         {
             var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
-            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            entry = await generalCaches.FirstOrDefaultAsync(x =>
                 x.Status == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrl) &&
                 (x.NormalizedText == stripped || x.OriginalText == stripped),
@@ -1337,7 +1694,7 @@ public sealed class VoiceLibraryMaintenanceService
         {
             var letterVariant = $"chữ {normalizedText.ToLowerInvariant()}";
             var numberVariant = $"số {normalizedText.ToLowerInvariant()}";
-            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            entry = await generalCaches.FirstOrDefaultAsync(x =>
                 x.Status == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrl) &&
                 (x.NormalizedText.ToLower() == letterVariant ||
@@ -1353,7 +1710,7 @@ public sealed class VoiceLibraryMaintenanceService
             var lower = normalizedText.ToLowerInvariant();
             if (lower.Contains("giỏi") || lower.Contains("đúng rồi") || lower.Contains("xuất sắc"))
             {
-                entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                entry = await generalCaches.FirstOrDefaultAsync(x =>
                     x.Status == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
                     (x.UsageType == "correct-feedback" || x.NormalizedText.Contains("Giỏi lắm") || x.OriginalText.Contains("Giỏi lắm")),
@@ -1361,7 +1718,7 @@ public sealed class VoiceLibraryMaintenanceService
             }
             else if (lower.Contains("thử lại") || lower.Contains("chưa đúng") || lower.Contains("cố lên"))
             {
-                entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                entry = await generalCaches.FirstOrDefaultAsync(x =>
                     x.Status == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
                     (x.UsageType == "retry-feedback" || x.NormalizedText.Contains("thử lại") || x.OriginalText.Contains("thử lại")),
@@ -1375,7 +1732,7 @@ public sealed class VoiceLibraryMaintenanceService
             var slug = NormalizeCode(normalizedText);
             if (!string.IsNullOrWhiteSpace(slug) && slug.Length >= 3)
             {
-                entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                entry = await generalCaches.FirstOrDefaultAsync(x =>
                     x.Status == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
                     (x.Name.Contains(slug) || x.NormalizedText.Contains(normalizedText) || x.OriginalText.Contains(normalizedText)),
@@ -1400,9 +1757,12 @@ public sealed class VoiceLibraryMaintenanceService
             return null;
         }
 
+        var generalCaches = _db.TextToSpeechCaches
+            .Where(x => x.UsageType != BilingualListenUsageType);
+
         // 1. Khớp chính xác theo TextHash và chuỗi chuẩn hóa
         var key = BuildTextToSpeechCacheKey(normalizedText);
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+        var entry = await generalCaches.FirstOrDefaultAsync(x =>
             (x.Provider == key.Provider &&
              x.Voice == key.Voice &&
              x.ModelId == key.ModelId &&
@@ -1420,7 +1780,7 @@ public sealed class VoiceLibraryMaintenanceService
         if (entry is null)
         {
             var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
-            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            entry = await generalCaches.FirstOrDefaultAsync(x =>
                 x.StatusEn == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrlEn) &&
                 (x.NormalizedText == stripped || x.OriginalText == stripped || x.TextEn == stripped ||
@@ -1434,7 +1794,7 @@ public sealed class VoiceLibraryMaintenanceService
             var lower = normalizedText.ToLowerInvariant();
             var numVariant = $"number {lower}";
             var letterVariant = $"letter {lower}";
-            entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+            entry = await generalCaches.FirstOrDefaultAsync(x =>
                 x.StatusEn == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrlEn) &&
                 ((x.TextEn != null && (x.TextEn.ToLower() == lower || x.TextEn.ToLower() == numVariant || x.TextEn.ToLower() == letterVariant)) ||
@@ -1449,7 +1809,7 @@ public sealed class VoiceLibraryMaintenanceService
             var lower = normalizedText.ToLowerInvariant();
             if (lower.Contains("giỏi") || lower.Contains("đúng rồi") || lower.Contains("great") || lower.Contains("correct"))
             {
-                entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                entry = await generalCaches.FirstOrDefaultAsync(x =>
                     x.StatusEn == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
                     (x.UsageType == "correct-feedback" || (x.TextEn != null && x.TextEn.Contains("Great"))),
@@ -1457,7 +1817,7 @@ public sealed class VoiceLibraryMaintenanceService
             }
             else if (lower.Contains("thử lại") || lower.Contains("chưa đúng") || lower.Contains("try again"))
             {
-                entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                entry = await generalCaches.FirstOrDefaultAsync(x =>
                     x.StatusEn == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
                     (x.UsageType == "retry-feedback" || (x.TextEn != null && x.TextEn.Contains("Try again"))),
@@ -1471,7 +1831,7 @@ public sealed class VoiceLibraryMaintenanceService
             var slug = NormalizeCode(normalizedText);
             if (!string.IsNullOrWhiteSpace(slug) && slug.Length >= 3)
             {
-                entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+                entry = await generalCaches.FirstOrDefaultAsync(x =>
                     x.StatusEn == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
                     (x.Name.Contains(slug) || (x.TextEn != null && x.TextEn.Contains(normalizedText))),
@@ -1761,7 +2121,7 @@ public sealed class VoiceLibraryMaintenanceService
                 }
             }
         }
-        catch
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Fallback sang python subprocess
         }
@@ -1820,19 +2180,20 @@ public sealed class VoiceLibraryMaintenanceService
                         continue;
                     }
 
-                    var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-                    var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-                    var exitTask = process.WaitForExitAsync(cancellationToken);
-                    var completedTask = await Task.WhenAny(exitTask, Task.Delay(TimeSpan.FromSeconds(45), cancellationToken));
-                    if (completedTask != exitTask)
+                    var outputTask = ReadProcessTailAsync(process.StandardOutput);
+                    var errorTask = ReadProcessTailAsync(process.StandardError);
+                    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeout.CancelAfter(TimeSpan.FromSeconds(45));
+                    try
                     {
-                        try
-                        {
-                            process.Kill(entireProcessTree: true);
-                        }
-                        catch
-                        {
-                        }
+                        await process.WaitForExitAsync(timeout.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (!process.HasExited) process.Kill(entireProcessTree: true);
+                        await process.WaitForExitAsync(CancellationToken.None);
+                        await Task.WhenAll(outputTask, errorTask);
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (File.Exists(outputPath))
                         {
                             try { File.Delete(outputPath); } catch { }
@@ -1854,20 +2215,43 @@ public sealed class VoiceLibraryMaintenanceService
                     }
 
                     var err = string.IsNullOrWhiteSpace(stderr) ? stdout : stderr;
-                    errors.Add($"{fileName} ({currentVoice}): {err.Trim()}");
+                    errors.Add($"{fileName} ({currentVoice}): {CompactErrorMessage(err, 500)}");
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     if (File.Exists(outputPath))
                     {
                         try { File.Delete(outputPath); } catch { }
                     }
-                    errors.Add($"{fileName} ({currentVoice}): {ex.Message}");
+                    errors.Add($"{fileName} ({currentVoice}): {CompactErrorMessage(ex.Message, 500)}");
                 }
             }
         }
 
-        throw new InvalidOperationException(string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x))));
+        throw new InvalidOperationException(CompactErrorMessage(
+            string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x))),
+            2000));
+    }
+
+    private static string CompactErrorMessage(string? message, int maxLength = 350)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return "Không xác định được nguyên nhân.";
+        var compact = string.Join(' ', message
+            .Split(new[] { '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        return compact.Length <= maxLength ? compact : "…" + compact[^(maxLength - 1)..];
+    }
+
+    private static async Task<string> ReadProcessTailAsync(StreamReader reader)
+    {
+        var tail = new StringBuilder();
+        var buffer = new char[1024];
+        int count;
+        while ((count = await reader.ReadAsync(buffer.AsMemory())) > 0)
+        {
+            tail.Append(buffer, 0, count);
+            if (tail.Length > 4000) tail.Remove(0, tail.Length - 4000);
+        }
+        return tail.ToString();
     }
 
     private static async Task<bool> SynthesizeViaDirectEdgeWebSocketAsync(string text, string voice, string rate, string outputPath, CancellationToken cancellationToken)
@@ -1947,7 +2331,7 @@ public sealed class VoiceLibraryMaintenanceService
                     return true;
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
                 // Thử ứng viên giọng tiếp theo
             }
