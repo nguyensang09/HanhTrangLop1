@@ -455,7 +455,7 @@ public sealed class VoiceLibraryMaintenanceService
         }
 
         // 4.1. Phản hồi sư phạm chuẩn
-        Collect("Giỏi lắm, con làm đúng rồi!", "correct-feedback");
+        Collect("Giỏi lắm", "correct-feedback", "Great job!");
         Collect("Con thử lại nhé", "retry-feedback");
         Collect("Xuất sắc, con đã hoàn thành bài học!", "correct-feedback");
 
@@ -1508,7 +1508,7 @@ public sealed class VoiceLibraryMaintenanceService
 
         // Phản hồi đúng
         var correctText = ReadJsonString(question.FeedbackJson, "correct");
-        if (string.IsNullOrWhiteSpace(correctText)) correctText = "Giỏi lắm, con làm đúng rồi!";
+        if (string.IsNullOrWhiteSpace(correctText)) correctText = "Giỏi lắm";
         payload["correctAudioUrl"] = await ResolveVoiceAudioUrlAsync(correctText, cancellationToken) ?? string.Empty;
         payload["correctAudioUrlEn"] = await ResolveVoiceAudioUrlEnAsync(correctText, cancellationToken) ?? string.Empty;
 
@@ -1577,6 +1577,87 @@ public sealed class VoiceLibraryMaintenanceService
         question.PayloadJson = payloadJson;
         item.UpdatedAt = DateTimeOffset.UtcNow;
         return true;
+    }
+
+    public async Task EnsureStandardCorrectFeedbackVoiceAsync(CancellationToken cancellationToken = default)
+    {
+        const string textVi = "Giỏi lắm";
+        const string textEn = "Great job!";
+
+        var entry = await _db.TextToSpeechCaches
+            .FirstOrDefaultAsync(x => x.UsageType != BilingualListenUsageType &&
+                (x.NormalizedText == textVi || x.OriginalText == textVi), cancellationToken)
+            ?? await EnsureVoiceEntryAsync(textVi, "correct-feedback", cancellationToken: cancellationToken);
+        if (entry is null) return;
+
+        entry.TextEn = textEn;
+        if (!HasVoiceFile(entry.AudioUrl))
+        {
+            try
+            {
+                entry.AudioUrl = await GenerateVoiceCacheFileAsync(entry, cancellationToken);
+                entry.Status = "ready";
+                entry.LastError = null;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                entry.Status = "missing";
+                entry.LastError = CompactErrorMessage(ex.Message, 1000);
+                _logger.LogWarning(ex, "Không thể tạo voice VI cho phản hồi chuẩn '{Feedback}'.", textVi);
+            }
+        }
+
+        if (!HasVoiceFile(entry.AudioUrlEn))
+        {
+            try
+            {
+                entry.AudioUrlEn = await GenerateVoiceCacheFileEnAsync(entry, cancellationToken);
+                entry.StatusEn = "ready";
+                entry.LastErrorEn = null;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                entry.StatusEn = "missing";
+                entry.LastErrorEn = CompactErrorMessage(ex.Message, 1000);
+                _logger.LogWarning(ex, "Không thể tạo voice EN cho phản hồi chuẩn '{Feedback}'.", textVi);
+            }
+        }
+
+        entry.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync(cancellationToken);
+        InvalidateVoiceLookupCache();
+
+        var lessons = await _db.LearningItems
+            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
+            .Where(x => x.Questions.Any(q => q.FeedbackJson.Contains(textVi)))
+            .ToListAsync(cancellationToken);
+        foreach (var lesson in lessons)
+        {
+            var lessonChanged = false;
+            var firstQuestion = lesson.Questions.OrderBy(q => q.SortOrder).FirstOrDefault();
+            foreach (var question in lesson.Questions.Where(q => q.FeedbackJson.Contains(textVi)))
+            {
+                var payload = ParsePayloadObject(question.PayloadJson);
+                payload["correctSpeechText"] = textVi;
+                payload["correctAudioUrl"] = HasVoiceFile(entry.AudioUrl) ? entry.AudioUrl : string.Empty;
+                payload["correctAudioUrlEn"] = HasVoiceFile(entry.AudioUrlEn) ? entry.AudioUrlEn : string.Empty;
+                var payloadJson = payload.ToJsonString();
+                if (!string.Equals(question.PayloadJson, payloadJson, StringComparison.Ordinal))
+                {
+                    question.PayloadJson = payloadJson;
+                    lessonChanged = true;
+                }
+
+                if (question == firstQuestion && !string.Equals(lesson.ContentJson, payloadJson, StringComparison.Ordinal))
+                {
+                    lesson.ContentJson = payloadJson;
+                    lessonChanged = true;
+                }
+            }
+            if (lessonChanged) lesson.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+
+        if (lessons.Count > 0) await _db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<TextToSpeechCache?> EnsureVoiceEntryAsync(string? text, string usageType, string? lessonTitle = null, CancellationToken cancellationToken = default)

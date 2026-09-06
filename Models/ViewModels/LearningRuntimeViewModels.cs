@@ -186,7 +186,7 @@ public class CreateChoiceItemViewModel
     public string HintText { get; set; } = "Con nhìn kỹ từng lựa chọn nhé.";
 
     [MaxLength(500)]
-    public string CorrectFeedback { get; set; } = "Giỏi lắm, con làm đúng rồi!";
+    public string CorrectFeedback { get; set; } = "Giỏi lắm";
 
     [MaxLength(500)]
     public string RetryFeedback { get; set; } = "Con thử lại nhé";

@@ -480,7 +480,7 @@ internal static class LegacyLearningContentSeed
         var expectedHintJson = JsonSerializer.Serialize(new { level1 = definition.Hint });
         if (question.HintJson != expectedHintJson) { question.HintJson = expectedHintJson; changed = true; }
 
-        var expectedFeedbackJson = JsonSerializer.Serialize(new { correct = "Giỏi lắm, con làm đúng rồi!", retry = "Con thử lại nhé" });
+        var expectedFeedbackJson = JsonSerializer.Serialize(new { correct = "Giỏi lắm", retry = "Con thử lại nhé" });
         if (question.FeedbackJson != expectedFeedbackJson) { question.FeedbackJson = expectedFeedbackJson; changed = true; }
 
         return changed;
@@ -1123,7 +1123,7 @@ internal static class LegacyLearningContentSeed
         payload["questionAudioUrl"] ??= string.Empty;
         payload["instructionSpeechText"] = lesson.Instruction;
         payload["questionSpeechText"] = lesson.Prompt;
-        payload["correctSpeechText"] = "Giỏi lắm, con làm đúng rồi!";
+        payload["correctSpeechText"] = "Giỏi lắm";
         payload["retrySpeechText"] = "Con thử lại nhé";
 
         if (lesson.InteractionType == InteractionTypes.ListenAndChoose)

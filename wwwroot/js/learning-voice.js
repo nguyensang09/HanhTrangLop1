@@ -43,7 +43,7 @@
     const optionAudioEn = payload.optionAudioEn || {};
 
     const feedback = host.dataset.result === "correct"
-        ? payload.correctSpeechText || host.dataset.feedbackText || "Giỏi lắm, con làm đúng rồi!"
+        ? payload.correctSpeechText || host.dataset.feedbackText || "Giỏi lắm"
         : host.dataset.result === "retry"
             ? payload.retrySpeechText || host.dataset.feedbackText || "Con thử lại nhé"
             : "";

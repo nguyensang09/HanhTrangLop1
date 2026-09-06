@@ -12,39 +12,20 @@ public static class LearningContentSeed
     public static readonly string[] EnglishAlphabet = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
     public static readonly string[] CombinedAlphabet = ["A","Ă","Â","B","C","D","Đ","E","Ê","F","G","H","I","J","K","L","M","N","O","Ô","Ơ","P","Q","R","S","T","U","Ư","V","W","X","Y","Z"];
 
-    public static async Task<bool> RequiresCurriculumResetAsync(ApplicationDbContext db) =>
-        await db.LearningItems.AnyAsync() && !await db.LearningItems.AnyAsync(x => x.Code.StartsWith(CurrentPrefix));
-
-    public static async Task<(int Lessons, int Attempts, int Sessions, int Children)> ResetLearningDataAsync(ApplicationDbContext db)
-    {
-        await using var transaction = await db.Database.BeginTransactionAsync();
-        var result = (await db.LearningItems.CountAsync(), await db.LearningAttempts.CountAsync(), await db.LearningSessions.CountAsync(), await db.ChildProfiles.CountAsync());
-        await db.QuestionAttempts.ExecuteDeleteAsync(); await db.LearningAttempts.ExecuteDeleteAsync(); await db.LearningSessions.ExecuteDeleteAsync();
-        await db.SkillProgress.ExecuteDeleteAsync(); await db.ChildRewards.ExecuteDeleteAsync(); await db.GardenItems.ExecuteDeleteAsync();
-        await db.ChildProfiles.ExecuteDeleteAsync(); await db.ContentReviews.ExecuteDeleteAsync(); await db.Questions.ExecuteDeleteAsync();
-        await db.LearningItems.ExecuteDeleteAsync(); await db.TracingTemplates.ExecuteDeleteAsync();
-        await transaction.CommitAsync(); return result;
-    }
-
     public static async Task<int> SeedAsync(ApplicationDbContext db)
     {
+        // The curriculum is bootstrap data, not a source of truth after administrators
+        // start editing. Once any lesson exists, always keep the database version.
+        if (await db.LearningItems.AnyAsync()) return 0;
+
         var groups = await db.SkillGroups.AsNoTracking().ToDictionaryAsync(x => x.Code, StringComparer.OrdinalIgnoreCase);
         var definitions = BuildDefinitions(); ValidateDefinitions(definitions, groups.Keys);
-        var existing = await db.LearningItems.Include(x => x.Questions).Where(x => x.Code.StartsWith(CurrentPrefix)).ToDictionaryAsync(x => x.Code);
-        var validCodes = definitions.Select(x => x.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var obsolete = existing.Values.Where(x => !validCodes.Contains(x.Code)).ToList();
-        if (obsolete.Count > 0)
-        {
-            var ids = obsolete.Select(x => x.Id).ToArray();
-            var attempted = (await db.LearningAttempts.Where(x => ids.Contains(x.LearningItemId)).Select(x => x.LearningItemId).Distinct().ToListAsync()).ToHashSet();
-            db.LearningItems.RemoveRange(obsolete.Where(x => !attempted.Contains(x.Id)));
-            foreach (var item in obsolete.Where(x => attempted.Contains(x.Id))) item.Status = ContentStatus.Archived;
-        }
         var created = 0; var now = DateTimeOffset.UtcNow;
         foreach (var d in definitions)
         {
             if (!groups.TryGetValue(d.GroupCode, out var group)) continue;
-            if (!existing.TryGetValue(d.Code, out var item)) { item = new LearningItem { Id = Guid.NewGuid(), Code = d.Code, CreatedAt = now, Questions = [] }; db.LearningItems.Add(item); created++; }
+            var item = new LearningItem { Id = Guid.NewGuid(), Code = d.Code, CreatedAt = now, Questions = [] };
+            db.LearningItems.Add(item); created++;
             item.Title = d.Title; item.SkillGroupId = group.Id; item.TopicId = null; item.Level = d.Level; item.SortOrder = d.SortOrder;
             item.InteractionType = d.Type; item.EstimatedMinutes = d.Type == InteractionTypes.StoryChoice ? 6 : 4; item.InstructionText = d.Instruction;
             item.ContentJson = d.PayloadJson; item.Status = ContentStatus.Published; item.PublishedAt ??= now; item.UpdatedAt = now;
@@ -52,7 +33,7 @@ public static class LearningContentSeed
             if (q is null) { q = new Question { Id = Guid.NewGuid(), LearningItemId = item.Id, SortOrder = 1 }; item.Questions.Add(q); }
             q.PromptText = d.Prompt; q.QuestionType = d.Type; q.PayloadJson = d.PayloadJson;
             q.CorrectAnswerJson = d.Type == InteractionTypes.Tracing ? JsonSerializer.Serialize(new { minPoints = 20, expectedStrokeCount = d.Strokes }) : JsonSerializer.Serialize(new { value = d.Answer });
-            q.HintJson = JsonSerializer.Serialize(new { level1 = d.Hint }); q.FeedbackJson = JsonSerializer.Serialize(new { correct = "Giỏi lắm, con làm đúng rồi!", retry = "Con nhìn kỹ rồi thử lại nhé." });
+            q.HintJson = JsonSerializer.Serialize(new { level1 = d.Hint }); q.FeedbackJson = JsonSerializer.Serialize(new { correct = "Giỏi lắm", retry = "Con nhìn kỹ rồi thử lại nhé." });
             if (d.Type == InteractionTypes.Tracing)
             {
                 var id = JsonSerializer.Deserialize<JsonElement>(d.PayloadJson).GetProperty("templateId").GetGuid();
@@ -60,9 +41,8 @@ public static class LearningContentSeed
             }
         }
         await SeedReferencedImagesAsync(db, definitions);
-        var removedItemIds = obsolete.Select(x => x.Id).ToArray();
         var referencedPayloads = await db.Questions
-            .Where(x => x.QuestionType == InteractionTypes.Tracing && !removedItemIds.Contains(x.LearningItemId))
+            .Where(x => x.QuestionType == InteractionTypes.Tracing)
             .Select(x => x.PayloadJson).ToListAsync();
         referencedPayloads.AddRange(definitions.Where(x => x.Type == InteractionTypes.Tracing).Select(x => x.PayloadJson));
         var referencedTemplateIds = referencedPayloads.Select(ReadTemplateId).Where(x => x.HasValue).Select(x => x!.Value).ToHashSet();

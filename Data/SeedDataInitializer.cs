@@ -25,30 +25,14 @@ public static class SeedDataInitializer
         await SeedCurriculumCatalogAsync(db);
         await SeedRewardsAsync(db);
 
-        if (await LearningContentSeed.RequiresCurriculumResetAsync(db))
-        {
-            var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
-            var voiceReset = await voiceLibrary.PurgeAllVoiceDataAsync();
-            var learningReset = await LearningContentSeed.ResetLearningDataAsync(db);
-            var deletedParents = 0;
-            foreach (var parent in await userManager.GetUsersInRoleAsync("Parent"))
-            {
-                if (await userManager.IsInRoleAsync(parent, "Admin")) continue;
-                var result = await userManager.DeleteAsync(parent);
-                if (result.Succeeded) deletedParents++;
-            }
-            logger.LogInformation(
-                "Đã reset dữ liệu: xóa {Lessons} bài cũ, {Attempts} lượt học, {Sessions} phiên học, {Children} học sinh, {Parents} phụ huynh, {VoiceRows} dòng voice và {VoiceFiles} file voice.",
-                learningReset.Lessons, learningReset.Attempts, learningReset.Sessions, learningReset.Children, deletedParents, voiceReset.Rows, voiceReset.Files);
-        }
-
         var createdLessons = await LearningContentSeed.SeedAsync(db);
         if (createdLessons > 0)
         {
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
         }
 
-        // Voice được chủ động sinh sau từ màn hình Kiểm soát voice; khởi động chỉ tạo nội dung.
+        var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
+        await voiceLibrary.EnsureStandardCorrectFeedbackVoiceAsync();
     }
 
     private static async Task EnsureMigrationHistoryForLegacyDatabaseAsync(ApplicationDbContext db)

@@ -28,6 +28,7 @@ public static class PreschoolTranslationHelper
     private static readonly Dictionary<string, string> ExactPhrases = new(StringComparer.OrdinalIgnoreCase)
     {
         // Phản hồi đúng
+        ["Giỏi lắm"] = "Great job!",
         ["Giỏi lắm, con làm đúng rồi!"] = "Great job, you did it right!",
         ["Giỏi lắm, con làm đúng rồi"] = "Great job, you did it right!",
         ["Đúng rồi! Bé giỏi quá!"] = "Great job! That's correct!",

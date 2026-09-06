@@ -142,7 +142,7 @@ public static class LearningJsonReader
 
     public static string ReadFeedback(string feedbackJson, bool isCorrect)
     {
-        var defaultFeedback = isCorrect ? "Giỏi lắm, con làm đúng rồi!" : "Con thử lại nhé";
+        var defaultFeedback = isCorrect ? "Giỏi lắm" : "Con thử lại nhé";
         if (string.IsNullOrWhiteSpace(feedbackJson))
         {
             return defaultFeedback;

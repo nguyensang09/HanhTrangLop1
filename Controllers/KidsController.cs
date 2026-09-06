@@ -1022,7 +1022,7 @@ public class KidsController : Controller
         var promptText = question?.PromptText;
         var speechText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "speechText", string.Empty);
         var correctFeedbackText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.FeedbackJson, "correct", string.Empty);
-        if (string.IsNullOrWhiteSpace(correctFeedbackText)) correctFeedbackText = "Giỏi lắm, con làm đúng rồi!";
+        if (string.IsNullOrWhiteSpace(correctFeedbackText)) correctFeedbackText = "Giỏi lắm";
         var retryFeedbackText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.FeedbackJson, "retry", string.Empty);
         if (string.IsNullOrWhiteSpace(retryFeedbackText)) retryFeedbackText = "Con thử lại nhé";
 

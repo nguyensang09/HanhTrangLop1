@@ -486,8 +486,8 @@ public class AdminController : Controller
         if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(question?.PromptText ?? item.Title);
         if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
         if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm, con làm đúng rồi!");
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Giỏi lắm, con làm đúng rồi!");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm");
+        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Giỏi lắm");
         if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Con thử lại nhé");
         if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Con thử lại nhé");
 
@@ -3032,7 +3032,7 @@ public class AdminController : Controller
             Level = item.Level,
             EstimatedMinutes = item.EstimatedMinutes,
             HintText = string.IsNullOrWhiteSpace(hintText) ? "Con nhìn kỹ từng lựa chọn nhé." : hintText,
-            CorrectFeedback = string.IsNullOrWhiteSpace(correctFeedback) ? "Giỏi lắm, con làm đúng rồi!" : correctFeedback,
+            CorrectFeedback = string.IsNullOrWhiteSpace(correctFeedback) ? "Giỏi lắm" : correctFeedback,
             RetryFeedback = string.IsNullOrWhiteSpace(retryFeedback) ? "Con thử lại nhé" : retryFeedback
         };
     }
