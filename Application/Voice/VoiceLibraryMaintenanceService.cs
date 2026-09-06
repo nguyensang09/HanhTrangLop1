@@ -81,6 +81,23 @@ public sealed class VoiceLibraryMaintenanceService
         _logger = logger;
     }
 
+    private List<TextToSpeechCache>? _cachedGeneralVoices;
+
+    private async Task<List<TextToSpeechCache>> GetCachedGeneralVoicesAsync(CancellationToken cancellationToken)
+    {
+        if (_cachedGeneralVoices is not null) return _cachedGeneralVoices;
+        _cachedGeneralVoices = await _db.TextToSpeechCaches
+            .AsNoTracking()
+            .Where(x => x.UsageType != BilingualListenUsageType)
+            .ToListAsync(cancellationToken);
+        return _cachedGeneralVoices;
+    }
+
+    private void InvalidateVoiceLookupCache()
+    {
+        _cachedGeneralVoices = null;
+    }
+
     public async Task<(int Rows, int Files)> PurgeAllVoiceDataAsync(CancellationToken cancellationToken = default)
     {
         var folder = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "audio"));
@@ -246,7 +263,7 @@ public sealed class VoiceLibraryMaintenanceService
                 continue;
             }
 
-            // Sinh Voice VI
+            // Sinh Voice VI nếu còn thiếu
             if (entry.Status != "failed" && (string.IsNullOrWhiteSpace(entry.AudioUrl) || entry.Status != "ready"))
             {
                 try
@@ -266,8 +283,8 @@ public sealed class VoiceLibraryMaintenanceService
                 }
             }
 
-            // Sinh Voice EN
-            if (createdVi + failed == 0 && entry.StatusEn != "failed" && (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready"))
+            // Sinh Voice EN nếu còn thiếu - sinh đồng thời cho cùng một bản ghi song ngữ!
+            if (entry.StatusEn != "failed" && (string.IsNullOrWhiteSpace(entry.AudioUrlEn) || entry.StatusEn != "ready"))
             {
                 try
                 {
@@ -288,6 +305,7 @@ public sealed class VoiceLibraryMaintenanceService
 
             entry.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync(cancellationToken);
+            InvalidateVoiceLookupCache();
         }
 
         // 4. Lấy bài học cần liên kết URL
@@ -299,8 +317,15 @@ public sealed class VoiceLibraryMaintenanceService
         List<LearningItem> unlinkedLessons;
         if (stillHasMissingVoices)
         {
-            var affectedIds = await FindLearningItemIdsUsingVoiceTextsAsync(processedTexts, cancellationToken);
-            unlinkedLessons = await LoadLearningItemsByIdsAsync(affectedIds.Take(20).ToHashSet(), cancellationToken);
+            if (processedTexts.Count > 0)
+            {
+                var affectedIds = await FindLearningItemIdsUsingVoiceTextsAsync(processedTexts, cancellationToken);
+                unlinkedLessons = await LoadLearningItemsByIdsAsync(affectedIds.Take(20).ToHashSet(), cancellationToken);
+            }
+            else
+            {
+                unlinkedLessons = new List<LearningItem>();
+            }
         }
         else
         {
@@ -327,12 +352,18 @@ public sealed class VoiceLibraryMaintenanceService
                 errors.Add($"Đồng bộ [{lesson.Title}]: {CompactErrorMessage(ex.Message)}");
             }
         }
-        await _db.SaveChangesAsync(cancellationToken);
+        if (unlinkedLessons.Count > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        _db.ChangeTracker.Clear();
 
         var totalEntries = await _db.TextToSpeechCaches.CountAsync(cancellationToken);
         var remainingMissingVi = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && x.UsageType != ManualUsageType && x.UsageType != "title" && x.UsageType != "instruction" && (x.AudioUrl == null || x.AudioUrl == "" || x.Status == null || x.Status != "ready"), cancellationToken);
         var remainingMissingEn = await _db.TextToSpeechCaches.CountAsync(x => x.UsageType != "legacy" && x.UsageType != ManualUsageType && x.UsageType != "title" && x.UsageType != "instruction" && (x.AudioUrlEn == null || x.AudioUrlEn == "" || x.StatusEn == null || x.StatusEn != "ready"), cancellationToken);
-        var remainingUnlinkedLessons = await CountUnlinkedLearningItemsAsync(cancellationToken);
+        var remainingUnlinkedLessons = (remainingMissingVi + remainingMissingEn > 0)
+            ? 0
+            : await CountUnlinkedLearningItemsAsync(cancellationToken);
 
         var remainingTotal = remainingMissingVi + remainingMissingEn + remainingUnlinkedLessons;
         var isCompleted = remainingTotal == 0;
@@ -1660,12 +1691,11 @@ public sealed class VoiceLibraryMaintenanceService
             return null;
         }
 
-        var generalCaches = _db.TextToSpeechCaches
-            .Where(x => x.UsageType != BilingualListenUsageType);
+        var generalCaches = await GetCachedGeneralVoicesAsync(cancellationToken);
 
         // 1. Khớp chính xác theo TextHash và chuỗi chuẩn hóa
         var key = BuildTextToSpeechCacheKey(normalizedText);
-        var entry = await generalCaches.FirstOrDefaultAsync(x =>
+        var entry = generalCaches.FirstOrDefault(x =>
             (x.Provider == key.Provider &&
              x.Voice == key.Voice &&
              x.ModelId == key.ModelId &&
@@ -1675,18 +1705,16 @@ public sealed class VoiceLibraryMaintenanceService
              !string.IsNullOrEmpty(x.AudioUrl)) ||
             (x.Status == "ready" &&
              !string.IsNullOrEmpty(x.AudioUrl) &&
-             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)),
-            cancellationToken);
+             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)));
 
         // 2. Cắt bỏ dấu câu thừa (?, ., !, :, ;)
         if (entry is null)
         {
             var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
-            entry = await generalCaches.FirstOrDefaultAsync(x =>
+            entry = generalCaches.FirstOrDefault(x =>
                 x.Status == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrl) &&
-                (x.NormalizedText == stripped || x.OriginalText == stripped),
-                cancellationToken);
+                (x.NormalizedText == stripped || x.OriginalText == stripped));
         }
 
         // 3. Khớp biến thể chữ cái hoặc chữ số (Ví dụ: "A" -> "Chữ A", "1" -> "Số 1")
@@ -1694,14 +1722,13 @@ public sealed class VoiceLibraryMaintenanceService
         {
             var letterVariant = $"chữ {normalizedText.ToLowerInvariant()}";
             var numberVariant = $"số {normalizedText.ToLowerInvariant()}";
-            entry = await generalCaches.FirstOrDefaultAsync(x =>
+            entry = generalCaches.FirstOrDefault(x =>
                 x.Status == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrl) &&
                 (x.NormalizedText.ToLower() == letterVariant ||
                  x.OriginalText.ToLower() == letterVariant ||
                  x.NormalizedText.ToLower() == numberVariant ||
-                 x.OriginalText.ToLower() == numberVariant),
-                cancellationToken);
+                 x.OriginalText.ToLower() == numberVariant));
         }
 
         // 4. Khớp phản hồi chuẩn sư phạm
@@ -1710,19 +1737,17 @@ public sealed class VoiceLibraryMaintenanceService
             var lower = normalizedText.ToLowerInvariant();
             if (lower.Contains("giỏi") || lower.Contains("đúng rồi") || lower.Contains("xuất sắc"))
             {
-                entry = await generalCaches.FirstOrDefaultAsync(x =>
+                entry = generalCaches.FirstOrDefault(x =>
                     x.Status == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
-                    (x.UsageType == "correct-feedback" || x.NormalizedText.Contains("Giỏi lắm") || x.OriginalText.Contains("Giỏi lắm")),
-                    cancellationToken);
+                    (x.UsageType == "correct-feedback" || x.NormalizedText.Contains("Giỏi lắm") || x.OriginalText.Contains("Giỏi lắm")));
             }
             else if (lower.Contains("thử lại") || lower.Contains("chưa đúng") || lower.Contains("cố lên"))
             {
-                entry = await generalCaches.FirstOrDefaultAsync(x =>
+                entry = generalCaches.FirstOrDefault(x =>
                     x.Status == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
-                    (x.UsageType == "retry-feedback" || x.NormalizedText.Contains("thử lại") || x.OriginalText.Contains("thử lại")),
-                    cancellationToken);
+                    (x.UsageType == "retry-feedback" || x.NormalizedText.Contains("thử lại") || x.OriginalText.Contains("thử lại")));
             }
         }
 
@@ -1732,11 +1757,10 @@ public sealed class VoiceLibraryMaintenanceService
             var slug = NormalizeCode(normalizedText);
             if (!string.IsNullOrWhiteSpace(slug) && slug.Length >= 3)
             {
-                entry = await generalCaches.FirstOrDefaultAsync(x =>
+                entry = generalCaches.FirstOrDefault(x =>
                     x.Status == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrl) &&
-                    (x.Name.Contains(slug) || x.NormalizedText.Contains(normalizedText) || x.OriginalText.Contains(normalizedText)),
-                    cancellationToken);
+                    (x.Name.Contains(slug) || x.NormalizedText.Contains(normalizedText) || x.OriginalText.Contains(normalizedText)));
             }
         }
 
@@ -1757,12 +1781,11 @@ public sealed class VoiceLibraryMaintenanceService
             return null;
         }
 
-        var generalCaches = _db.TextToSpeechCaches
-            .Where(x => x.UsageType != BilingualListenUsageType);
+        var generalCaches = await GetCachedGeneralVoicesAsync(cancellationToken);
 
         // 1. Khớp chính xác theo TextHash và chuỗi chuẩn hóa
         var key = BuildTextToSpeechCacheKey(normalizedText);
-        var entry = await generalCaches.FirstOrDefaultAsync(x =>
+        var entry = generalCaches.FirstOrDefault(x =>
             (x.Provider == key.Provider &&
              x.Voice == key.Voice &&
              x.ModelId == key.ModelId &&
@@ -1773,19 +1796,17 @@ public sealed class VoiceLibraryMaintenanceService
             (x.StatusEn == "ready" &&
              !string.IsNullOrEmpty(x.AudioUrlEn) &&
              (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText || x.TextEn == rawText || x.TextEn == normalizedText ||
-              (x.TextEn != null && (x.TextEn == $"Number {rawText}" || x.TextEn == $"Letter {rawText.ToUpperInvariant()}")))),
-            cancellationToken);
+              (x.TextEn != null && (x.TextEn == $"Number {rawText}" || x.TextEn == $"Letter {rawText.ToUpperInvariant()}")))));
 
         // 2. Cắt bỏ dấu câu thừa (?, ., !, :, ;)
         if (entry is null)
         {
             var stripped = normalizedText.TrimEnd('?', '.', '!', ':', ';', ' ');
-            entry = await generalCaches.FirstOrDefaultAsync(x =>
+            entry = generalCaches.FirstOrDefault(x =>
                 x.StatusEn == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrlEn) &&
                 (x.NormalizedText == stripped || x.OriginalText == stripped || x.TextEn == stripped ||
-                 (x.TextEn != null && (x.TextEn == $"Number {stripped}" || x.TextEn == $"Letter {stripped.ToUpperInvariant()}"))),
-                cancellationToken);
+                 (x.TextEn != null && (x.TextEn == $"Number {stripped}" || x.TextEn == $"Letter {stripped.ToUpperInvariant()}"))));
         }
 
         // 3. Khớp chữ cái / chữ số Tiếng Anh (Ví dụ: "A", "1")
@@ -1794,13 +1815,12 @@ public sealed class VoiceLibraryMaintenanceService
             var lower = normalizedText.ToLowerInvariant();
             var numVariant = $"number {lower}";
             var letterVariant = $"letter {lower}";
-            entry = await generalCaches.FirstOrDefaultAsync(x =>
+            entry = generalCaches.FirstOrDefault(x =>
                 x.StatusEn == "ready" &&
                 !string.IsNullOrEmpty(x.AudioUrlEn) &&
                 ((x.TextEn != null && (x.TextEn.ToLower() == lower || x.TextEn.ToLower() == numVariant || x.TextEn.ToLower() == letterVariant)) ||
                  x.NormalizedText.ToLower() == lower ||
-                 x.OriginalText.ToLower() == lower),
-                cancellationToken);
+                 x.OriginalText.ToLower() == lower));
         }
 
         // 4. Khớp phản hồi chuẩn sư phạm tiếng Anh
@@ -1809,19 +1829,17 @@ public sealed class VoiceLibraryMaintenanceService
             var lower = normalizedText.ToLowerInvariant();
             if (lower.Contains("giỏi") || lower.Contains("đúng rồi") || lower.Contains("great") || lower.Contains("correct"))
             {
-                entry = await generalCaches.FirstOrDefaultAsync(x =>
+                entry = generalCaches.FirstOrDefault(x =>
                     x.StatusEn == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
-                    (x.UsageType == "correct-feedback" || (x.TextEn != null && x.TextEn.Contains("Great"))),
-                    cancellationToken);
+                    (x.UsageType == "correct-feedback" || (x.TextEn != null && x.TextEn.Contains("Great"))));
             }
             else if (lower.Contains("thử lại") || lower.Contains("chưa đúng") || lower.Contains("try again"))
             {
-                entry = await generalCaches.FirstOrDefaultAsync(x =>
+                entry = generalCaches.FirstOrDefault(x =>
                     x.StatusEn == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
-                    (x.UsageType == "retry-feedback" || (x.TextEn != null && x.TextEn.Contains("Try again"))),
-                    cancellationToken);
+                    (x.UsageType == "retry-feedback" || (x.TextEn != null && x.TextEn.Contains("Try again"))));
             }
         }
 
@@ -1831,11 +1849,10 @@ public sealed class VoiceLibraryMaintenanceService
             var slug = NormalizeCode(normalizedText);
             if (!string.IsNullOrWhiteSpace(slug) && slug.Length >= 3)
             {
-                entry = await generalCaches.FirstOrDefaultAsync(x =>
+                entry = generalCaches.FirstOrDefault(x =>
                     x.StatusEn == "ready" &&
                     !string.IsNullOrEmpty(x.AudioUrlEn) &&
-                    (x.Name.Contains(slug) || (x.TextEn != null && x.TextEn.Contains(normalizedText))),
-                    cancellationToken);
+                    (x.Name.Contains(slug) || (x.TextEn != null && x.TextEn.Contains(normalizedText))));
             }
         }
 
@@ -2135,13 +2152,13 @@ public sealed class VoiceLibraryMaintenanceService
         else if (voice.StartsWith("vi-", StringComparison.OrdinalIgnoreCase))
         {
             if (!voice.Equals("vi-VN-HoaiMyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-HoaiMyNeural");
+            if (!voice.Equals("vi-VN-NamMinhNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-NamMinhNeural");
         }
 
         var candidates = new[]
         {
             ("python", new[] { "-m", "edge_tts" }),
-            ("py", new[] { "-m", "edge_tts" }),
-            (@"C:\Program Files\PostgreSQL\18\pgAdmin 4\python\python.exe", new[] { "-m", "edge_tts" })
+            ("py", new[] { "-m", "edge_tts" })
         };
 
         var errors = new List<string>();
@@ -2228,9 +2245,43 @@ public sealed class VoiceLibraryMaintenanceService
             }
         }
 
+        // 3. Fallback: Google TTS nếu cả Edge WebSocket và python subprocess đều không tạo được audio
+        var lang = voice.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "en" : "vi";
+        if (await SynthesizeViaGoogleTtsFallbackAsync(cleanText, lang, outputPath, cancellationToken))
+        {
+            if (File.Exists(outputPath) && new FileInfo(outputPath).Length > 0)
+            {
+                return;
+            }
+        }
+
         throw new InvalidOperationException(CompactErrorMessage(
             string.Join(" | ", errors.Where(x => !string.IsNullOrWhiteSpace(x))),
             2000));
+    }
+
+    private static async Task<bool> SynthesizeViaGoogleTtsFallbackAsync(string text, string lang, string outputPath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var shortLang = lang.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "en" : "vi";
+            var cleanText = text.Length > 200 ? text[..200] : text;
+            var url = $"https://translate.google.com/translate_tts?ie=UTF-8&tl={shortLang}&client=tw-ob&q={Uri.EscapeDataString(cleanText)}";
+            using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36");
+            var bytes = await httpClient.GetByteArrayAsync(url, cancellationToken);
+            if (bytes is { Length: > 0 })
+            {
+                var dir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrWhiteSpace(dir)) Directory.CreateDirectory(dir);
+                await File.WriteAllBytesAsync(outputPath, bytes, cancellationToken);
+                return true;
+            }
+        }
+        catch
+        {
+        }
+        return false;
     }
 
     private static string CompactErrorMessage(string? message, int maxLength = 350)
@@ -2254,6 +2305,19 @@ public sealed class VoiceLibraryMaintenanceService
         return tail.ToString();
     }
 
+    private const string EdgeTrustedClientToken = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
+    private const long WinEpochSeconds = 11644473600L;
+
+    private static string GenerateSecMsGec()
+    {
+        var nowSeconds = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var winSeconds = nowSeconds + WinEpochSeconds;
+        winSeconds -= (winSeconds % 300);
+        var ticks = winSeconds * 10_000_000L;
+        var toHash = $"{ticks}{EdgeTrustedClientToken}";
+        return Convert.ToHexString(SHA256.HashData(Encoding.ASCII.GetBytes(toHash)));
+    }
+
     private static async Task<bool> SynthesizeViaDirectEdgeWebSocketAsync(string text, string voice, string rate, string outputPath, CancellationToken cancellationToken)
     {
         var voiceCandidates = new List<string> { voice };
@@ -2265,6 +2329,7 @@ public sealed class VoiceLibraryMaintenanceService
         else if (voice.StartsWith("vi-", StringComparison.OrdinalIgnoreCase))
         {
             if (!voice.Equals("vi-VN-HoaiMyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-HoaiMyNeural");
+            if (!voice.Equals("vi-VN-NamMinhNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-NamMinhNeural");
         }
 
         foreach (var currentVoice in voiceCandidates)
@@ -2275,10 +2340,13 @@ public sealed class VoiceLibraryMaintenanceService
                 cts.CancelAfter(TimeSpan.FromSeconds(25));
                 using var ws = new ClientWebSocket();
                 ws.Options.SetRequestHeader("Origin", "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold");
-                ws.Options.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0");
+                ws.Options.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0");
+                ws.Options.SetRequestHeader("Pragma", "no-cache");
+                ws.Options.SetRequestHeader("Cache-Control", "no-cache");
 
                 var connectionId = Guid.NewGuid().ToString("N");
-                var uri = new Uri($"wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EA6549728392C5533268B312&ConnectionId={connectionId}");
+                var secMsGec = GenerateSecMsGec();
+                var uri = new Uri($"wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken={EdgeTrustedClientToken}&Sec-MS-GEC={secMsGec}&Sec-MS-GEC-Version=1-130.0.2849.68&ConnectionId={connectionId}");
                 await ws.ConnectAsync(uri, cts.Token);
 
                 var configPayload = "Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"false\",\"wordBoundaryEnabled\":\"false\"},\"outputFormat\":\"audio-24khz-48kbitrate-mono-mp3\"}}}}";
@@ -2295,6 +2363,7 @@ public sealed class VoiceLibraryMaintenanceService
 
                 using var audioMs = new MemoryStream();
                 var buffer = new byte[16384];
+                var inBinaryAudio = false;
 
                 while (ws.State == WebSocketState.Open && !cts.Token.IsCancellationRequested)
                 {
@@ -2312,14 +2381,25 @@ public sealed class VoiceLibraryMaintenanceService
                             break;
                         }
                     }
-                    else if (result.MessageType == WebSocketMessageType.Binary && result.Count > 2)
+                    else if (result.MessageType == WebSocketMessageType.Binary)
                     {
-                        var headerLength = (buffer[0] << 8) | buffer[1];
-                        var headerBytes = 2 + headerLength;
-                        if (result.Count > headerBytes)
+                        if (!inBinaryAudio)
                         {
-                            audioMs.Write(buffer, headerBytes, result.Count - headerBytes);
+                            if (result.Count > 2)
+                            {
+                                var headerLength = (buffer[0] << 8) | buffer[1];
+                                var headerBytes = 2 + headerLength;
+                                if (result.Count > headerBytes)
+                                {
+                                    audioMs.Write(buffer, headerBytes, result.Count - headerBytes);
+                                }
+                            }
                         }
+                        else
+                        {
+                            audioMs.Write(buffer, 0, result.Count);
+                        }
+                        inBinaryAudio = !result.EndOfMessage;
                     }
                 }
 

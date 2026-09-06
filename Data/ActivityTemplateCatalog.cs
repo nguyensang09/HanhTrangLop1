@@ -120,7 +120,45 @@ public static class ActivityTemplateCatalog
 
     public static bool IsItemAllowed(LearningItem item)
     {
-        var rule = ForSkillGroup(item.SkillGroup?.Code);
+        var groupCode = item.SkillGroup?.Code;
+        if (string.IsNullOrWhiteSpace(groupCode) && item.SkillGroupId != Guid.Empty)
+        {
+            groupCode = CurriculumCatalog.Groups.FirstOrDefault(g => g.Id == item.SkillGroupId)?.Code;
+        }
+
+        if (string.IsNullOrWhiteSpace(groupCode) && item.TopicId.HasValue && item.TopicId != Guid.Empty)
+        {
+            var matchedGroup = CurriculumCatalog.Groups.FirstOrDefault(g => g.Topics.Any(t => t.Id == item.TopicId.Value));
+            groupCode = matchedGroup?.Code;
+        }
+
+        var topicCode = item.Topic?.Code;
+        if (string.IsNullOrWhiteSpace(topicCode) && item.TopicId.HasValue && item.TopicId != Guid.Empty)
+        {
+            foreach (var g in CurriculumCatalog.Groups)
+            {
+                var t = g.Topics.FirstOrDefault(x => x.Id == item.TopicId.Value);
+                if (t != null)
+                {
+                    topicCode = t.Code;
+                    break;
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(topicCode) && TopicRules.TryGetValue(topicCode, out var topicRule))
+        {
+            var allowedByTopic = item.InteractionType == InteractionTypes.Tracing
+                ? topicRule.AllowsTracing
+                : topicRule.InteractionTypes.Contains(item.InteractionType, StringComparer.OrdinalIgnoreCase);
+
+            if (allowedByTopic)
+            {
+                return true;
+            }
+        }
+
+        var rule = ForSkillGroup(groupCode);
         return item.InteractionType == InteractionTypes.Tracing
             ? rule.AllowsTracing
             : rule.InteractionTypes.Contains(item.InteractionType, StringComparer.OrdinalIgnoreCase);

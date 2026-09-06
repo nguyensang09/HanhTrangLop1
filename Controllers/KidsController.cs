@@ -145,6 +145,7 @@ public class KidsController : Controller
 
         var items = await _db.LearningItems
             .AsNoTracking()
+            .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Include(x => x.Questions)
             .Where(x => x.SkillGroupId == id && x.Status == ContentStatus.Published)
@@ -514,6 +515,7 @@ public class KidsController : Controller
         }
 
         var item = await _db.LearningItems
+            .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Include(x => x.Questions.OrderBy(q => q.SortOrder))
             .FirstOrDefaultAsync(x =>
@@ -1329,6 +1331,7 @@ public class KidsController : Controller
         }
 
         var items = await _db.LearningItems
+            .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Where(x => x.SkillGroupId == skillGroupId.Value && x.Status == ContentStatus.Published)
             .OrderBy(x => x.Topic!.SortOrder)

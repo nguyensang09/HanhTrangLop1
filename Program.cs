@@ -74,6 +74,13 @@ if (args.Contains("--generate-missing-voice-files", StringComparer.OrdinalIgnore
     return;
 }
 
+if (args.Contains("--init-seed-only", StringComparer.OrdinalIgnoreCase))
+{
+    await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
+    Console.WriteLine("Seed and curriculum initialization completed successfully.");
+    return;
+}
+
 await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
 
 // Configure the HTTP request pipeline.

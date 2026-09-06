@@ -32,21 +32,57 @@ public static class PreschoolTranslationHelper
         ["Giỏi lắm, con làm đúng rồi"] = "Great job, you did it right!",
         ["Đúng rồi! Bé giỏi quá!"] = "Great job! That's correct!",
         ["Đúng rồi!"] = "That's right!",
+        ["Đúng rồi"] = "That's right",
         ["Chính xác rồi!"] = "Exactly right!",
+        ["Chính xác rồi"] = "Exactly right",
         ["Hoan hô bé!"] = "Hooray! Well done!",
         ["Tuyệt vời!"] = "Awesome!",
         ["Bé làm rất tốt!"] = "You did very well!",
+        ["Bé làm rất tốt"] = "You did very well",
+        ["Bé làm tốt lắm"] = "You did very well",
+        ["Bé giỏi quá"] = "Good job",
         ["Xuất sắc quá!"] = "Excellent!",
+        ["Xuất sắc quá"] = "Excellent",
         ["Chúc mừng bé!"] = "Congratulations!",
+        ["Chúc mừng bé"] = "Congratulations",
 
         // Phản hồi sai / thử lại
         ["Con thử lại nhé"] = "Let's try again.",
         ["Con thử lại nhé."] = "Let's try again.",
         ["Con thử lại nhé!"] = "Let's try again!",
         ["Không sao, con thử lại nhé!"] = "That's okay, try again!",
+        ["Không sao, con thử lại nhé"] = "That's okay, try again",
         ["Bé cố lên nào!"] = "You can do it, keep trying!",
+        ["Bé cố lên nào"] = "You can do it, keep trying",
         ["Con nhìn kỹ từng lựa chọn nhé."] = "Look carefully at each choice.",
+        ["Con nhìn kỹ từng lựa chọn nhé"] = "Look carefully at each choice",
         ["Bé hãy thử lại một lần nữa nhé."] = "Please try once more.",
+        ["Bé hãy thử lại một lần nữa nhé"] = "Please try once more",
+        ["Chưa đúng rồi, con thử lại nhé"] = "Not quite, let's try again",
+        ["Chưa chính xác, bé hãy thử lại"] = "Not quite, please try again",
+
+        // Khẩu lệnh bài học mẫu giáo phổ biến
+        ["Con hãy chọn đáp án đúng"] = "Please choose the correct answer",
+        ["Bé hãy chọn đáp án đúng"] = "Please choose the correct answer",
+        ["Chọn đáp án đúng"] = "Choose the correct answer",
+        ["Con hãy chọn hình đúng"] = "Please choose the correct picture",
+        ["Bé hãy chọn hình đúng"] = "Please choose the correct picture",
+        ["Bé hãy lắng nghe và chọn đáp án đúng"] = "Listen and choose the correct answer",
+        ["Bé hãy lắng nghe và chọn"] = "Listen and choose",
+        ["Con hãy lắng nghe và chọn"] = "Listen and choose",
+        ["Bé hãy kéo thả vào ô thích hợp"] = "Drag and drop into the correct box",
+        ["Bé hãy kéo thả đáp án đúng"] = "Drag and drop the correct answer",
+        ["Bé hãy nối hình tương ứng"] = "Match the corresponding pictures",
+        ["Nối các cặp tương ứng"] = "Match the corresponding pairs",
+        ["Bé hãy tô nét theo hướng dẫn"] = "Trace following the guide",
+        ["Tô nét theo hướng dẫn"] = "Trace following the guide",
+        ["Bé hãy đếm và chọn số lượng đúng"] = "Count and choose the correct quantity",
+        ["Đếm và chọn đáp án đúng"] = "Count and choose the correct answer",
+        ["Bé hãy tìm hình khác biệt"] = "Find the different picture",
+        ["Hình nào khác với các hình còn lại"] = "Which picture is different from the others",
+        ["Hình nào dưới đây"] = "Which shape below",
+        ["Con hãy quan sát kỹ"] = "Observe carefully",
+        ["Bé hãy quan sát kỹ"] = "Observe carefully",
 
         // Nhãn phân loại & nhóm
         ["Nhóm A"] = "Group A",
@@ -56,7 +92,36 @@ public static class PreschoolTranslationHelper
         ["Sai"] = "Incorrect",
         ["Nhiều hơn"] = "More",
         ["Ít hơn"] = "Fewer",
-        ["Bằng nhau"] = "Equal"
+        ["Bằng nhau"] = "Equal",
+        ["Lớn hơn"] = "Greater than",
+        ["Bé hơn"] = "Less than",
+        ["Cao hơn"] = "Taller",
+        ["Thấp hơn"] = "Shorter",
+        ["Dài hơn"] = "Longer",
+        ["Ngắn hơn"] = "Shorter",
+        ["To hơn"] = "Bigger",
+        ["Nhỏ hơn"] = "Smaller",
+        ["Nặng hơn"] = "Heavier",
+        ["Nhẹ hơn"] = "Lighter",
+
+        // Hình học & màu sắc
+        ["Hình tròn"] = "Circle",
+        ["Hình vuông"] = "Square",
+        ["Hình tam giác"] = "Triangle",
+        ["Hình chữ nhật"] = "Rectangle",
+        ["Hình ngôi sao"] = "Star",
+        ["Hình trái tim"] = "Heart",
+        ["Màu đỏ"] = "Red",
+        ["Màu vàng"] = "Yellow",
+        ["Màu xanh"] = "Blue",
+        ["Màu xanh lá"] = "Green",
+        ["Màu xanh dương"] = "Blue",
+        ["Màu cam"] = "Orange",
+        ["Màu tím"] = "Purple",
+        ["Màu hồng"] = "Pink",
+        ["Màu trắng"] = "White",
+        ["Màu đen"] = "Black",
+        ["Màu nâu"] = "Brown"
     };
 
     public static async Task<string> TranslateToEnglishAsync(string? vietnameseText)
@@ -68,7 +133,7 @@ public static class PreschoolTranslationHelper
 
         var text = vietnameseText.Trim();
 
-        // 1. Kiểm tra trong bộ nhớ đệm ram
+        // 1. Kiểm tra trong bộ nhớ đệm RAM
         if (TranslationMemory.TryGetValue(text, out var cached) && !string.IsNullOrWhiteSpace(cached))
         {
             return cached;
@@ -88,14 +153,87 @@ public static class PreschoolTranslationHelper
             return exactTrimmed;
         }
 
-        // 3. Ký tự chữ cái / số đơn lẻ: Đọc đúng nguyên gốc text của người dùng, không tự ý chèn thêm Letter / Number
+        // 3. Tiền tố Số / Chữ cái và các khẩu lệnh chuẩn mầm non
+        var mLetterChoice = Regex.Match(text, @"^(?:Bé|Con)\s+hãy\s+chọn\s+chữ\s+([A-Za-zĂÂĐÊÔƠƯăâđêôơư])\.?$", RegexOptions.IgnoreCase);
+        if (mLetterChoice.Success)
+        {
+            var res = $"Please choose the letter {mLetterChoice.Groups[1].Value.ToUpperInvariant()}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var mLetterListen = Regex.Match(text, @"^(?:Con\s+hãy\s+)?nghe\s+và\s+chọn\s+chữ\s+([A-Za-zĂÂĐÊÔƠƯăâđêôơư])\.?$", RegexOptions.IgnoreCase);
+        if (mLetterListen.Success)
+        {
+            var res = $"Listen and choose the letter {mLetterListen.Groups[1].Value.ToUpperInvariant()}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var mLetterMulti = Regex.Match(text, @"^(?:Bé\s+hãy\s+)?tìm\s+chữ\s+([A-Za-zĂÂĐÊÔƠƯăâđêôơư])\s+và\s+(?:chữ\s+)?([A-Za-zĂÂĐÊÔƠƯăâđêôơư])\.?$", RegexOptions.IgnoreCase);
+        if (mLetterMulti.Success)
+        {
+            var res = $"Find the letter {mLetterMulti.Groups[1].Value.ToUpperInvariant()} and {mLetterMulti.Groups[2].Value}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var mLetterTrace = Regex.Match(text, @"^(?:Bé|Con)\s+hãy\s+tô\s+chữ\s+([A-Za-zĂÂĐÊÔƠƯăâđêôơư])\s+theo\s+nét\s+vẽ\s+nhé\.?$", RegexOptions.IgnoreCase);
+        if (mLetterTrace.Success)
+        {
+            var res = $"Please trace the letter {mLetterTrace.Groups[1].Value}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var mNumberChoice = Regex.Match(text, @"^(?:Bé|Con)\s+hãy\s+chọn\s+số\s+(\d+)\.?$", RegexOptions.IgnoreCase);
+        if (mNumberChoice.Success)
+        {
+            var res = $"Please choose the number {mNumberChoice.Groups[1].Value}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var mNumberListen = Regex.Match(text, @"^(?:Con\s+hãy\s+)?nghe\s+và\s+chọn\s+số\s+(\d+)\.?$", RegexOptions.IgnoreCase);
+        if (mNumberListen.Success)
+        {
+            var res = $"Listen and choose the number {mNumberListen.Groups[1].Value}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var mNumberTrace = Regex.Match(text, @"^(?:Bé|Con)\s+hãy\s+tô\s+số\s+(\d+)\s+theo\s+nét\s+vẽ\s+nhé\.?$", RegexOptions.IgnoreCase);
+        if (mNumberTrace.Success)
+        {
+            var res = $"Please trace the number {mNumberTrace.Groups[1].Value}.";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var numPrefixMatch = Regex.Match(text, @"^Số\s+(\d+)$", RegexOptions.IgnoreCase);
+        if (numPrefixMatch.Success)
+        {
+            var res = $"Number {numPrefixMatch.Groups[1].Value}";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        var letterPrefixMatch = Regex.Match(text, @"^Chữ\s+([A-Za-zĂÂĐÊÔƠƯăâđêôơư])$", RegexOptions.IgnoreCase);
+        if (letterPrefixMatch.Success)
+        {
+            var res = $"Letter {letterPrefixMatch.Groups[1].Value.ToUpperInvariant()}";
+            TranslationMemory[text] = res;
+            return res;
+        }
+
+        // 4. Ký tự chữ cái / số đơn lẻ: Giữ nguyên
         if (Regex.IsMatch(text, @"^[A-Za-zĂÂĐÊÔƠƯăâđêôơư]$") || Regex.IsMatch(text, @"^\d+$"))
         {
             TranslationMemory[text] = text;
             return text;
         }
 
-        // 4. Gọi Google Translate API với nhiều kênh chống lỗi 429 Too Many Requests
+        // 5. Gọi Google Translate API với nhiều kênh chống lỗi 429 Too Many Requests
         var translated = await FetchGoogleTranslationAsync(text);
         if (!string.IsNullOrWhiteSpace(translated))
         {
@@ -105,6 +243,13 @@ public static class PreschoolTranslationHelper
             }
             TranslationMemory[text] = translated;
             return translated;
+        }
+
+        // 6. Fallback an toàn: Nếu chuỗi đã là tiếng Anh hoặc ký tự thuần ASCII
+        if (text.All(c => c < 128))
+        {
+            TranslationMemory[text] = text;
+            return text;
         }
 
         return string.Empty;
