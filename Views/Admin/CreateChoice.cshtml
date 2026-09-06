@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Trình tạo bài học";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
-    var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
     var activityTemplates = ViewBag.ActivityTemplates as IReadOnlyList<ActivityTemplateDefinition> ?? [];
     var mediaAssets = ViewBag.MediaAssets as IReadOnlyList<MediaAsset> ?? [];
     var imageAssets = mediaAssets.Where(x => x.AssetType == "image").ToList();
@@ -53,6 +52,7 @@
         <input asp-for="CorrectFeedbackAudioUrlEn" type="hidden" />
         <input asp-for="RetryFeedbackAudioUrl" type="hidden" />
         <input asp-for="RetryFeedbackAudioUrlEn" type="hidden" />
+        <input asp-for="TopicId" type="hidden" value="" />
 
         <aside class="builder-template-panel">
             <h2>Mẫu hoạt động</h2>
@@ -64,7 +64,7 @@
                     </button>
                 }
             </div>
-            <a class="tracing-template-link" asp-action="CreateTracing" asp-route-skillGroupId="@Model.SkillGroupId" asp-route-topicId="@Model.TopicId" data-tracing-link>
+            <a class="tracing-template-link" asp-action="CreateTracing" asp-route-skillGroupId="@Model.SkillGroupId" data-tracing-link>
                 <span class="material-symbols-outlined">draw</span>
                 <span><strong>Tô theo nét</strong><small>Dùng trình tạo nét riêng</small></span>
                 <span class="material-symbols-outlined">arrow_forward</span>
@@ -120,22 +120,10 @@
                     <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
                         @foreach (var group in skillGroups)
                         {
-                            <option value="@group.Id">@group.Name</option>
+                            var rule = ActivityTemplateCatalog.ForSkillGroup(group.Code);
+                            <option value="@group.Id" data-allowed-types="@string.Join(',', rule.InteractionTypes)" data-allows-tracing="@rule.AllowsTracing.ToString().ToLowerInvariant()">@group.Name</option>
                         }
                     </select>
-                </div>
-
-                <div>
-                    <label asp-for="TopicId">Chủ đề</label>
-                    <select asp-for="TopicId" class="form-control" data-topic-select>
-                        <option value="">Chọn chủ đề</option>
-                        @foreach (var topic in topics)
-                        {
-                            var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
-                            <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId" data-allowed-types="@string.Join(',', rule.InteractionTypes)" data-allows-tracing="@rule.AllowsTracing.ToString().ToLowerInvariant()">@topic.Name</option>
-                        }
-                    </select>
-                    <span asp-validation-for="TopicId" class="text-danger"></span>
                 </div>
 
                 <div>
@@ -229,6 +217,12 @@
             </section>
 
             <section class="builder-config-section" data-builder-fields="comparison">
+                <label asp-for="ComparisonVisualMode">Cách trình bày</label>
+                <select asp-for="ComparisonVisualMode" class="form-control">
+                    <option value="quantity">Hai nhóm đồ vật (so sánh số lượng)</option>
+                    <option value="shape">Hai hình (so sánh kích thước/hình học)</option>
+                </select>
+                <p class="builder-field-help">Với nhóm Hình dạng và không gian, chọn “Hai hình”; số lượng nhóm A/B được dùng làm kích thước hiển thị của hai hình.</p>
                 <div class="two-column-form">
                     <div><label asp-for="LeftLabel">Tên nhóm bên trái</label><input asp-for="LeftLabel" class="form-control" /></div>
                     <div><label asp-for="RightLabel">Tên nhóm bên phải</label><input asp-for="RightLabel" class="form-control" /></div>
@@ -250,11 +244,11 @@
                 <span asp-validation-for="ClassificationText" class="text-danger"></span>
             </section>
 
-            <section class="builder-config-section" data-builder-fields="listen_choose,story_choice">
-                <h3>Nội dung đọc</h3>
-                <label asp-for="SpeechText">Nội dung nghe riêng</label>
-                <textarea asp-for="SpeechText" class="form-control" rows="3" maxlength="500" placeholder="Dùng cho bài Nghe - chọn hoặc Nghe truyện, ví dụ một câu chuyện/ngữ cảnh cần đọc"></textarea>
-                <p class="builder-field-help">Mục này chỉ dùng cho dạng Nghe - chọn và Nghe truyện. Khi bé bấm nghe, hệ thống ưu tiên đọc nội dung này; câu hỏi, đáp án và phản hồi vẫn có voice riêng ở Kiểm soát voice.</p>
+            <section class="builder-config-section" data-builder-fields="story_choice">
+                <h3>Nội dung truyện</h3>
+                <label asp-for="SpeechText">Câu chuyện bé sẽ nghe</label>
+                <textarea asp-for="SpeechText" class="form-control" rows="5" maxlength="1000" placeholder="Nhập trọn vẹn câu chuyện hoặc đoạn kể dài"></textarea>
+                <p class="builder-field-help">Chỉ dùng cho dạng Nghe truyện và chọn. Dạng Nghe và chọn sẽ đọc trực tiếp đúng nội dung Câu hỏi / Yêu cầu chính, không tạo thêm một câu nghe thứ hai.</p>
             </section>
 
             <section class="builder-config-section builder-config-section-always builder-voice-panel" data-builder-voice-panel>
@@ -266,8 +260,10 @@
                     <div class="builder-voice-summary mb-0" style="margin:0; display:flex; align-items:center; gap:6px;">
                         <span style="font-size:12px; color:#64748b;">Mục cần voice:</span>
                         <strong data-builder-voice-total style="background:#0284c7; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
-                        <span style="font-size:12px; color:#64748b; margin-left:6px;">Có text:</span>
+                        <span style="font-size:12px; color:#64748b; margin-left:6px;">Có file VI:</span>
                         <strong data-builder-voice-filled style="background:#16a34a; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
+                        <span style="font-size:12px; color:#64748b; margin-left:6px;">Có file EN:</span>
+                        <strong data-builder-voice-filled-en style="background:#16a34a; min-width:30px; min-height:24px; font-size:12px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
                     </div>
                 </div>
                 <p class="builder-field-help" style="margin-bottom:10px; font-size:12px; color:#64748b;">Nghe thử phát âm, chọn file từ kho voice, tải file âm thanh từ máy hoặc bấm Tạo voice AI cho từng câu trong bài.</p>

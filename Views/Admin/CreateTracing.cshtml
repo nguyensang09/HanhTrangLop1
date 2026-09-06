@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Tạo bài tô nét";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
-    var topics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
 }
 
 <section class="admin-layout">
@@ -12,8 +11,8 @@
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>
-                <span class="admin-subheading">Biên tập bài tập tô chữ cái & nét vẽ</span>
-                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Định nghĩa ký tự, cấu hình điểm nét vẽ đứt và âm thanh hướng dẫn phát âm.</p>
+                <span class="admin-subheading">Biên tập bài tập tô chữ, từ, nét vẽ & tranh</span>
+                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Nhập một ký tự, một từ, vài từ hoặc chọn mẫu tranh tạo hình có sẵn.</p>
             </div>
             <div class="dashboard-actions d-flex gap-2 flex-wrap">
                 <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện ảnh</a>
@@ -27,6 +26,7 @@
         <input asp-for="Status" type="hidden" />
         <input asp-for="IsCompatible" type="hidden" />
         <input asp-for="AudioUrl" type="hidden" />
+        <input asp-for="TopicId" type="hidden" value="" />
 
         <div class="soft-card tracing-builder-preview">
             <div class="builder-stage-heading"><div><span class="material-symbols-outlined">draw</span><strong>Xem trước bảng tô</strong></div></div>
@@ -51,27 +51,41 @@
             <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
                 @foreach (var group in skillGroups)
                 {
-                    <option value="@group.Id">@group.Name</option>
+                    <option value="@group.Id" data-group-code="@group.Code">@group.Name</option>
                 }
             </select>
 
-            <label asp-for="TopicId">Chủ đề tô nét</label>
-            <select asp-for="TopicId" class="form-control" data-topic-select>
-                @foreach (var topic in topics)
-                {
-                    <option value="@topic.Id" data-skill-group-id="@topic.SkillGroupId">@topic.Name</option>
-                }
-            </select>
-            <span asp-validation-for="TopicId" class="text-danger"></span>
-
-            <h2>Nội dung ký tự</h2>
+            <h2>Nội dung cần tô</h2>
             <label asp-for="Title">Tên bài</label>
-            <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ b" />
+            <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ b" data-tracing-title-input />
             <span asp-validation-for="Title" class="text-danger"></span>
 
-            <label asp-for="Symbol">Ký tự hoặc nét cần tô</label>
-            <input asp-for="Symbol" class="form-control" maxlength="2" data-tracing-symbol-input />
+            <label asp-for="Symbol">Ký tự, từ hoặc mã tranh cần tô</label>
+            <input asp-for="Symbol" class="form-control" maxlength="120" data-tracing-symbol-input />
             <span asp-validation-for="Symbol" class="text-danger"></span>
+            <p class="builder-field-help">Có thể nhập chữ hoa, chữ thường, số, một từ hoặc vài từ. Hệ thống giữ nguyên nội dung và tự dàn nét theo khung.</p>
+
+            <label for="tracingArtTemplate">Mẫu Tô tranh & Tạo hình nghệ thuật</label>
+            <select id="tracingArtTemplate" class="form-control" data-tracing-art-template>
+                <option value="">-- Không dùng mẫu tranh --</option>
+                <option value="phong-canh" data-title="Phong cảnh thiên nhiên">Phong cảnh thiên nhiên</option>
+                <option value="do-dung" data-title="Đồ dùng học tập">Đồ dùng học tập</option>
+                <option value="hinh-hoc" data-title="Hình học kỳ diệu">Hình học kỳ diệu</option>
+                <option value="meo-con" data-title="Chú mèo con">Chú mèo con</option>
+                <option value="ca-heo" data-title="Cá heo tung tăng">Cá heo tung tăng</option>
+                <option value="o-che-mua" data-title="Chiếc ô che mưa">Chiếc ô che mưa</option>
+                <option value="trai-tao" data-title="Quả táo và chú sâu">Quả táo và chú sâu</option>
+                <option value="tau-hoa" data-title="Đoàn tàu tí hon">Đoàn tàu tí hon</option>
+                <option value="chu-tho" data-title="Chú thỏ và cà rốt">Chú thỏ và cà rốt</option>
+                <option value="ong-vang" data-title="Ong vàng và hoa">Ong vàng và hoa</option>
+                <option value="may-bay" data-title="Máy bay trên trời">Máy bay trên trời</option>
+                <option value="thuyen" data-title="Thuyền buồm lướt sóng">Thuyền buồm lướt sóng</option>
+                <option value="cau-vong" data-title="Cầu vồng và lâu đài">Cầu vồng và lâu đài</option>
+                <option value="chu-buom" data-title="Bướm xinh trong vườn">Bướm xinh trong vườn</option>
+                <option value="khung-long" data-title="Khủng long tí hon">Khủng long tí hon</option>
+                <option value="ten-lua" data-title="Tên lửa và các vì sao">Tên lửa và các vì sao</option>
+            </select>
+            <p class="builder-field-help">Chọn mẫu sẽ tự chuyển sang nhóm Vận động tinh và điền đúng mã tranh để preview ngay.</p>
 
             <div class="two-column-form">
                 <div>
@@ -82,8 +96,9 @@
                     </select>
                 </div>
                 <div>
-                    <label asp-for="ExpectedStrokeCount">Số nét dự kiến</label>
-                    <input asp-for="ExpectedStrokeCount" class="form-control" type="number" min="1" max="10" />
+                    <label asp-for="ExpectedStrokeCount">Số nét tham khảo</label>
+                    <input asp-for="ExpectedStrokeCount" class="form-control" type="number" min="1" max="200" />
+                    <small>Chỉ là thông tin mô tả; nét tô thực tế được dựng tự động theo toàn bộ ký tự hoặc cụm từ.</small>
                 </div>
             </div>
             <input asp-for="ShowStartPoint" type="hidden" value="true" />
@@ -107,7 +122,7 @@
             <label asp-for="InstructionText">Lời hướng dẫn</label>
             <input asp-for="InstructionText" class="form-control" />
             <label asp-for="PromptText">Yêu cầu trên bảng tô</label>
-            <input asp-for="PromptText" class="form-control" />
+            <input asp-for="PromptText" class="form-control" data-tracing-prompt-input />
             <p class="builder-field-help">Khi lưu bài, yêu cầu và phản hồi sẽ được đưa vào Kiểm soát voice để dùng lại file âm thanh trùng nội dung.</p>
 
             <button class="app-btn app-btn-wide" type="submit"><span class="material-symbols-outlined">save</span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</button>

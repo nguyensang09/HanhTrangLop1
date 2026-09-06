@@ -101,13 +101,14 @@ public class AdminController : Controller
     }
 
     [HttpGet("learning-items")]
-    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, Guid? topicId, string? search, string? voiceStatus)
+    public async Task<IActionResult> LearningItems(string? status, string? interactionType, Guid? skillGroupId, string? search, string? voiceStatus)
     {
         var query = _db.LearningItems
             .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Include(x => x.Questions)
+            .Where(x => !x.Code.StartsWith("retired-v2-"))
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(status))
@@ -125,22 +126,15 @@ public class AdminController : Controller
             query = query.Where(x => x.SkillGroupId == skillGroupId.Value);
         }
 
-        if (topicId.HasValue)
-        {
-            query = query.Where(x => x.TopicId == topicId.Value);
-        }
-
         if (!string.IsNullOrWhiteSpace(search))
         {
             var keyword = search.Trim();
             query = query.Where(x => x.Title.Contains(keyword) ||
-                                     (x.Topic != null && x.Topic.Name.Contains(keyword)) ||
-                                     (x.Topic != null && x.Topic.Code.Contains(keyword)) ||
-                                     (x.SkillGroup != null && x.SkillGroup.Name.Contains(keyword)));
+                                     (x.SkillGroup != null && x.SkillGroup.Name.Contains(keyword)) ||
+                                     x.InteractionType.Contains(keyword));
         }
 
         var allSkillGroups = await _db.SkillGroups.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
-        var allTopics = await _db.Topics.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
 
         // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ)
         var redundantVoiceRows = await _db.TextToSpeechCaches
@@ -173,7 +167,6 @@ public class AdminController : Controller
 
         items = items
             .OrderBy(x => x.SkillGroup?.SortOrder ?? int.MaxValue)
-            .ThenBy(x => x.Topic?.SortOrder ?? int.MaxValue)
             .ThenBy(x => GetInteractionTypeOrder(x.InteractionType))
             .ThenBy(x => x.SortOrder)
             .ThenBy(x => x.Title)
@@ -183,35 +176,20 @@ public class AdminController : Controller
                         !string.IsNullOrWhiteSpace(interactionType) ||
                         !string.IsNullOrWhiteSpace(voiceStatus) ||
                         skillGroupId.HasValue ||
-                        topicId.HasValue ||
                         !string.IsNullOrWhiteSpace(search);
 
         var filteredGroups = allSkillGroups
             .Where(g => !skillGroupId.HasValue || g.Id == skillGroupId.Value)
             .ToList();
 
-        var filteredTopics = allTopics
-            .Where(t => (!skillGroupId.HasValue || t.SkillGroupId == skillGroupId.Value) &&
-                        (!topicId.HasValue || t.Id == topicId.Value))
-            .ToList();
-
-        var totalDbItems = await _db.LearningItems.AsNoTracking().Select(x => new { x.Id, x.TopicId, x.SkillGroupId, x.InteractionType }).ToListAsync();
-        var allItemsCountByTopic = totalDbItems.Where(x => x.TopicId.HasValue).GroupBy(x => x.TopicId!.Value).ToDictionary(g => g.Key, g => g.Count());
+        var totalDbItems = await _db.LearningItems.AsNoTracking().Select(x => new { x.SkillGroupId, x.InteractionType }).ToListAsync();
 
         var itemsByGroupId = items.ToLookup(x => x.SkillGroupId);
-        var itemsByTopicId = items
-            .Where(x => x.TopicId.HasValue)
-            .ToLookup(x => x.TopicId!.Value);
-        var directItemsByGroupId = items
-            .Where(x => !x.TopicId.HasValue)
-            .ToLookup(x => x.SkillGroupId);
-        var topicsByGroupId = filteredTopics.ToLookup(x => x.SkillGroupId);
 
         var treeGroups = new List<AdminLearningGroupTreeItem>();
         foreach (var group in filteredGroups)
         {
             var groupItems = itemsByGroupId[group.Id].ToList();
-            var groupTopics = topicsByGroupId[group.Id].ToList();
 
             // When a filter is active and specific group was not locked, hide empty group branches
             if (hasFilter && !skillGroupId.HasValue && groupItems.Count == 0)
@@ -219,73 +197,47 @@ public class AdminController : Controller
                 continue;
             }
 
-            var topicTreeItems = new List<AdminLearningTopicTreeItem>();
-            foreach (var topic in groupTopics)
-            {
-                var topicItems = itemsByTopicId[topic.Id].ToList();
-                if (hasFilter && !topicId.HasValue && topicItems.Count == 0)
-                {
-                    continue;
-                }
-
-                var topicRule = ActivityTemplateCatalog.ForTopic(topic.Code);
-                var allowedTemplates = topicRule.InteractionTypes
-                    .Select(ActivityTemplateCatalog.Find)
-                    .OfType<ActivityTemplateDefinition>()
-                    .ToList();
-
-                topicTreeItems.Add(new AdminLearningTopicTreeItem
-                {
-                    Topic = topic,
-                    LearningItemCount = topicItems.Count,
-                    Items = topicItems,
-                    AllowedTemplates = allowedTemplates,
-                    AllowsTracing = topicRule.AllowsTracing,
-                    ActivityTypes = BuildActivityTypeCoverage(
-                        topicRule.InteractionTypes.Concat(topicRule.AllowsTracing ? [InteractionTypes.Tracing] : []),
-                        totalDbItems.Where(x => x.TopicId == topic.Id).Select(x => x.InteractionType),
-                        minimumRequired: 10)
-                });
-            }
-
-            var directItems = directItemsByGroupId[group.Id].ToList();
-
-            var groupAllStandardTopics = allTopics.Where(t => t.SkillGroupId == group.Id).ToList();
-            var groupCoverage = groupAllStandardTopics.Count == 0
-                ? 0
-                : (int)Math.Round(groupAllStandardTopics.Count(t => allItemsCountByTopic.ContainsKey(t.Id) && allItemsCountByTopic[t.Id] > 0) * 100d / groupAllStandardTopics.Count);
-            var expectedGroupActivityTypes = groupAllStandardTopics
-                .SelectMany(topic =>
-                {
-                    var rule = ActivityTemplateCatalog.ForTopic(topic.Code);
-                    return rule.InteractionTypes.Concat(rule.AllowsTracing ? [InteractionTypes.Tracing] : []);
-                })
+            var groupRule = ActivityTemplateCatalog.ForSkillGroup(group.Code);
+            var expectedGroupActivityTypes = groupRule.InteractionTypes
+                .Concat(groupRule.AllowsTracing ? [InteractionTypes.Tracing] : [])
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             var groupActivityTypes = BuildActivityTypeCoverage(
                 expectedGroupActivityTypes,
                 totalDbItems.Where(x => x.SkillGroupId == group.Id).Select(x => x.InteractionType),
-                minimumRequired: 10);
-            var expectedTopicActivityCount = topicTreeItems.Sum(topic => topic.ActivityTypes.Count(x => x.IsExpected));
-            var coveredTopicActivityCount = topicTreeItems.Sum(topic => topic.ActivityTypes.Count(x => x.IsExpected && x.IsCovered));
+                minimumRequired: 1);
+            var activityGroups = groupItems
+                .GroupBy(x => x.InteractionType, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => GetInteractionTypeOrder(x.Key))
+                .Select(bucket => new AdminLearningActivityTreeItem
+                {
+                    InteractionType = bucket.Key,
+                    DisplayName = ActivityTemplateCatalog.GetDisplayName(bucket.Key),
+                    IconKey = bucket.Key == InteractionTypes.Tracing ? "draw" : ActivityTemplateCatalog.Find(bucket.Key)?.IconKey ?? "extension",
+                    LearningItemCount = bucket.Count(),
+                    Items = bucket.OrderBy(x => x.SortOrder).ThenBy(x => x.Title).ToList()
+                })
+                .ToList();
+            var coveredActivityCount = groupActivityTypes.Count(x => x.IsExpected && x.IsCovered);
 
             treeGroups.Add(new AdminLearningGroupTreeItem
             {
                 SkillGroup = group,
                 LearningItemCount = groupItems.Count,
-                CoveragePercentage = groupCoverage,
-                ActivityCoveragePercentage = expectedTopicActivityCount == 0
+                CoveragePercentage = expectedGroupActivityTypes.Length == 0
                     ? 0
-                    : (int)Math.Round(coveredTopicActivityCount * 100d / expectedTopicActivityCount),
+                    : (int)Math.Round(coveredActivityCount * 100d / expectedGroupActivityTypes.Length),
+                ActivityCoveragePercentage = expectedGroupActivityTypes.Length == 0
+                    ? 0
+                    : (int)Math.Round(coveredActivityCount * 100d / expectedGroupActivityTypes.Length),
                 ActivityTypes = groupActivityTypes,
-                Topics = topicTreeItems,
-                DirectItems = directItems
+                ActivityGroups = activityGroups
             });
         }
 
-        var totalStandardTopics = allTopics.Count;
-        var topicsWithLessons = allTopics.Count(t => allItemsCountByTopic.ContainsKey(t.Id) && allItemsCountByTopic[t.Id] > 0);
-        var overallCoverage = totalStandardTopics == 0 ? 0 : (int)Math.Round(topicsWithLessons * 100d / totalStandardTopics);
+        var totalExpectedActivities = treeGroups.Sum(x => x.ActivityTypes.Count(y => y.IsExpected));
+        var coveredActivities = treeGroups.Sum(x => x.ActivityTypes.Count(y => y.IsExpected && y.IsCovered));
+        var overallCoverage = totalExpectedActivities == 0 ? 0 : (int)Math.Round(coveredActivities * 100d / totalExpectedActivities);
 
         var model = new AdminLearningItemListViewModel
         {
@@ -294,15 +246,12 @@ public class AdminController : Controller
             InteractionType = interactionType,
             VoiceFilter = voiceStatus,
             SkillGroupId = skillGroupId,
-            TopicId = topicId,
             SkillGroups = allSkillGroups,
-            Topics = allTopics,
             Items = items,
             TreeGroups = treeGroups,
             TotalGroups = treeGroups.Count,
-            TotalTopics = treeGroups.Sum(g => g.Topics.Count),
             TotalItems = items.Count,
-            StandardTopicsCount = totalStandardTopics,
+            TotalActivityTypes = treeGroups.Sum(g => g.ActivityGroups.Count),
             OverallCoveragePercentage = overallCoverage,
             VoiceStatuses = voiceStatuses
         };
@@ -322,8 +271,8 @@ public class AdminController : Controller
         foreach (var row in cacheRows)
         {
             var availability = (
-                Vi: row.Status == "ready" && !string.IsNullOrWhiteSpace(row.AudioUrl),
-                En: row.StatusEn == "ready" && !string.IsNullOrWhiteSpace(row.AudioUrlEn));
+                Vi: row.Status == "ready" && IsUsableAudioUrl(row.AudioUrl),
+                En: row.StatusEn == "ready" && IsUsableAudioUrl(row.AudioUrlEn));
             foreach (var value in new[] { row.OriginalText, row.NormalizedText })
             {
                 var key = NormalizeSpeechText(value ?? string.Empty);
@@ -356,7 +305,7 @@ public class AdminController : Controller
                 AddText(ReadJsonString(question.FeedbackJson, "correct"));
                 AddText(ReadJsonString(question.FeedbackJson, "retry"));
                 var payload = JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
-                if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+                if (item.InteractionType == InteractionTypes.StoryChoice)
                 {
                     AddText(ReadJsonString(payload, "speechText"));
                 }
@@ -579,27 +528,47 @@ public class AdminController : Controller
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
         var clean = text.Trim();
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+        var entries = await _db.TextToSpeechCaches.Where(x =>
             x.Status == "ready" &&
             !string.IsNullOrEmpty(x.AudioUrl) &&
-            (x.NormalizedText == clean || x.OriginalText == clean));
-        return entry?.AudioUrl ?? string.Empty;
+            (x.NormalizedText == clean || x.OriginalText == clean)).ToListAsync();
+        return entries.Select(x => x.AudioUrl).FirstOrDefault(IsUsableAudioUrl) ?? string.Empty;
     }
 
     private async Task<string> ResolveActiveAdminVoiceUrlEnAsync(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
         var clean = text.Trim();
-        var entry = await _db.TextToSpeechCaches.FirstOrDefaultAsync(x =>
+        var entries = await _db.TextToSpeechCaches.Where(x =>
             x.StatusEn == "ready" &&
             !string.IsNullOrEmpty(x.AudioUrlEn) &&
-            (x.NormalizedText == clean || x.OriginalText == clean));
-        return entry?.AudioUrlEn ?? string.Empty;
+            (x.NormalizedText == clean || x.OriginalText == clean)).ToListAsync();
+        return entries.Select(x => x.AudioUrlEn).FirstOrDefault(IsUsableAudioUrl) ?? string.Empty;
+    }
+
+    private bool IsUsableAudioUrl(string? audioUrl)
+    {
+        if (string.IsNullOrWhiteSpace(audioUrl)) return false;
+        if (Uri.TryCreate(audioUrl, UriKind.Absolute, out var absoluteUri) &&
+            (absoluteUri.Scheme == Uri.UriSchemeHttp || absoluteUri.Scheme == Uri.UriSchemeHttps))
+        {
+            return true;
+        }
+
+        var relativePath = audioUrl.Split('?', '#')[0].Trim().TrimStart('~', '/')
+            .Replace('/', Path.DirectorySeparatorChar);
+        if (string.IsNullOrWhiteSpace(relativePath)) return false;
+        var webRoot = Path.GetFullPath(_environment.WebRootPath);
+        var diskPath = Path.GetFullPath(Path.Combine(webRoot, Uri.UnescapeDataString(relativePath)));
+        return diskPath.StartsWith(webRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+               System.IO.File.Exists(diskPath);
     }
 
     private static string ExtractAdminTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
     {
-        if (!string.IsNullOrWhiteSpace(payloadSymbol) && !string.Equals(payloadSymbol.Trim(), "A", StringComparison.OrdinalIgnoreCase))
+        // Payload is the canonical tracing value. In particular, do not treat A/a as
+        // a placeholder: casing determines which tracing guide and checkpoints are used.
+        if (!string.IsNullOrWhiteSpace(payloadSymbol))
         {
             return payloadSymbol.Trim();
         }
@@ -789,8 +758,10 @@ public class AdminController : Controller
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.OriginalText == cleanText || x.NormalizedText == cleanText);
 
-            var audioUrl = !string.IsNullOrWhiteSpace(currentUrl) ? currentUrl : cacheEntry?.AudioUrl;
-            var audioUrlEn = !string.IsNullOrWhiteSpace(currentUrlEn) ? currentUrlEn : cacheEntry?.AudioUrlEn;
+            var audioUrl = IsUsableAudioUrl(currentUrl) ? currentUrl : cacheEntry?.AudioUrl;
+            var audioUrlEn = IsUsableAudioUrl(currentUrlEn) ? currentUrlEn : cacheEntry?.AudioUrlEn;
+            if (!IsUsableAudioUrl(audioUrl)) audioUrl = string.Empty;
+            if (!IsUsableAudioUrl(audioUrlEn)) audioUrlEn = string.Empty;
             var textEn = cacheEntry?.TextEn ?? "";
             requiredVoiceCount++;
             if (!string.IsNullOrWhiteSpace(audioUrl)) readyVoiceViCount++;
@@ -818,7 +789,7 @@ public class AdminController : Controller
 
         // 2. Nội dung bài nghe riêng (dành cho dạng Nghe - chọn, Nghe truyện)
         var speechText = ReadJsonString(payload, "speechText");
-        if (!string.IsNullOrWhiteSpace(speechText))
+        if (item.InteractionType == InteractionTypes.StoryChoice && !string.IsNullOrWhiteSpace(speechText))
         {
             await AddPromptAsync("content", "Nội dung bài nghe", speechText, payload["audioUrl"]?.ToString(), payload["audioUrlEn"]?.ToString());
         }
@@ -900,8 +871,11 @@ public class AdminController : Controller
             if (!string.IsNullOrWhiteSpace(question.PayloadJson))
             {
                 var payload = JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
-                var speechText = ReadJsonString(payload, "speechText");
-                if (!string.IsNullOrWhiteSpace(speechText)) textsToGenerate.Add(speechText);
+                if (item.InteractionType == InteractionTypes.StoryChoice)
+                {
+                    var speechText = ReadJsonString(payload, "speechText");
+                    if (!string.IsNullOrWhiteSpace(speechText)) textsToGenerate.Add(speechText);
+                }
                 textsToGenerate.AddRange(CollectOptionSpeechLabels(payload));
             }
         }
@@ -1765,18 +1739,11 @@ public class AdminController : Controller
             .OrderBy(x => x.SortOrder)
             .Select(x => (Guid?)x.Id)
             .FirstOrDefaultAsync() ?? Guid.Empty;
-        var selectedTopic = topicId.HasValue
-            ? await _db.Topics.FirstOrDefaultAsync(x => x.Id == topicId.Value && x.SkillGroupId == firstGroupId && x.IsActive)
-            : null;
-        selectedTopic ??= await _db.Topics
-            .Where(x => x.SkillGroupId == firstGroupId && x.IsActive)
-            .OrderBy(x => x.SortOrder)
-            .FirstOrDefaultAsync();
-
-        var rule = ActivityTemplateCatalog.ForTopic(selectedTopic?.Code);
-        if (rule.InteractionTypes.Count == 0 && rule.AllowsTracing && selectedTopic is not null)
+        var selectedGroupCode = await _db.SkillGroups.Where(x => x.Id == firstGroupId).Select(x => x.Code).FirstOrDefaultAsync();
+        var rule = ActivityTemplateCatalog.ForSkillGroup(selectedGroupCode);
+        if (rule.InteractionTypes.Count == 0 && rule.AllowsTracing)
         {
-            return RedirectToAction(nameof(CreateTracing), new { skillGroupId = firstGroupId, topicId = selectedTopic.Id });
+            return RedirectToAction(nameof(CreateTracing), new { skillGroupId = firstGroupId });
         }
 
         var selectedInteractionType = !string.IsNullOrWhiteSpace(interactionType) &&
@@ -1788,10 +1755,11 @@ public class AdminController : Controller
         return View(new CreateChoiceItemViewModel
         {
             SkillGroupId = firstGroupId,
-            TopicId = selectedTopic?.Id,
+            TopicId = null,
             InteractionType = selectedInteractionType,
             InstructionText = template?.DefaultInstruction ?? "Con hãy thực hiện hoạt động.",
-            PromptText = template?.DefaultPrompt ?? "Con trả lời câu hỏi nhé."
+            PromptText = template?.DefaultPrompt ?? "Con trả lời câu hỏi nhé.",
+            ComparisonVisualMode = selectedGroupCode == "hinh-dang-khong-gian" ? "shape" : "quantity"
         });
     }
 
@@ -1800,7 +1768,7 @@ public class AdminController : Controller
     public async Task<IActionResult> CreateChoice(CreateChoiceItemViewModel model)
     {
         await ValidateClassificationAsync(model.SkillGroupId, model.TopicId, requireActive: !model.Id.HasValue);
-        await ValidateActivityTemplateAsync(model.TopicId, model.InteractionType);
+        await ValidateActivityTemplateAsync(model.SkillGroupId, model.InteractionType);
         await PrepareMediaSelectionAsync(model);
         if (!ModelState.IsValid)
         {
@@ -1823,7 +1791,6 @@ public class AdminController : Controller
         }
 
         await SaveUploadedMediaAsync(model);
-        await PopulateVoiceUrlsFromCacheAsync(model);
         configuration = BuildActivityConfiguration(model);
         if (configuration is null)
         {
@@ -1857,7 +1824,7 @@ public class AdminController : Controller
         item.Level = model.Level;
         item.SortOrder = model.SortOrder > 0
             ? model.SortOrder
-            : item.SortOrder > 0 ? item.SortOrder : await GetNextSortOrderAsync(model.TopicId);
+            : item.SortOrder > 0 ? item.SortOrder : await GetNextSortOrderAsync(model.SkillGroupId);
         item.InteractionType = model.InteractionType;
         item.EstimatedMinutes = model.EstimatedMinutes;
         item.InstructionText = Clean(model.InstructionText);
@@ -1891,7 +1858,6 @@ public class AdminController : Controller
         {
             _db.LearningItems.Add(item);
         }
-        await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateChoice), new { editId = item.Id });
     }
@@ -1929,14 +1895,12 @@ public class AdminController : Controller
             });
         }
 
-        var tracingTopics = ViewBag.Topics as IReadOnlyList<Topic> ?? [];
-        var selectedTopic = tracingTopics.FirstOrDefault(x => x.Id == topicId)
-            ?? tracingTopics.FirstOrDefault(x => !skillGroupId.HasValue || x.SkillGroupId == skillGroupId.Value)
-            ?? tracingTopics.FirstOrDefault();
+        var tracingGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
+        var selectedGroup = tracingGroups.FirstOrDefault(x => x.Id == skillGroupId) ?? tracingGroups.FirstOrDefault();
         return View(new CreateTracingItemViewModel
         {
-            SkillGroupId = selectedTopic?.SkillGroupId ?? Guid.Empty,
-            TopicId = selectedTopic?.Id,
+            SkillGroupId = selectedGroup?.Id ?? Guid.Empty,
+            TopicId = null,
             InstructionText = "Con tô theo nét gợi ý nhé.",
             PromptText = "Con tô ký tự theo đường viền."
         });
@@ -1947,7 +1911,7 @@ public class AdminController : Controller
     public async Task<IActionResult> CreateTracing(CreateTracingItemViewModel model)
     {
         await ValidateClassificationAsync(model.SkillGroupId, model.TopicId);
-        await ValidateTracingTopicAsync(model.TopicId);
+        await ValidateTracingSkillGroupAsync(model.SkillGroupId);
         await PrepareTracingMediaAsync(model);
         if (!ModelState.IsValid)
         {
@@ -1959,11 +1923,6 @@ public class AdminController : Controller
         {
             model.AudioUrl = await SaveMediaFileAsync(model.AudioFile, "audio");
         }
-        if (string.IsNullOrWhiteSpace(model.AudioUrl))
-        {
-            model.AudioUrl = await ResolveVoiceAudioAsync(model.PromptText, "tracing-prompt") ?? string.Empty;
-        }
-
         var now = DateTimeOffset.UtcNow;
         var symbol = string.IsNullOrWhiteSpace(model.Symbol) ? "A" : model.Symbol.Trim();
         var item = model.Id.HasValue
@@ -1993,7 +1952,7 @@ public class AdminController : Controller
             tracingTemplate = new TracingTemplate { Id = templateId, CreatedAt = now };
             _db.TracingTemplates.Add(tracingTemplate);
         }
-        tracingTemplate.SymbolType = await ResolveTracingSymbolTypeAsync(model.TopicId);
+        tracingTemplate.SymbolType = await ResolveTracingSymbolTypeAsync(model.SkillGroupId);
         tracingTemplate.Symbol = symbol;
         tracingTemplate.DisplayName = model.Title.Trim();
         tracingTemplate.CanvasWidth = 720;
@@ -2019,7 +1978,7 @@ public class AdminController : Controller
         item.Level = model.Level;
         item.SortOrder = model.SortOrder > 0
             ? model.SortOrder
-            : item.SortOrder > 0 ? item.SortOrder : await GetNextSortOrderAsync(model.TopicId);
+            : item.SortOrder > 0 ? item.SortOrder : await GetNextSortOrderAsync(model.SkillGroupId);
         item.InteractionType = InteractionTypes.Tracing;
         item.EstimatedMinutes = 5;
         item.InstructionText = model.InstructionText.Trim();
@@ -2047,7 +2006,6 @@ public class AdminController : Controller
         });
 
         if (!model.Id.HasValue) _db.LearningItems.Add(item);
-        await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
@@ -2123,7 +2081,6 @@ public class AdminController : Controller
             question.CorrectAnswerJson = JsonSerializer.Serialize(new { minPoints = Math.Clamp(model.MinPoints, 5, 300) });
         }
 
-        await SyncVoiceForLearningItemAsync(item, onlyMissing: true);
         await _db.SaveChangesAsync();
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
@@ -2249,51 +2206,46 @@ public class AdminController : Controller
         var voiceEntries = await _db.TextToSpeechCaches
             .OrderByDescending(x => x.UpdatedAt)
             .Take(5000)
-            .Select(x => new
-            {
-                x.Id,
-                x.Name,
-                x.UsageType,
-                x.NormalizedText,
-                x.OriginalText,
-                x.TextEn,
-                x.AudioUrl,
-                x.Status,
-                x.AudioUrlEn,
-                x.StatusEn
-            })
             .ToListAsync();
-        ViewBag.VoiceCacheJson = JsonSerializer.Serialize(voiceEntries);
+        ViewBag.VoiceCacheJson = JsonSerializer.Serialize(voiceEntries.Select(x => new
+        {
+            x.Id,
+            x.Name,
+            x.UsageType,
+            x.NormalizedText,
+            x.OriginalText,
+            x.TextEn,
+            x.AudioUrl,
+            x.Status,
+            x.AudioUrlEn,
+            x.StatusEn,
+            HasAudioVi = x.Status == "ready" && IsUsableAudioUrl(x.AudioUrl),
+            HasAudioEn = x.StatusEn == "ready" && IsUsableAudioUrl(x.AudioUrlEn)
+        }));
     }
 
     private async Task LoadTracingListsAsync()
     {
-        var topics = await _db.Topics.Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync();
-        var tracingTopics = topics.Where(x => ActivityTemplateCatalog.ForTopic(x.Code).AllowsTracing).ToList();
-        var groupIds = tracingTopics.Select(x => x.SkillGroupId).Distinct().ToList();
-        ViewBag.SkillGroups = await _db.SkillGroups
-            .Where(x => x.IsActive && groupIds.Contains(x.Id))
+        var activeGroups = await _db.SkillGroups
+            .Where(x => x.IsActive)
             .OrderBy(x => x.SortOrder)
             .ToListAsync();
-        ViewBag.Topics = tracingTopics;
+        ViewBag.SkillGroups = activeGroups
+            .Where(x => ActivityTemplateCatalog.ForSkillGroup(x.Code).AllowsTracing)
+            .ToList();
+        ViewBag.Topics = Array.Empty<Topic>();
         ViewBag.MediaAssets = await _db.MediaAssets
             .Where(x => x.AssetType == "audio")
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
     }
 
-    private async Task ValidateTracingTopicAsync(Guid? topicId)
+    private async Task ValidateTracingSkillGroupAsync(Guid skillGroupId)
     {
-        if (!topicId.HasValue)
+        var groupCode = await _db.SkillGroups.Where(x => x.Id == skillGroupId).Select(x => x.Code).FirstOrDefaultAsync();
+        if (groupCode is null || !ActivityTemplateCatalog.ForSkillGroup(groupCode).AllowsTracing)
         {
-            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Vui lòng chọn chủ đề tô nét.");
-            return;
-        }
-
-        var topicCode = await _db.Topics.Where(x => x.Id == topicId.Value).Select(x => x.Code).FirstOrDefaultAsync();
-        if (topicCode is null || !ActivityTemplateCatalog.ForTopic(topicCode).AllowsTracing)
-        {
-            ModelState.AddModelError(nameof(CreateTracingItemViewModel.TopicId), "Chủ đề này không hỗ trợ bài tô theo nét.");
+            ModelState.AddModelError(nameof(CreateTracingItemViewModel.SkillGroupId), "Nhóm kỹ năng này không hỗ trợ bài tô theo nét.");
         }
     }
 
@@ -2315,37 +2267,27 @@ public class AdminController : Controller
         ValidateMediaFile(model.AudioFile, "audio", 10 * 1024 * 1024, nameof(model.AudioFile));
     }
 
-    private async Task<string> ResolveTracingSymbolTypeAsync(Guid? topicId)
+    private async Task<string> ResolveTracingSymbolTypeAsync(Guid skillGroupId)
     {
-        var code = topicId.HasValue
-            ? await _db.Topics.Where(x => x.Id == topicId.Value).Select(x => x.Code).FirstOrDefaultAsync()
-            : null;
+        var code = await _db.SkillGroups.Where(x => x.Id == skillGroupId).Select(x => x.Code).FirstOrDefaultAsync();
         return code switch
         {
-            "chu-in-hoa" => "uppercase",
-            "chu-in-thuong" => "lowercase",
-            "viet-so" => "number",
-            "net-co-ban" => "stroke",
-            "noi-diem" => "connect-dots",
+            "chu-cai" => "letter",
+            "chu-so" => "number",
+            "van-dong-tinh" => "stroke",
             _ => "symbol"
         };
     }
 
-    private async Task ValidateActivityTemplateAsync(Guid? topicId, string interactionType)
+    private async Task ValidateActivityTemplateAsync(Guid skillGroupId, string interactionType)
     {
-        if (!topicId.HasValue)
-        {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.TopicId), "Vui lòng chọn chủ đề trước khi chọn mẫu hoạt động.");
-            return;
-        }
-
-        var topicCode = await _db.Topics
-            .Where(x => x.Id == topicId.Value)
+        var groupCode = await _db.SkillGroups
+            .Where(x => x.Id == skillGroupId)
             .Select(x => x.Code)
             .FirstOrDefaultAsync();
-        if (topicCode is null || !ActivityTemplateCatalog.IsAllowed(topicCode, interactionType))
+        if (groupCode is null || !ActivityTemplateCatalog.IsAllowedForSkillGroup(groupCode, interactionType))
         {
-            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.InteractionType), "Mẫu hoạt động không phù hợp với chủ đề đã chọn.");
+            ModelState.AddModelError(nameof(CreateChoiceItemViewModel.InteractionType), "Dạng bài không phù hợp với nhóm kỹ năng đã chọn.");
         }
     }
 
@@ -2441,16 +2383,14 @@ public class AdminController : Controller
         model.RetryFeedbackAudioUrl = await ResolveVoiceAudioAsync(model.RetryFeedback, "retry-feedback", model.Title) ?? model.RetryFeedbackAudioUrl;
         model.RetryFeedbackAudioUrlEn = await ResolveVoiceAudioEnAsync(model.RetryFeedback) ?? model.RetryFeedbackAudioUrlEn;
 
-        if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
-             model.InteractionType == InteractionTypes.StoryChoice) &&
+        if (model.InteractionType == InteractionTypes.StoryChoice &&
             string.IsNullOrWhiteSpace(model.AudioUrl) &&
             !string.IsNullOrWhiteSpace(model.SpeechText))
         {
             model.AudioUrl = await ResolveVoiceAudioAsync(model.SpeechText, "content", model.Title) ?? string.Empty;
         }
 
-        if ((model.InteractionType == InteractionTypes.ListenAndChoose ||
-             model.InteractionType == InteractionTypes.StoryChoice) &&
+        if (model.InteractionType == InteractionTypes.StoryChoice &&
             string.IsNullOrWhiteSpace(model.AudioUrlEn) &&
             !string.IsNullOrWhiteSpace(model.SpeechText))
         {
@@ -2948,6 +2888,7 @@ public class AdminController : Controller
             TargetCount = ReadJsonInt(payloadJson, "targetCount", 4),
             SecondaryCount = ReadJsonInt(payloadJson, "rightCount", 2),
             ComparisonMode = ReadJsonString(payloadJson, "comparisonMode") is { Length: > 0 } comparisonMode ? comparisonMode : "more",
+            ComparisonVisualMode = ReadJsonString(payloadJson, "visualMode") is { Length: > 0 } visualMode ? visualMode : "quantity",
             ImageUrl = ReadJsonString(payloadJson, "imageUrl"),
             ImageAltText = ReadJsonString(payloadJson, "imageAltText"),
             AudioUrl = ReadJsonString(payloadJson, "audioUrl"),
@@ -3002,6 +2943,18 @@ public class AdminController : Controller
         EnsureString("retrySpeechText", ReadJsonString(question.FeedbackJson, "retry"));
         EnsureObject("itemMedia");
         EnsureObject("optionAudio");
+
+        if (item.InteractionType == InteractionTypes.ListenAndChoose)
+        {
+            foreach (var propertyName in new[] { "speechText", "speechTextEn", "audioUrl", "audioUrlEn" })
+            {
+                if (!string.IsNullOrWhiteSpace(ReadJsonString(payload, propertyName)))
+                {
+                    payload[propertyName] = string.Empty;
+                    changed = true;
+                }
+            }
+        }
 
         if (!changed)
         {
@@ -3066,22 +3019,23 @@ public class AdminController : Controller
         }
 
         var choices = BuildChoices(model.ChoiceA, model.ChoiceB, model.ChoiceC, model.ChoiceD, model.ChoiceE);
+        var usesStoryContent = model.InteractionType == InteractionTypes.StoryChoice;
         var payload = new JsonObject
         {
             ["schemaVersion"] = 2,
             ["activityType"] = model.InteractionType,
             ["imageUrl"] = Clean(model.ImageUrl),
             ["imageAltText"] = Clean(model.ImageAltText),
-            ["audioUrl"] = Clean(model.AudioUrl),
-            ["audioUrlEn"] = Clean(model.AudioUrlEn),
+            ["audioUrl"] = usesStoryContent ? Clean(model.AudioUrl) : string.Empty,
+            ["audioUrlEn"] = usesStoryContent ? Clean(model.AudioUrlEn) : string.Empty,
             ["questionAudioUrl"] = Clean(model.QuestionAudioUrl),
             ["questionAudioUrlEn"] = Clean(model.QuestionAudioUrlEn),
             ["correctAudioUrl"] = Clean(model.CorrectFeedbackAudioUrl),
             ["correctAudioUrlEn"] = Clean(model.CorrectFeedbackAudioUrlEn),
             ["retryAudioUrl"] = Clean(model.RetryFeedbackAudioUrl),
             ["retryAudioUrlEn"] = Clean(model.RetryFeedbackAudioUrlEn),
-            ["speechText"] = Clean(model.SpeechText),
-            ["speechTextEn"] = Clean(model.SpeechTextEn),
+            ["speechText"] = usesStoryContent ? Clean(model.SpeechText) : string.Empty,
+            ["speechTextEn"] = usesStoryContent ? Clean(model.SpeechTextEn) : string.Empty,
             ["questionSpeechText"] = Clean(model.PromptText),
             ["correctSpeechText"] = Clean(model.CorrectFeedback),
             ["retrySpeechText"] = Clean(model.RetryFeedback)
@@ -3183,6 +3137,8 @@ public class AdminController : Controller
                 return new(payload.ToJsonString(), model.TargetCount.ToString());
 
             case InteractionTypes.Comparison:
+                var visualMode = model.ComparisonVisualMode == "shape" ? "shape" : "quantity";
+                payload["visualMode"] = visualMode;
                 payload["objectSymbol"] = Clean(model.ObjectSymbol);
                 payload["leftCount"] = model.TargetCount;
                 payload["rightCount"] = model.SecondaryCount;
@@ -3195,6 +3151,10 @@ public class AdminController : Controller
                     return null;
                 }
                 payload["comparisonMode"] = comparisonMode;
+                if (visualMode == "shape")
+                {
+                    payload["shapeName"] = Clean(model.LeftLabel);
+                }
                 var comparisonAnswer = comparisonMode switch
                 {
                     "equal" => "equal",
@@ -3330,10 +3290,10 @@ public class AdminController : Controller
         return code[..Math.Min(80, code.Length)];
     }
 
-    private async Task<int> GetNextSortOrderAsync(Guid? topicId)
+    private async Task<int> GetNextSortOrderAsync(Guid skillGroupId)
     {
         var currentMax = await _db.LearningItems
-            .Where(x => x.TopicId == topicId)
+            .Where(x => x.SkillGroupId == skillGroupId)
             .Select(x => (int?)x.SortOrder)
             .MaxAsync() ?? 0;
         return currentMax + 10;

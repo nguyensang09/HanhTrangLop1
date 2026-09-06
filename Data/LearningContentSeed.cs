@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 
 namespace HanhTrangLop1.Data;
 
-public static class LearningContentSeed
+internal static class LegacyLearningContentSeed
 {
     private static readonly IReadOnlyDictionary<string, string> ObservationPhotos =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -322,7 +322,7 @@ public static class LearningContentSeed
                     SymbolType = definition.TopicCode == "viet-so" ? "number" :
                         definition.TopicCode == "chu-in-thuong" ? "lowercase" :
                         definition.TopicCode == "net-co-ban" ? "stroke" : "uppercase",
-                    Symbol = definition.Symbol.Length > 10 ? definition.Symbol[..10] : definition.Symbol,
+                    Symbol = definition.Symbol.Length > 120 ? definition.Symbol[..120] : definition.Symbol,
                     DisplayName = definition.Title.Length > 100 ? definition.Title[..100] : definition.Title,
                     CanvasWidth = 720,
                     CanvasHeight = 720,
@@ -398,18 +398,44 @@ public static class LearningContentSeed
             var existingPayload = JsonNode.Parse(existingPayloadJson)?.AsObject();
             if (existingPayload is null) return newPayloadJson;
 
-            var voiceKeys = new[]
+            var speechVoiceKeys = new[]
             {
-                "questionAudioUrl", "questionAudioUrlEn",
-                "audioUrl", "audioUrlEn",
-                "correctAudioUrl", "correctAudioUrlEn",
-                "retryAudioUrl", "retryAudioUrlEn",
-                "optionAudio", "optionAudioEn"
+                ("questionAudioUrl", "questionSpeechText"),
+                ("questionAudioUrlEn", "questionSpeechText"),
+                ("audioUrl", "speechText"),
+                ("audioUrlEn", "speechText"),
+                ("correctAudioUrl", "correctSpeechText"),
+                ("correctAudioUrlEn", "correctSpeechText"),
+                ("retryAudioUrl", "retrySpeechText"),
+                ("retryAudioUrlEn", "retrySpeechText")
             };
-            foreach (var key in voiceKeys)
+            foreach (var (voiceKey, textKey) in speechVoiceKeys)
             {
-                if (existingPayload[key] is not JsonNode existingValue || !HasVoiceValue(existingValue)) continue;
-                newPayload[key] = existingValue.DeepClone();
+                var newText = newPayload[textKey]?.GetValue<string>()?.Trim() ?? string.Empty;
+                var oldText = existingPayload[textKey]?.GetValue<string>()?.Trim() ?? string.Empty;
+                if (!string.Equals(newText, oldText, StringComparison.Ordinal) ||
+                    existingPayload[voiceKey] is not JsonNode existingValue ||
+                    !HasVoiceValue(existingValue)) continue;
+                newPayload[voiceKey] = existingValue.DeepClone();
+            }
+
+            var activeChoices = newPayload["choices"] is JsonArray choices
+                ? choices.Select(node => node?.GetValue<string>()?.Trim() ?? string.Empty)
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                : [];
+            foreach (var mapKey in new[] { "optionAudio", "optionAudioEn" })
+            {
+                if (existingPayload[mapKey] is not JsonObject existingMap) continue;
+                var retainedMap = new JsonObject();
+                foreach (var entry in existingMap.Where(entry => activeChoices.Contains(entry.Key)))
+                {
+                    if (entry.Value is not null && HasVoiceValue(entry.Value))
+                    {
+                        retainedMap[entry.Key] = entry.Value.DeepClone();
+                    }
+                }
+                if (retainedMap.Count > 0) newPayload[mapKey] = retainedMap;
             }
 
             return newPayload.ToJsonString();
@@ -688,7 +714,8 @@ public static class LearningContentSeed
         var thirdNumber = nextNumber == 10 ? 1 : nextNumber + 1;
         var profile = GetTopicCoverageProfile(topicCode, groupCode);
         var primary = profile.CorrectItems[(ordinal - 1) % profile.CorrectItems.Length];
-        var secondary = profile.CorrectItems[ordinal % profile.CorrectItems.Length];
+        var secondaryOffset = 1 + ((ordinal - 1) / profile.CorrectItems.Length);
+        var secondary = profile.CorrectItems[((ordinal - 1) + secondaryOffset) % profile.CorrectItems.Length];
         var distractor1 = profile.Distractors[(ordinal - 1) % profile.Distractors.Length];
         var distractor2 = profile.Distractors[ordinal % profile.Distractors.Length];
         var orderingScenario = BuildOrderingScenario(topicCode, ordinal, primary, profile);
@@ -699,13 +726,14 @@ public static class LearningContentSeed
             InteractionTypes.SingleChoice => SemanticChoice(code, $"Nhận biết {primary}", topicCode, interactionType,
                 $"Quan sát và chọn đúng {primary}.", $"Đâu là {primary}?",
                 [distractor1, primary, distractor2], primary, targetImage),
-            InteractionTypes.MultiSelect => SemanticMulti(code, $"Tìm {profile.Criterion}", topicCode,
-                $"Chọn tất cả {profile.Criterion}.", [primary, distractor1, secondary, distractor2], [primary, secondary]),
+            InteractionTypes.MultiSelect => BuildCoverageMultiSelectLesson(
+                code, groupCode, topicCode, profile.Criterion,
+                primary, secondary, distractor1, distractor2),
             InteractionTypes.ListenAndChoose => SemanticChoice(code, $"Nghe để tìm {primary}", topicCode, interactionType,
-                "Nghe kỹ rồi chọn đúng nội dung được nhắc đến.", $"Con vừa nghe thấy nội dung nào?",
-                [distractor1, primary, distractor2], primary, targetImage, $"Con hãy chọn {primary}."),
+                "Nghe kỹ câu hỏi rồi chọn đúng nội dung được nhắc đến.", $"Nghe và chọn {primary}.",
+                [distractor1, primary, distractor2], primary, targetImage),
             InteractionTypes.DragDrop => SemanticChoice(code, $"Đưa {primary} về đúng chỗ", topicCode, interactionType,
-                $"Kéo {primary} vào vùng đích.", $"Vật nào cần đưa vào vùng {profile.Criterion}?",
+                $"Chọn rồi kéo {primary} vào đúng vùng.", $"Con hãy chọn rồi kéo {primary} vào vùng {profile.Criterion}.",
                 [distractor1, primary, distractor2], primary, string.Empty, targetLabel: profile.Criterion),
             InteractionTypes.Matching => Mapping(code, $"Ghép đúng trong bài {topicName}", topicCode, interactionType,
                 [(primary, BuildSemanticPairLabel(topicCode, primary)),
@@ -724,7 +752,7 @@ public static class LearningContentSeed
                  (distractor1, $"Không phải {profile.Criterion}"), (distractor2, $"Không phải {profile.Criterion}")], suppressAutoImage: true),
             InteractionTypes.StoryChoice => Story(code, $"Câu chuyện về {primary}", topicCode,
                 $"Trong hoạt động {topicName.ToLowerInvariant()}, bạn nhỏ quan sát và nhận ra {primary}. Bạn gọi đúng tên là {primary}.",
-                targetImage, $"Bạn nhỏ đã nhận ra nội dung nào?", [distractor1, primary, distractor2], primary),
+                targetImage, $"Quan sát hình và chọn đúng {primary}.", [distractor1, primary, distractor2], primary),
             InteractionTypes.Tracing => Tracing(code, $"Tô {GetCoverageTracingSymbol(groupCode, ordinal)} theo nét", topicCode,
                 GetCoverageTracingSymbol(groupCode, ordinal), Math.Clamp(number, 1, 4)),
             _ => throw new InvalidOperationException($"Chưa có mẫu bổ sung cho dạng bài {interactionType}.")
@@ -751,6 +779,54 @@ public static class LearningContentSeed
                 speechText = string.Empty
             },
             string.Join('|', answers.OrderBy(x => x)));
+
+    private static SeedLesson BuildCoverageMultiSelectLesson(
+        string code,
+        string groupCode,
+        string topicCode,
+        string criterion,
+        string primary,
+        string secondary,
+        string distractor1,
+        string distractor2)
+    {
+        var choices = new[] { primary, distractor1, secondary, distractor2 }
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var answers = new[] { primary, secondary }
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (groupCode == "chu-cai")
+        {
+            return SemanticMulti(
+                code,
+                $"Nhận biết {answers[0]} và {answers[1]}",
+                topicCode,
+                $"Trong các thẻ dưới đây, con hãy chọn {answers[0]} và {answers[1]}.",
+                choices,
+                answers);
+        }
+
+        if (groupCode == "chu-so")
+        {
+            return SemanticMulti(
+                code,
+                $"Nhận biết {answers[0]} và {answers[1]}",
+                topicCode,
+                $"Trong các thẻ dưới đây, con hãy chọn {answers[0]} và {answers[1]}.",
+                choices,
+                answers);
+        }
+
+        return SemanticMulti(
+            code,
+            $"Tìm {primary} và {secondary}",
+            topicCode,
+            $"Quan sát từng thẻ và chọn tất cả {criterion}.",
+            choices,
+            answers);
+    }
 
     private static SeedLesson SemanticOrdering(
         string code, string title, string topicCode, string prompt, string[] items) =>
@@ -1043,6 +1119,16 @@ public static class LearningContentSeed
         payload["questionSpeechText"] = lesson.Prompt;
         payload["correctSpeechText"] = "Giỏi lắm, con làm đúng rồi!";
         payload["retrySpeechText"] = "Con thử lại nhé";
+
+        if (lesson.InteractionType == InteractionTypes.ListenAndChoose)
+        {
+            // Nghe và chọn là một câu nghe ngắn: Prompt chính là nội dung được đọc.
+            // Dữ liệu truyện riêng chỉ thuộc StoryChoice.
+            payload["speechText"] = string.Empty;
+            payload["speechTextEn"] = string.Empty;
+            payload["audioUrl"] = string.Empty;
+            payload["audioUrlEn"] = string.Empty;
+        }
 
         if (lesson.TopicCode == "hinh-dang" &&
             string.IsNullOrWhiteSpace(payload["imageUrl"]?.GetValue<string>()))
@@ -2026,8 +2112,11 @@ public static class LearningContentSeed
     private static SeedLesson Multi(string code, string title, string topicCode, string[] choices, string[] answers) =>
         Lesson(code, title, topicCode, InteractionTypes.MultiSelect, "Con chọn tất cả đáp án đúng rồi bấm Hoàn thành.", title, new { choices, correctCount = answers.Length, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, string.Join('|', answers.OrderBy(x => x)));
 
-    private static SeedLesson Listen(string code, string title, string topicCode, string speechText, string[] choices, string answer) =>
-        Choice(code, title, topicCode, InteractionTypes.ListenAndChoose, "Con bấm Nghe rồi chọn đáp án đúng.", title, choices, answer, speechText);
+    private static SeedLesson Listen(string code, string title, string topicCode, string _, string[] choices, string answer) =>
+        // Giữ tham số cũ để các định nghĩa seed dễ đối chiếu, nhưng chỉ dùng một
+        // nội dung nhất quán là tên/câu hỏi của bài. Câu kể dài thuộc StoryChoice.
+        Choice(code, title, topicCode, InteractionTypes.ListenAndChoose,
+            "Con nghe câu hỏi rồi chọn đáp án đúng.", title, choices, answer);
 
     private static SeedLesson Drag(string code, string title, string topicCode, string target, string[] choices, string answer) =>
         Lesson(code, title, topicCode, InteractionTypes.DragDrop, "Con chọn hoặc kéo vật đúng vào vùng đích.", title, new { choices, targetLabel = target, imageUrl = string.Empty, audioUrl = string.Empty, speechText = string.Empty }, answer);

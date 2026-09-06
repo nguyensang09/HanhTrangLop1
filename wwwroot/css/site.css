@@ -2948,6 +2948,81 @@ a {
   }
 }
 
+/* Minh họa phép tính trực tiếp bằng đồ vật: trẻ nhìn được tình huống trước khi chọn số. */
+.learning-focus-shell .equation-visual {
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) auto minmax(110px, 1fr) auto minmax(76px, .55fr);
+  align-items: center;
+  gap: clamp(8px, 2vw, 20px);
+  width: min(100%, 900px);
+  margin: 0 auto 18px;
+  padding: clamp(14px, 2.5vw, 24px);
+  border: 3px solid #bae6fd;
+  background: linear-gradient(135deg, #f0f9ff, #fff7ed);
+}
+
+.learning-focus-shell .equation-object-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 112px;
+  padding: 10px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.learning-focus-shell .equation-object-group img,
+.learning-focus-shell .equation-object-group .counting-symbol {
+  width: clamp(40px, 7vw, 68px);
+  height: clamp(40px, 7vw, 68px);
+  object-fit: contain;
+  font-size: clamp(2.2rem, 7vw, 4rem);
+}
+
+.learning-focus-shell .equation-operator,
+.learning-focus-shell .equation-unknown {
+  display: grid;
+  place-items: center;
+  color: #0f766e;
+  font-family: var(--font-display, "Be Vietnam Pro", system-ui, sans-serif);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.learning-focus-shell .equation-operator {
+  min-width: clamp(42px, 7vw, 74px);
+  font-size: clamp(3rem, 7vw, 5.25rem);
+}
+
+.learning-focus-shell .equation-unknown {
+  min-height: 92px;
+  border: 4px dashed #fb923c;
+  border-radius: 22px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.learning-focus-shell .comparison-group.comparison-shape-card {
+  min-height: 250px;
+}
+
+.learning-focus-shell .comparison-shape {
+  display: block;
+  line-height: 1;
+  color: var(--option-color, #38bdf8);
+  filter: drop-shadow(0 8px 3px rgba(15, 23, 42, .16));
+}
+
+@media (max-width: 640px) {
+  .learning-focus-shell .equation-visual { grid-template-columns: 1fr auto 1fr; }
+  .learning-focus-shell .equation-visual .equation-operator:nth-of-type(2),
+  .learning-focus-shell .equation-unknown { display: none; }
+  .learning-focus-shell .equation-object-group { min-height: 88px; }
+}
+
 .admin-layout {
   display: grid;
   min-height: calc(100vh - 74px);
@@ -9204,6 +9279,329 @@ body.focus-mode-active,
   flex-shrink: 0 !important;
 }
 
+/* Nối số với số lượng: chuỗi emoji là hình đếm, không phải nhãn văn bản. */
+.matching-quantity-board .matching-item {
+  min-height: clamp(112px, 16vw, 152px) !important;
+  padding: clamp(8px, 1.5vw, 14px) !important;
+}
+
+.matching-quantity-board .answer-quantity-visual {
+  width: 100%;
+  max-width: 250px;
+  display: grid;
+  grid-template-columns: repeat(var(--quantity-columns, 3), minmax(0, 1fr));
+  place-items: center;
+  gap: clamp(2px, 0.7vw, 8px);
+  line-height: 1;
+}
+
+.matching-quantity-board .answer-quantity-symbol {
+  display: grid;
+  width: clamp(30px, 5.2vw, 46px);
+  height: clamp(30px, 5.2vw, 46px);
+  place-items: center;
+  font-size: clamp(1.75rem, 4.6vw, 2.7rem);
+  line-height: 1;
+  filter: drop-shadow(0 3px 3px rgba(15, 23, 42, 0.13));
+}
+
+/* So sánh số lượng: hai khay đồ vật là trọng tâm, dấu bằng là lựa chọn ở giữa. */
+.learning-focus-shell .comparison-quantity-board {
+  grid-template-columns: minmax(0, 1fr) clamp(96px, 15vw, 132px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: clamp(10px, 2vw, 22px);
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-side-card {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(230px, 34vw, 310px);
+  padding: clamp(14px, 2.5vw, 24px);
+  overflow: hidden;
+  border: 4px solid var(--comparison-accent);
+  border-radius: clamp(22px, 4vw, 34px);
+  background: linear-gradient(150deg, #fff 12%, var(--comparison-soft) 100%);
+  box-shadow: 0 12px 0 var(--comparison-shadow), 0 20px 34px rgba(15, 23, 42, 0.12);
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-side-left {
+  --comparison-accent: #38bdf8;
+  --comparison-soft: #e0f2fe;
+  --comparison-shadow: #bae6fd;
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-side-right {
+  --comparison-accent: #fb923c;
+  --comparison-soft: #ffedd5;
+  --comparison-shadow: #fed7aa;
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-side-card::before {
+  position: absolute;
+  z-index: -1;
+  top: -54px;
+  right: -42px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--comparison-accent) 18%, transparent);
+  content: "";
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-group-title {
+  position: relative;
+  z-index: 1;
+  color: #17324d;
+  font-family: var(--font-display, "Be Vietnam Pro", system-ui, sans-serif);
+  font-size: clamp(1.05rem, 2.5vw, 1.45rem);
+  font-weight: 900;
+  text-align: center;
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-objects {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  place-items: center;
+  align-content: center;
+  gap: clamp(5px, 1.1vw, 12px);
+  width: 100%;
+  min-height: clamp(150px, 23vw, 214px);
+  padding: clamp(8px, 1.4vw, 14px);
+  border: 2px dashed color-mix(in srgb, var(--comparison-accent) 48%, white);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-objects .counting-pictogram,
+.learning-focus-shell .comparison-quantity-board .comparison-objects .counting-photo,
+.learning-focus-shell .comparison-quantity-board .comparison-objects .counting-symbol {
+  width: clamp(42px, 6.5vw, 64px);
+  height: clamp(42px, 6.5vw, 64px);
+  font-size: clamp(2.15rem, 5.8vw, 3.6rem);
+  filter: drop-shadow(0 5px 4px rgba(15, 23, 42, 0.16));
+  transition: transform 160ms ease;
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-side-card:hover .counting-pictogram,
+.learning-focus-shell .comparison-quantity-board .comparison-side-card:hover .counting-photo,
+.learning-focus-shell .comparison-quantity-board .comparison-side-card:hover .counting-symbol {
+  transform: translateY(-3px) scale(1.06);
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-equal-card {
+  display: grid;
+  min-height: clamp(230px, 34vw, 310px);
+  padding: 14px 8px;
+  place-content: center;
+  place-items: center;
+  gap: 4px;
+  border: 4px solid #a78bfa;
+  border-radius: clamp(22px, 4vw, 32px);
+  background: linear-gradient(160deg, #faf5ff, #ede9fe);
+  color: #6d28d9;
+  box-shadow: 0 12px 0 #ddd6fe, 0 20px 34px rgba(109, 40, 217, 0.13);
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-balance-icon {
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-equal-sign {
+  font-family: var(--font-display, "Be Vietnam Pro", system-ui, sans-serif);
+  font-size: clamp(3.4rem, 8vw, 5.5rem);
+  font-weight: 900;
+  line-height: .85;
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-equal-label {
+  font-family: var(--font-display, "Be Vietnam Pro", system-ui, sans-serif);
+  font-size: clamp(.82rem, 1.8vw, 1.05rem);
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.learning-focus-shell .comparison-quantity-board .comparison-group.selected {
+  transform: translateY(-5px) scale(1.025);
+  border-color: #16a34a;
+  background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+  box-shadow: 0 12px 0 #86efac, 0 0 0 7px rgba(34, 197, 94, 0.18), 0 22px 38px rgba(15, 23, 42, 0.16);
+}
+
+@media (max-width: 640px) {
+  .learning-focus-shell .comparison-quantity-board {
+    grid-template-columns: minmax(0, 1fr) 74px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .learning-focus-shell .comparison-quantity-board .comparison-side-card,
+  .learning-focus-shell .comparison-quantity-board .comparison-equal-card {
+    min-height: 194px;
+    padding: 9px 6px;
+    border-width: 3px;
+    border-radius: 20px;
+  }
+
+  .learning-focus-shell .comparison-quantity-board .comparison-objects {
+    min-height: 130px;
+    gap: 3px;
+    padding: 5px;
+  }
+
+  .learning-focus-shell .comparison-quantity-board .comparison-objects .counting-pictogram,
+  .learning-focus-shell .comparison-quantity-board .comparison-objects .counting-photo,
+  .learning-focus-shell .comparison-quantity-board .comparison-objects .counting-symbol {
+    width: clamp(26px, 8vw, 38px);
+    height: clamp(26px, 8vw, 38px);
+    font-size: clamp(1.45rem, 7vw, 2.15rem);
+  }
+}
+
+/* Ảnh là nội dung chính trong các hoạt động thao tác trực quan. */
+.learning-focus-shell .interaction-matching .matching-item.has-answer-photo,
+.learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram {
+  min-height: clamp(158px, 22vw, 196px) !important;
+  flex-direction: column !important;
+  padding: clamp(10px, 1.8vw, 16px) !important;
+  gap: 8px !important;
+}
+
+.learning-focus-shell .interaction-matching .matching-item .answer-photo,
+.learning-focus-shell .interaction-matching .matching-item .answer-pictogram {
+  width: clamp(108px, 16vw, 152px) !important;
+  height: clamp(108px, 16vw, 152px) !important;
+  max-width: 72% !important;
+  padding: 3px !important;
+  object-fit: contain !important;
+}
+
+.learning-focus-shell .interaction-matching .matching-item.has-answer-visual .answer-label {
+  flex: 0 0 auto !important;
+  font-size: clamp(.92rem, 2vw, 1.16rem) !important;
+  line-height: 1.2 !important;
+}
+
+.learning-focus-shell .interaction-drag_drop .drag-source {
+  grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)) !important;
+}
+
+.learning-focus-shell .interaction-drag_drop .draggable-option.has-answer-photo,
+.learning-focus-shell .interaction-drag_drop .draggable-option.has-answer-pictogram {
+  min-height: clamp(168px, 24vw, 210px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 12px !important;
+}
+
+.learning-focus-shell .interaction-drag_drop .draggable-option .answer-photo,
+.learning-focus-shell .interaction-drag_drop .draggable-option .answer-pictogram,
+.learning-focus-shell .interaction-drag_drop .activity-drop-zone.filled .answer-photo,
+.learning-focus-shell .interaction-drag_drop .activity-drop-zone.filled .answer-pictogram {
+  width: clamp(116px, 18vw, 164px) !important;
+  height: clamp(116px, 18vw, 164px) !important;
+  max-width: 76% !important;
+  object-fit: contain !important;
+}
+
+.learning-focus-shell .interaction-drag_drop .activity-drop-zone.filled.has-answer-visual {
+  min-height: clamp(164px, 23vw, 204px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.learning-focus-shell .interaction-classification .classification-source-grid {
+  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr)) !important;
+}
+
+.learning-focus-shell .interaction-classification .classification-source-item.has-answer-photo,
+.learning-focus-shell .interaction-classification .classification-source-item.has-answer-pictogram {
+  min-height: clamp(164px, 22vw, 202px) !important;
+  padding: 10px !important;
+}
+
+.learning-focus-shell .interaction-classification .classification-source-item .answer-photo,
+.learning-focus-shell .interaction-classification .classification-source-item .answer-pictogram {
+  width: clamp(104px, 15vw, 144px) !important;
+  height: clamp(104px, 15vw, 144px) !important;
+  max-width: 82% !important;
+  object-fit: contain !important;
+}
+
+.learning-focus-shell .interaction-classification .classification-chip {
+  flex-direction: column !important;
+  min-width: 104px !important;
+  padding: 8px 10px !important;
+}
+
+.learning-focus-shell .interaction-classification .classification-chip .answer-photo,
+.learning-focus-shell .interaction-classification .classification-chip .answer-pictogram {
+  width: 72px !important;
+  height: 72px !important;
+  object-fit: contain !important;
+}
+
+.learning-focus-shell .interaction-ordering .ordering-row.has-ordering-visual {
+  min-height: clamp(126px, 18vw, 158px) !important;
+}
+
+.learning-focus-shell .interaction-ordering .ordering-photo,
+.learning-focus-shell .interaction-ordering .ordering-pictogram {
+  width: clamp(98px, 15vw, 132px) !important;
+  height: clamp(98px, 15vw, 132px) !important;
+  padding: 3px !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 5px 5px rgba(15, 23, 42, 0.13));
+}
+
+@media (max-width: 640px) {
+  .learning-focus-shell .interaction-matching .matching-item.has-answer-photo,
+  .learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram {
+    min-height: 142px !important;
+    padding: 8px !important;
+  }
+
+  .learning-focus-shell .interaction-matching .matching-item .answer-photo,
+  .learning-focus-shell .interaction-matching .matching-item .answer-pictogram {
+    width: clamp(84px, 27vw, 112px) !important;
+    height: clamp(84px, 27vw, 112px) !important;
+  }
+
+  .learning-focus-shell .interaction-drag_drop .drag-source,
+  .learning-focus-shell .interaction-classification .classification-source-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .learning-focus-shell .interaction-drag_drop .draggable-option.has-answer-photo,
+  .learning-focus-shell .interaction-drag_drop .draggable-option.has-answer-pictogram,
+  .learning-focus-shell .interaction-classification .classification-source-item.has-answer-photo,
+  .learning-focus-shell .interaction-classification .classification-source-item.has-answer-pictogram {
+    min-height: 150px !important;
+    padding: 8px !important;
+  }
+
+  .learning-focus-shell .interaction-drag_drop .draggable-option .answer-photo,
+  .learning-focus-shell .interaction-drag_drop .draggable-option .answer-pictogram,
+  .learning-focus-shell .interaction-classification .classification-source-item .answer-photo,
+  .learning-focus-shell .interaction-classification .classification-source-item .answer-pictogram {
+    width: clamp(88px, 29vw, 118px) !important;
+    height: clamp(88px, 29vw, 118px) !important;
+  }
+
+  .learning-focus-shell .interaction-ordering .ordering-photo,
+  .learning-focus-shell .interaction-ordering .ordering-pictogram {
+    width: clamp(78px, 24vw, 104px) !important;
+    height: clamp(78px, 24vw, 104px) !important;
+  }
+}
+
 .matching-item.is-single-symbol .answer-label {
   font-family: var(--font-display) !important;
   font-size: clamp(2.4rem, 7vw, 4rem) !important;
@@ -11388,6 +11786,114 @@ body.focus-mode-active,
 .tree-items-table td.table-actions > * {
   margin-left: 4px;
   vertical-align: middle;
+}
+
+/* Trọng tâm nhận biết cho trẻ: ảnh chính rõ, ảnh đáp án đủ lớn và không xếp
+   thành các hàng ngang nhỏ khó quan sát. Áp dụng chung cho mọi dạng lựa chọn. */
+.learning-focus-shell .choice-board {
+  padding: clamp(14px, 2.4vw, 22px) !important;
+}
+
+.learning-focus-shell .lesson-content-zone,
+.learning-focus-shell .lesson-answer-zone {
+  margin-bottom: 10px !important;
+}
+
+.learning-focus-shell .lesson-support-image {
+  width: min(100%, 760px) !important;
+  max-height: min(48vh, 460px) !important;
+  margin: 0 auto 12px !important;
+  padding: 8px !important;
+}
+
+.learning-focus-shell .activity-runtime,
+.learning-focus-shell .activity-option-grid {
+  margin-top: 0 !important;
+  gap: clamp(10px, 1.8vw, 16px) !important;
+}
+
+.learning-focus-shell .activity-option-grid.has-visual-options {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)) !important;
+  max-width: 980px !important;
+  margin-inline: auto !important;
+}
+
+.learning-focus-shell .activity-option-grid.has-visual-options .activity-option {
+  min-height: clamp(210px, 29vw, 290px) !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: clamp(10px, 1.8vw, 18px) !important;
+}
+
+.learning-focus-shell .activity-option-grid.has-visual-options .answer-photo,
+.learning-focus-shell .activity-option-grid.has-visual-options .answer-pictogram {
+  width: min(100%, 190px) !important;
+  height: clamp(145px, 21vw, 205px) !important;
+  object-fit: contain !important;
+  flex-shrink: 1 !important;
+}
+
+.learning-focus-shell .activity-option-grid.has-visual-options .answer-label {
+  flex: 0 0 auto !important;
+  text-align: center !important;
+  font-size: clamp(1.05rem, 2.4vw, 1.4rem) !important;
+}
+
+.learning-focus-shell .activity-option.is-single-symbol {
+  min-height: clamp(132px, 19vw, 180px) !important;
+  padding: 10px !important;
+}
+
+.learning-focus-shell .activity-option.is-single-symbol .answer-label {
+  font-size: clamp(4.2rem, 12vw, 7rem) !important;
+  line-height: 0.95 !important;
+}
+
+.learning-focus-shell .interaction-story_choice .story-audio-container {
+  margin: 4px 0 10px !important;
+}
+
+.learning-focus-shell .interaction-story_choice .activity-option-grid:not(.has-visual-options) {
+  max-width: 760px !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+}
+
+.learning-focus-shell .interaction-story_choice .activity-option-grid:not(.has-visual-options) .activity-option {
+  min-height: 76px !important;
+  padding: 10px 18px !important;
+}
+
+.learning-focus-shell .interaction-story_choice .activity-option-grid:not(.has-visual-options) .answer-label {
+  font-size: clamp(1.2rem, 3vw, 1.55rem) !important;
+}
+
+@media (max-width: 640px) {
+  .learning-focus-shell .lesson-support-image {
+    max-height: min(42vh, 380px) !important;
+  }
+
+  .learning-focus-shell .activity-option.is-single-symbol {
+    min-height: 122px !important;
+  }
+
+  .learning-focus-shell .activity-option.is-single-symbol .answer-label {
+    font-size: clamp(3.6rem, 18vw, 5.4rem) !important;
+  }
+
+  .learning-focus-shell .activity-option-grid.has-visual-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .learning-focus-shell .activity-option-grid.has-visual-options .activity-option {
+    min-height: 178px !important;
+  }
+
+  .learning-focus-shell .activity-option-grid.has-visual-options .answer-photo,
+  .learning-focus-shell .activity-option-grid.has-visual-options .answer-pictogram {
+    height: clamp(112px, 30vw, 150px) !important;
+  }
 }
 
 .sort-badge {

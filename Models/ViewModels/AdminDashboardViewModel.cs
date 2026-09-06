@@ -25,23 +25,20 @@ public class AdminLearningItemListViewModel
     public string? Status { get; set; }
     public string? InteractionType { get; set; }
     public Guid? SkillGroupId { get; set; }
-    public Guid? TopicId { get; set; }
     public string? VoiceFilter { get; set; }
     public IReadOnlyList<SkillGroup> SkillGroups { get; set; } = [];
-    public IReadOnlyList<Topic> Topics { get; set; } = [];
     public IReadOnlyList<LearningItem> Items { get; set; } = [];
     public IReadOnlyList<AdminLearningGroupTreeItem> TreeGroups { get; set; } = [];
     public int TotalGroups { get; set; }
-    public int TotalTopics { get; set; }
     public int TotalItems { get; set; }
-    public int StandardTopicsCount { get; set; }
+    public int TotalActivityTypes { get; set; }
     public int OverallCoveragePercentage { get; set; }
     public IReadOnlyDictionary<Guid, AdminLearningItemVoiceStatus> VoiceStatuses { get; set; } =
         new Dictionary<Guid, AdminLearningItemVoiceStatus>();
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 25;
     public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
-    public bool HasActiveFilter => !string.IsNullOrWhiteSpace(Search) || !string.IsNullOrWhiteSpace(Status) || !string.IsNullOrWhiteSpace(InteractionType) || !string.IsNullOrWhiteSpace(VoiceFilter) || SkillGroupId.HasValue || TopicId.HasValue;
+    public bool HasActiveFilter => !string.IsNullOrWhiteSpace(Search) || !string.IsNullOrWhiteSpace(Status) || !string.IsNullOrWhiteSpace(InteractionType) || !string.IsNullOrWhiteSpace(VoiceFilter) || SkillGroupId.HasValue;
 }
 
 public class AdminLearningGroupTreeItem
@@ -51,13 +48,14 @@ public class AdminLearningGroupTreeItem
     public int CoveragePercentage { get; set; }
     public int ActivityCoveragePercentage { get; set; }
     public IReadOnlyList<AdminActivityTypeCoverage> ActivityTypes { get; set; } = [];
-    public IReadOnlyList<AdminLearningTopicTreeItem> Topics { get; set; } = [];
-    public IReadOnlyList<LearningItem> DirectItems { get; set; } = [];
+    public IReadOnlyList<AdminLearningActivityTreeItem> ActivityGroups { get; set; } = [];
 }
 
-public class AdminLearningTopicTreeItem
+public class AdminLearningActivityTreeItem
 {
-    public Topic Topic { get; set; } = new();
+    public string InteractionType { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string IconKey { get; set; } = "extension";
     public int LearningItemCount { get; set; }
     public IReadOnlyList<LearningItem> Items { get; set; } = [];
     public IReadOnlyList<ActivityTemplateDefinition> AllowedTemplates { get; set; } = [];
@@ -134,7 +132,7 @@ public class CreateTracingItemViewModel
     public Guid SkillGroupId { get; set; }
     public Guid? TopicId { get; set; }
 
-    [Required(ErrorMessage = "Vui lòng nhập ký tự cần tô."), MaxLength(2)]
+    [Required(ErrorMessage = "Vui lòng nhập ký tự hoặc nội dung cần tô."), MaxLength(120)]
     public string Symbol { get; set; } = "A";
 
     [Required(ErrorMessage = "Vui lòng nhập lời hướng dẫn."), MaxLength(500)]
@@ -149,7 +147,7 @@ public class CreateTracingItemViewModel
     [Required(ErrorMessage = "Vui lòng chọn kiểu hướng dẫn nét.")]
     public string GuideMode { get; set; } = "outline";
 
-    [Range(1, 10, ErrorMessage = "Số nét dự kiến phải từ 1 đến 10.")]
+    [Range(1, 200, ErrorMessage = "Số nét tham khảo phải từ 1 đến 200.")]
     public int ExpectedStrokeCount { get; set; } = 1;
 
     public bool ShowStartPoint { get; set; }

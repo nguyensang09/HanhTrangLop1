@@ -8,7 +8,7 @@ public static class ActivityTemplateCatalog
     [
         Template(InteractionTypes.SingleChoice, "Chọn một đáp án", "Chọn đúng một phương án từ 2-5 lựa chọn.", "touch_app", "Con hãy chọn một đáp án đúng.", "Con chọn đáp án phù hợp nhé."),
         Template(InteractionTypes.MultiSelect, "Chọn nhiều đáp án", "Chọn tất cả phương án thỏa điều kiện.", "checklist", "Con hãy chọn tất cả đáp án đúng.", "Những đáp án nào phù hợp?"),
-        Template(InteractionTypes.ListenAndChoose, "Nghe và chọn", "Nghe âm thanh rồi chọn một đáp án.", "hearing", "Con nghe kỹ rồi chọn đáp án nhé.", "Con vừa nghe thấy gì?", requiresAudio: true),
+        Template(InteractionTypes.ListenAndChoose, "Nghe và chọn", "Nghe một câu hỏi hoặc yêu cầu ngắn rồi chọn một đáp án; không dùng nội dung truyện riêng.", "hearing", "Con nghe kỹ câu hỏi rồi chọn đáp án nhé.", "Con nghe và chọn đáp án đúng nhé."),
         Template(InteractionTypes.DragDrop, "Kéo vào vùng đích", "Kéo một phương án vào vùng đích có tên rõ ràng.", "pan_tool", "Con kéo đáp án đúng vào vùng đích.", "Vật nào thuộc vùng này?"),
         Template(InteractionTypes.Matching, "Nối cặp", "Ghép từng mục bên trái với một mục bên phải.", "conversion_path", "Con nối các cặp phù hợp với nhau.", "Con hãy hoàn thành tất cả cặp nối."),
         Template(InteractionTypes.Ordering, "Sắp xếp thứ tự", "Sắp xếp từ 2 mục trở lên theo thứ tự đúng.", "sort", "Con sắp xếp các mục theo đúng thứ tự.", "Thứ tự đúng là gì?"),
@@ -16,7 +16,7 @@ public static class ActivityTemplateCatalog
         Template(InteractionTypes.QuantityBuilder, "Tạo đúng số lượng", "Thêm hoặc bớt đồ vật để tạo số lượng mục tiêu.", "shopping_basket", "Con tạo đúng số lượng được yêu cầu.", "Con cần tạo bao nhiêu đồ vật?"),
         Template(InteractionTypes.Comparison, "So sánh hai nhóm", "So sánh số lượng nhóm A, nhóm B hoặc bằng nhau.", "compare_arrows", "Con quan sát và chọn nhóm có nhiều hơn.", "Nhóm nào có nhiều đồ vật hơn?"),
         Template(InteractionTypes.Classification, "Phân loại", "Đưa từng vật vào đúng một trong ít nhất hai nhóm.", "category", "Con xếp từng vật vào đúng nhóm.", "Mỗi vật thuộc nhóm nào?"),
-        Template(InteractionTypes.StoryChoice, "Nghe truyện và chọn", "Nghe đoạn kể, xem tranh rồi trả lời một câu hỏi.", "auto_stories", "Con nghe câu chuyện rồi chọn đáp án.", "Điều gì xảy ra trong câu chuyện?", requiresAudio: true, requiresImage: true)
+        Template(InteractionTypes.StoryChoice, "Nghe truyện và chọn", "Xem tranh, nghe một câu chuyện dài rồi trả lời câu hỏi riêng. Có thể bổ sung voice sau khi lưu nội dung.", "auto_stories", "Con nghe câu chuyện rồi chọn đáp án.", "Điều gì xảy ra trong câu chuyện?", requiresImage: true)
     ];
 
     private static readonly IReadOnlyDictionary<string, TopicActivityRule> TopicRules =
@@ -78,6 +78,21 @@ public static class ActivityTemplateCatalog
             ["giao-thong"] = Rule(InteractionTypes.Classification, InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.DragDrop, InteractionTypes.SingleChoice)
         };
 
+    private static readonly IReadOnlyDictionary<string, TopicActivityRule> SkillGroupRules =
+        new Dictionary<string, TopicActivityRule>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["chu-cai"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.Matching),
+            ["chu-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.Matching),
+            ["so-luong-toan"] = Rule(InteractionTypes.Counting, InteractionTypes.QuantityBuilder, InteractionTypes.Comparison, InteractionTypes.SingleChoice, InteractionTypes.DragDrop),
+            ["tu-duy-logic"] = Rule(InteractionTypes.Classification, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.MultiSelect, InteractionTypes.SingleChoice),
+            ["ky-nang-song"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification, InteractionTypes.Matching),
+            ["ngon-ngu"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification),
+            ["hinh-dang-khong-gian"] = Rule(InteractionTypes.SingleChoice, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.DragDrop, InteractionTypes.Comparison),
+            ["ghi-nho-tap-trung"] = Rule(InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.SingleChoice, InteractionTypes.Classification),
+            ["van-dong-tinh"] = RuleWithTracing(InteractionTypes.Ordering, InteractionTypes.DragDrop, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect),
+            ["kham-pha"] = Rule(InteractionTypes.Classification, InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Ordering)
+        };
+
     public static ActivityTemplateDefinition? Find(string interactionType) =>
         Templates.FirstOrDefault(x => x.InteractionType == interactionType);
 
@@ -89,12 +104,23 @@ public static class ActivityTemplateCatalog
     public static TopicActivityRule ForTopic(string? topicCode) =>
         topicCode is not null && TopicRules.TryGetValue(topicCode, out var rule) ? rule : Rule();
 
+    public static TopicActivityRule ForSkillGroup(string? skillGroupCode) =>
+        skillGroupCode is not null && SkillGroupRules.TryGetValue(skillGroupCode, out var rule) ? rule : Rule();
+
     public static bool IsAllowed(string? topicCode, string interactionType) =>
         ForTopic(topicCode).InteractionTypes.Contains(interactionType, StringComparer.OrdinalIgnoreCase);
 
+    public static bool IsAllowedForSkillGroup(string? skillGroupCode, string interactionType)
+    {
+        var rule = ForSkillGroup(skillGroupCode);
+        return interactionType == InteractionTypes.Tracing
+            ? rule.AllowsTracing
+            : rule.InteractionTypes.Contains(interactionType, StringComparer.OrdinalIgnoreCase);
+    }
+
     public static bool IsItemAllowed(LearningItem item)
     {
-        var rule = ForTopic(item.Topic?.Code);
+        var rule = ForSkillGroup(item.SkillGroup?.Code);
         return item.InteractionType == InteractionTypes.Tracing
             ? rule.AllowsTracing
             : rule.InteractionTypes.Contains(item.InteractionType, StringComparer.OrdinalIgnoreCase);

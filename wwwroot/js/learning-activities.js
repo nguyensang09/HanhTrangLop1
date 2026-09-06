@@ -14,6 +14,23 @@
         return;
     }
 
+    // Chỉ xáo trộn bản sao dùng để hiển thị; dữ liệu gốc và đáp án đúng vẫn được
+    // chấm theo giá trị nội dung. Fisher–Yates cho mọi vị trí xác suất như nhau,
+    // tránh việc trẻ học thuộc "đáp án luôn ở lựa chọn 2".
+    const shuffleForDisplay = (values) => {
+        const shuffled = Array.isArray(values) ? [...values] : [];
+        for (let index = shuffled.length - 1; index > 0; index -= 1) {
+            const swapIndex = Math.floor(Math.random() * (index + 1));
+            [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+        }
+        return shuffled;
+    };
+
+    if (Array.isArray(payload.choices)) payload.choices = shuffleForDisplay(payload.choices);
+    if (Array.isArray(payload.items)) payload.items = shuffleForDisplay(payload.items);
+    if (Array.isArray(payload.pairs)) payload.pairs = shuffleForDisplay(payload.pairs);
+    if (Array.isArray(payload.mappings)) payload.mappings = shuffleForDisplay(payload.mappings);
+
     const type = runtime.dataset.activityType;
     const autoSubmitTypes = new Set(["single_choice", "listen_choose", "story_choice", "drag_drop", "counting", "comparison"]);
     let submitTimer = 0;
@@ -123,25 +140,53 @@
         return clean.length === 1 && (/^[A-Za-z0-9ĂÂĐÊÔƠƯăâđêôơư]+$/.test(clean) || /^[0-9]+$/.test(clean));
     };
 
+    const getRepeatedPictureGroup = (text) => {
+        const parts = String(text || "").trim().split(/\s+/).filter(Boolean);
+        if (parts.length < 2 || parts.length > 9 || !parts.every((part) => part === parts[0])) {
+            return null;
+        }
+
+        // Only convert repeated pictorial symbols. Repeated words remain literal text.
+        if (/[\p{L}\p{N}]/u.test(parts[0])) return null;
+        return { symbol: parts[0], count: parts.length };
+    };
+
     const decorateButton = (button, text, forceIcon = "") => {
-        const value = String(text ?? "");
+        const rawValue = String(text ?? "").trim();
+        // Nhãn hiển thị phải đúng tuyệt đối với dữ liệu đã soạn. Không tự rút gọn
+        // "Chữ E" thành "E" hoặc "Số 1" thành "1" vì sẽ làm lệch nội dung/voice.
+        const value = rawValue;
         const normalized = value.trim().toLocaleLowerCase("vi-VN");
-        const isLetterOrDigit = isSingleSymbol(value) && !pictograms.has(normalized);
-        const shouldHideOptionPhoto = (type === "single_choice" || type === "listen_choose" || type === "multi_select") && isLetterOrDigit;
-        const mediaUrl = shouldHideOptionPhoto ? "" : resolveItemMedia(value);
-        const pictogram = shouldHideOptionPhoto ? "" : resolvePictogram(value);
+        const mediaUrl = resolveItemMedia(rawValue);
+        const pictogram = resolvePictogram(value);
         const shape = shapeClasses.get(normalized);
         const color = colorValues.get(normalized);
+        const repeatedPictureGroup = getRepeatedPictureGroup(value);
         button.replaceChildren();
 
-        if (isSingleSymbol(value)) {
+        if (repeatedPictureGroup) {
+            button.classList.add("is-quantity-visual");
+        } else if (isSingleSymbol(value)) {
             button.classList.add("is-single-symbol");
         } else {
             button.classList.add("is-text-word");
             if (value.trim().length > 5) button.classList.add("is-long-phrase");
         }
 
-        if (mediaUrl) {
+        if (repeatedPictureGroup) {
+            const visual = document.createElement("span");
+            visual.className = "answer-quantity-visual";
+            visual.setAttribute("aria-hidden", "true");
+            visual.style.setProperty("--quantity-columns", String(Math.min(3, repeatedPictureGroup.count)));
+            for (let index = 0; index < repeatedPictureGroup.count; index += 1) {
+                const picture = document.createElement("span");
+                picture.className = "answer-quantity-symbol";
+                picture.textContent = repeatedPictureGroup.symbol;
+                visual.append(picture);
+            }
+            button.setAttribute("aria-label", `Nhóm có ${repeatedPictureGroup.count} đồ vật`);
+            button.append(visual);
+        } else if (mediaUrl) {
             const image = document.createElement("img");
             image.className = "answer-photo";
             image.src = mediaUrl;
@@ -172,11 +217,13 @@
             button.append(iconSpan);
         }
 
-        const label = document.createElement("span");
-        label.className = "answer-label";
-        if (value.trim().length > 4) label.classList.add("long-label");
-        label.textContent = value;
-        button.append(label);
+        if (!repeatedPictureGroup) {
+            const label = document.createElement("span");
+            label.className = "answer-label";
+            if (value.trim().length > 4) label.classList.add("long-label");
+            label.textContent = value;
+            button.append(label);
+        }
     };
 
     const appendRepeatedVisuals = (container, value, count) => {
@@ -281,6 +328,7 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = className;
+        button.dataset.answerValue = String(text ?? "").trim();
         decorateButton(button, text, forceIcon);
         if (button.matches(".activity-option, .activity-drop-zone, .comparison-group")) {
             const color = activityColors[optionColorIndex % activityColors.length];
@@ -308,11 +356,36 @@
     // Activity Renderers
     // ==========================================
 
+    const appendEquationVisual = () => {
+        if (payload.visualMode !== "equation" || !payload.equation) return;
+        const equation = payload.equation;
+        const board = document.createElement("div");
+        board.className = "equation-visual clay-card";
+        const group = (count) => {
+            const box = document.createElement("div");
+            box.className = "equation-object-group";
+            appendRepeatedVisuals(box, equation.objectSymbol || "●", Number(count || 0));
+            return box;
+        };
+        const operator = document.createElement("strong");
+        operator.className = "equation-operator";
+        operator.textContent = equation.operator || "+";
+        const equals = document.createElement("strong");
+        equals.className = "equation-operator";
+        equals.textContent = "=";
+        const unknown = document.createElement("span");
+        unknown.className = "equation-unknown";
+        unknown.textContent = "?";
+        board.append(group(equation.leftCount), operator, group(equation.rightCount), equals, unknown);
+        runtime.append(board);
+    };
+
     const renderChoice = (allowMultiple = false) => {
+        appendEquationVisual();
         const selected = new Set();
         const grid = document.createElement("div");
         grid.className = "activity-option-grid";
-        const hasTextOptions = (payload.choices || []).some((c) => String(c || "").trim().length > 3);
+        const hasTextOptions = (payload.choices || []).some((choice) => String(choice ?? "").trim().length > 3);
         if (hasTextOptions) {
             grid.classList.add("grid-text-options");
         }
@@ -341,12 +414,17 @@
             });
             grid.append(button);
         });
+        if (grid.querySelector(".has-answer-visual")) {
+            grid.classList.add("has-visual-options");
+            grid.classList.remove("grid-text-options");
+        }
         runtime.append(grid);
     };
 
     const renderMultiSelect = () => renderChoice(true);
 
     const renderDragDrop = () => {
+        appendEquationVisual();
         const source = document.createElement("div");
         source.className = "activity-option-grid drag-source";
         const target = document.createElement("button");
@@ -367,8 +445,7 @@
             activeValue = value;
             playAnswerAudio(value);
             source.querySelectorAll("button").forEach((btn) => {
-                const labelText = (btn.querySelector(".answer-label")?.textContent || btn.textContent || "").trim();
-                btn.classList.toggle("selected", labelText === value.trim());
+                btn.classList.toggle("selected", btn.dataset.answerValue === value.trim());
             });
             decorateButton(target, value);
             target.classList.add("filled");
@@ -442,6 +519,9 @@
 
         const board = document.createElement("div");
         board.className = "matching-board";
+        const isQuantityMatching = pairs.length > 0 && pairs.every((pair) =>
+            /^\d+$/.test(String(pair.left || "").trim()) && getRepeatedPictureGroup(pair.right));
+        if (isQuantityMatching) board.classList.add("matching-quantity-board");
         const lines = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         lines.classList.add("matching-lines");
         lines.setAttribute("aria-hidden", "true");
@@ -449,7 +529,7 @@
         leftColumn.className = "matching-column matching-left";
         const rightColumn = document.createElement("div");
         rightColumn.className = "matching-column matching-right";
-        const rights = pairs.map((pair) => pair.right).reverse();
+        const rights = shuffleForDisplay(pairs.map((pair) => pair.right));
 
         const drawLines = () => {
             lines.replaceChildren();
@@ -641,13 +721,24 @@
                 value.className = "ordering-value-wrap ordering-value";
                 value.dataset.rawItem = item;
                 const itemClean = String(item || "").trim();
+                const mediaUrl = resolveItemMedia(itemClean);
                 const pictogram = resolvePictogram(itemClean);
-                if (pictogram) {
+                if (mediaUrl) {
+                    const img = document.createElement("img");
+                    img.className = "ordering-photo";
+                    img.src = mediaUrl;
+                    img.alt = itemClean;
+                    img.loading = "lazy";
+                    value.append(img);
+                    row.classList.add("has-ordering-visual");
+                } else if (pictogram) {
                     const img = document.createElement("img");
                     img.className = "ordering-pictogram";
                     img.src = `${pictogramPath}${pictogram}`;
                     img.alt = itemClean;
+                    img.loading = "lazy";
                     value.append(img);
+                    row.classList.add("has-ordering-visual");
                 }
                 const label = document.createElement("span");
                 label.className = "ordering-label";
@@ -784,28 +875,55 @@
 
     const renderComparison = () => {
         const board = document.createElement("div");
-        board.className = "comparison-board";
-        const group = (label, count, value) => {
-            const button = createButton("", "comparison-group clay-card");
+        const isShapeComparison = payload.visualMode === "shape";
+        board.className = `comparison-board ${isShapeComparison ? "comparison-shape-board" : "comparison-quantity-board"}`;
+        const selectComparison = (button, value, spokenLabel) => {
+            playAnswerAudio(spokenLabel);
+            board.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            setAnswer(value, true, true, 1000);
+        };
+        const group = (label, count, value, side) => {
+            const button = createButton("", `comparison-group comparison-side-card comparison-side-${side} clay-card`);
+            button.querySelector(".answer-label")?.remove();
             const title = document.createElement("strong");
+            title.className = "comparison-group-title";
             title.textContent = label;
             const objects = document.createElement("span");
             objects.className = "comparison-objects";
-            if (Number(count) === 0) objects.textContent = "=";
-            else appendRepeatedVisuals(objects, payload.objectSymbol || "●", count);
+            if (isShapeComparison) {
+                const shape = document.createElement("span");
+                shape.className = "comparison-shape";
+                shape.textContent = payload.objectSymbol || "●";
+                shape.style.fontSize = `${Math.max(52, Math.min(150, Number(count)))}px`;
+                shape.setAttribute("aria-label", payload.shapeName || label);
+                objects.append(shape);
+                button.classList.add("comparison-shape-card");
+            } else appendRepeatedVisuals(objects, payload.objectSymbol || "●", count);
             button.append(title, objects);
-            button.addEventListener("click", () => {
-                playAnswerAudio(label);
-                board.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                button.classList.add("selected");
-                setAnswer(value, true, true, 1000);
-            });
+            button.addEventListener("click", () => selectComparison(button, value, label));
             return button;
         };
+
+        const equalButton = createButton("", "comparison-group comparison-equal-card clay-card");
+        equalButton.querySelector(".answer-label")?.remove();
+        const equalIcon = document.createElement("span");
+        equalIcon.className = "material-symbols-outlined comparison-balance-icon";
+        equalIcon.textContent = "balance";
+        const equalSign = document.createElement("strong");
+        equalSign.className = "comparison-equal-sign";
+        equalSign.textContent = "=";
+        const equalLabel = document.createElement("span");
+        equalLabel.className = "comparison-equal-label";
+        equalLabel.textContent = "Bằng nhau";
+        equalButton.append(equalIcon, equalSign, equalLabel);
+        equalButton.setAttribute("aria-label", "Hai nhóm bằng nhau");
+        equalButton.addEventListener("click", () => selectComparison(equalButton, "equal", "Bằng nhau"));
+
         board.append(
-            group(payload.leftLabel || "Nhóm A", payload.leftCount, "left"),
-            group("Bằng nhau", 0, "equal"),
-            group(payload.rightLabel || "Nhóm B", payload.rightCount, "right"));
+            group(payload.leftLabel || "Nhóm A", payload.leftCount, "left", "left"),
+            equalButton,
+            group(payload.rightLabel || "Nhóm B", payload.rightCount, "right", "right"));
         runtime.append(board);
     };
 
@@ -984,7 +1102,7 @@
             
             const labelSpan = document.createElement("span");
             labelSpan.className = "audio-btn-label";
-            labelSpan.textContent = type === "story_choice" ? "Nghe câu chuyện" : "Nghe âm thanh";
+            labelSpan.textContent = "Nghe lại câu chuyện";
             
             audioButton.append(speakerIcon, labelSpan);
             audioButton.addEventListener("click", playPromptAudio);
@@ -996,7 +1114,7 @@
 
     const renderers = {
         single_choice: () => renderChoice(false),
-        listen_choose: renderStoryChoice,
+        listen_choose: () => renderChoice(false),
         multi_select: renderMultiSelect,
         drag_drop: renderDragDrop,
         matching: renderMatching,

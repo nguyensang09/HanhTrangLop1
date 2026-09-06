@@ -110,6 +110,9 @@ public class CreateChoiceItemViewModel
     [Required(ErrorMessage = "Vui lòng chọn yêu cầu so sánh.")]
     public string ComparisonMode { get; set; } = "more";
 
+    [Required]
+    public string ComparisonVisualMode { get; set; } = "quantity";
+
     [MaxLength(1000)]
     public string? ImageUrl { get; set; }
 
@@ -152,10 +155,10 @@ public class CreateChoiceItemViewModel
     [MaxLength(1000)]
     public string? AudioUrlEn { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(1000)]
     public string? SpeechText { get; set; }
 
-    [MaxLength(500)]
+    [MaxLength(1000)]
     public string? SpeechTextEn { get; set; }
 
     [MaxLength(100)]

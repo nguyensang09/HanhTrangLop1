@@ -148,8 +148,7 @@ public class KidsController : Controller
             .Include(x => x.Topic)
             .Include(x => x.Questions)
             .Where(x => x.SkillGroupId == id && x.Status == ContentStatus.Published)
-            .OrderBy(x => x.Topic!.SortOrder)
-            .ThenBy(x => x.SortOrder)
+            .OrderBy(x => x.SortOrder)
             .ThenBy(x => x.Level)
             .ThenBy(x => x.Title)
             .ToListAsync();
@@ -994,8 +993,12 @@ public class KidsController : Controller
         if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(item.Title);
         var questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(promptText);
         if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.Title);
-        var contentAudioUrl = await ResolveActiveVoiceUrlAsync(speechText);
-        var contentAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(speechText);
+        var contentAudioUrl = item.InteractionType == InteractionTypes.StoryChoice
+            ? await ResolveActiveVoiceUrlAsync(speechText)
+            : string.Empty;
+        var contentAudioUrlEn = item.InteractionType == InteractionTypes.StoryChoice
+            ? await ResolveActiveVoiceUrlEnAsync(speechText)
+            : string.Empty;
         var titleAudioUrl = questionAudioUrl;
         var titleAudioUrlEn = questionAudioUrlEn;
         var instructionAudioUrl = questionAudioUrl;
@@ -1022,7 +1025,14 @@ public class KidsController : Controller
                 payload["audioUrl"] = tracingAudioUrl;
                 payload["audioUrlEn"] = tracingAudioUrlEn;
             }
-            else if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+            else if (item.InteractionType == InteractionTypes.ListenAndChoose)
+            {
+                payload["speechText"] = string.Empty;
+                payload["speechTextEn"] = string.Empty;
+                payload["audioUrl"] = string.Empty;
+                payload["audioUrlEn"] = string.Empty;
+            }
+            else if (item.InteractionType == InteractionTypes.StoryChoice)
             {
                 payload["audioUrl"] = !string.IsNullOrWhiteSpace(contentAudioUrl) ? contentAudioUrl : questionAudioUrl;
                 payload["audioUrlEn"] = !string.IsNullOrWhiteSpace(contentAudioUrlEn) ? contentAudioUrlEn : questionAudioUrlEn;

@@ -79,6 +79,33 @@ public sealed class VoiceLibraryMaintenanceService
         _logger = logger;
     }
 
+    public async Task<(int Rows, int Files)> PurgeAllVoiceDataAsync(CancellationToken cancellationToken = default)
+    {
+        var folder = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "audio"));
+        var webRoot = Path.GetFullPath(_environment.WebRootPath);
+        if (!folder.StartsWith(webRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Thư mục voice nằm ngoài wwwroot.");
+        }
+
+        var deletedFiles = 0;
+        if (Directory.Exists(folder))
+        {
+            foreach (var file in Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly))
+            {
+                File.Delete(file);
+                deletedFiles++;
+            }
+        }
+
+        var voiceRows = await _db.TextToSpeechCaches.ToListAsync(cancellationToken);
+        var audioRows = await _db.MediaAssets.Where(x => x.AssetType == "audio").ToListAsync(cancellationToken);
+        _db.TextToSpeechCaches.RemoveRange(voiceRows);
+        _db.MediaAssets.RemoveRange(audioRows);
+        await _db.SaveChangesAsync(cancellationToken);
+        return (voiceRows.Count + audioRows.Count, deletedFiles);
+    }
+
     public async Task<VoiceAuditStatsResult> GetVoiceAuditStatsAsync(CancellationToken cancellationToken = default)
     {
         await _db.Database.MigrateAsync(cancellationToken);
@@ -363,7 +390,7 @@ public sealed class VoiceLibraryMaintenanceService
                 if (!string.IsNullOrWhiteSpace(ret)) Collect(ret, "retry-feedback");
 
                 var payload = ParsePayloadObject(q.PayloadJson);
-                if (lesson.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+                if (lesson.InteractionType == InteractionTypes.StoryChoice)
                 {
                     Collect(ReadJsonString(payload, "speechText"), "content");
                 }
@@ -599,7 +626,7 @@ public sealed class VoiceLibraryMaintenanceService
             AddText(ReadJsonString(q.FeedbackJson, "retry"));
 
             var payload = ParsePayloadObject(q.PayloadJson);
-            if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+            if (item.InteractionType == InteractionTypes.StoryChoice)
             {
                 AddText(ReadJsonString(payload, "speechText"));
             }
@@ -791,7 +818,7 @@ public sealed class VoiceLibraryMaintenanceService
         AddIfValid(await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "correct"), "correct-feedback", item.Title, cancellationToken));
         AddIfValid(await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "retry"), "retry-feedback", item.Title, cancellationToken));
 
-        if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+        if (item.InteractionType == InteractionTypes.StoryChoice)
         {
             AddIfValid(await EnsureVoiceEntryAsync(ReadJsonString(payload, "speechText"), "content", item.Title, cancellationToken));
         }
@@ -1096,7 +1123,7 @@ public sealed class VoiceLibraryMaintenanceService
         await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "correct"), "correct-feedback", item.Title, cancellationToken);
         await EnsureVoiceEntryAsync(ReadJsonString(question.FeedbackJson, "retry"), "retry-feedback", item.Title, cancellationToken);
 
-        if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+        if (item.InteractionType == InteractionTypes.StoryChoice)
         {
             await EnsureVoiceEntryAsync(ReadJsonString(payload, "speechText"), "content", item.Title, cancellationToken);
         }
@@ -1147,7 +1174,15 @@ public sealed class VoiceLibraryMaintenanceService
             payload["audioUrl"] = questionUrl;
             payload["audioUrlEn"] = questionUrlEn;
         }
-        else if (item.InteractionType is InteractionTypes.ListenAndChoose or InteractionTypes.StoryChoice)
+        else if (item.InteractionType == InteractionTypes.ListenAndChoose)
+        {
+            // Dạng nghe ngắn dùng duy nhất voice của câu hỏi, không có nội dung nghe thứ hai.
+            payload["speechText"] = string.Empty;
+            payload["speechTextEn"] = string.Empty;
+            payload["audioUrl"] = string.Empty;
+            payload["audioUrlEn"] = string.Empty;
+        }
+        else if (item.InteractionType == InteractionTypes.StoryChoice)
         {
             var speechText = ReadJsonString(payload, "speechText");
             var speechUrl = await ResolveVoiceAudioUrlAsync(speechText, cancellationToken);

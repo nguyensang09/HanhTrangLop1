@@ -252,7 +252,6 @@ public class TodayLessonService
             .Include(x => x.Topic)
             .Where(x => x.Status == ContentStatus.Published)
             .OrderBy(x => x.SkillGroup!.SortOrder)
-            .ThenBy(x => x.Topic!.SortOrder)
             .ThenBy(x => x.SortOrder)
             .ToListAsync();
 

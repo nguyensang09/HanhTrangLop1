@@ -553,8 +553,10 @@
       "U": [["M", 225, 165, "L", 225, 450, "C", 225, 615, 495, 615, 495, 450, "L", 495, 165]],
       "Ư": [["M", 225, 165, "L", 225, 450, "C", 225, 615, 495, 615, 495, 450, "L", 495, 165], ["M", 495, 165, "C", 535, 120, 565, 145, 535, 205]],
       "V": [["M", 215, 165, "L", 360, 575, "L", 505, 165]],
+      "W": [["M", 175, 165, "L", 250, 575, "L", 360, 310, "L", 470, 575, "L", 545, 165]],
       "X": [["M", 225, 165, "L", 495, 575], ["M", 495, 165, "L", 225, 575]],
       "Y": [["M", 215, 165, "L", 360, 350, "L", 505, 165], ["M", 360, 350, "L", 360, 575]],
+      "Z": [["M", 215, 165, "L", 505, 165, "L", 215, 575, "L", 505, 575]],
       "a": [["M", 455, 340, "C", 425, 255, 265, 255, 240, 390, "C", 215, 535, 410, 565, 460, 440], ["M", 460, 290, "L", 460, 555]],
       "ă": [["M", 455, 360, "C", 425, 275, 265, 275, 240, 410, "C", 215, 555, 410, 585, 460, 460], ["M", 460, 310, "L", 460, 575], ["M", 305, 220, "C", 330, 265, 390, 265, 415, 220]],
       "â": [["M", 455, 360, "C", 425, 275, 265, 275, 240, 410, "C", 215, 555, 410, 585, 460, 460], ["M", 460, 310, "L", 460, 575], ["M", 310, 235, "L", 360, 185], ["M", 360, 185, "L", 410, 235]],
@@ -583,8 +585,10 @@
       "u": [["M", 235, 315, "L", 235, 470, "C", 235, 585, 450, 580, 450, 470, "L", 450, 315], ["M", 450, 470, "L", 450, 555]],
       "ư": [["M", 235, 315, "L", 235, 470, "C", 235, 585, 450, 580, 450, 470, "L", 450, 315], ["M", 450, 470, "L", 450, 555], ["M", 450, 315, "C", 490, 270, 520, 295, 490, 355]],
       "v": [["M", 235, 315, "L", 360, 555, "L", 485, 315]],
+      "w": [["M", 190, 315, "L", 255, 555, "L", 360, 385, "L", 465, 555, "L", 530, 315]],
       "x": [["M", 245, 315, "L", 475, 555], ["M", 475, 315, "L", 245, 555]],
-      "y": [["M", 235, 315, "L", 360, 555], ["M", 480, 315, "L", 360, 595, "C", 325, 655, 250, 650, 225, 605]]
+      "y": [["M", 235, 315, "L", 360, 555], ["M", 480, 315, "L", 360, 595, "C", 325, 655, 250, 650, 225, 605]],
+      "z": [["M", 225, 315, "L", 495, 315, "L", 225, 555, "L", 495, 555]]
     };
 
     // Multi-row Creative Tracing Story (Ảnh 2: Rùa và Dâu tây / Quả lê 3 hàng)
@@ -642,15 +646,16 @@
     if (guides[raw]) {
       return guides[raw];
     }
-    if (guides[upper]) {
+    if (raw === normalized && guides[upper]) {
       return guides[upper];
     }
-    if (guides[normalized]) {
+    if (raw === normalized && guides[normalized]) {
       return guides[normalized];
     }
 
-    // Fallback single line
-    return [["M", 360, 160, "L", 360, 575]];
+    // Unknown input is rendered from its real font outline later. Never substitute
+    // a generic vertical line because that teaches the wrong glyph.
+    return null;
   }
 
   function transformCommands(commands, scale, targetCenterX, targetBaselineY, baseCenterX = 360, baseBaselineY = 605) {
@@ -798,39 +803,107 @@
     return allStrokes;
   }
 
+  function splitGraphemes(text) {
+    const value = String(text || "").normalize("NFC");
+    if (typeof Intl?.Segmenter === "function") {
+      return [...new Intl.Segmenter("vi", { granularity: "grapheme" }).segment(value)].map((part) => part.segment);
+    }
+    return Array.from(value);
+  }
+
+  function wrapTracingText(text, maxCharacters = 10) {
+    const characters = splitGraphemes(String(text || "").trim());
+    const lines = [];
+    for (let index = 0; index < characters.length; index += maxCharacters) {
+      lines.push(characters.slice(index, index + maxCharacters).join("").trim());
+    }
+    return lines.filter(Boolean).slice(0, 5);
+  }
+
+  function generatePhraseStrokes(text) {
+    const sourceLines = wrapTracingText(text);
+    if (!sourceLines.length) return [];
+
+    // Short words are repeated so the child can practise more than once. Longer
+    // phrases are wrapped across the page while preserving every character.
+    const rows = sourceLines.length === 1
+      ? [sourceLines[0], sourceLines[0], sourceLines[0], sourceLines[0]]
+      : sourceLines.length === 2
+        ? [sourceLines[0], sourceLines[1], sourceLines[0], sourceLines[1]]
+        : sourceLines;
+    const baselines = rows.map((_, index) => 220 + index * (920 / Math.max(1, rows.length - 1)));
+    const result = [];
+
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+      const characters = splitGraphemes(rows[rowIndex]);
+      const drawableCount = characters.filter((character) => !/^\s$/u.test(character)).length;
+      const scale = Math.min(0.34, 2.15 / Math.max(1, characters.length));
+      const advance = Math.min(185, 760 / Math.max(1, characters.length));
+      const firstCenter = 460 - ((characters.length - 1) * advance / 2);
+      let drawableIndex = 0;
+
+      for (let charIndex = 0; charIndex < characters.length; charIndex += 1) {
+        const character = characters[charIndex];
+        if (/^\s$/u.test(character)) continue;
+        const baseStrokes = getBaseStrokesFor(character);
+        if (!baseStrokes?.length) return [];
+        baseStrokes.forEach((stroke, strokeIndex) => {
+          result.push({
+            commands: transformCommands(stroke, scale, firstCenter + charIndex * advance, baselines[rowIndex]),
+            tier: rowIndex === 0 ? "medium" : "fine",
+            ghostWidth: rowIndex === 0 ? 24 : 18,
+            corridorWidth: rowIndex === 0 ? 18 : 13,
+            centerlineWidth: rowIndex === 0 ? 3.2 : 2.4,
+            dashArray: rowIndex === 0 ? "6,6" : "5,5",
+            corridorRadius: rowIndex === 0 ? 23 : 18,
+            penWidth: rowIndex === 0 ? 13 : 10,
+            showBadge: rowIndex === 0 && drawableIndex === 0 && strokeIndex === 0,
+            badgeLabel: "1"
+          });
+        });
+        drawableIndex += 1;
+      }
+
+      if (drawableIndex !== drawableCount) return [];
+    }
+    return result;
+  }
+
+  function buildTextOutlineRows(text) {
+    const sourceLines = wrapTracingText(text);
+    if (!sourceLines.length) return [];
+    const rows = sourceLines.length === 1
+      ? [sourceLines[0], sourceLines[0], sourceLines[0], sourceLines[0]]
+      : sourceLines.length === 2
+        ? [sourceLines[0], sourceLines[1], sourceLines[0], sourceLines[1]]
+        : sourceLines;
+    return rows.map((line, index) => ({
+      text: line,
+      x: 460,
+      y: 165 + index * (920 / Math.max(1, rows.length - 1)),
+      fontSize: Math.max(62, Math.min(190, 760 / Math.max(1, splitGraphemes(line).length * 0.64))),
+      maxWidth: 790
+    }));
+  }
+
   function isPictureSymbol(raw) {
     const s = cleanSymbolKey(raw);
     if (!s) return false;
-    return s === "phong canh" || s.includes("phong canh") ||
-           s === "do dung" || s.includes("do dung") ||
-           s === "thien nhien" || s.includes("thien nhien") ||
-           s === "hinh hoc" || s.includes("hinh hoc") ||
-           s === "ngoi sao" || s.includes("ngoi sao") ||
-           s === "meo" || s.includes("meo") ||
-           s === "ca heo" || s.includes("ca heo") ||
-           s === "o che mua" || s.includes("o che mua") || s.includes("umbrella") ||
-           s === "trai tao" || s.includes("trai tao") || s.includes("tao") ||
-           s === "tau hoa" || s.includes("tau hoa") || s.includes("train") ||
-           s === "chu tho" || s.includes("chu tho") || s.includes("rabbit") || s.includes("tho") ||
-           s === "ong vang" || s.includes("ong vang") || s.includes("bee") || s.includes("ong") ||
-           s === "may bay" || s.includes("may bay") || s.includes("plane") ||
-           s === "thuyen" || s.includes("thuyen") || s.includes("boat") ||
-           s === "cau vong" || s.includes("cau vong") || s.includes("rainbow") ||
-           s === "chu buom" || s.includes("chu buom") || s.includes("butterfly") || s.includes("buom") ||
-           s === "khung long" || s.includes("khung long") || s.includes("dinosaur") ||
-           s === "ten lua" || s.includes("ten lua") || s.includes("rocket") ||
-           s === "tranh" || s.startsWith("tranh ") || s.includes("to tranh") ||
-           s.includes("nghe thuat") || s.includes("tao hinh") ||
-           s.includes("picture") || s.includes("art");
+    return new Set([
+      "phong canh", "thien nhien", "do dung", "hinh hoc", "ngoi sao",
+      "meo", "meo con", "ca heo", "o che mua", "trai tao", "tau hoa",
+      "chu tho", "ong vang", "may bay", "thuyen", "cau vong", "chu buom",
+      "khung long", "ten lua"
+    ]).has(s) || s.startsWith("tranh ");
   }
 
   function guideStrokesFor(symbol) {
-    const rawStrokes = getBaseStrokesFor(symbol);
-    const raw = String(symbol || "").trim().toLowerCase();
+    const source = String(symbol || "").trim().normalize("NFC");
+    const raw = source.toLowerCase();
 
     // If it's a Picture, Landscape, Animal, School Supplies, or Creative Story Tracing Artwork:
     if (isPictureSymbol(raw)) {
-      return rawStrokes.map((cmds, idx) => ({
+      return (getBaseStrokesFor(source) || []).map((cmds, idx) => ({
         commands: cmds,
         tier: "picture",
         ghostWidth: 26,
@@ -844,8 +917,12 @@
       }));
     }
 
-    // Otherwise, generate the full 5-row multi-tier Grade 1 handwriting worksheet (Ảnh 1)
-    return generateWorksheetStrokes(rawStrokes);
+    const characters = splitGraphemes(source);
+    if (characters.length === 1) {
+      const rawStrokes = getBaseStrokesFor(source);
+      return rawStrokes?.length ? generateWorksheetStrokes(rawStrokes) : [];
+    }
+    return generatePhraseStrokes(source);
   }
 
   function pathData(commands) {
@@ -887,6 +964,42 @@
           penWidth,
           covered: false
         });
+      }
+    });
+    return checkpoints;
+  }
+
+  function extractTextOutlineCheckpoints(svgElement) {
+    const nodes = [...(svgElement?.querySelectorAll("text.tracing-guide-text-centerline") || [])];
+    if (!nodes.length) return [];
+    const canvas = document.createElement("canvas");
+    canvas.width = 920;
+    canvas.height = 1200;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) return [];
+    const checkpoints = [];
+
+    nodes.forEach((node, strokeIndex) => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      const fontSize = Number(node.dataset.fontSize || 120);
+      const maxWidth = Number(node.dataset.maxWidth || 790);
+      const x = Number(node.getAttribute("x") || 460);
+      const y = Number(node.getAttribute("y") || 300);
+      context.font = `900 ${fontSize}px "Be Vietnam Pro", "Arial", sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.lineJoin = "round";
+      context.lineWidth = Math.max(5, fontSize * 0.045);
+      context.strokeStyle = "#000";
+      context.strokeText(node.textContent || "", x, y, maxWidth);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const step = fontSize >= 120 ? 9 : 7;
+      for (let py = 0; py < canvas.height; py += step) {
+        for (let px = 0; px < canvas.width; px += step) {
+          if (pixels[(py * canvas.width + px) * 4 + 3] > 24) {
+            checkpoints.push({ x: px, y: py, strokeIndex, corridorRadius: 24, penWidth: 13, covered: false });
+          }
+        }
       }
     });
     return checkpoints;
@@ -996,6 +1109,51 @@
     }
 
     const guideLayer = appendSvgElement(svg, "g", { class: "tracing-guide-layer" });
+
+    // Any character not present in the handwriting map is still rendered as its
+    // real glyph outline. This also covers punctuation, accented text and scripts
+    // entered by an administrator instead of silently showing an unrelated line.
+    if (!isPicture && strokeDefs.length === 0) {
+      const textRows = buildTextOutlineRows(symbol);
+      textRows.forEach((row, index) => {
+        appendSvgElement(guideLayer, "text", {
+          x: row.x,
+          y: row.y,
+          "text-anchor": "middle",
+          "dominant-baseline": "middle",
+          "font-family": "'Be Vietnam Pro', 'Arial', sans-serif",
+          "font-size": row.fontSize,
+          "font-weight": "900",
+          fill: "rgba(255,255,255,.35)",
+          stroke: "#cbd5e1",
+          "stroke-width": Math.max(16, row.fontSize * 0.12),
+          "stroke-linejoin": "round"
+        }, row.text);
+        appendSvgElement(guideLayer, "text", {
+          x: row.x,
+          y: row.y,
+          class: "tracing-guide-text-centerline",
+          "data-font-size": row.fontSize,
+          "data-max-width": row.maxWidth,
+          "text-anchor": "middle",
+          "dominant-baseline": "middle",
+          "font-family": "'Be Vietnam Pro', 'Arial', sans-serif",
+          "font-size": row.fontSize,
+          "font-weight": "900",
+          fill: "rgba(255,255,255,.18)",
+          stroke: strokePalette[index % strokePalette.length].color,
+          "stroke-width": Math.max(5, row.fontSize * 0.045),
+          "stroke-dasharray": "7,6",
+          "stroke-linejoin": "round",
+          opacity: ".72"
+        }, row.text);
+      });
+      target.replaceChildren(svg);
+      target._guideCheckpoints = extractTextOutlineCheckpoints(svg);
+      target._isPicture = false;
+      target.setAttribute("data-is-picture", "false");
+      return;
+    }
 
     // 2. Ghost Background Strokes with Tiered Widths
     strokeDefs.forEach((def) => {

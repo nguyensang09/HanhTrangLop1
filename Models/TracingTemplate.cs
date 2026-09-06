@@ -9,7 +9,7 @@ public class TracingTemplate
     [Required, MaxLength(30)]
     public string SymbolType { get; set; } = "uppercase";
 
-    [Required, MaxLength(10)]
+    [Required, MaxLength(120)]
     public string Symbol { get; set; } = string.Empty;
 
     [Required, MaxLength(100)]

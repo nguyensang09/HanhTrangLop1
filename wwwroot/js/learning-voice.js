@@ -8,6 +8,7 @@
     }
 
     const isEnglishVoice = host.dataset.englishVoice === "true";
+    const activityType = host.dataset.activityType || "";
 
     let payload = {};
     try {
@@ -28,6 +29,10 @@
     const questionAudioUrl = payload.questionAudioUrl || host.dataset.questionAudioUrl || "";
     const questionAudioUrlEn = payload.questionAudioUrlEn || host.dataset.questionAudioUrlEn || "";
 
+    const contentText = payload.speechText || "";
+    const contentAudioUrl = payload.audioUrl || "";
+    const contentAudioUrlEn = payload.audioUrlEn || "";
+
     const correctAudioUrl = payload.correctAudioUrl || host.dataset.correctAudioUrl || "";
     const correctAudioUrlEn = payload.correctAudioUrlEn || host.dataset.correctAudioUrlEn || "";
 
@@ -47,6 +52,7 @@
     const activeTitleAudio = isEnglishVoice ? (titleAudioUrlEn || titleAudioUrl) : titleAudioUrl;
     const activeInstructionAudio = isEnglishVoice ? (instructionAudioUrlEn || instructionAudioUrl) : instructionAudioUrl;
     const activeQuestionAudio = isEnglishVoice ? (questionAudioUrlEn || questionAudioUrl) : questionAudioUrl;
+    const activeContentAudio = isEnglishVoice ? (contentAudioUrlEn || contentAudioUrl) : contentAudioUrl;
     const activeCorrectAudio = isEnglishVoice ? (correctAudioUrlEn || correctAudioUrl) : correctAudioUrl;
     const activeRetryAudio = isEnglishVoice ? (retryAudioUrlEn || retryAudioUrl) : retryAudioUrl;
 
@@ -154,6 +160,16 @@
         await speakOrPlay(text, audioUrl);
     };
 
+    const playInitialLessonAudio = async () => {
+        // Bài nghe ngắn đọc đúng câu hỏi. Bài nghe truyện phát thẳng nội dung truyện
+        // khi vào bài; nút trong nội dung chỉ dùng để nghe lại.
+        if (activityType === "story_choice" && (contentText || activeContentAudio)) {
+            await speakOrPlay(contentText, activeContentAudio);
+            return;
+        }
+        await playQuestion();
+    };
+
     const labelFromElement = (element) => {
         const explicit = element.dataset.speakOption || element.dataset.value;
         if (explicit) return explicit.trim();
@@ -208,7 +224,7 @@
 
     const tryPlayInitialVoice = () => {
         if (hasPlayedInitialVoice) return;
-        playQuestion()
+        playInitialLessonAudio()
             .then(() => { hasPlayedInitialVoice = true; })
             .catch(() => {});
     };

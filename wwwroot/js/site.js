@@ -71,8 +71,15 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         }
     });
     const readyVoiceEntries = voiceCacheEntries
-        .filter((entry) => (readEntry(entry, "status") === "ready" && readEntry(entry, "audioUrl")) ||
-            (readEntry(entry, "statusEn") === "ready" && readEntry(entry, "audioUrlEn")));
+        .filter((entry) => {
+            const hasVi = typeof readEntry(entry, "hasAudioVi") === "boolean"
+                ? readEntry(entry, "hasAudioVi")
+                : readEntry(entry, "status") === "ready" && readEntry(entry, "audioUrl");
+            const hasEn = typeof readEntry(entry, "hasAudioEn") === "boolean"
+                ? readEntry(entry, "hasAudioEn")
+                : readEntry(entry, "statusEn") === "ready" && readEntry(entry, "audioUrlEn");
+            return Boolean(hasVi || hasEn);
+        });
     const imageAssetEntries = imageAssets
         .filter((entry) => readEntry(entry, "storagePath"));
     const displayUsageType = (usageType) => ({
@@ -89,7 +96,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     }[usageType] || usageType || "Voice");
 
     const selectedTopicRule = () => {
-        const option = topicSelect?.options[topicSelect.selectedIndex];
+        const option = skillGroupSelect?.options[skillGroupSelect.selectedIndex];
         return {
             allowedTypes: (option?.dataset.allowedTypes || "").split(",").filter(Boolean),
             allowsTracing: option?.dataset.allowsTracing === "true"
@@ -97,7 +104,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     };
 
     const filterTemplates = () => {
-        if (!interactionSelect || !topicSelect) return;
+        if (!interactionSelect || !skillGroupSelect) return;
         const rule = selectedTopicRule();
 
         [...interactionSelect.options].forEach((option) => {
@@ -116,14 +123,18 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
 
         if (tracingLink) {
             tracingLink.hidden = !rule.allowsTracing;
-            const selectedTopicId = topicSelect.value;
             const selectedGroupId = skillGroupSelect?.value || "";
-            tracingLink.href = `/admin/learning-items/create-tracing?skillGroupId=${encodeURIComponent(selectedGroupId)}&topicId=${encodeURIComponent(selectedTopicId)}`;
+            tracingLink.href = `/admin/learning-items/create-tracing?skillGroupId=${encodeURIComponent(selectedGroupId)}`;
         }
     };
 
     const filterTopics = () => {
-        if (!skillGroupSelect || !topicSelect) {
+        if (!skillGroupSelect) {
+            return;
+        }
+
+        if (!topicSelect) {
+            filterTemplates();
             return;
         }
 
@@ -387,7 +398,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         const list = panel.querySelector("[data-builder-voice-list]");
         const totalNode = panel.querySelector("[data-builder-voice-total]");
         const filledNode = panel.querySelector("[data-builder-voice-filled]");
-        if (!list || !totalNode || !filledNode) return;
+        const filledEnNode = panel.querySelector("[data-builder-voice-filled-en]");
+        if (!list || !totalNode || !filledNode || !filledEnNode) return;
 
         const type = interactionSelect?.value || "single_choice";
         const read = (name) => form.querySelector(`[name="${name}"]`)?.value.trim() || "";
@@ -423,8 +435,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
 
         choiceInputs.forEach((input, index) => add(`\u0110\u00e1p \u00e1n ${index + 1}`, input.value));
 
-        if (["listen_choose", "story_choice"].includes(type)) {
-            add("N\u1ed9i dung nghe", read("SpeechText"), true);
+        if (type === "story_choice") {
+            add("N\u1ed9i dung truy\u1ec7n", read("SpeechText"), true);
         }
         if (["drag_drop", "quantity_builder"].includes(type)) {
             add("V\u00f9ng \u0111\u00edch", read("TargetLabel"));
@@ -446,9 +458,18 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             add("Nh\u00f3m ph\u1ea3i", read("RightLabel"));
         }
 
-        const filled = rows.filter((row) => row.text).length;
+        const voiceStateFor = (row) => {
+            const match = row.text ? voiceByText.get(normalizeLookupText(row.text)) : null;
+            const hasExplicitVi = typeof readEntry(match, "hasAudioVi") === "boolean";
+            const hasExplicitEn = typeof readEntry(match, "hasAudioEn") === "boolean";
+            return {
+                vi: hasExplicitVi ? readEntry(match, "hasAudioVi") : Boolean(readEntry(match, "status") === "ready" && readEntry(match, "audioUrl")),
+                en: hasExplicitEn ? readEntry(match, "hasAudioEn") : Boolean(readEntry(match, "statusEn") === "ready" && readEntry(match, "audioUrlEn"))
+            };
+        };
         totalNode.textContent = String(rows.length);
-        filledNode.textContent = String(filled);
+        filledNode.textContent = String(rows.filter((row) => voiceStateFor(row).vi).length);
+        filledEnNode.textContent = String(rows.filter((row) => voiceStateFor(row).en).length);
         list.replaceChildren();
 
         rows.forEach((row, index) => {
@@ -459,8 +480,9 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             const status = readEntry(match, "status");
             const audioUrlEn = readEntry(match, "audioUrlEn");
             const statusEn = readEntry(match, "statusEn");
-            const hasAudioVi = Boolean(audioUrl) && status === "ready";
-            const hasAudioEn = Boolean(audioUrlEn) && statusEn === "ready";
+            const availability = voiceStateFor(row);
+            const hasAudioVi = availability.vi;
+            const hasAudioEn = availability.en;
             const hasAudio = hasAudioVi || hasAudioEn;
 
             const kind = document.createElement("small");
@@ -978,6 +1000,10 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
     const symbolPreview = form.querySelector("[data-tracing-preview-symbol]");
     const guideMode = form.querySelector("[data-tracing-guide-mode]");
     const guidePreview = form.querySelector("[data-tracing-preview-guide]");
+    const artTemplate = form.querySelector("[data-tracing-art-template]");
+    const skillGroup = form.querySelector("[data-skill-group-select]");
+    const titleInput = form.querySelector("[data-tracing-title-input]");
+    const promptInput = form.querySelector("[data-tracing-prompt-input]");
 
     const updateTracingPreview = () => {
         const symbol = symbolInput?.value.trim() || "?";
@@ -997,6 +1023,19 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
 
     symbolInput?.addEventListener("input", updateTracingPreview);
     guideMode?.addEventListener("change", updateTracingPreview);
+    artTemplate?.addEventListener("change", () => {
+        const option = artTemplate.selectedOptions[0];
+        if (!option?.value) return;
+        if (symbolInput) symbolInput.value = option.value;
+        if (titleInput) titleInput.value = `Tô tranh: ${option.dataset.title || option.textContent.trim()}`;
+        if (promptInput) promptInput.value = "Con hãy tô theo các đường nét đứt để hoàn thành bức tranh.";
+        const fineMotorOption = [...(skillGroup?.options || [])].find((item) => item.dataset.groupCode === "van-dong-tinh");
+        if (fineMotorOption && skillGroup) {
+            skillGroup.value = fineMotorOption.value;
+            skillGroup.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        updateTracingPreview();
+    });
     updateTracingPreview();
 });
 
