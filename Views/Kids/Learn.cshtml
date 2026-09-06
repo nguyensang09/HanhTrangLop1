@@ -32,6 +32,33 @@
         symbolLower.Contains("cau-vong") || symbolLower.Contains("chu-buom") ||
         symbolLower.Contains("khung-long") || symbolLower.Contains("ten-lua") ||
         itemCodeLower.Contains("picture");
+
+    var successDestination = string.Empty;
+    var successActionText = "Sang bài tiếp theo";
+    if (Model.IsCorrect == true)
+    {
+        if (Model.NextItemId.HasValue)
+        {
+            successDestination = Model.FromTracing
+                ? Url.Action("Learn", "Kids", new { id = Model.NextItemId.Value, fromTracing = true }) ?? string.Empty
+                : Url.Action("Learn", "Kids", new { id = Model.NextItemId.Value, skillGroupId = Model.ReturnSkillGroupId }) ?? string.Empty;
+        }
+        else if (Model.FromTracing)
+        {
+            successDestination = Url.Action("Tracing", "Kids") ?? string.Empty;
+            successActionText = "Về danh sách tập tô";
+        }
+        else if (Model.ReturnSkillGroupId.HasValue)
+        {
+            successDestination = Url.Action("Skill", "Kids", new { id = Model.ReturnSkillGroupId.Value }) ?? string.Empty;
+            successActionText = "Về bản đồ bài học";
+        }
+        else
+        {
+            successDestination = Url.Action("Today", "Kids") ?? string.Empty;
+            successActionText = "Về bản đồ bài học";
+        }
+    }
 }
 
 <section class="learn-screen learning-focus-shell"
@@ -91,92 +118,35 @@
 
     @if (Model.IsCorrect == true)
     {
-        <!-- Màn Hình Chúc Mừng Bé Trả Lời Đúng - RỰC RỠ & SINH ĐỘNG -->
-        <div class="answer-celebration-card clay-card" role="status">
-            @if (Model.FromTracing)
-            {
-                <a class="celebration-map-corner-btn clay-button" asp-controller="Kids" asp-action="Tracing" title="Về Góc Tập Tô">
-                    <span class="material-symbols-outlined">draw</span>
-                    <span>Tập tô</span>
-                </a>
-            }
-            else if (Model.ReturnSkillGroupId.HasValue)
-            {
-                <!-- Nút Bản Đồ Bài Học Tách Biệt Ở Góc Phải -->
-                <a class="celebration-map-corner-btn clay-button" asp-controller="Kids" asp-action="Skill" asp-route-id="@Model.ReturnSkillGroupId" title="Về bản đồ bài học">
-                    <span class="material-symbols-outlined">grid_view</span>
-                    <span>Bản đồ</span>
-                </a>
-            }
-
-            <div class="celebration-confetti-wrap">
-                <span class="confetti-dot dot-1"></span>
-                <span class="confetti-dot dot-2"></span>
-                <span class="confetti-dot dot-3"></span>
-                <span class="confetti-dot dot-4"></span>
-                <span class="confetti-dot dot-5"></span>
-            </div>
-
-            <div class="celebration-mascot-wrap">
-                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Chúc Mừng" class="celebration-mascot-img pulse-animation" />
-                <div class="celebration-star-badge">
-                    <span class="material-symbols-outlined">star</span>
+        <div class="learning-success-overlay" data-learning-success-popup data-destination="@successDestination" role="dialog" aria-modal="true" aria-labelledby="learning-success-title">
+            <div class="learning-success-popup" role="document">
+                <button class="learning-success-close clay-button" type="button" data-success-close aria-label="Đóng và chuyển bài">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <div class="learning-success-decorations" aria-hidden="true">
+                    @for (var index = 0; index < 8; index++)
+                    {
+                        <span data-success-decoration></span>
+                    }
                 </div>
-            </div>
-
-            <h2 class="celebration-title">Xuất Sắc Quá! 🎉</h2>
-            <p class="celebration-message">@(string.IsNullOrWhiteSpace(Model.FeedbackMessage) ? "Bé đã hoàn thành bài rất xuất sắc, tiếp tục phát huy nhé!" : Model.FeedbackMessage)</p>
-
-            <div class="celebration-reward-pill">
-                <span class="material-symbols-outlined star-icon">stars</span>
-                <span>Thưởng <strong>+1 Ngôi Sao Vàng</strong> vào túi quà</span>
-            </div>
-
-            <div class="celebration-actions">
-                @if (Model.FromTracing)
-                {
-                    @if (Model.NextItemId.HasValue)
-                    {
-                        <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Learn" asp-route-id="@Model.NextItemId" asp-route-fromTracing="true">
-                            <span>Sang bài tiếp theo</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Tracing">
-                            <span class="material-symbols-outlined">draw</span>
-                            <span>Hoàn thành chuyên mục</span>
-                        </a>
-                    }
-                }
-                else if (Model.NextItemId.HasValue)
-                {
-                    <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Learn" asp-route-id="@Model.NextItemId" asp-route-skillGroupId="@Model.ReturnSkillGroupId">
-                        <span>Sang bài tiếp theo</span>
-                        <span class="material-symbols-outlined">arrow_forward</span>
-                    </a>
-                }
-                else if (Model.ReturnSkillGroupId.HasValue)
-                {
-                    <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Skill" asp-route-id="@Model.ReturnSkillGroupId">
-                        <span class="material-symbols-outlined">map</span>
-                        <span>Về bản đồ hành trình</span>
-                    </a>
-                }
-                else
-                {
-                    <a class="app-btn clay-button celebration-btn-primary" asp-controller="Kids" asp-action="Summary">
-                        <span class="material-symbols-outlined">emoji_events</span>
-                        <span>Xem tổng kết quà tặng</span>
-                    </a>
-                }
+                <div class="learning-success-mascot-wrap">
+                    <img src="~/images/avatars/avatar-squirrel.png" alt="Nhân vật chúc mừng" class="learning-success-mascot" data-success-mascot />
+                    <span class="learning-success-badge material-symbols-outlined" aria-hidden="true">stars</span>
+                </div>
+                <h2 id="learning-success-title">Xuất sắc quá! 🎉</h2>
+                <p>@(string.IsNullOrWhiteSpace(Model.FeedbackMessage) ? "Giỏi lắm, con làm đúng rồi!" : Model.FeedbackMessage)</p>
+                <a class="app-btn clay-button learning-success-continue" href="@successDestination" data-success-continue>
+                    <span>@successActionText</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+                <div class="learning-success-timer" aria-hidden="true"><span></span></div>
+                @* <small>Tự động chuyển sau 3 giây</small> *@
             </div>
         </div>
     }
 
 
-    @if (Model.IsCorrect != true && Model.Item.InteractionType == InteractionTypes.Tracing)
+    @if (Model.Item.InteractionType == InteractionTypes.Tracing)
     {
         <div class="choice-board tracing-lesson-layout interaction-tracing">
             <div class="lesson-answer-zone tracing-answer-zone">
@@ -210,7 +180,7 @@
             </div>
         </div>
     }
-    else if (Model.IsCorrect != true && Model.CurrentQuestion is not null)
+    else if (Model.CurrentQuestion is not null)
     {
         <form class="choice-board interaction-@Model.Item.InteractionType" asp-controller="Kids" asp-action="Answer" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" method="post">
             <input type="hidden" name="QuestionId" value="@Model.CurrentQuestion.Id" />
@@ -258,4 +228,5 @@
     <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
     <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
     <script src="~/js/learning-activities.js" asp-append-version="true"></script>
+    <script src="~/js/learning-success.js" asp-append-version="true"></script>
 }

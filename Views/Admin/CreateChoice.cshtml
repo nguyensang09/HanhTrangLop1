@@ -30,6 +30,10 @@
                     <span class="material-symbols-outlined">graphic_eq</span>
                     Kiểm soát voice
                 </a>
+                <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary">
+                    <span class="material-symbols-outlined">perm_media</span>
+                    Thư viện ảnh
+                </a>
                 <button class="dash-btn dash-btn-primary" type="submit" form="activity-builder-form">
                     <span class="material-symbols-outlined">save</span>
                     <span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</span>
@@ -293,6 +297,7 @@
                 <input asp-for="ImageAltText" type="hidden" id="mainImageAltTextHidden" />
                 <input asp-for="ImageFile" type="file" id="mainImageHiddenFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" />
                 <textarea asp-for="ItemMediaText" id="itemMediaTextHidden" style="display:none;"></textarea>
+                <div data-item-media-upload-store hidden></div>
             </section>
 
             <h2>Phản hồi sư phạm</h2>

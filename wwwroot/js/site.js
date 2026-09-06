@@ -29,6 +29,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     const tracingLink = form.querySelector("[data-tracing-link]");
     const isEditing = Boolean(form.querySelector('[name="Id"]')?.value);
     let uploadedImagePreviewUrl = "";
+    const uploadedItemImagePreviewUrls = new Map();
     const voiceCacheHost = document.querySelector("[data-voice-cache-json]");
     const imageAssetsHost = document.querySelector("[data-image-assets-json]");
     let voiceCacheEntries = [];
@@ -720,6 +721,15 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         .filter((pair) => pair[0])
         .map(([label, url]) => [normalizeLookupText(label), {label, url: url || ""}]));
 
+    const writeItemMediaText = (mediaMap) => {
+        const textArea = form.querySelector('[name="ItemMediaText"]');
+        if (!textArea) return;
+        textArea.value = [...mediaMap.values()]
+            .filter((item) => item.label && item.url)
+            .map((item) => `${item.label} = ${item.url}`)
+            .join("\n");
+    };
+
     const syncItemMediaTextFromBuilder = () => {
         const rows = [...form.querySelectorAll("[data-item-media-row]")];
         const textArea = form.querySelector('[name="ItemMediaText"]');
@@ -746,10 +756,64 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         const mainImgHidden = form.querySelector("#mainImageUrlHidden");
         const mainAssetIdHidden = form.querySelector("#existingImageAssetHiddenId");
         const mainFileHidden = form.querySelector("#mainImageHiddenFileInput");
-        const itemMediaHidden = form.querySelector("#itemMediaTextHidden");
+        const itemUploadStore = panel.querySelector("[data-item-media-upload-store]");
 
         const currentMap = parseItemMediaText();
         const labels = collectMediaLabels();
+        const activeUploadKeys = new Set(labels.map(normalizeLookupText));
+
+        if (itemUploadStore) {
+            [...itemUploadStore.children].forEach((wrapper) => {
+                const key = wrapper.dataset.itemMediaUploadKey || "";
+                if (activeUploadKeys.has(key)) return;
+                const previewUrl = uploadedItemImagePreviewUrls.get(key);
+                if (previewUrl) URL.revokeObjectURL(previewUrl);
+                uploadedItemImagePreviewUrls.delete(key);
+                wrapper.remove();
+            });
+        }
+
+        const ensureItemUpload = (label) => {
+            if (!itemUploadStore) return null;
+            const key = normalizeLookupText(label);
+            let wrapper = [...itemUploadStore.children]
+                .find((item) => item.dataset.itemMediaUploadKey === key);
+            if (!wrapper) {
+                wrapper = document.createElement("div");
+                wrapper.dataset.itemMediaUploadKey = key;
+
+                const labelInput = document.createElement("input");
+                labelInput.type = "hidden";
+                labelInput.name = "ItemMediaFileLabels";
+                labelInput.disabled = true;
+
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.name = "ItemMediaFiles";
+                fileInput.accept = "image/jpeg,image/png,image/webp,image/gif";
+                fileInput.addEventListener("change", () => {
+                    const oldPreviewUrl = uploadedItemImagePreviewUrls.get(key);
+                    if (oldPreviewUrl) URL.revokeObjectURL(oldPreviewUrl);
+                    if (fileInput.files?.[0]) {
+                        uploadedItemImagePreviewUrls.set(key, URL.createObjectURL(fileInput.files[0]));
+                        labelInput.disabled = false;
+                        const latestMap = parseItemMediaText();
+                        latestMap.delete(key);
+                        writeItemMediaText(latestMap);
+                    } else {
+                        uploadedItemImagePreviewUrls.delete(key);
+                        labelInput.disabled = true;
+                    }
+                    updateBuilderImagePanel();
+                    updateBuilderPreview();
+                });
+                wrapper.append(labelInput, fileInput);
+                itemUploadStore.append(wrapper);
+            }
+            const labelInput = wrapper.querySelector('[name="ItemMediaFileLabels"]');
+            if (labelInput) labelInput.value = label;
+            return wrapper.querySelector('[name="ItemMediaFiles"]');
+        };
 
         // Tạo datalist chứa Tên ảnh thân thiện, KHÔNG HIỂN THỊ ĐƯỜNG DẪN THỪA
         const assetByDisplay = new Map();
@@ -765,11 +829,13 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         imageAssetEntries.forEach((asset) => {
             const fileName = readEntry(asset, "fileName") || "Ảnh";
             const altText = readEntry(asset, "altText");
+            const category = readEntry(asset, "category");
             const storagePath = readEntry(asset, "storagePath");
             const id = readEntry(asset, "id");
             if (!storagePath) return;
 
-            const displayName = altText && altText !== fileName ? `${fileName} (${altText})` : fileName;
+            const details = [altText && altText !== fileName ? altText : "", category].filter(Boolean);
+            const displayName = details.length ? `${fileName} (${details.join(" · ")})` : fileName;
             assetByDisplay.set(displayName.toLowerCase(), { storagePath, id, displayName });
             assetByDisplay.set(fileName.toLowerCase(), { storagePath, id, displayName });
 
@@ -806,7 +872,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                 kind: `Đáp án ${idx + 1}`,
                 name: label,
                 isMain: false,
-                url: itemObj?.url || ""
+                uploaded: uploadedItemImagePreviewUrls.has(norm),
+                url: uploadedItemImagePreviewUrls.get(norm) || itemObj?.url || ""
             });
         });
 
@@ -846,20 +913,21 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             input.className = "form-control";
             input.setAttribute("list", imageDatalistId);
             input.placeholder = "Gõ tìm chọn ảnh trong thư viện...";
-            input.value = findDisplayNameByPath(row.url);
+            input.value = row.uploaded ? "Ảnh vừa chọn từ máy" : findDisplayNameByPath(row.url);
 
             const toolsEl = document.createElement("div");
             toolsEl.className = "builder-image-tools";
 
-            if (row.isMain) {
-                const uploadBtn = document.createElement("button");
-                uploadBtn.type = "button";
-                uploadBtn.className = "mini-action app-btn-small";
-                uploadBtn.title = "Tải ảnh từ máy tính";
-                uploadBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">upload_file</span>`;
-                uploadBtn.addEventListener("click", () => mainFileHidden?.click());
-                toolsEl.append(uploadBtn);
-            }
+            const itemFileHidden = row.isMain ? null : ensureItemUpload(row.name);
+
+            const uploadBtn = document.createElement("button");
+            uploadBtn.type = "button";
+            uploadBtn.className = "mini-action app-btn-small";
+            uploadBtn.title = "Tải ảnh từ máy tính";
+            uploadBtn.setAttribute("aria-label", `Tải ảnh cho ${row.name}`);
+            uploadBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">upload_file</span>`;
+            uploadBtn.addEventListener("click", () => (row.isMain ? mainFileHidden : itemFileHidden)?.click());
+            toolsEl.append(uploadBtn);
 
             if (row.url) {
                 const clearBtn = document.createElement("button");
@@ -878,7 +946,14 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                         }
                     } else {
                         currentMap.delete(normalizeLookupText(row.name));
-                        syncHiddenItemMedia();
+                        if (itemFileHidden) itemFileHidden.value = "";
+                        const key = normalizeLookupText(row.name);
+                        const previewUrl = uploadedItemImagePreviewUrls.get(key);
+                        if (previewUrl) URL.revokeObjectURL(previewUrl);
+                        uploadedItemImagePreviewUrls.delete(key);
+                        const labelInput = itemFileHidden?.parentElement?.querySelector('[name="ItemMediaFileLabels"]');
+                        if (labelInput) labelInput.disabled = true;
+                        writeItemMediaText(currentMap);
                     }
                     updateBuilderImagePanel();
                     updateBuilderPreview();
@@ -899,12 +974,19 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                         uploadedImagePreviewUrl = "";
                     }
                 } else {
+                    if (itemFileHidden) itemFileHidden.value = "";
+                    const key = normalizeLookupText(row.name);
+                    const previewUrl = uploadedItemImagePreviewUrls.get(key);
+                    if (previewUrl) URL.revokeObjectURL(previewUrl);
+                    uploadedItemImagePreviewUrls.delete(key);
+                    const labelInput = itemFileHidden?.parentElement?.querySelector('[name="ItemMediaFileLabels"]');
+                    if (labelInput) labelInput.disabled = true;
                     if (path) {
                         currentMap.set(normalizeLookupText(row.name), { label: row.name, url: path });
                     } else {
                         currentMap.delete(normalizeLookupText(row.name));
                     }
-                    syncHiddenItemMedia();
+                    writeItemMediaText(currentMap);
                 }
                 updateBuilderImagePanel();
                 updateBuilderPreview();
@@ -914,16 +996,6 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             list.append(rowEl);
         });
 
-        function syncHiddenItemMedia() {
-            if (!itemMediaHidden) return;
-            const lines = [];
-            for (const item of currentMap.values()) {
-                if (item.label && item.url) {
-                    lines.push(`${item.label} = ${item.url}`);
-                }
-            }
-            itemMediaHidden.value = lines.join("\n");
-        }
     };
 
     skillGroupSelect?.addEventListener("change", filterTopics);

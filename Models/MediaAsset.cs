@@ -21,6 +21,9 @@ public class MediaAsset
     [MaxLength(500)]
     public string? AltText { get; set; }
 
+    [MaxLength(100)]
+    public string? Category { get; set; }
+
     public int? DurationMs { get; set; }
 
     public string? UploadedByUserId { get; set; }

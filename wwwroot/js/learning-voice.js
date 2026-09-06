@@ -83,7 +83,7 @@
     });
 
     const setMascotSpeaking = (speaking) => {
-        const mascot = host.querySelector(".mascot-speaking, .retry-mascot-img");
+        const mascot = host.querySelector(".mascot-speaking, .retry-mascot-img, .learning-success-mascot");
         if (mascot) {
             mascot.classList.toggle("is-speaking", speaking);
         }

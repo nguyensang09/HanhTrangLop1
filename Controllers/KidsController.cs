@@ -398,7 +398,7 @@ public class KidsController : Controller
     }
 
     [HttpGet("learn/{id:guid}")]
-    public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId, bool fromTracing = false)
+    public async Task<IActionResult> Learn(Guid id, Guid? skillGroupId, bool fromTracing = false, bool completed = false)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -427,11 +427,19 @@ public class KidsController : Controller
             HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, activeSession.Id.ToString());
         }
 
+        var completionFeedback = completed
+            ? question is null
+                ? fromTracing ? "Con đã hoàn thành bài tô nét!" : "Con đã hoàn thành bài học!"
+                : LearningJsonReader.ReadFeedback(question.FeedbackJson, true)
+            : null;
+
         return View(await BuildLearnViewModelAsync(
             item,
             question,
             child,
             skillGroupId,
+            completionFeedback,
+            completed ? true : null,
             fromTracing: fromTracing));
     }
 
@@ -495,12 +503,18 @@ public class KidsController : Controller
         await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect);
         await _db.SaveChangesAsync();
 
+        var feedback = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
+        if (isCorrect)
+        {
+            return RedirectToAction(nameof(Learn), new { id = item.Id, skillGroupId, completed = true });
+        }
+
         return View("Learn", await BuildLearnViewModelAsync(
             item,
             question,
             child,
             skillGroupId,
-            LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect),
+            feedback,
             isCorrect));
     }
 
@@ -566,17 +580,7 @@ public class KidsController : Controller
         await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect: true);
         await _db.SaveChangesAsync();
 
-        var feedback = question is null
-            ? "Con đã hoàn thành bài tô nét!"
-            : LearningJsonReader.ReadFeedback(question.FeedbackJson, true);
-        return View("Learn", await BuildLearnViewModelAsync(
-            item,
-            question,
-            child,
-            skillGroupId,
-            feedback,
-            true,
-            fromTracing: fromTracing));
+        return RedirectToAction(nameof(Learn), new { id = item.Id, skillGroupId, fromTracing, completed = true });
     }
 
     [HttpGet("summary")]

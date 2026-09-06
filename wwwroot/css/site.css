@@ -5362,6 +5362,57 @@ a {
   margin-top: 28px;
 }
 
+.media-upload-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.45fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 22px;
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 18px;
+}
+
+.media-upload-panel h2,
+.media-library-heading h2 {
+  margin: 0;
+}
+
+.media-upload-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(150px, 1fr) minmax(140px, 0.8fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.media-upload-form label,
+.media-metadata-form label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.media-library-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.media-filter-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.media-filter-form .form-control {
+  min-width: 180px;
+}
+
 .media-library-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -5445,6 +5496,49 @@ a {
   aspect-ratio: 4 / 3;
   object-fit: contain;
   background: #f6f3ec;
+}
+
+.media-metadata-form {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.media-metadata-form .app-btn {
+  width: 100%;
+}
+
+@media (max-width: 1000px) {
+  .media-upload-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .media-upload-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .builder-image-row {
+    grid-template-columns: 84px minmax(0, 1fr) 38px auto;
+  }
+
+  .builder-image-row > input.form-control {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .media-upload-form,
+  .media-library-heading {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .media-filter-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
 }
 
 .media-asset-card small {
@@ -8266,6 +8360,255 @@ body.focus-mode-active,
    ANSWER RESULT & CELEBRATION SCREENS (/learn answer)
    Rực rỡ, hân hoan, tràn đầy niềm vui cho bé
    =================================================== */
+
+.learning-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.48);
+  opacity: 0;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.22s ease;
+}
+
+.learning-success-overlay.is-visible {
+  opacity: 1;
+}
+
+.learning-success-popup {
+  --success-primary: #f97316;
+  --success-secondary: #facc15;
+  --success-soft: #fff7ed;
+  position: relative;
+  width: min(92vw, 480px);
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--success-secondary) 35%, transparent), transparent 34%),
+    linear-gradient(145deg, #fff 28%, var(--success-soft));
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.3), 0 8px 0 color-mix(in srgb, var(--success-primary) 50%, #fff);
+  padding: 28px 30px 22px;
+  text-align: center;
+  transform: translateY(18px) scale(0.9) rotate(-1deg);
+  transition: transform 0.3s cubic-bezier(0.2, 1.35, 0.4, 1);
+}
+
+.learning-success-overlay.is-visible .learning-success-popup {
+  transform: translateY(0) scale(1) rotate(0);
+}
+
+.learning-success-popup.theme-sunshine {
+  --success-primary: #f97316;
+  --success-secondary: #facc15;
+  --success-soft: #fff7d6;
+}
+
+.learning-success-popup.theme-ocean {
+  --success-primary: #0284c7;
+  --success-secondary: #22d3ee;
+  --success-soft: #e0f7ff;
+}
+
+.learning-success-popup.theme-berry {
+  --success-primary: #9333ea;
+  --success-secondary: #f472b6;
+  --success-soft: #fae8ff;
+}
+
+.learning-success-popup.theme-mint {
+  --success-primary: #059669;
+  --success-secondary: #84cc16;
+  --success-soft: #e8fff5;
+}
+
+.learning-success-popup.theme-coral {
+  --success-primary: #e11d48;
+  --success-secondary: #fb923c;
+  --success-soft: #fff1f2;
+}
+
+.learning-success-close {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 3;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--success-primary) 22%, #fff) !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: var(--success-primary) !important;
+  cursor: pointer;
+}
+
+.learning-success-mascot-wrap {
+  position: relative;
+  z-index: 2;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--success-secondary) 25%, #fff);
+  box-shadow: inset 0 -7px 0 rgba(255, 255, 255, 0.5);
+}
+
+.learning-success-mascot {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: successMascotHello 0.75s ease-in-out infinite alternate;
+}
+
+.learning-success-mascot.is-speaking {
+  animation-duration: 0.28s;
+}
+
+.learning-success-badge {
+  position: absolute;
+  right: -5px;
+  bottom: 3px;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--success-primary);
+  color: #fff;
+  font-variation-settings: "FILL" 1;
+  animation: successBadgeSpin 1.1s ease-in-out infinite alternate;
+}
+
+.learning-success-popup h2 {
+  position: relative;
+  z-index: 2;
+  margin: 0 0 8px;
+  color: var(--success-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 5vw, 2.25rem);
+  font-weight: 900;
+}
+
+.learning-success-popup > p {
+  position: relative;
+  z-index: 2;
+  margin: 0 auto 20px;
+  color: #334155;
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.learning-success-continue {
+  position: relative;
+  z-index: 2;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(100%, 330px);
+  border: 0 !important;
+  background: linear-gradient(135deg, var(--success-primary), var(--success-secondary)) !important;
+  color: #fff !important;
+  box-shadow: 0 9px 20px color-mix(in srgb, var(--success-primary) 30%, transparent) !important;
+  cursor: pointer;
+}
+
+.learning-success-timer {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 330px);
+  height: 5px;
+  overflow: hidden;
+  margin: 14px auto 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--success-primary) 15%, #fff);
+}
+
+.learning-success-timer span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--success-primary);
+  transform-origin: left;
+  animation: successTimer 3s linear forwards;
+}
+
+.learning-success-popup > small {
+  position: relative;
+  z-index: 2;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.learning-success-decorations span {
+  position: absolute;
+  z-index: 1;
+  font-size: 1.5rem;
+  animation: successFloat 1.7s ease-in-out infinite alternate;
+}
+
+.learning-success-decorations span:nth-child(1) { top: 9%; left: 7%; transform: rotate(-14deg); }
+.learning-success-decorations span:nth-child(2) { top: 20%; right: 8%; animation-delay: -0.3s; }
+.learning-success-decorations span:nth-child(3) { top: 42%; left: 5%; animation-delay: -0.8s; }
+.learning-success-decorations span:nth-child(4) { top: 48%; right: 4%; animation-delay: -1.2s; }
+.learning-success-decorations span:nth-child(5) { bottom: 18%; left: 8%; animation-delay: -0.5s; }
+.learning-success-decorations span:nth-child(6) { bottom: 12%; right: 8%; animation-delay: -1s; }
+.learning-success-decorations span:nth-child(7) { top: 4%; left: 32%; animation-delay: -1.4s; }
+.learning-success-decorations span:nth-child(8) { top: 7%; right: 31%; animation-delay: -0.65s; }
+
+@keyframes successMascotHello {
+  from { transform: translateY(2px) rotate(-3deg) scale(0.98); }
+  to { transform: translateY(-5px) rotate(3deg) scale(1.03); }
+}
+
+@keyframes successBadgeSpin {
+  from { transform: rotate(-12deg) scale(0.94); }
+  to { transform: rotate(12deg) scale(1.08); }
+}
+
+@keyframes successFloat {
+  from { translate: 0 3px; scale: 0.9; }
+  to { translate: 0 -6px; scale: 1.08; }
+}
+
+@keyframes successTimer {
+  to { transform: scaleX(0); }
+}
+
+@media (max-width: 520px) {
+  .learning-success-popup {
+    border-radius: 26px;
+    padding: 24px 20px 18px;
+  }
+
+  .learning-success-mascot-wrap {
+    width: 112px;
+    height: 112px;
+  }
+
+  .learning-success-decorations span {
+    font-size: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learning-success-popup,
+  .learning-success-overlay,
+  .learning-success-mascot,
+  .learning-success-badge,
+  .learning-success-decorations span {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 
 .answer-celebration-card {
   position: relative;

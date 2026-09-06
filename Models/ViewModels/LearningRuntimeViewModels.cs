@@ -171,6 +171,8 @@ public class CreateChoiceItemViewModel
     public Guid? ExistingAudioAssetId { get; set; }
     public Guid? ExistingQuestionAudioAssetId { get; set; }
     public IFormFile? ImageFile { get; set; }
+    public List<string> ItemMediaFileLabels { get; set; } = [];
+    public List<IFormFile> ItemMediaFiles { get; set; } = [];
     public IFormFile? AudioFile { get; set; }
     public IFormFile? QuestionAudioFile { get; set; }
 

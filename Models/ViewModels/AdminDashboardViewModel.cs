@@ -194,4 +194,7 @@ public class AdminMediaLibraryViewModel
 {
     public IReadOnlyList<MediaAsset> Images { get; set; } = [];
     public IReadOnlyList<MediaAsset> AudioFiles { get; set; } = [];
+    public IReadOnlyList<string> Categories { get; set; } = [];
+    public string? Search { get; set; }
+    public string? Category { get; set; }
 }

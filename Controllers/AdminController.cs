@@ -949,16 +949,88 @@ public class AdminController : Controller
     }
 
     [HttpGet("media")]
-    public async Task<IActionResult> MediaLibrary()
+    public async Task<IActionResult> MediaLibrary(string? q, string? category)
     {
-        var assets = await _db.MediaAssets
-            .Where(x => x.AssetType == "image")
+        var query = _db.MediaAssets
+            .AsNoTracking()
+            .Where(x => x.AssetType == "image");
+        var cleanSearch = Clean(q);
+        var cleanCategory = Clean(category);
+        if (!string.IsNullOrWhiteSpace(cleanSearch))
+        {
+            query = query.Where(x => x.FileName.Contains(cleanSearch) ||
+                                     (x.AltText != null && x.AltText.Contains(cleanSearch)));
+        }
+        if (!string.IsNullOrWhiteSpace(cleanCategory))
+        {
+            query = query.Where(x => x.Category == cleanCategory);
+        }
+
+        var assets = await query
             .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+        var categories = await _db.MediaAssets
+            .AsNoTracking()
+            .Where(x => x.AssetType == "image" && x.Category != null && x.Category != "")
+            .Select(x => x.Category!)
+            .Distinct()
+            .OrderBy(x => x)
             .ToListAsync();
         return View(new AdminMediaLibraryViewModel
         {
-            Images = assets
+            Images = assets,
+            Categories = categories,
+            Search = cleanSearch,
+            Category = cleanCategory
         });
+    }
+
+    [HttpPost("media/upload-image")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadMediaImage(IFormFile? imageFile, string? altText, string? category)
+    {
+        if (imageFile is null)
+        {
+            TempData["AdminMessage"] = "Vui lòng chọn ảnh cần tải lên.";
+            return RedirectToAction(nameof(MediaLibrary));
+        }
+
+        ValidateMediaFile(imageFile, "image", 5 * 1024 * 1024, nameof(imageFile));
+        ValidateMediaMetadata(altText, category);
+        if (!ModelState.IsValid)
+        {
+            TempData["AdminMessage"] = "Ảnh hoặc thông tin phân loại chưa hợp lệ. Chỉ nhận JPG, PNG, WEBP hoặc GIF tối đa 5 MB; phân loại tối đa 100 ký tự.";
+            return RedirectToAction(nameof(MediaLibrary));
+        }
+
+        await SaveMediaFileAsync(imageFile, "image", altText, category);
+        await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Đã tải ảnh “{Path.GetFileName(imageFile.FileName)}” vào thư viện.";
+        return RedirectToAction(nameof(MediaLibrary), new { category = Clean(category) });
+    }
+
+    [HttpPost("media/update-image")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateMediaImage(Guid id, string? altText, string? category, string? q, string? currentCategory)
+    {
+        var asset = await _db.MediaAssets.FirstOrDefaultAsync(x => x.Id == id && x.AssetType == "image");
+        if (asset is null)
+        {
+            return NotFound();
+        }
+
+        ValidateMediaMetadata(altText, category);
+        if (!ModelState.IsValid)
+        {
+            TempData["AdminMessage"] = "Thông tin ảnh chưa hợp lệ. Mô tả tối đa 500 ký tự, phân loại tối đa 100 ký tự.";
+            return RedirectToAction(nameof(MediaLibrary), new { q = Clean(q), category = Clean(currentCategory) });
+        }
+
+        asset.AltText = Clean(altText);
+        asset.Category = Clean(category);
+        await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Đã cập nhật thông tin ảnh “{asset.FileName}”.";
+        return RedirectToAction(nameof(MediaLibrary), new { q = Clean(q), category = Clean(currentCategory) });
     }
 
     [HttpGet("voice-cache")]
@@ -2202,7 +2274,8 @@ public class AdminController : Controller
                 x.Id,
                 x.FileName,
                 x.StoragePath,
-                x.AltText
+                x.AltText,
+                x.Category
             }));
         var voiceEntries = await _db.TextToSpeechCaches
             .OrderByDescending(x => x.UpdatedAt)
@@ -2337,6 +2410,24 @@ public class AdminController : Controller
         }
 
         ValidateMediaFile(model.ImageFile, "image", 5 * 1024 * 1024, nameof(model.ImageFile));
+        if (model.ItemMediaFiles.Count != model.ItemMediaFileLabels.Count)
+        {
+            ModelState.AddModelError(nameof(model.ItemMediaFiles), "Danh sách ảnh tải lên chưa khớp nội dung cần gắn ảnh.");
+        }
+        if (model.ItemMediaFiles.Count > 30)
+        {
+            ModelState.AddModelError(nameof(model.ItemMediaFiles), "Mỗi bài dùng tối đa 30 ảnh riêng.");
+        }
+        for (var index = 0; index < model.ItemMediaFiles.Count; index++)
+        {
+            ValidateMediaFile(model.ItemMediaFiles[index], "image", 5 * 1024 * 1024, nameof(model.ItemMediaFiles));
+            if (index >= model.ItemMediaFileLabels.Count ||
+                string.IsNullOrWhiteSpace(model.ItemMediaFileLabels[index]) ||
+                model.ItemMediaFileLabels[index].IndexOfAny(['=', '\r', '\n']) >= 0)
+            {
+                ModelState.AddModelError(nameof(model.ItemMediaFileLabels), "Ảnh tải lên cần xác định đúng nội dung được gắn.");
+            }
+        }
         ValidateMediaFile(model.AudioFile, "audio", 10 * 1024 * 1024, nameof(model.AudioFile));
         ValidateMediaFile(model.QuestionAudioFile, "audio", 10 * 1024 * 1024, nameof(model.QuestionAudioFile));
     }
@@ -2359,11 +2450,38 @@ public class AdminController : Controller
         }
     }
 
+    private void ValidateMediaMetadata(string? altText, string? category)
+    {
+        if (Clean(altText).Length > 500)
+        {
+            ModelState.AddModelError(nameof(altText), "Mô tả ảnh tối đa 500 ký tự.");
+        }
+        if (Clean(category).Length > 100)
+        {
+            ModelState.AddModelError(nameof(category), "Phân loại ảnh tối đa 100 ký tự.");
+        }
+    }
+
     private async Task SaveUploadedMediaAsync(CreateChoiceItemViewModel model)
     {
         if (model.ImageFile is not null)
         {
             model.ImageUrl = await SaveMediaFileAsync(model.ImageFile, "image");
+        }
+        if (model.ItemMediaFiles.Count > 0)
+        {
+            var itemMedia = ParseMappings(
+                model.ItemMediaText,
+                nameof(model.ItemMediaText),
+                "Mỗi ảnh riêng cần có dạng Tên nội dung = Đường dẫn ảnh.")
+                .ToDictionary(x => x.Left, x => x.Right, StringComparer.OrdinalIgnoreCase);
+            for (var index = 0; index < model.ItemMediaFiles.Count; index++)
+            {
+                var label = Clean(model.ItemMediaFileLabels[index]);
+                var storagePath = await SaveMediaFileAsync(model.ItemMediaFiles[index], "image", label, null);
+                itemMedia[label] = storagePath;
+            }
+            model.ItemMediaText = string.Join(Environment.NewLine, itemMedia.Select(x => $"{x.Key} = {x.Value}"));
         }
         if (model.AudioFile is not null)
         {
@@ -2514,7 +2632,7 @@ public class AdminController : Controller
         }
     }
 
-    private async Task<string> SaveMediaFileAsync(IFormFile file, string assetType)
+    private async Task<string> SaveMediaFileAsync(IFormFile file, string assetType, string? altText = null, string? category = null)
     {
         var folderName = assetType == "image" ? "images" : "audio";
         var folder = Path.Combine(_environment.WebRootPath, "uploads", folderName);
@@ -2536,6 +2654,9 @@ public class AdminController : Controller
             FileName = Path.GetFileName(file.FileName),
             ContentType = file.ContentType,
             StoragePath = storagePath,
+            AltText = Clean(altText),
+            Category = Clean(category),
+            UploadedByUserId = _userManager.GetUserId(User),
             CreatedAt = DateTimeOffset.UtcNow
         });
         return storagePath;
