@@ -3,6 +3,7 @@
     ViewData["Title"] = "Quà tặng & Huy hiệu của bé";
     var earnedCount = Model.Badges.Count(x => x.IsEarned);
     var totalCount = Model.Badges.Count;
+    var inventoryCount = Model.Badges.Count(x => x.IsEarned && x.Definition.RewardType == "item");
 
     string ResolveAvatar(string? key)
     {
@@ -21,6 +22,13 @@
 }
 
 <section class="kid-screen kid-rewards-screen">
+    @if (TempData["RewardMessage"] is string rewardMessage)
+    {
+        <div class="reward-success-notice clay-card" role="status">
+            <span class="material-symbols-outlined">celebration</span>
+            <strong>@rewardMessage</strong>
+        </div>
+    }
     <!-- Topbar chuẩn không gian bé -->
     <header class="child-zone-header clay-card">
         <div class="child-header-left">
@@ -60,9 +68,85 @@
         </div>
         <div class="summary-hero-copy">
             <h2>Khu Vườn Danh Dự Của Bé! ✨</h2>
-            <p>Bé đã tích lũy được <strong>@Model.TotalStars ngôi sao vàng</strong>. Hãy học chăm chỉ mỗi ngày cùng Sóc Nâu để mở khóa trọn bộ 18 danh hiệu và vật phẩm kỳ diệu nhé!</p>
+            <p>Bé đã có <strong>@Model.TotalStars sao thành tích</strong>, mở khóa <strong>@earnedCount/@totalCount phần thưởng</strong> và sưu tập <strong>@inventoryCount vật phẩm</strong>. Cứ 10 bài khác nhau trong mỗi nhóm, một rương mới sẽ chờ bé!</p>
         </div>
     </div>
+
+    @if (Model.ClaimableGrants.Count > 0)
+    {
+        <section class="reward-awaiting-section clay-card">
+            <div class="reward-section-heading">
+                <span class="material-symbols-outlined">redeem</span>
+                <div><h2>Quà đang chờ bé</h2><p>Bé đã đủ mốc. Hãy mở rương nhé!</p></div>
+            </div>
+            <div class="reward-awaiting-grid">
+                @foreach (var item in Model.ClaimableGrants)
+                {
+                    <article class="reward-awaiting-card">
+                        <span class="material-symbols-outlined reward-awaiting-icon">@item.Reward.IconKey</span>
+                        <div><strong>@item.Reward.Name</strong><small>@item.SkillName • Mốc @item.Grant.MilestoneValue bài</small></div>
+                        <form asp-action="ClaimReward" asp-route-grantId="@item.Grant.Id" method="post">
+                            <button type="submit" class="app-btn clay-button reward-claim-btn">Mở quà</button>
+                        </form>
+                    </article>
+                }
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="reward-empty-state clay-card" aria-label="Không có quà đang chờ">
+            <span class="material-symbols-outlined">inventory_2</span>
+            <div><strong>Chưa có rương đang chờ</strong><p>Tiếp tục hành trình, cứ 10 bài khác nhau trong một nhóm bé sẽ mở khóa một rương.</p></div>
+        </section>
+    }
+
+    <section class="reward-skill-journey">
+        <div class="reward-section-heading">
+            <span class="material-symbols-outlined">map</span>
+            <div><h2>Hành trình các nhóm</h2><p>Mỗi nhóm có tiến độ rương riêng.</p></div>
+        </div>
+        <div class="reward-skill-progress-grid">
+            @foreach (var skill in Model.SkillProgress)
+            {
+                var target = Math.Min(skill.NextMilestone, Math.Max(skill.TotalLessons, 10));
+                var remaining = Math.Max(0, target - skill.UniqueCompleted);
+                var segmentPercent = skill.TotalLessons < 10
+                    ? (skill.TotalLessons == 0 ? 0 : (int)Math.Round(skill.UniqueCompleted * 100d / skill.TotalLessons))
+                    : skill.CurrentSegmentProgress * 10;
+                <a class="reward-skill-progress-card clay-card" asp-controller="Kids" asp-action="Skill" asp-route-id="@skill.SkillGroupId" style="--skill-color:@skill.Color">
+                    <span class="material-symbols-outlined reward-skill-icon">@skill.IconKey</span>
+                    <div class="reward-skill-copy">
+                        <strong>@skill.SkillName</strong>
+                        <span>@skill.UniqueCompleted/@skill.TotalLessons bài đã hoàn thành</span>
+                        <div class="reward-progress-track"><span style="width:@Math.Clamp(segmentPercent, 0, 100)%"></span></div>
+                        <small>@(skill.TotalLessons < 10 ? "Hoàn thành nhóm để nhận huy hiệu" : remaining == 0 ? "Rương đã sẵn sàng" : $"Còn {remaining} bài đến rương mốc {target}")</small>
+                    </div>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            }
+        </div>
+    </section>
+
+    @if (Model.RecentClaimedGrants.Count > 0)
+    {
+        <section class="reward-history-section clay-card">
+            <div class="reward-section-heading">
+                <span class="material-symbols-outlined">history</span>
+                <div><h2>Rương vừa mở</h2><p>Những dấu mốc gần nhất của bé.</p></div>
+            </div>
+            <div class="reward-history-list">
+                @foreach (var item in Model.RecentClaimedGrants)
+                {
+                    <div class="reward-history-item">
+                        <span class="material-symbols-outlined">@item.Reward.IconKey</span>
+                        <div><strong>@item.Reward.Name</strong><small>@item.SkillName • Mốc @item.Grant.MilestoneValue bài</small></div>
+                        <time datetime="@item.Grant.ClaimedAt?.ToString("O")">@item.Grant.ClaimedAt?.ToString("dd/MM/yyyy")</time>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 
     <!-- Filter Category Tabs -->
     <div class="reward-filter-tabs">

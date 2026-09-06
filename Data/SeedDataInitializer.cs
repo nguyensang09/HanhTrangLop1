@@ -1,5 +1,6 @@
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Application.Voice;
+using HanhTrangLop1.Application.Learning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,9 @@ public static class SeedDataInitializer
         {
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
         }
+
+        var rewardProgression = scope.ServiceProvider.GetRequiredService<RewardProgressionService>();
+        await rewardProgression.EnsureBackfilledMilestoneGrantsAsync();
 
         var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
         await voiceLibrary.EnsureStandardCorrectFeedbackVoiceAsync();
@@ -184,6 +188,9 @@ public static class SeedDataInitializer
             ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
             ("badge-story-teller", "Nhà Kể Chuyện Nhí", "badge", "auto_stories", "Mở rộng vốn từ và nghe hiểu câu chuyện"),
             ("badge-shape-master", "Kiến Trúc Sư Tí Hon", "badge", "category", "Phân biệt thành thạo các hình khối và không gian"),
+            ("badge-number-explorer", "Nhà Thám Hiểm Con Số", "badge", "pin", "Hoàn thành hành trình Chữ số"),
+            ("badge-focus-star", "Siêu Sao Tập Trung", "badge", "psychology", "Hoàn thành hành trình Ghi nhớ và tập trung"),
+            ("badge-world-explorer", "Nhà Khám Phá Nhí", "badge", "rocket_launch", "Hoàn thành hành trình Khám phá thế giới"),
 
             // Vật phẩm trang trí khu vườn của bé
             ("item-golden-acorn", "Quả Sồi Hoàng Gia", "item", "nature", "Vật phẩm quý giá nhận khi chăm chỉ học tập"),

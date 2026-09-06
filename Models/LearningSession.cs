@@ -18,5 +18,7 @@ public class LearningSession
 
     public string SessionPlanJson { get; set; } = "[]";
 
+    public int ProgressEpoch { get; set; }
+
     public ChildProfile? ChildProfile { get; set; }
 }

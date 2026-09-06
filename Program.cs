@@ -43,6 +43,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddScoped<TodayLessonService>();
+builder.Services.AddScoped<RewardProgressionService>();
 builder.Services.AddScoped<VoiceLibraryMaintenanceService>();
 builder.Services.AddControllersWithViews();
 

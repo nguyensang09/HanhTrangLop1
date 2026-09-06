@@ -28,6 +28,8 @@ public class LearningAttempt
 
     public string DeviceInputType { get; set; } = "touch";
 
+    public int ProgressEpoch { get; set; }
+
     public LearningSession? Session { get; set; }
 
     public ChildProfile? ChildProfile { get; set; }

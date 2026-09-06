@@ -67,7 +67,7 @@
         </div>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <form method="post" asp-action="ClearChildProgress" asp-route-id="@Model.Child.Id" onsubmit="return confirm('XÁC NHẬN CLEAR: Toàn bộ lịch sử bài học, điểm sao, phiên học và huy hiệu của bé sẽ bị XÓA SẠCH để bé học lại từ Ngày 1. Bạn có chắc chắn?');" style="margin: 0;">
+            <form method="post" asp-action="ClearChildProgress" asp-route-id="@Model.Child.Id" onsubmit="return confirm('XÁC NHẬN CLEAR: Thao tác sẽ xóa lịch sử học, sao, tiến độ map, rương chờ mở, quà đã nhận và vật phẩm trang trí của bé. Hồ sơ bé vẫn được giữ. Bạn có chắc chắn?');" style="margin: 0;">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="app-btn app-btn-muted app-btn-small" style="color: #b45309; border-color: #fde68a; background: #fffbeb;">
                     <span class="material-symbols-outlined">restart_alt</span>

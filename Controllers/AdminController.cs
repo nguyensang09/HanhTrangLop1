@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Data;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -3738,21 +3739,38 @@ public class AdminController : Controller
         var child = await _db.ChildProfiles.FirstOrDefaultAsync(x => x.Id == id);
         if (child is null) return NotFound();
 
-        var attempts = await _db.LearningAttempts.Where(x => x.ChildProfileId == id).ToListAsync();
-        var attemptAnswers = await _db.QuestionAttempts
-            .Where(x => attempts.Select(a => a.Id).Contains(x.LearningAttemptId))
-            .ToListAsync();
-        var sessions = await _db.LearningSessions.Where(x => x.ChildProfileId == id).ToListAsync();
-        var skillProgresses = await _db.SkillProgress.Where(x => x.ChildProfileId == id).ToListAsync();
-        var rewards = await _db.ChildRewards.Where(x => x.ChildProfileId == id).ToListAsync();
-
-        _db.QuestionAttempts.RemoveRange(attemptAnswers);
-        _db.LearningAttempts.RemoveRange(attempts);
-        _db.LearningSessions.RemoveRange(sessions);
-        _db.SkillProgress.RemoveRange(skillProgresses);
-        _db.ChildRewards.RemoveRange(rewards);
-
+        await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        child.ProgressEpoch++;
+        child.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
+
+        var attemptIds = _db.LearningAttempts.Where(x => x.ChildProfileId == id).Select(x => x.Id);
+        var deletedAnswers = await _db.QuestionAttempts.Where(x => attemptIds.Contains(x.LearningAttemptId)).ExecuteDeleteAsync();
+        var deletedAttempts = await _db.LearningAttempts.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedSessions = await _db.LearningSessions.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedSkillProgress = await _db.SkillProgress.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedLessonProgress = await _db.ChildLessonProgresses.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedGardenItems = await _db.GardenItems.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedInventory = await _db.ChildInventoryItems.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedGrants = await _db.RewardGrants.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+        var deletedRewards = await _db.ChildRewards.Where(x => x.ChildProfileId == id).ExecuteDeleteAsync();
+
+        _db.AuditLogs.Add(new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            Action = "clear_child_progress",
+            EntityName = nameof(ChildProfile),
+            EntityId = id.ToString(),
+            DetailJson = JsonSerializer.Serialize(new
+            {
+                deletedAnswers, deletedAttempts, deletedSessions, deletedSkillProgress,
+                deletedLessonProgress, deletedGardenItems, deletedInventory, deletedGrants, deletedRewards,
+                progressEpoch = child.ProgressEpoch
+            })
+        });
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         TempData["SuccessMessage"] = $"Đã xóa sạch tiến độ học tập của bé {child.Nickname} thành công! Bé có thể bắt đầu học lại từ đầu.";
         return RedirectToAction(nameof(ChildDetail), new { id });
@@ -3772,12 +3790,20 @@ public class AdminController : Controller
         var sessions = await _db.LearningSessions.Where(x => x.ChildProfileId == id).ToListAsync();
         var skillProgresses = await _db.SkillProgress.Where(x => x.ChildProfileId == id).ToListAsync();
         var rewards = await _db.ChildRewards.Where(x => x.ChildProfileId == id).ToListAsync();
+        var grants = await _db.RewardGrants.Where(x => x.ChildProfileId == id).ToListAsync();
+        var inventory = await _db.ChildInventoryItems.Where(x => x.ChildProfileId == id).ToListAsync();
+        var lessonProgress = await _db.ChildLessonProgresses.Where(x => x.ChildProfileId == id).ToListAsync();
+        var gardenItems = await _db.GardenItems.Where(x => x.ChildProfileId == id).ToListAsync();
 
         _db.QuestionAttempts.RemoveRange(attemptAnswers);
         _db.LearningAttempts.RemoveRange(attempts);
         _db.LearningSessions.RemoveRange(sessions);
         _db.SkillProgress.RemoveRange(skillProgresses);
         _db.ChildRewards.RemoveRange(rewards);
+        _db.RewardGrants.RemoveRange(grants);
+        _db.ChildInventoryItems.RemoveRange(inventory);
+        _db.ChildLessonProgresses.RemoveRange(lessonProgress);
+        _db.GardenItems.RemoveRange(gardenItems);
         _db.ChildProfiles.Remove(child);
 
         await _db.SaveChangesAsync();
@@ -3810,12 +3836,20 @@ public class AdminController : Controller
         var sessions = await _db.LearningSessions.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
         var skillProgresses = await _db.SkillProgress.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
         var rewards = await _db.ChildRewards.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var grants = await _db.RewardGrants.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var inventory = await _db.ChildInventoryItems.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var lessonProgress = await _db.ChildLessonProgresses.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
+        var gardenItems = await _db.GardenItems.Where(x => childIds.Contains(x.ChildProfileId)).ToListAsync();
 
         _db.QuestionAttempts.RemoveRange(attemptAnswers);
         _db.LearningAttempts.RemoveRange(attempts);
         _db.LearningSessions.RemoveRange(sessions);
         _db.SkillProgress.RemoveRange(skillProgresses);
         _db.ChildRewards.RemoveRange(rewards);
+        _db.RewardGrants.RemoveRange(grants);
+        _db.ChildInventoryItems.RemoveRange(inventory);
+        _db.ChildLessonProgresses.RemoveRange(lessonProgress);
+        _db.GardenItems.RemoveRange(gardenItems);
         _db.ChildProfiles.RemoveRange(children);
 
         await _userManager.DeleteAsync(user);

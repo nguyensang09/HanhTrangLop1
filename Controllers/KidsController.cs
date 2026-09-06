@@ -7,6 +7,7 @@ using HanhTrangLop1.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -19,17 +20,20 @@ public class KidsController : Controller
     private readonly TodayLessonService _todayLessonService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly VoiceLibraryMaintenanceService _voiceLibraryService;
+    private readonly RewardProgressionService _rewardProgressionService;
 
     public KidsController(
         ApplicationDbContext db,
         TodayLessonService todayLessonService,
         UserManager<ApplicationUser> userManager,
-        VoiceLibraryMaintenanceService voiceLibraryService)
+        VoiceLibraryMaintenanceService voiceLibraryService,
+        RewardProgressionService rewardProgressionService)
     {
         _db = db;
         _todayLessonService = todayLessonService;
         _userManager = userManager;
         _voiceLibraryService = voiceLibraryService;
+        _rewardProgressionService = rewardProgressionService;
     }
 
     [HttpGet("")]
@@ -74,9 +78,9 @@ public class KidsController : Controller
             .OrderBy(x => x.SkillGroup!.SortOrder)
             .ToListAsync();
 
-        var totalStars = await _db.LearningAttempts
-            .Where(x => x.ChildProfileId == child.Id)
-            .SumAsync(x => (int?)x.StarsEarned) ?? 0;
+        var totalStars = await _db.ChildLessonProgresses
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch)
+            .SumAsync(x => (int?)x.BestStars) ?? 0;
 
         var model = new KidsHomeViewModel
         {
@@ -156,34 +160,49 @@ public class KidsController : Controller
         items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
 
         var itemIds = items.Select(x => x.Id).ToList();
-        var latestAttempts = itemIds.Count == 0
+        var lessonProgress = itemIds.Count == 0
             ? []
-            : await _db.LearningAttempts
+            : await _db.ChildLessonProgresses
                 .AsNoTracking()
-                .Where(x => x.ChildProfileId == child.Id && itemIds.Contains(x.LearningItemId))
-                .OrderByDescending(x => x.StartedAt)
+                .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && itemIds.Contains(x.LearningItemId))
                 .ToListAsync();
-
-        var mostRecentAttempt = latestAttempts.OrderByDescending(x => x.CompletedAt ?? x.StartedAt).FirstOrDefault();
-        var latestAttemptByItemId = latestAttempts
-            .GroupBy(x => x.LearningItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.OrderByDescending(x => x.StartedAt).First());
+        var progressByItemId = lessonProgress.ToDictionary(x => x.LearningItemId);
+        var currentItem = items.FirstOrDefault(x => !progressByItemId.TryGetValue(x.Id, out var p) || p.FirstCompletedAt is null);
+        var grants = await _db.RewardGrants.AsNoTracking()
+            .Include(x => x.RewardDefinition)
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.SkillGroupId == id)
+            .ToDictionaryAsync(x => x.MilestoneValue);
+        var milestones = Enumerable.Range(1, items.Count / RewardProgressionService.LessonsPerMilestone)
+            .Select(n => n * RewardProgressionService.LessonsPerMilestone)
+            .Select(value =>
+            {
+                grants.TryGetValue(value, out var grant);
+                return new SkillMilestoneViewModel
+                {
+                    MilestoneValue = value,
+                    State = grant?.State ?? "locked",
+                    GrantId = grant?.Id,
+                    RewardName = grant?.RewardDefinition?.Name ?? string.Empty,
+                    RewardIconKey = grant?.RewardDefinition?.IconKey ?? "redeem"
+                };
+            }).ToList();
 
         var model = new SkillLearningListViewModel
         {
             ChildProfile = child,
             SkillGroup = skillGroup,
-            LastPracticedItemId = mostRecentAttempt?.LearningItemId,
+            LastPracticedItemId = lessonProgress.OrderByDescending(x => x.LastAttemptedAt).FirstOrDefault()?.LearningItemId,
+            CurrentItemId = currentItem?.Id,
+            Milestones = milestones,
             Items = items.Select(item =>
             {
-                latestAttemptByItemId.TryGetValue(item.Id, out var latestAttempt);
+                progressByItemId.TryGetValue(item.Id, out var progress);
                 return new SkillLearningItemViewModel
                 {
                     Item = item,
-                    LatestStatus = latestAttempt?.Status,
-                    StarsEarned = latestAttempt?.StarsEarned ?? 0
+                    LatestStatus = progress?.LatestStatus,
+                    StarsEarned = progress?.BestStars ?? 0,
+                    EverCompleted = progress?.FirstCompletedAt is not null
                 };
             }).ToList()
         };
@@ -215,17 +234,11 @@ public class KidsController : Controller
             .ThenBy(x => x.Title)
             .ToListAsync();
 
-        var attempts = await _db.LearningAttempts
+        var tracingItemIds = tracingItems.Select(x => x.Id).ToList();
+        var progressLookup = await _db.ChildLessonProgresses
             .AsNoTracking()
-            .Where(x => x.ChildProfileId == child.Id)
-            .ToListAsync();
-
-        var attemptLookup = attempts
-            .GroupBy(x => x.LearningItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.OrderByDescending(a => a.StartedAt).First()
-            );
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && tracingItemIds.Contains(x.LearningItemId))
+            .ToDictionaryAsync(x => x.LearningItemId);
 
         var basicStrokes = new List<KidsTracingItemViewModel>();
         var pictureTraces = new List<KidsTracingItemViewModel>();
@@ -239,9 +252,9 @@ public class KidsController : Controller
             var payloadSymbol = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "symbol", string.Empty);
             var symbol = ExtractTracingSymbol(payloadSymbol, item.Title, question?.PromptText);
 
-            var attempt = attemptLookup.GetValueOrDefault(item.Id);
-            var isCompleted = attempt?.Status == "completed";
-            var starsEarned = attempt?.StarsEarned ?? (isCompleted ? 2 : 0);
+            var progress = progressLookup.GetValueOrDefault(item.Id);
+            var isCompleted = progress?.FirstCompletedAt is not null;
+            var starsEarned = progress?.BestStars ?? (isCompleted ? 2 : 0);
 
             var topicCode = item.Topic?.Code?.ToLowerInvariant() ?? string.Empty;
             var titleLower = item.Title.ToLowerInvariant();
@@ -472,6 +485,7 @@ public class KidsController : Controller
         var isCorrect = LearningAnswerEvaluator.IsCorrect(item.InteractionType, answer.AnswerValue, correctAnswer);
         var session = await GetCurrentLearningSessionAsync(child, item.Id);
         HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, session.Id.ToString());
+        await using var completionTransaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
         var learningAttempt = new LearningAttempt
         {
@@ -485,7 +499,8 @@ public class KidsController : Controller
             ScoreInternal = isCorrect ? 3 : 1,
             StarsEarned = isCorrect ? 3 : 1,
             MistakeCount = isCorrect ? 0 : 1,
-            DeviceInputType = "mouse"
+            DeviceInputType = "mouse",
+            ProgressEpoch = child.ProgressEpoch
         };
 
         _db.LearningAttempts.Add(learningAttempt);
@@ -500,8 +515,12 @@ public class KidsController : Controller
             MetricsJson = JsonSerializer.Serialize(new { source = "choice_engine_v1" })
         });
 
-        await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect);
+        await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, item.Id, isCorrect);
+        var rewardProgress = await _rewardProgressionService.RecordAttemptAsync(child, item, isCorrect, learningAttempt.StarsEarned, learningAttempt.Status);
         await _db.SaveChangesAsync();
+        await completionTransaction.CommitAsync();
+        if (rewardProgress.NewlyUnlockedGrant is not null)
+            TempData["MilestoneMessage"] = $"Bé đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!";
 
         var feedback = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
         if (isCorrect)
@@ -544,6 +563,7 @@ public class KidsController : Controller
 
         var session = await GetCurrentLearningSessionAsync(child, item.Id);
         HttpContext.Session.SetString(SessionKeys.CurrentLearningSessionId, session.Id.ToString());
+        await using var completionTransaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
         var attempt = new LearningAttempt
         {
@@ -557,7 +577,8 @@ public class KidsController : Controller
             ScoreInternal = 2,
             StarsEarned = 2,
             DeviceInputType = "touch",
-            DurationSeconds = 60
+            DurationSeconds = 60,
+            ProgressEpoch = child.ProgressEpoch
         };
 
         _db.LearningAttempts.Add(attempt);
@@ -577,8 +598,12 @@ public class KidsController : Controller
             });
         }
 
-        await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, isCorrect: true);
+        await UpdateSkillProgressAsync(child.Id, item.SkillGroupId, item.Id, isCorrect: true);
+        var rewardProgress = await _rewardProgressionService.RecordAttemptAsync(child, item, true, attempt.StarsEarned, attempt.Status);
         await _db.SaveChangesAsync();
+        await completionTransaction.CommitAsync();
+        if (rewardProgress.NewlyUnlockedGrant is not null)
+            TempData["MilestoneMessage"] = $"Bé đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!";
 
         return RedirectToAction(nameof(Learn), new { id = item.Id, skillGroupId, fromTracing, completed = true });
     }
@@ -596,13 +621,13 @@ public class KidsController : Controller
         LearningSession? session = null;
         if (Guid.TryParse(sessionRaw, out var sessionId))
         {
-            session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id);
+            session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch);
         }
 
         if (session is null)
         {
             session = await _db.LearningSessions
-                .Where(x => x.ChildProfileId == child.Id)
+                .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch)
                 .OrderByDescending(x => x.StartedAt)
                 .FirstOrDefaultAsync();
         }
@@ -612,22 +637,22 @@ public class KidsController : Controller
             return RedirectToAction(nameof(Today));
         }
 
-        if (session.Status == "active")
-        {
-            await _todayLessonService.CompleteSessionAsync(session);
-        }
-
         var attempts = await _db.LearningAttempts
             .Include(x => x.LearningItem)
             .Where(x => x.SessionId == session.Id)
             .OrderBy(x => x.StartedAt)
             .ToListAsync();
 
-        var completedCount = attempts.Count(x => x.Status == "completed");
-        var starsEarned = attempts.Sum(x => x.StarsEarned);
+        var completedCount = attempts.Where(x => x.Status == "completed").Select(x => x.LearningItemId).Distinct().Count();
+        var starsEarned = attempts.GroupBy(x => x.LearningItemId).Sum(g => g.Max(x => x.StarsEarned));
+        var plannedItemCount = ReadSessionPlanIds(session.SessionPlanJson).Distinct().Count();
+        if (session.Status == "active" && plannedItemCount > 0 && completedCount >= plannedItemCount)
+        {
+            await _todayLessonService.CompleteSessionAsync(session);
+        }
 
         // Luồng cấp huy hiệu tự động khi hoàn thành bài học
-        var newlyUnlocked = await EvaluateAndAwardBadgesAsync(child.Id, session, completedCount, starsEarned);
+        var newlyUnlocked = await EvaluateAndAwardBadgesAsync(child.Id, session, completedCount);
         var totalBadges = await _db.ChildRewards.CountAsync(x => x.ChildProfileId == child.Id);
 
         var model = new SessionSummaryViewModel
@@ -654,8 +679,6 @@ public class KidsController : Controller
             return RedirectToAction("Index", "Profiles");
         }
 
-        await EnsureDefaultRewardsExistAsync();
-
         var allRewards = await _db.RewardDefinitions
             .AsNoTracking()
             .Where(x => x.IsActive)
@@ -667,14 +690,66 @@ public class KidsController : Controller
             .Where(x => x.ChildProfileId == child.Id)
             .ToDictionaryAsync(x => x.RewardDefinitionId);
 
-        var totalStars = await _db.LearningAttempts
-            .Where(x => x.ChildProfileId == child.Id)
-            .SumAsync(x => x.StarsEarned);
+        var totalStars = await _db.ChildLessonProgresses
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch)
+            .SumAsync(x => (int?)x.BestStars) ?? 0;
+
+        var milestoneGrants = await _db.RewardGrants.AsNoTracking()
+            .Include(x => x.RewardDefinition)
+            .Include(x => x.SkillGroup)
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch)
+            .OrderByDescending(x => x.ClaimedAt ?? x.UnlockedAt)
+            .ToListAsync();
+        var groups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync();
+        var lessonCounts = await _db.LearningItems.AsNoTracking()
+            .Where(x => x.Status == ContentStatus.Published)
+            .GroupBy(x => x.SkillGroupId)
+            .Select(g => new { SkillGroupId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.SkillGroupId, x => x.Count);
+        var completionCounts = await _db.ChildLessonProgresses.AsNoTracking()
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.FirstCompletedAt != null)
+            .GroupBy(x => x.LearningItem!.SkillGroupId)
+            .Select(g => new { SkillGroupId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.SkillGroupId, x => x.Count);
 
         var model = new KidsRewardsViewModel
         {
             ChildProfile = child,
             TotalStars = totalStars,
+            ClaimableGrants = milestoneGrants
+                .Where(x => x.State == RewardGrantStates.Claimable)
+                .OrderBy(x => x.UnlockedAt)
+                .Select(x => new RewardGrantItemViewModel
+            {
+                Grant = x,
+                Reward = x.RewardDefinition!,
+                SkillName = x.SkillGroup?.Name ?? "Hành trình học tập"
+            }).ToList(),
+            RecentClaimedGrants = milestoneGrants
+                .Where(x => x.State == RewardGrantStates.Claimed)
+                .Take(5)
+                .Select(x => new RewardGrantItemViewModel
+                {
+                    Grant = x,
+                    Reward = x.RewardDefinition!,
+                    SkillName = x.SkillGroup?.Name ?? "Hành trình học tập"
+                }).ToList(),
+            SkillProgress = groups.Select(group =>
+            {
+                completionCounts.TryGetValue(group.Id, out var completed);
+                lessonCounts.TryGetValue(group.Id, out var total);
+                return new SkillRewardProgressViewModel
+                {
+                    SkillGroupId = group.Id,
+                    SkillName = group.Name,
+                    IconKey = group.IconKey,
+                    Color = group.Color,
+                    UniqueCompleted = completed,
+                    TotalLessons = total,
+                    CurrentSegmentProgress = completed % RewardProgressionService.LessonsPerMilestone,
+                    NextMilestone = (completed / RewardProgressionService.LessonsPerMilestone + 1) * RewardProgressionService.LessonsPerMilestone
+                };
+            }).ToList(),
             Badges = allRewards.Select(r => new RewardItemViewModel
             {
                 Definition = r,
@@ -686,66 +761,68 @@ public class KidsController : Controller
         return View(model);
     }
 
-    private async Task EnsureDefaultRewardsExistAsync()
+    [HttpPost("rewards/grants/{grantId:guid}/claim")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ClaimReward(Guid grantId)
     {
-        var rewardSeeds = new (string Code, string Name, string Type, string Icon, string Rule)[]
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null) return RedirectToAction("Index", "Profiles");
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+        var grant = await _db.RewardGrants
+            .AsNoTracking()
+            .Include(x => x.RewardDefinition)
+            .FirstOrDefaultAsync(x => x.Id == grantId && x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch);
+        if (grant is null) return NotFound();
+        var claimedAt = DateTimeOffset.UtcNow;
+        var claimedRows = await _db.RewardGrants
+            .Where(x => x.Id == grantId && x.ChildProfileId == child.Id &&
+                        x.ProgressEpoch == child.ProgressEpoch && x.State == RewardGrantStates.Claimable)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.State, RewardGrantStates.Claimed)
+                .SetProperty(x => x.ClaimedAt, claimedAt));
+        if (claimedRows == 0)
         {
-            // Huy hiệu tiến trình & chuyên cần
-            ("badge-first-step", "Bước Chân Đầu Tiên", "badge", "hotel_class", "Hoàn thành bài học đầu tiên"),
-            ("badge-daily-champion", "Chiến Binh Chăm Chỉ", "badge", "military_tech", "Hoàn thành trọn vẹn buổi học hôm nay"),
-            ("badge-streak-3d", "Ong Vàng Siêng Năng", "badge", "local_fire_department", "Hoàn thành 3 ngày học liên tiếp"),
-            ("badge-streak-7d", "Bậc Thầy Chuyên Cần", "badge", "workspace_premium", "Kiên trì học 7 ngày cùng Sóc Nâu"),
-            ("badge-super-scholar", "Đại Sứ Sóc Nâu", "badge", "emoji_events", "Tích lũy trên 10 ngôi sao vàng"),
-            ("badge-star-collector", "Nhà Sưu Tầm Sao", "badge", "stars", "Tích lũy trên 25 ngôi sao vàng"),
+            await transaction.RollbackAsync();
+            return RedirectToAction(nameof(Rewards));
+        }
 
-            // Huy hiệu nhóm kỹ năng
-            ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các bài học chữ cái tiếng Việt"),
-            ("badge-handwriting-hero", "Bàn Tay Khéo Léo", "badge", "edit", "Hoàn thành các bài luyện tô nét chữ chuẩn"),
-            ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Làm quen các con số và đếm số lượng"),
-            ("badge-logic-explorer", "Thám Tử Thông Minh", "badge", "psychology", "Vượt qua các câu đố tư duy logic"),
-            ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
-            ("badge-story-teller", "Nhà Kể Chuyện Nhí", "badge", "auto_stories", "Mở rộng vốn từ và nghe hiểu câu chuyện"),
-            ("badge-shape-master", "Kiến Trúc Sư Tí Hon", "badge", "category", "Phân biệt thành thạo các hình khối và không gian"),
-
-            // Vật phẩm trang trí khu vườn của bé
-            ("item-golden-acorn", "Quả Sồi Hoàng Gia", "item", "nature", "Vật phẩm quý giá nhận khi chăm chỉ học tập"),
-            ("item-magic-pencil", "Bút Chì Cầu Vồng", "item", "draw", "Bút chì thần kỳ tô điểm những nét chữ đẹp"),
-            ("item-knowledge-tree", "Cây Tri Thức 3D", "item", "park", "Khu vườn nở hoa khi bé học thêm nhiều điều mới"),
-            ("item-tiny-crown", "Vương Miện Tí Hon", "item", "royalty", "Vương miện vinh danh bạn nhỏ xuất sắc"),
-            ("item-trophy-gold", "Cúp Sóc Nâu Danh Dự", "item", "trophy", "Cúp vàng cao quý nhất của trường mầm non Sóc Nâu")
-        };
-
-        var existing = await _db.RewardDefinitions.ToDictionaryAsync(x => x.Code);
-        var added = false;
-        foreach (var (code, name, type, icon, rule) in rewardSeeds)
+        if (!await _db.ChildRewards.AnyAsync(x => x.ChildProfileId == child.Id && x.RewardDefinitionId == grant.RewardDefinitionId))
         {
-            if (!existing.TryGetValue(code, out var item))
+            _db.ChildRewards.Add(new ChildReward
             {
-                item = new RewardDefinition
-                {
-                    Id = Guid.NewGuid(),
-                    Code = code
-                };
-                _db.RewardDefinitions.Add(item);
-                added = true;
-            }
-            item.Name = name;
-            item.RewardType = type;
-            item.IconKey = icon;
-            item.RuleJson = rule;
-            item.IsActive = true;
+                Id = Guid.NewGuid(),
+                ChildProfileId = child.Id,
+                RewardDefinitionId = grant.RewardDefinitionId,
+                EarnedAt = claimedAt
+            });
         }
 
-        if (added || existing.Count < rewardSeeds.Length)
+        if (grant.RewardDefinition?.RewardType == "item")
         {
-            await _db.SaveChangesAsync();
+            var inventory = await _db.ChildInventoryItems.FirstOrDefaultAsync(x =>
+                x.ChildProfileId == child.Id && x.RewardDefinitionId == grant.RewardDefinitionId);
+            if (inventory is null)
+            {
+                inventory = new ChildInventoryItem
+                {
+                    Id = Guid.NewGuid(), ChildProfileId = child.Id,
+                    RewardDefinitionId = grant.RewardDefinitionId, Quantity = 0
+                };
+                _db.ChildInventoryItems.Add(inventory);
+            }
+            inventory.Quantity++;
+            inventory.UpdatedAt = DateTimeOffset.UtcNow;
         }
+
+        await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
+        TempData["RewardMessage"] = $"Đã nhận {grant.RewardDefinition?.Name ?? "quà tặng"}!";
+        return RedirectToAction(nameof(Rewards));
     }
 
-    private async Task<List<RewardDefinition>> EvaluateAndAwardBadgesAsync(Guid childProfileId, LearningSession session, int completedCount, int starsEarned)
+    private async Task<List<RewardDefinition>> EvaluateAndAwardBadgesAsync(Guid childProfileId, LearningSession session, int completedCount)
     {
-        await EnsureDefaultRewardsExistAsync();
-
         var earnedIds = await _db.ChildRewards
             .AsNoTracking()
             .Where(x => x.ChildProfileId == childProfileId)
@@ -773,58 +850,81 @@ public class KidsController : Controller
             }
         }
 
-        // Lấy dữ liệu tổng hợp lịch sử của bé
-        var totalAttempts = await _db.LearningAttempts
+        var uniqueProgress = await _db.ChildLessonProgresses
             .AsNoTracking()
             .Include(x => x.LearningItem)
-            .ThenInclude(x => x!.SkillGroup)
-            .Where(x => x.ChildProfileId == childProfileId && x.Status == "completed")
+            .Where(x => x.ChildProfileId == childProfileId && x.ProgressEpoch == session.ProgressEpoch && x.FirstCompletedAt != null)
             .ToListAsync();
-
-        var totalStars = totalAttempts.Sum(x => x.StarsEarned);
-        var totalSessions = await _db.LearningSessions
-            .CountAsync(x => x.ChildProfileId == childProfileId && x.Status == "completed");
+        var totalStars = uniqueProgress.Sum(x => x.BestStars);
+        var completedSessionDates = (await _db.LearningSessions.AsNoTracking()
+            .Where(x => x.ChildProfileId == childProfileId && x.ProgressEpoch == session.ProgressEpoch &&
+                        x.Status == "completed" && x.EndedAt != null)
+            .Select(x => x.EndedAt!.Value)
+            .ToListAsync())
+            .Select(x => x.Date)
+            .Distinct()
+            .OrderByDescending(x => x)
+            .ToList();
+        var streakDays = 0;
+        if (completedSessionDates.Count > 0)
+        {
+            var expectedDate = completedSessionDates[0];
+            foreach (var date in completedSessionDates)
+            {
+                if (date != expectedDate) break;
+                streakDays++;
+                expectedDate = expectedDate.AddDays(-1);
+            }
+        }
 
         // 1. Bước chân đầu tiên: Hoàn thành bài học đầu tiên
-        if (totalAttempts.Count >= 1)
+        if (uniqueProgress.Count >= 1)
         {
             TryAward("badge-first-step");
         }
 
         // 2. Chiến binh chăm chỉ: Hoàn thành buổi học hôm nay
-        if (session.Status == "completed" && completedCount >= 1)
+        var plannedItemCount = ReadSessionPlanIds(session.SessionPlanJson).Distinct().Count();
+        if (session.Status == "completed" && plannedItemCount > 0 && completedCount >= plannedItemCount)
         {
             TryAward("badge-daily-champion");
         }
 
         // 3. Chuỗi học tập
-        if (totalSessions >= 3) TryAward("badge-streak-3d");
-        if (totalSessions >= 7) TryAward("badge-streak-7d");
+        if (streakDays >= 3) TryAward("badge-streak-3d");
+        if (streakDays >= 7) TryAward("badge-streak-7d");
 
         // 4. Mốc số sao
         if (totalStars >= 10) TryAward("badge-super-scholar");
         if (totalStars >= 25) TryAward("badge-star-collector");
 
-        // 5. Huy hiệu kỹ năng theo nhóm bài
-        var completedSkillCodes = totalAttempts
-            .Where(x => x.LearningItem?.SkillGroup != null)
-            .Select(x => x.LearningItem!.SkillGroup!.Code)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // 5. Huy hiệu chinh phục nhóm chỉ mở khi hoàn thành toàn bộ bài đang xuất bản.
+        var publishedBySkill = await _db.LearningItems.AsNoTracking()
+            .Where(x => x.Status == ContentStatus.Published)
+            .GroupBy(x => x.SkillGroupId)
+            .Select(g => new { SkillGroupId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.SkillGroupId, x => x.Count);
+        var completedBySkill = uniqueProgress
+            .Where(x => x.LearningItem is not null)
+            .GroupBy(x => x.LearningItem!.SkillGroupId)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var groupIdsByCode = await _db.SkillGroups.AsNoTracking().ToDictionaryAsync(x => x.Code, x => x.Id);
 
-        if (completedSkillCodes.Contains("chu-cai")) TryAward("badge-alphabet-star");
-        if (totalAttempts.Any(x => x.LearningItem?.InteractionType == InteractionTypes.Tracing)) TryAward("badge-handwriting-hero");
-        if (completedSkillCodes.Contains("chu-so") || completedSkillCodes.Contains("so-luong-toan")) TryAward("badge-math-whiz");
-        if (completedSkillCodes.Contains("tu-duy-logic")) TryAward("badge-logic-explorer");
-        if (completedSkillCodes.Contains("ky-nang-song")) TryAward("badge-habit-hero");
-        if (completedSkillCodes.Contains("ngon-ngu")) TryAward("badge-story-teller");
-        if (completedSkillCodes.Contains("hinh-dang-khong-gian")) TryAward("badge-shape-master");
+        bool CompletedGroup(string code) =>
+            groupIdsByCode.TryGetValue(code, out var groupId) &&
+            publishedBySkill.TryGetValue(groupId, out var total) && total > 0 &&
+            completedBySkill.GetValueOrDefault(groupId) >= total;
 
-        // 6. Vật phẩm trang trí khu vườn
-        if (totalAttempts.Count >= 5) TryAward("item-golden-acorn");
-        if (totalAttempts.Count(x => x.LearningItem?.InteractionType == InteractionTypes.Tracing) >= 3) TryAward("item-magic-pencil");
-        if (totalAttempts.Count >= 10) TryAward("item-knowledge-tree");
-        if (totalSessions >= 5) TryAward("item-tiny-crown");
-        if (totalStars >= 50) TryAward("item-trophy-gold");
+        if (CompletedGroup("chu-cai")) TryAward("badge-alphabet-star");
+        if (CompletedGroup("chu-so")) TryAward("badge-number-explorer");
+        if (CompletedGroup("so-luong-toan")) TryAward("badge-math-whiz");
+        if (CompletedGroup("tu-duy-logic")) TryAward("badge-logic-explorer");
+        if (CompletedGroup("ky-nang-song")) TryAward("badge-habit-hero");
+        if (CompletedGroup("ngon-ngu")) TryAward("badge-story-teller");
+        if (CompletedGroup("hinh-dang-khong-gian")) TryAward("badge-shape-master");
+        if (CompletedGroup("ghi-nho-tap-trung")) TryAward("badge-focus-star");
+        if (CompletedGroup("van-dong-tinh")) TryAward("badge-handwriting-hero");
+        if (CompletedGroup("kham-pha")) TryAward("badge-world-explorer");
 
         if (newlyAwarded.Count > 0)
         {
@@ -899,8 +999,10 @@ public class KidsController : Controller
         }
     }
 
-    private async Task UpdateSkillProgressAsync(Guid childProfileId, Guid skillGroupId, bool isCorrect)
+    private async Task UpdateSkillProgressAsync(Guid childProfileId, Guid skillGroupId, Guid learningItemId, bool isCorrect)
     {
+        var isFirstCompletion = isCorrect && !await _db.ChildLessonProgresses.AnyAsync(x =>
+            x.ChildProfileId == childProfileId && x.LearningItemId == learningItemId && x.FirstCompletedAt != null);
         var progress = await _db.SkillProgress.FirstOrDefaultAsync(x => x.ChildProfileId == childProfileId && x.SkillGroupId == skillGroupId);
         if (progress is null)
         {
@@ -913,7 +1015,7 @@ public class KidsController : Controller
             _db.SkillProgress.Add(progress);
         }
 
-        progress.CompletedItems += isCorrect ? 1 : 0;
+        progress.CompletedItems += isFirstCompletion ? 1 : 0;
         progress.NeedsPracticeItems += isCorrect ? 0 : 1;
         progress.MasteryLevel = Math.Min(100, progress.MasteryLevel + (isCorrect ? 8 : 2));
         progress.LastPracticedAt = DateTimeOffset.UtcNow;
@@ -924,12 +1026,25 @@ public class KidsController : Controller
         });
     }
 
+    private static IReadOnlyList<Guid> ReadSessionPlanIds(string? sessionPlanJson)
+    {
+        if (string.IsNullOrWhiteSpace(sessionPlanJson)) return [];
+        try
+        {
+            return JsonSerializer.Deserialize<List<Guid>>(sessionPlanJson) ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
     private async Task<LearningSession> GetCurrentLearningSessionAsync(ChildProfile child, Guid? currentItemId = null)
     {
         var sessionRaw = HttpContext.Session.GetString(SessionKeys.CurrentLearningSessionId);
         if (Guid.TryParse(sessionRaw, out var sessionId))
         {
-            var session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id);
+            var session = await _db.LearningSessions.FirstOrDefaultAsync(x => x.Id == sessionId && x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch);
             if (session is not null)
             {
                 if (!currentItemId.HasValue || session.SessionPlanJson.Contains(currentItemId.Value.ToString()))
@@ -942,7 +1057,7 @@ public class KidsController : Controller
         if (currentItemId.HasValue)
         {
             var matchingSession = await _db.LearningSessions
-                .Where(x => x.ChildProfileId == child.Id && x.SessionPlanJson.Contains(currentItemId.Value.ToString()))
+                .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.SessionPlanJson.Contains(currentItemId.Value.ToString()))
                 .OrderByDescending(x => x.StartedAt)
                 .FirstOrDefaultAsync();
 

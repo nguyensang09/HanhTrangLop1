@@ -5,42 +5,11 @@
     var completedCount = Model.CompletedCount;
     var progressPercent = totalItems > 0 ? (int)Math.Round((double)completedCount / totalItems * 100) : 0;
 
-    // Xác định bài đang học dựa trên bài vừa học gần nhất hoặc bài chưa hoàn thành đầu tiên
-    var currentItemIndex = 0;
-    if (Model.LastPracticedItemId.HasValue)
-    {
-        var lastIdx = -1;
-        for (var i = 0; i < totalItems; i++)
-        {
-            if (Model.Items[i].Item.Id == Model.LastPracticedItemId.Value)
-            {
-                lastIdx = i;
-                break;
-            }
-        }
-        if (lastIdx >= 0)
-        {
-            if (Model.Items[lastIdx].LatestStatus == "completed" && lastIdx + 1 < totalItems)
-            {
-                currentItemIndex = lastIdx + 1;
-            }
-            else
-            {
-                currentItemIndex = lastIdx;
-            }
-        }
-    }
-    else
-    {
-        for (var i = 0; i < totalItems; i++)
-        {
-            if (Model.Items[i].LatestStatus != "completed")
-            {
-                currentItemIndex = i;
-                break;
-            }
-        }
-    }
+    // Trạm hiện tại luôn là bài đầu tiên chưa từng hoàn thành.
+    // Kết quả luyện lại không được làm lùi hoặc khóa lại hành trình.
+    var currentItemIndex = Model.CurrentItemId.HasValue
+        ? Model.Items.ToList().FindIndex(x => x.Item.Id == Model.CurrentItemId.Value)
+        : -1;
 
     static string GetStageSymbol(LearningItem item, int index)
     {
@@ -124,7 +93,7 @@
     };
     
     // Bài đang chọn mặc định
-    var defaultSelectedItem = totalItems > 0 ? Model.Items[currentItemIndex] : null;
+    var defaultSelectedItem = currentItemIndex >= 0 ? Model.Items[currentItemIndex] : Model.Items.LastOrDefault();
     var (defaultMetaLabel, defaultMetaIcon) = GetInteractionMeta(defaultSelectedItem?.Item.InteractionType);
 }
 
@@ -244,23 +213,59 @@
                     {
                         var row = Model.Items[i];
                         var stepNumber = i + 1;
-                        var isCurrent = i == currentItemIndex;
-                        var isCompleted = i < currentItemIndex;
-                        var isLocked = i > currentItemIndex;
+                        var isCurrent = Model.CurrentItemId == row.Item.Id;
+                        var isCompleted = row.EverCompleted;
+                        var isLocked = !isCompleted && !isCurrent;
                         var posClass = zigPositions[i % zigPositions.Length];
                         var themeClass = stationThemes[i % stationThemes.Length];
                         var symbol = GetStageSymbol(row.Item, i);
                         var (metaLabel, metaIcon) = GetInteractionMeta(row.Item.InteractionType);
                         var learnUrl = Url.Action("Learn", "Kids", new { id = row.Item.Id, skillGroupId = Model.SkillGroup.Id });
 
-                        // Trạm đặc biệt: Rương báu ở mốc giữa (mỗi 5 trạm)
-                        var isChestStation = stepNumber % 5 == 0 && stepNumber < totalItems;
+                        var milestone = stepNumber % 10 == 0
+                            ? Model.Milestones.FirstOrDefault(x => x.MilestoneValue == stepNumber)
+                            : null;
 
                         // Định vị tiểu cảnh bên sườn bản đồ: Đặt ở phía đối diện trạm để lấp đầy khoảng trống hài hòa
                         var decoSide = posClass.Contains("right") ? "side-left" :
                                        posClass.Contains("left") ? "side-right" :
                                        ((stepNumber % 2 == 0) ? "side-left" : "side-right");
                         var decoItem = flankLandmarks[i % flankLandmarks.Length];
+
+                        @if (milestone is not null)
+                        {
+                            <div class="adventure-step-row reward-milestone-row">
+                                <div class="adventure-station-node pos-center reward-milestone-node">
+                                    @if (milestone.State == RewardGrantStates.Claimable && milestone.GrantId.HasValue)
+                                    {
+                                        <form asp-action="ClaimReward" asp-route-grantId="@milestone.GrantId" method="post" class="chest-node-badge is-claimable">
+                                            <button type="submit" class="chest-circle-icon" title="Mở rương thưởng mốc @stepNumber bài">
+                                                <span class="chest-emoji-art">🎁</span>
+                                            </button>
+                                            <span class="station-label-pill chest-pill">Mở quà mốc @stepNumber</span>
+                                        </form>
+                                    }
+                                    else if (milestone.State == RewardGrantStates.Claimed)
+                                    {
+                                        <div class="chest-node-badge is-claimed" title="@milestone.RewardName">
+                                            <div class="chest-circle-icon"><span class="material-symbols-outlined">@milestone.RewardIconKey</span></div>
+                                            <div class="station-label-pill completed-pill">Đã nhận • Mốc @stepNumber</div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        var completedTowardMilestone = Math.Clamp(completedCount - (stepNumber - 10), 0, 10);
+                                        <div class="chest-node-badge is-locked" onclick="handleLockedStation(this, @stepNumber)" title="Rương mốc @stepNumber">
+                                            <div class="chest-circle-icon">
+                                                <span class="material-symbols-outlined lock-tag">lock</span>
+                                                <span class="chest-emoji-art">🎁</span>
+                                            </div>
+                                            <div class="station-label-pill chest-pill">@completedTowardMilestone/10 • Rương mốc @stepNumber</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
 
                         <div class="adventure-step-row">
                             <!-- Tiểu cảnh phong cảnh & nhân vật hoạt hình ven sườn bản đồ -->
@@ -340,21 +345,6 @@
                                         <span>Trạm @stepNumber: @row.Item.Title</span>
                                     </div>
                                 }
-                                else if (isChestStation)
-                                {
-                                    <!-- Trạm Rương Bạc Khóa Mốc Thưởng -->
-                                    <div class="chest-node-badge clay-card"
-                                         onclick="handleLockedStation(this, @stepNumber)"
-                                         title="Rương Thưởng • Trạm @stepNumber (Chưa mở khóa)">
-                                        <div class="chest-circle-icon">
-                                            <span class="material-symbols-outlined lock-tag">lock</span>
-                                            <span class="chest-emoji-art">🎁</span>
-                                        </div>
-                                        <div class="station-label-pill chest-pill">
-                                            <span>Rương Thưởng • Trạm @stepNumber</span>
-                                        </div>
-                                    </div>
-                                }
                                 else
                                 {
                                     <!-- Trạm Khóa (Nhắc Nhở Bé Khi Bấm) -->
@@ -399,9 +389,9 @@
                         @for (var idx = 0; idx < Model.Items.Count; idx++)
                         {
                             var itemRow = Model.Items[idx];
-                            var isLocked = idx > currentItemIndex;
-                            var isCurrent = idx == currentItemIndex;
-                            var isCompleted = idx < currentItemIndex;
+                            var isCurrent = Model.CurrentItemId == itemRow.Item.Id;
+                            var isCompleted = itemRow.EverCompleted;
+                            var isLocked = !isCompleted && !isCurrent;
                             var symbol = GetStageSymbol(itemRow.Item, idx);
 
                             <a class="skill-grid-card clay-card @(isCompleted ? "is-completed" : isCurrent ? "is-current" : "is-locked")"

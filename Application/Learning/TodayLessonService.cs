@@ -43,7 +43,7 @@ public class TodayLessonService
     {
         var completedSessions = await _db.LearningSessions
             .AsNoTracking()
-            .Where(x => x.ChildProfileId == child.Id && x.Status == "completed")
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.Status == "completed")
             .CountAsync();
 
         return Math.Clamp(completedSessions + 1, 1, DayThemes.Count);
@@ -57,7 +57,7 @@ public class TodayLessonService
 
         // Tìm phiên của ngày được chọn
         var existingSession = await _db.LearningSessions
-            .Where(x => x.ChildProfileId == child.Id && x.PlannedMinutes == targetDay)
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.PlannedMinutes == targetDay)
             .OrderByDescending(x => x.StartedAt)
             .FirstOrDefaultAsync();
 
@@ -83,6 +83,7 @@ public class TodayLessonService
             PlannedMinutes = targetDay, // Dùng PlannedMinutes để lưu số thứ tự Ngày học (Day 1, 2, 3...)
             Status = "active",
             SessionPlanJson = JsonSerializer.Serialize(planItemIds),
+            ProgressEpoch = child.ProgressEpoch,
             StartedAt = DateTimeOffset.UtcNow
         };
 
@@ -97,39 +98,36 @@ public class TodayLessonService
         selectedDay = Math.Clamp(selectedDay, 1, DayThemes.Count);
 
         var items = await GetSessionItemsAsync(session);
-        var attempts = await _db.LearningAttempts
+        var itemIds = items.Select(x => x.Id).ToList();
+        var progressRows = await _db.ChildLessonProgresses
             .AsNoTracking()
-            .Where(x => x.SessionId == session.Id)
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch &&
+                        itemIds.Contains(x.LearningItemId))
             .ToListAsync();
-
-        var latestAttemptByItemId = attempts
-            .GroupBy(x => x.LearningItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.OrderByDescending(x => x.StartedAt).First());
+        var progressByItemId = progressRows.ToDictionary(x => x.LearningItemId);
 
         var firstOpenStepFound = false;
         var steps = items.Select(item =>
         {
-            latestAttemptByItemId.TryGetValue(item.Id, out var attempt);
+            progressByItemId.TryGetValue(item.Id, out var progress);
 
-            if (attempt?.Status == "completed")
+            if (progress?.FirstCompletedAt is not null)
             {
                 return new TodayLessonStepViewModel
                 {
                     Item = item,
                     Status = TodayLessonStepStatus.Completed,
-                    StarsEarned = attempt.StarsEarned
+                    StarsEarned = progress.BestStars
                 };
             }
 
-            if (attempt?.Status == "needs_practice")
+            if (progress?.LatestStatus == "needs_practice")
             {
                 return new TodayLessonStepViewModel
                 {
                     Item = item,
                     Status = TodayLessonStepStatus.NeedsPractice,
-                    StarsEarned = attempt.StarsEarned
+                    StarsEarned = progress.BestStars
                 };
             }
 
@@ -169,7 +167,7 @@ public class TodayLessonService
     {
         var completedDayNumbers = await _db.LearningSessions
             .AsNoTracking()
-            .Where(x => x.ChildProfileId == child.Id && x.Status == "completed")
+            .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.Status == "completed")
             .Select(x => x.PlannedMinutes)
             .ToHashSetAsync();
 

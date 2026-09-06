@@ -83,6 +83,14 @@
          data-tracing-audio-url-en="@Model.TracingAudioUrlEn"
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
+    @if (TempData["MilestoneMessage"] is string milestoneMessage)
+    {
+        <div class="reward-success-notice clay-card" role="status">
+            <span class="material-symbols-outlined">redeem</span>
+            <strong>@milestoneMessage</strong>
+            <a asp-controller="Kids" asp-action="Rewards">Mở quà</a>
+        </div>
+    }
     
     <textarea class="activity-payload" data-activity-payload hidden>@(Model.CurrentQuestion?.PayloadJson ?? "{}")</textarea>
 

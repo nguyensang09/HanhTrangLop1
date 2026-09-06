@@ -19180,3 +19180,122 @@ body.audio-is-speaking .sound-wave-badge {
   .bottom-cta-inner { flex-direction: column; text-align: center; padding: 32px 20px; }
   .cta-buttons-row { justify-content: center; }
 }
+
+/* Reward progression: one independent chest after every 10 lessons. */
+.reward-milestone-row { min-height: 112px; }
+.reward-milestone-node { margin-inline: auto; }
+.chest-node-badge form, .chest-node-badge button { font: inherit; }
+.chest-node-badge.is-claimable .chest-circle-icon {
+  cursor: pointer;
+  animation: pulseStationGlow 1.8s infinite;
+}
+.chest-node-badge.is-claimed .chest-circle-icon {
+  color: #047857;
+  background: linear-gradient(135deg, #d1fae5, #6ee7b7);
+}
+.reward-success-notice, .reward-section-heading, .reward-awaiting-card, .reward-skill-progress-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reward-success-notice {
+  margin: 16px 0;
+  padding: 14px 18px;
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.reward-empty-state,
+.reward-history-section {
+    margin: 18px 0;
+    padding: 18px;
+}
+
+.reward-empty-state {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.reward-empty-state > .material-symbols-outlined {
+    font-size: 36px;
+    color: #f59e0b;
+}
+
+.reward-empty-state p,
+.reward-history-item small {
+    display: block;
+    margin: 3px 0 0;
+    color: #64748b;
+}
+
+.reward-history-list {
+    display: grid;
+    gap: 10px;
+}
+
+.reward-history-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .72);
+}
+
+.reward-history-item > .material-symbols-outlined {
+    color: #f59e0b;
+    font-size: 30px;
+}
+
+.reward-history-item time {
+    color: #64748b;
+    font-size: .85rem;
+    white-space: nowrap;
+}
+.reward-awaiting-section, .reward-skill-journey { margin: 20px 0; padding: 20px; }
+.reward-section-heading h2, .reward-section-heading p { margin: 0; }
+.reward-section-heading > .material-symbols-outlined { color: #d97706; font-size: 2rem; }
+.reward-awaiting-grid, .reward-skill-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.reward-awaiting-card, .reward-skill-progress-card {
+  min-height: 82px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #fff;
+}
+.reward-awaiting-card > div, .reward-skill-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.reward-awaiting-card small, .reward-skill-copy span, .reward-skill-copy small { color: #64748b; }
+.reward-awaiting-icon, .reward-skill-icon { color: var(--skill-color, #d97706); font-size: 2.2rem; }
+.reward-claim-btn { min-height: 44px; white-space: nowrap; }
+.reward-skill-progress-card {
+  color: inherit;
+  text-decoration: none;
+  border-left: 6px solid var(--skill-color, #ff8542);
+}
+.reward-progress-track {
+  height: 9px;
+  margin: 7px 0;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e2e8f0;
+}
+.reward-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--skill-color, #ff8542);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chest-node-badge.is-claimable .chest-circle-icon { animation: none; }
+}

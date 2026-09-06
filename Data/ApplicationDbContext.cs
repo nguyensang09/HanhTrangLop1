@@ -26,6 +26,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<RewardDefinition> RewardDefinitions => Set<RewardDefinition>();
     public DbSet<ChildReward> ChildRewards => Set<ChildReward>();
     public DbSet<GardenItem> GardenItems => Set<GardenItem>();
+    public DbSet<ChildLessonProgress> ChildLessonProgresses => Set<ChildLessonProgress>();
+    public DbSet<RewardGrant> RewardGrants => Set<RewardGrant>();
+    public DbSet<ChildInventoryItem> ChildInventoryItems => Set<ChildInventoryItem>();
     public DbSet<ContentReview> ContentReviews => Set<ContentReview>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
@@ -59,6 +62,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasIndex(x => x.Code)
             .IsUnique();
 
+        builder.Entity<ChildReward>()
+            .HasIndex(x => new { x.ChildProfileId, x.RewardDefinitionId })
+            .IsUnique();
+
         builder.Entity<SkillProgress>()
             .HasIndex(x => new { x.ChildProfileId, x.SkillGroupId })
             .IsUnique();
@@ -66,6 +73,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<SkillProgress>()
             .Property(x => x.MasteryLevel)
             .HasPrecision(5, 2);
+
+        builder.Entity<ChildLessonProgress>()
+            .HasIndex(x => new { x.ChildProfileId, x.LearningItemId })
+            .IsUnique();
+
+        builder.Entity<ChildLessonProgress>()
+            .HasIndex(x => new { x.ChildProfileId, x.ProgressEpoch, x.FirstCompletedAt });
+
+        builder.Entity<RewardGrant>()
+            .HasIndex(x => new { x.ChildProfileId, x.SourceType, x.SourceKey })
+            .IsUnique();
+
+        builder.Entity<RewardGrant>()
+            .HasIndex(x => new { x.ChildProfileId, x.ProgressEpoch, x.State });
+
+        builder.Entity<ChildInventoryItem>()
+            .HasIndex(x => new { x.ChildProfileId, x.RewardDefinitionId })
+            .IsUnique();
 
         builder.Entity<ChildProfile>()
             .HasOne(x => x.ParentUser)
@@ -89,6 +114,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(x => x.Question)
             .WithMany()
             .HasForeignKey(x => x.QuestionId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<ChildLessonProgress>()
+            .HasOne(x => x.LearningItem)
+            .WithMany()
+            .HasForeignKey(x => x.LearningItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RewardGrant>()
+            .HasOne(x => x.SkillGroup)
+            .WithMany()
+            .HasForeignKey(x => x.SkillGroupId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

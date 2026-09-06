@@ -121,6 +121,80 @@ namespace HanhTrangLop1.Data.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("HanhTrangLop1.Models.ChildInventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChildProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RewardDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RewardDefinitionId");
+
+                    b.HasIndex("ChildProfileId", "RewardDefinitionId")
+                        .IsUnique();
+
+                    b.ToTable("ChildInventoryItems");
+                });
+
+            modelBuilder.Entity("HanhTrangLop1.Models.ChildLessonProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BestStars")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ChildProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("FirstCompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("LastAttemptedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LatestStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("LearningItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ProgressEpoch")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LearningItemId");
+
+                    b.HasIndex("ChildProfileId", "LearningItemId")
+                        .IsUnique();
+
+                    b.HasIndex("ChildProfileId", "ProgressEpoch", "FirstCompletedAt");
+
+                    b.ToTable("ChildLessonProgresses");
+                });
+
             modelBuilder.Entity("HanhTrangLop1.Models.ChildProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -157,6 +231,9 @@ namespace HanhTrangLop1.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ProgressEpoch")
+                        .HasColumnType("int");
+
                     b.Property<bool>("SoundEnabled")
                         .HasColumnType("bit");
 
@@ -187,9 +264,10 @@ namespace HanhTrangLop1.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChildProfileId");
-
                     b.HasIndex("RewardDefinitionId");
+
+                    b.HasIndex("ChildProfileId", "RewardDefinitionId")
+                        .IsUnique();
 
                     b.ToTable("ChildRewards");
                 });
@@ -279,6 +357,9 @@ namespace HanhTrangLop1.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("MistakeCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgressEpoch")
                         .HasColumnType("int");
 
                     b.Property<int>("ScoreInternal")
@@ -407,6 +488,9 @@ namespace HanhTrangLop1.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("PlannedMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgressEpoch")
                         .HasColumnType("int");
 
                     b.Property<string>("SessionPlanJson")
@@ -603,6 +687,62 @@ namespace HanhTrangLop1.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("RewardDefinitions");
+                });
+
+            modelBuilder.Entity("HanhTrangLop1.Models.RewardGrant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChildProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ClaimedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("MilestoneValue")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgressEpoch")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RewardDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SkillGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceKey")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("UnlockedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RewardDefinitionId");
+
+                    b.HasIndex("SkillGroupId");
+
+                    b.HasIndex("ChildProfileId", "ProgressEpoch", "State");
+
+                    b.HasIndex("ChildProfileId", "SourceType", "SourceKey")
+                        .IsUnique();
+
+                    b.ToTable("RewardGrants");
                 });
 
             modelBuilder.Entity("HanhTrangLop1.Models.SkillGroup", b =>
@@ -1001,6 +1141,44 @@ namespace HanhTrangLop1.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("HanhTrangLop1.Models.ChildInventoryItem", b =>
+                {
+                    b.HasOne("HanhTrangLop1.Models.ChildProfile", "ChildProfile")
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HanhTrangLop1.Models.RewardDefinition", "RewardDefinition")
+                        .WithMany()
+                        .HasForeignKey("RewardDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChildProfile");
+
+                    b.Navigation("RewardDefinition");
+                });
+
+            modelBuilder.Entity("HanhTrangLop1.Models.ChildLessonProgress", b =>
+                {
+                    b.HasOne("HanhTrangLop1.Models.ChildProfile", "ChildProfile")
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HanhTrangLop1.Models.LearningItem", "LearningItem")
+                        .WithMany()
+                        .HasForeignKey("LearningItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChildProfile");
+
+                    b.Navigation("LearningItem");
+                });
+
             modelBuilder.Entity("HanhTrangLop1.Models.ChildProfile", b =>
                 {
                     b.HasOne("HanhTrangLop1.Data.ApplicationUser", "ParentUser")
@@ -1136,6 +1314,32 @@ namespace HanhTrangLop1.Data.Migrations
                     b.Navigation("LearningAttempt");
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("HanhTrangLop1.Models.RewardGrant", b =>
+                {
+                    b.HasOne("HanhTrangLop1.Models.ChildProfile", "ChildProfile")
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HanhTrangLop1.Models.RewardDefinition", "RewardDefinition")
+                        .WithMany()
+                        .HasForeignKey("RewardDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HanhTrangLop1.Models.SkillGroup", "SkillGroup")
+                        .WithMany()
+                        .HasForeignKey("SkillGroupId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ChildProfile");
+
+                    b.Navigation("RewardDefinition");
+
+                    b.Navigation("SkillGroup");
                 });
 
             modelBuilder.Entity("HanhTrangLop1.Models.SkillProgress", b =>
