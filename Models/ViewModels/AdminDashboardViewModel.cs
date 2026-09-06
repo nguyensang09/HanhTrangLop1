@@ -153,7 +153,7 @@ public class CreateTracingItemViewModel
     public bool ShowStartPoint { get; set; }
 
     [MaxLength(1000)]
-    public string AudioUrl { get; set; } = string.Empty;
+    public string? AudioUrl { get; set; }
 
     public Guid? ExistingAudioAssetId { get; set; }
     public IFormFile? AudioFile { get; set; }

@@ -266,12 +266,15 @@ public class KidsController : Controller
                     StarsEarned = starsEarned
                 });
             }
-            else if (topicCode.Contains("net") || titleLower.Contains("nét"))
+            else if (string.Equals(item.SkillGroup?.Code, "van-dong-tinh", StringComparison.OrdinalIgnoreCase) &&
+                     (item.Code.Contains("motor-", StringComparison.OrdinalIgnoreCase) ||
+                      topicCode.Contains("net") || titleLower.Contains("nét")))
             {
                 basicStrokes.Add(new KidsTracingItemViewModel
                 {
                     Item = item,
                     Symbol = symbol,
+                    DisplaySymbol = ResolveBasicStrokeDisplaySymbol(item.Code),
                     Title = item.Title,
                     CategoryCode = "basic",
                     IsCompleted = isCompleted,
@@ -329,6 +332,36 @@ public class KidsController : Controller
 
         return View(model);
     }
+
+    private static string ResolveBasicStrokeDisplaySymbol(string itemCode) => itemCode switch
+    {
+        var code when code.EndsWith("motor-vertical", StringComparison.OrdinalIgnoreCase) => "│",
+        var code when code.EndsWith("motor-horizontal", StringComparison.OrdinalIgnoreCase) => "─",
+        var code when code.EndsWith("motor-diagonal-left", StringComparison.OrdinalIgnoreCase) => "/",
+        var code when code.EndsWith("motor-diagonal-right", StringComparison.OrdinalIgnoreCase) => "\\",
+        var code when code.EndsWith("motor-hook-forward", StringComparison.OrdinalIgnoreCase) => "⤵",
+        var code when code.EndsWith("motor-hook-reverse", StringComparison.OrdinalIgnoreCase) => "⤴",
+        var code when code.EndsWith("motor-double-hook", StringComparison.OrdinalIgnoreCase) => "∪",
+        var code when code.EndsWith("motor-open-curve-right", StringComparison.OrdinalIgnoreCase) => "(",
+        var code when code.EndsWith("motor-open-curve-left", StringComparison.OrdinalIgnoreCase) => ")",
+        var code when code.EndsWith("motor-closed-curve", StringComparison.OrdinalIgnoreCase) => "○",
+        var code when code.EndsWith("motor-upper-loop", StringComparison.OrdinalIgnoreCase) => "ℓ",
+        var code when code.EndsWith("motor-lower-loop", StringComparison.OrdinalIgnoreCase) => "ɟ",
+        var code when code.EndsWith("motor-knot", StringComparison.OrdinalIgnoreCase) => "∞",
+        var code when code.EndsWith("net-ngang", StringComparison.OrdinalIgnoreCase) => "─",
+        var code when code.EndsWith("net-doc", StringComparison.OrdinalIgnoreCase) => "│",
+        var code when code.EndsWith("net-xien-trai", StringComparison.OrdinalIgnoreCase) => "/",
+        var code when code.EndsWith("net-xien-phai", StringComparison.OrdinalIgnoreCase) => "\\",
+        var code when code.EndsWith("net-cong-trai", StringComparison.OrdinalIgnoreCase) => "(",
+        var code when code.EndsWith("net-cong-phai", StringComparison.OrdinalIgnoreCase) => ")",
+        var code when code.EndsWith("net-moc-xuoi", StringComparison.OrdinalIgnoreCase) => "⤵",
+        var code when code.EndsWith("net-moc-nguoc", StringComparison.OrdinalIgnoreCase) => "⤴",
+        var code when code.EndsWith("net-khuyet-tren", StringComparison.OrdinalIgnoreCase) => "ℓ",
+        var code when code.EndsWith("net-khuyet-duoi", StringComparison.OrdinalIgnoreCase) => "ɟ",
+        var code when code.EndsWith("net-that", StringComparison.OrdinalIgnoreCase) => "∞",
+        var code when code.EndsWith("net-vong", StringComparison.OrdinalIgnoreCase) => "○",
+        _ => "〰"
+    };
 
     [HttpGet("bilingual-listen")]
     public async Task<IActionResult> BilingualListen()

@@ -897,6 +897,15 @@
     ]).has(s) || s.startsWith("tranh ");
   }
 
+  function isBasicWritingStroke(raw) {
+    return new Set([
+      "net so thang", "net ngang", "net xien trai", "net xien phai",
+      "net moc xuoi", "net moc nguoc", "net moc hai dau",
+      "net cong ho phai", "net cong ho trai", "net cong kin",
+      "net khuyet tren", "net khuyet duoi", "net that"
+    ]).has(cleanSymbolKey(raw));
+  }
+
   function guideStrokesFor(symbol) {
     const source = String(symbol || "").trim().normalize("NFC");
     const raw = source.toLowerCase();
@@ -915,6 +924,11 @@
         showBadge: idx === 0,
         badgeLabel: "1"
       }));
+    }
+
+    if (isBasicWritingStroke(source)) {
+      const rawStrokes = getBaseStrokesFor(source);
+      return rawStrokes?.length ? generateWorksheetStrokes(rawStrokes) : [];
     }
 
     const characters = splitGraphemes(source);

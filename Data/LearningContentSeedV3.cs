@@ -182,7 +182,26 @@ public static class LearningContentSeed
         Add(Choice("shape-drag-below", "hinh-dang-khong-gian", InteractionTypes.DragDrop, "Vị trí phía dưới", "Kéo quả bóng vào phía dưới.", ["Quả bóng","Cái ô","Bông hoa"], "Quả bóng"));
         foreach (var x in new[] { ("circle","●","Hình tròn"),("square","■","Hình vuông"),("triangle","▲","Hình tam giác") }) { Add(ShapeComparison($"shape-{x.Item1}-large", $"Chọn {x.Item3} lớn hơn", x.Item2, x.Item3, 132, 72, "more")); Add(ShapeComparison($"shape-{x.Item1}-small", $"Chọn {x.Item3} nhỏ hơn", x.Item2, x.Item3, 80, 138, "less")); }
 
-        foreach (var x in new[] { ("vertical","Nét sổ thẳng","|"),("horizontal","Nét ngang","—"),("curve","Nét cong","C"),("zigzag","Nét gấp khúc","Z"),("circle","Vòng tròn","O") }) Add(Tracing($"motor-{x.Item1}", "van-dong-tinh", $"Tô {x.Item2}", x.Item3, 1));
+        var basicWritingStrokes = new[]
+        {
+            ("vertical", "Nét sổ thẳng", "nét sổ thẳng"),
+            ("horizontal", "Nét ngang", "nét ngang"),
+            ("diagonal-left", "Nét xiên trái", "nét xiên trái"),
+            ("diagonal-right", "Nét xiên phải", "nét xiên phải"),
+            ("hook-forward", "Nét móc xuôi", "nét móc xuôi"),
+            ("hook-reverse", "Nét móc ngược", "nét móc ngược"),
+            ("double-hook", "Nét móc hai đầu", "nét móc hai đầu"),
+            ("open-curve-right", "Nét cong hở phải", "nét cong hở phải"),
+            ("open-curve-left", "Nét cong hở trái", "nét cong hở trái"),
+            ("closed-curve", "Nét cong kín", "nét cong kín"),
+            ("upper-loop", "Nét khuyết trên", "nét khuyết trên"),
+            ("lower-loop", "Nét khuyết dưới", "nét khuyết dưới"),
+            ("knot", "Nét thắt", "nét thắt")
+        };
+        foreach (var stroke in basicWritingStrokes)
+        {
+            Add(Tracing($"motor-{stroke.Item1}", "van-dong-tinh", $"Tô {stroke.Item2.ToLowerInvariant()}", stroke.Item3, 1));
+        }
         Add(Ordering("motor-order-paper", "van-dong-tinh", "Gấp giấy ba bước", "Xếp đúng thứ tự.", ["Đặt giấy","Gấp đôi","Miết nếp"])); Add(Ordering("motor-order-color", "van-dong-tinh", "Tô màu gọn gàng", "Xếp đúng thứ tự.", ["Chọn màu","Tô trong viền","Cất bút"]));
         Add(Choice("motor-drag-rabbit", "van-dong-tinh", InteractionTypes.DragDrop, "Đưa thỏ tới cà rốt", "Kéo con thỏ tới cà rốt.", ["Con thỏ","Con mèo","Con cá"], "Con thỏ")); Add(Choice("motor-drag-bee", "van-dong-tinh", InteractionTypes.DragDrop, "Đưa ong tới hoa", "Kéo con ong tới bông hoa.", ["Con ong","Con cá","Con chó"], "Con ong"));
         Add(Matching("motor-match-tools", "van-dong-tinh", "Nối dụng cụ với hoạt động", [("Bút chì","Vẽ nét"),("Bút màu","Tô màu"),("Giấy","Gấp hình")])); Add(Matching("motor-match-craft", "van-dong-tinh", "Nối đồ thủ công", [("Kéo","Cắt giấy"),("Hồ dán","Dán hình"),("Đất nặn","Nặn bóng")])); Add(Matching("motor-match-line", "van-dong-tinh", "Nối nét với hình", [("Nét tròn","Quả bóng"),("Nét thẳng","Cái bút"),("Nét cong","Cầu vồng")]));

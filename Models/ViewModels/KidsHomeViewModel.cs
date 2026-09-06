@@ -30,8 +30,9 @@ public class KidsTracingItemViewModel
 {
     public LearningItem Item { get; set; } = null!;
     public string Symbol { get; set; } = string.Empty;
+    public string DisplaySymbol { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
-    public string CategoryCode { get; set; } = string.Empty; // basic, upper, lower, number
+    public string CategoryCode { get; set; } = string.Empty; // basic, picture, upper, lower, number
     public bool IsCompleted { get; set; }
     public int StarsEarned { get; set; }
 }

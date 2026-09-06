@@ -95,7 +95,7 @@
                 <span class="material-symbols-outlined section-icon" style="color: #ff7a00;">draw</span>
                 <div>
                     <h2>Luyện Nét Cơ Bản Lớp 1</h2>
-                    <p>Khởi đầu các nét sổ, nét ngang, nét xiên, nét móc, nét cong, nét khuyết...</p>
+                    <p>Đủ 13 nét nền tảng: nét thẳng, nét xiên, nét móc, nét cong, nét khuyết và nét thắt.</p>
                 </div>
             </div>
             <span class="section-count-badge">@Model.BasicStrokes.Count(x => x.IsCompleted)/@Model.BasicStrokes.Count bài</span>
@@ -110,7 +110,7 @@
                    asp-route-fromTracing="true"
                    title="@stroke.Title">
                     <div class="tracing-symbol-box stroke-box">
-                        <span class="tracing-symbol-char">@stroke.Symbol</span>
+                        <span class="tracing-symbol-char">@stroke.DisplaySymbol</span>
                     </div>
                     <div class="tracing-card-info">
                         <strong>@stroke.Title</strong>
