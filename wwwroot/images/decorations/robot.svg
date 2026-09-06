@@ -1,0 +1,73 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Friendly Cute Toy Robot for Kids -->
+  <defs>
+    <linearGradient id="robotBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="robotScreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="robotGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="robotShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0369a1" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#robotShadow)">
+    <!-- Antenna -->
+    <rect x="57" y="10" width="6" height="14" rx="3" fill="#cbd5e1"/>
+    <circle cx="60" cy="8" r="7" fill="url(#robotGold)"/>
+    <circle cx="58" cy="6" r="2.5" fill="#ffffff"/>
+
+    <!-- Head Ears (Bolts) -->
+    <rect x="24" y="34" width="8" height="12" rx="4" fill="url(#robotGold)"/>
+    <rect x="88" y="34" width="8" height="12" rx="4" fill="url(#robotGold)"/>
+
+    <!-- Head -->
+    <rect x="28" y="22" width="64" height="38" rx="14" fill="url(#robotBody)"/>
+    <!-- Face Screen -->
+    <rect x="36" y="28" width="48" height="26" rx="8" fill="url(#robotScreen)"/>
+
+    <!-- Digital Happy Eyes (Glowing Cyan) -->
+    <circle cx="48" cy="40" r="5.5" fill="#38bdf8"/>
+    <circle cx="50" cy="38" r="2" fill="#ffffff"/>
+    <circle cx="72" cy="40" r="5.5" fill="#38bdf8"/>
+    <circle cx="74" cy="38" r="2" fill="#ffffff"/>
+
+    <!-- Digital Smile -->
+    <path d="M 54,47 Q 60,51 66,47" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Neck -->
+    <rect x="52" y="60" width="16" height="6" rx="2" fill="#94a3b8"/>
+
+    <!-- Torso / Body -->
+    <rect x="32" y="66" width="56" height="36" rx="12" fill="url(#robotBody)"/>
+    <!-- Chest Dial / Meters -->
+    <rect x="42" y="72" width="36" height="18" rx="6" fill="#f8fafc"/>
+    <circle cx="50" cy="81" r="4" fill="#ef4444"/>
+    <circle cx="60" cy="81" r="4" fill="#f59e0b"/>
+    <circle cx="70" cy="81" r="4" fill="#22c55e"/>
+    <!-- Cogwheel / Button -->
+    <circle cx="60" cy="94" r="3" fill="url(#robotGold)"/>
+
+    <!-- Arms -->
+    <!-- Left Arm -->
+    <path d="M 32,74 C 18,76 16,88 22,94 C 26,98 32,92 30,86" fill="url(#robotBody)"/>
+    <circle cx="22" cy="94" r="4" fill="url(#robotGold)"/>
+    <!-- Right Arm (Waving Hi) -->
+    <path d="M 88,74 C 102,68 106,56 100,50 C 94,46 90,56 88,66" fill="url(#robotBody)"/>
+    <circle cx="100" cy="49" r="5" fill="url(#robotGold)"/>
+
+    <!-- Legs / Wheeled Base -->
+    <rect x="42" y="102" width="12" height="12" rx="5" fill="#64748b"/>
+    <rect x="66" y="102" width="12" height="12" rx="5" fill="#64748b"/>
+    <!-- Shoes / Wheels -->
+    <ellipse cx="48" cy="112" rx="9" ry="5" fill="url(#robotGold)"/>
+    <ellipse cx="72" cy="112" rx="9" ry="5" fill="url(#robotGold)"/>
+  </g>
+</svg>

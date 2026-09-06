@@ -1,0 +1,56 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cute Kid Toy Car -->
+  <defs>
+    <linearGradient id="carRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="carRoof" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd"/>
+      <stop offset="100%" stop-color="#7dd3fc"/>
+    </linearGradient>
+    <filter id="carShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#881337" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#carShadow)">
+    <!-- Cabin / Windows -->
+    <path d="M 32,60 C 38,36 50,30 68,30 C 82,30 92,42 96,60 Z" fill="url(#carRoof)"/>
+    <path d="M 62,34 L 62,60" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <!-- Cute Smiley Driver inside window -->
+    <circle cx="50" cy="46" r="7" fill="#fbbf24"/>
+    <circle cx="48" cy="45" r="1.5" fill="#1e293b"/>
+    <circle cx="53" cy="45" r="1.5" fill="#1e293b"/>
+    <path d="M 48,49 Q 51,52 54,49" fill="none" stroke="#1e293b" stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- Main Car Body -->
+    <rect x="12" y="56" width="96" height="28" rx="14" fill="url(#carRed)"/>
+
+    <!-- Headlight (Front Right) -->
+    <path d="M 104,64 Q 110,68 104,74 Z" fill="#fef08a"/>
+
+    <!-- Tail Light (Back Left) -->
+    <rect x="12" y="65" width="4" height="8" rx="2" fill="#facc15"/>
+
+    <!-- Racing Stripe / Deco -->
+    <path d="M 16,72 L 100,72" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+    <circle cx="78" cy="70" r="4" fill="#ffffff"/>
+    <text x="76" y="73" font-size="7" font-weight="900" fill="#e11d48" font-family="sans-serif">1</text>
+
+    <!-- Wheels -->
+    <!-- Back Wheel Left -->
+    <circle cx="34" cy="84" r="14" fill="#1e293b"/>
+    <circle cx="34" cy="84" r="7" fill="#cbd5e1"/>
+    <circle cx="34" cy="84" r="3" fill="#e11d48"/>
+
+    <!-- Front Wheel Right -->
+    <circle cx="86" cy="84" r="14" fill="#1e293b"/>
+    <circle cx="86" cy="84" r="7" fill="#cbd5e1"/>
+    <circle cx="86" cy="84" r="3" fill="#e11d48"/>
+
+    <!-- Sparkles of speed -->
+    <path d="M 6,78 Q 2,78 0,82" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 8,72 Q 4,72 2,68" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-﻿@model SkillLearningListViewModel
+@model SkillLearningListViewModel
 @{
     ViewData["Title"] = Model.SkillGroup.Name;
     var totalItems = Model.Items.Count;
@@ -105,19 +105,22 @@
         "pos-semi-left"
     };
 
-    // Danh mục tiểu cảnh trang trí sườn bản đồ (vui nhộn, sinh động, pastel dịu mắt)
-    var flankLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass)[]
+    // Danh mục các nhân vật & tiểu cảnh phong phú hai bên sườn (Khủng Long, Robot, Xe đua, Tên lửa, Máy bay, Thú cưng, Cây nấm...)
+    var flankLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
     {
-        ("/images/avatars/avatar-bunny.png", "favorite", "Thỏ Trắng", "Bé ơi cố lên nhé! ✨", "deco-bunny"),
-        ("", "forest", "Rừng Tri Thức", "Cây xanh bóng mát 🌲", "deco-nature"),
-        ("/images/avatars/avatar-bear.png", "star", "Gấu Vàng", "Bé học chăm ngoan 🍯", "deco-bear"),
-        ("", "spa", "Thung Lũng Nấm", "Nấm đốm xinh xắn 🍄", "deco-mushroom"),
-        ("/images/avatars/avatar-dog.png", "pets", "Cún Con", "Tiến bước rộn ràng 🐾", "deco-dog"),
-        ("", "flight", "Cánh Diều Nhỏ", "Bay cao ước mơ 🪁", "deco-kite"),
-        ("/images/avatars/avatar-cat.png", "auto_stories", "Mèo Con", "Cùng nhau đọc sách 📖", "deco-cat"),
-        ("", "campground", "Trạm Dừng Chân", "Nghỉ ngơi chút xíu ⛺", "deco-camp"),
-        ("", "explore", "La Bàn Nhỏ", "Chỉ hướng đỉnh cao 🧭", "deco-compass"),
-        ("", "emoji_events", "Cột Mốc Vàng", "Sắp đến đích rồi 🏆", "deco-trophy")
+        ("/images/decorations/dinosaur.svg", "pets", "Khủng Long Xanh", "Cố lên bạn nhỏ! 🦕", "deco-dino", "Bé học siêu quá! ✨"),
+        ("/images/decorations/robot.svg", "smart_toy", "Robot Tí Hon", "Nạp năng lượng tri thức 🤖", "deco-robot", "Chào bạn nhỏ! ⚡"),
+        ("/images/decorations/cute-car.svg", "directions_car", "Xe Đua Tốc Độ", "Vút bay về đích nào! 🚗", "deco-car", "Bé chạy thật nhanh! 🏁"),
+        ("/images/decorations/rocket.svg", "rocket_launch", "Tên Lửa Vũ Trụ", "Vươn tới các vì sao 🚀", "deco-rocket", "Bay cao ước mơ! 🌟"),
+        ("/images/decorations/cute-plane.svg", "flight", "Máy Bay Nhỏ", "Lướt trên mây trắng ✈️", "deco-plane", "Khám phá bầu trời! ☁️"),
+        ("/images/avatars/avatar-bunny.png", "favorite", "Thỏ Trắng", "Nhảy múa rộn ràng 🥕", "deco-bunny", "Tuyệt vời bé ơi! 🥕"),
+        ("/images/avatars/avatar-bear.png", "star", "Gấu Vàng", "Bé học chăm ngoan 🍯", "deco-bear", "Học vui mỗi ngày! 🍯"),
+        ("/images/avatars/avatar-dog.png", "pets", "Cún Con", "Tiến bước rộn ràng 🐾", "deco-dog", "Gâu gâu, cố lên! 🐾"),
+        ("/images/avatars/avatar-cat.png", "auto_stories", "Mèo Con", "Cùng nhau đọc sách 📖", "deco-cat", "Meo meo, thật giỏi! 📖"),
+        ("", "forest", "Rừng Tri Thức", "Cây xanh bóng mát 🌲", "deco-nature", "Không khí mát lành 🌲"),
+        ("", "spa", "Thung Lũng Nấm", "Nấm đốm xinh xắn 🍄", "deco-mushroom", "Vườn nấm rực rỡ 🍄"),
+        ("", "campground", "Trạm Dừng Chân", "Nghỉ ngơi chút xíu ⛺", "deco-camp", "Trạm tiếp năng lượng ⛺"),
+        ("", "emoji_events", "Cột Mốc Vàng", "Sắp đến đích rồi 🏆", "deco-trophy", "Chiến thắng vinh quang 🏆")
     };
     
     // Bài đang chọn mặc định
@@ -197,11 +200,26 @@
                         <span class="balloon-label">Bay cao tri thức</span>
                     </div>
 
+                    <!-- Tên lửa vũ trụ bay lượn ở góc trên bên trái -->
+                    <div class="ambient-rocket-float">
+                        <img src="~/images/decorations/rocket.svg" alt="" class="ambient-rocket-img" />
+                    </div>
+
+                    <!-- Máy bay tí hon lướt mây góc giữa bên phải -->
+                    <div class="ambient-plane-float">
+                        <img src="~/images/decorations/cute-plane.svg" alt="" class="ambient-plane-img" />
+                    </div>
+
+                    <!-- Bướm lượn chập chờn -->
+                    <div class="ambient-butterfly bfly-1">🦋</div>
+                    <div class="ambient-butterfly bfly-2">🦋</div>
+
                     <!-- Mây trôi bồng bềnh ở các độ cao khác nhau -->
                     <div class="ambient-cloud cloud-1"></div>
                     <div class="ambient-cloud cloud-2"></div>
                     <div class="ambient-cloud cloud-3"></div>
                     <div class="ambient-cloud cloud-4"></div>
+                    <div class="ambient-cloud cloud-5"></div>
                 </div>
 
                 <!-- SVG Đường mòn kết nối mềm mại nối từ dưới lên -->
@@ -238,46 +256,39 @@
                         // Trạm đặc biệt: Rương báu ở mốc giữa (mỗi 5 trạm)
                         var isChestStation = stepNumber % 5 == 0 && stepNumber < totalItems;
 
-                        // Phân bổ tiểu cảnh ven sườn bản đồ (cứ mỗi 3 trạm đặt 1 tiểu cảnh đối diện vị trí trạm)
-                        var hasFlankDeco = (stepNumber % 3 == 0);
-                        var decoSide = "";
-                        if (hasFlankDeco)
-                        {
-                            if (posClass.Contains("right"))
-                            {
-                                decoSide = "side-left";
-                            }
-                            else if (posClass.Contains("left"))
-                            {
-                                decoSide = "side-right";
-                            }
-                            else
-                            {
-                                decoSide = (stepNumber % 2 == 0) ? "side-left" : "side-right";
-                            }
-                        }
-                        var decoItem = hasFlankDeco ? flankLandmarks[(stepNumber / 3) % flankLandmarks.Length] : default;
+                        // Định vị tiểu cảnh bên sườn bản đồ: Đặt ở phía đối diện trạm để lấp đầy khoảng trống hài hòa
+                        var decoSide = posClass.Contains("right") ? "side-left" :
+                                       posClass.Contains("left") ? "side-right" :
+                                       ((stepNumber % 2 == 0) ? "side-left" : "side-right");
+                        var decoItem = flankLandmarks[i % flankLandmarks.Length];
 
                         <div class="adventure-step-row">
-                            @if (hasFlankDeco)
-                            {
-                                <div class="flank-landmark-deco @decoSide @decoItem.AccentClass" aria-hidden="true">
-                                    @if (!string.IsNullOrEmpty(decoItem.Avatar))
-                                    {
-                                        <div class="flank-avatar-wrap">
+                            <!-- Tiểu cảnh phong cảnh & nhân vật hoạt hình ven sườn bản đồ -->
+                            <div class="flank-landmark-deco @decoSide @decoItem.AccentClass" aria-hidden="true">
+                                <div class="flank-vignette-scenery">
+                                    <div class="flank-avatar-wrap">
+                                        @if (!string.IsNullOrEmpty(decoItem.Avatar))
+                                        {
                                             <img src="@decoItem.Avatar" alt="" class="flank-avatar-img" />
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="material-symbols-outlined flank-icon">@decoItem.Icon</span>
-                                    }
-                                    <div class="flank-text-wrap">
-                                        <span class="flank-title">@decoItem.Title</span>
-                                        <span class="flank-sub">@decoItem.Subtitle</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="material-symbols-outlined flank-icon">@decoItem.Icon</span>
+                                        }
+                                    </div>
+                                    <div class="flank-speech-cloud">
+                                        <span class="flank-bubble-text">@decoItem.Bubble</span>
                                     </div>
                                 </div>
-                            }
+                                <div class="flank-info-chip">
+                                    <span class="flank-title">@decoItem.Title</span>
+                                    <span class="flank-sub">@decoItem.Subtitle</span>
+                                </div>
+                                <div class="flank-ground-patch">
+                                    <span class="patch-grass">🌱</span>
+                                    <span class="patch-flower">🌸</span>
+                                </div>
+                            </div>
 
                             <div class="adventure-station-node @posClass @(isCurrent ? "node-active-station" : "")"
                                  id="@(isCurrent ? "active-learning-station" : $"station-node-{stepNumber}")"

@@ -1,0 +1,67 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cute Green Dinosaur for Kids -->
+  <defs>
+    <radialGradient id="dinoSkin" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </radialGradient>
+    <linearGradient id="dinoBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#fde047"/>
+    </linearGradient>
+    <filter id="dinoShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#14532d" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#dinoShadow)">
+    <!-- Dinosaur Back Spikes (Orange) -->
+    <polygon points="34,22 42,10 46,26" fill="#f97316"/>
+    <polygon points="46,28 56,16 58,34" fill="#f97316"/>
+    <polygon points="26,38 14,32 24,50" fill="#f97316"/>
+    <polygon points="18,52 6,50 16,66" fill="#f97316"/>
+    <polygon points="12,68 2,74 14,80" fill="#f97316"/>
+
+    <!-- Tail -->
+    <path d="M 28,70 Q 8,82 2,76 Q 10,95 38,88 Z" fill="url(#dinoSkin)"/>
+
+    <!-- Body -->
+    <ellipse cx="56" cy="74" rx="30" ry="24" fill="url(#dinoSkin)"/>
+
+    <!-- Belly -->
+    <ellipse cx="64" cy="76" rx="18" ry="18" fill="url(#dinoBelly)"/>
+
+    <!-- Back Leg Left -->
+    <rect x="42" y="86" width="12" height="18" rx="6" fill="#15803d"/>
+    <circle cx="48" cy="103" r="5" fill="#fde047"/>
+
+    <!-- Back Leg Right -->
+    <rect x="62" y="88" width="14" height="20" rx="7" fill="url(#dinoSkin)"/>
+    <circle cx="69" cy="106" r="6" fill="#fde047"/>
+
+    <!-- Head & Neck -->
+    <path d="M 46,45 C 44,30 52,18 72,18 C 94,18 98,32 94,44 C 90,52 74,54 62,56 Z" fill="url(#dinoSkin)"/>
+    <!-- Snout / Cheeks -->
+    <circle cx="86" cy="38" r="12" fill="url(#dinoSkin)"/>
+
+    <!-- Big Cute Eye -->
+    <circle cx="72" cy="28" r="8" fill="#ffffff"/>
+    <circle cx="74" cy="28" r="5" fill="#1e293b"/>
+    <circle cx="76" cy="26" r="2.2" fill="#ffffff"/>
+
+    <!-- Rosy Cheek -->
+    <ellipse cx="80" cy="42" rx="4.5" ry="3" fill="#f43f5e" opacity="0.6"/>
+
+    <!-- Smile -->
+    <path d="M 82,46 Q 88,50 94,44" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Tiny Front Arm (Waving) -->
+    <path d="M 72,62 Q 86,60 88,52 Q 82,48 70,55 Z" fill="url(#dinoSkin)"/>
+    <circle cx="87" cy="52" r="3" fill="#fde047"/>
+
+    <!-- Cute Spots on Back -->
+    <circle cx="42" cy="58" r="3.5" fill="#15803d" opacity="0.5"/>
+    <circle cx="36" cy="68" r="2.8" fill="#15803d" opacity="0.5"/>
+    <circle cx="50" cy="50" r="2.5" fill="#15803d" opacity="0.5"/>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #f4fbff;
   --surface: #ffffff;
   --surface-strong: #fff7cf;
@@ -2948,7 +2948,7 @@ a {
   }
 }
 
-/* Minh họa phép tính trực tiếp bằng đồ vật: trẻ nhìn được tình huống trước khi chọn số. */
+/* Minh há»a phÃ©p tÃ­nh trá»±c tiáº¿p báº±ng Ä‘á»“ váº­t: tráº» nhÃ¬n Ä‘Æ°á»£c tÃ¬nh huá»‘ng trÆ°á»›c khi chá»n sá»‘. */
 .learning-focus-shell .equation-visual {
   display: grid;
   grid-template-columns: minmax(110px, 1fr) auto minmax(110px, 1fr) auto minmax(76px, .55fr);
@@ -4755,7 +4755,7 @@ a {
   color: #fff;
 }
 
-/* Builder Image Panel (Đồng nhất với Builder Voice Panel) */
+/* Builder Image Panel (Äá»“ng nháº¥t vá»›i Builder Voice Panel) */
 .builder-image-summary {
   display: flex;
   flex-wrap: wrap;
@@ -5795,7 +5795,7 @@ a {
   }
 }
 
-/* Chế độ làm bài giữ phần tương tác là điểm tập trung chính. */
+/* Cháº¿ Ä‘á»™ lÃ m bÃ i giá»¯ pháº§n tÆ°Æ¡ng tÃ¡c lÃ  Ä‘iá»ƒm táº­p trung chÃ­nh. */
 .learning-focus-shell {
   width: min(960px, 100%);
   min-height: 100dvh;
@@ -6803,7 +6803,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-/* Nút Hoàn tác nét vẽ (Màu xanh dương pastel dịu mát) */
+/* NÃºt HoÃ n tÃ¡c nÃ©t váº½ (MÃ u xanh dÆ°Æ¡ng pastel dá»‹u mÃ¡t) */
 .tracing-undo {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
   border: 2px solid #bae6fd !important;
@@ -6819,7 +6819,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   box-shadow: 0 6px 14px rgba(2, 132, 199, 0.25), inset 0 1px 0 #ffffff !important;
 }
 
-/* Nút Xóa toàn bộ (Màu hồng đào pastel nhẹ nhàng) */
+/* NÃºt XÃ³a toÃ n bá»™ (MÃ u há»“ng Ä‘Ã o pastel nháº¹ nhÃ ng) */
 .tracing-clear {
   background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
   border: 2px solid #fecdd3 !important;
@@ -6835,7 +6835,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   box-shadow: 0 6px 14px rgba(225, 29, 72, 0.25), inset 0 1px 0 #ffffff !important;
 }
 
-/* Nút Nghe hướng dẫn nét tô (Màu vàng cam pastel) */
+/* NÃºt Nghe hÆ°á»›ng dáº«n nÃ©t tÃ´ (MÃ u vÃ ng cam pastel) */
 .tracing-audio {
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
   border: 2px solid #fde68a !important;
@@ -6867,7 +6867,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   margin: 0 !important;
 }
 
-/* Nút Xem Mẫu (Demo) - Góc trên bên phải thanh tiêu đề */
+/* NÃºt Xem Máº«u (Demo) - GÃ³c trÃªn bÃªn pháº£i thanh tiÃªu Ä‘á» */
 .learning-topbar-actions {
   display: flex !important;
   align-items: center !important;
@@ -6996,7 +6996,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
 
 /* ===================================================
    HERO LEARNING ACTIVITY SYSTEM (Stitch & Kids UX)
-   Tập trung tối đa vào nội dung bài học, nút to rõ, màu sắc sinh động
+   Táº­p trung tá»‘i Ä‘a vÃ o ná»™i dung bÃ i há»c, nÃºt to rÃµ, mÃ u sáº¯c sinh Ä‘á»™ng
    =================================================== */
 
 .learning-focus-topbar {
@@ -7056,7 +7056,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   padding: 24px !important;
 }
 
-/* Thanh chỉ dẫn phụ trợ gọn gàng, tinh tế */
+/* Thanh chá»‰ dáº«n phá»¥ trá»£ gá»n gÃ ng, tinh táº¿ */
 .learning-prompt {
   display: flex !important;
   align-items: center !important;
@@ -7110,7 +7110,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   transform: scale(1.02) !important;
 }
 
-/* Nút Nghe Âm Thanh */
+/* NÃºt Nghe Ã‚m Thanh */
 .story-audio-container {
   display: flex;
   justify-content: center;
@@ -7151,7 +7151,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   transform: translateY(1px) scale(0.98) !important;
 }
 
-/* Lưới các thẻ lựa chọn bài học - CỰC KỲ NỔI BẬT, CHỮ TO RÕ, 3D CLAYMORPHISM */
+/* LÆ°á»›i cÃ¡c tháº» lá»±a chá»n bÃ i há»c - Cá»°C Ká»² Ná»”I Báº¬T, CHá»® TO RÃ•, 3D CLAYMORPHISM */
 .activity-option-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
@@ -7258,7 +7258,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   text-shadow: 0 3px 6px rgba(14, 165, 233, 0.15) !important;
 }
 
-/* Typography for Words & Phrases ("Đội mũ bảo hiểm", "Đèn đỏ", v.v.) */
+/* Typography for Words & Phrases ("Äá»™i mÅ© báº£o hiá»ƒm", "ÄÃ¨n Ä‘á»", v.v.) */
 .activity-option.is-text-word .answer-label,
 .activity-option.is-long-phrase .answer-label,
 .activity-option:not(.is-single-symbol) .answer-label,
@@ -7314,7 +7314,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   color: #c2410c !important;
 }
 
-/* Ưu tiên nội dung hình ảnh trong màn hình học: ảnh chính và ảnh đáp án phải đủ lớn để bé quan sát. */
+/* Æ¯u tiÃªn ná»™i dung hÃ¬nh áº£nh trong mÃ n hÃ¬nh há»c: áº£nh chÃ­nh vÃ  áº£nh Ä‘Ã¡p Ã¡n pháº£i Ä‘á»§ lá»›n Ä‘á»ƒ bÃ© quan sÃ¡t. */
 .learning-focus-shell .lesson-content-zone {
   display: flex !important;
   justify-content: center !important;
@@ -7389,7 +7389,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   }
 }
 
-/* Vùng Kéo Thả - ĐÁP ÁN NỔI BẬT */
+/* VÃ¹ng KÃ©o Tháº£ - ÄÃP ÃN Ná»”I Báº¬T */
 .drag-source {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;
@@ -7422,7 +7422,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   min-height: 90px !important;
 }
 
-/* Vùng Đích Nhẹ Nhàng, Không Lấn Át */
+/* VÃ¹ng ÄÃ­ch Nháº¹ NhÃ ng, KhÃ´ng Láº¥n Ãt */
 .activity-drop-zone {
   width: 100% !important;
   min-height: 88px !important;
@@ -7473,7 +7473,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   line-height: 1 !important;
 }
 
-/* Bài Tập Luyện Đếm (Counting) */
+/* BÃ i Táº­p Luyá»‡n Äáº¿m (Counting) */
 .counting-objects {
   background: #fafaf9 !important;
   border: 2px dashed #e7e5e4 !important;
@@ -7539,7 +7539,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5) !important;
 }
 
-/* Nút Hoàn Thành / Kiểm Tra Đáp Án */
+/* NÃºt HoÃ n ThÃ nh / Kiá»ƒm Tra ÄÃ¡p Ãn */
 .activity-check-button {
   margin-top: 24px !important;
   min-height: 58px !important;
@@ -7565,7 +7565,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   box-shadow: none !important;
 }
 
-/* Khung Tạo Số Lượng (Quantity Builder) */
+/* Khung Táº¡o Sá»‘ LÆ°á»£ng (Quantity Builder) */
 .quantity-target {
   background: #f8fafc !important;
   border: 2.5px dashed #cbd5e1 !important;
@@ -7661,7 +7661,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Bài Tập Phân Loại Nhóm (Classification Drag & Drop) */
+/* BÃ i Táº­p PhÃ¢n Loáº¡i NhÃ³m (Classification Drag & Drop) */
 .classification-source-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)) !important;
@@ -7813,7 +7813,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   text-shadow: none !important;
 }
 
-/* Bài Tập Sắp Xếp Thứ Tự (Ordering Activity) */
+/* BÃ i Táº­p Sáº¯p Xáº¿p Thá»© Tá»± (Ordering Activity) */
 .ordering-list {
   display: flex !important;
   flex-direction: column !important;
@@ -7935,12 +7935,12 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
 }
 
 /* ===================================================
-   ADVENTURE LEARNING MAP (Bản đồ Hành Trình Khám Phá)
+   ADVENTURE LEARNING MAP (Báº£n Ä‘á»“ HÃ nh TrÃ¬nh KhÃ¡m PhÃ¡)
    =================================================== */
 
 /* ===================================================
-   ADVENTURE LEARNING MAP (Bản đồ Hành Trình Khám Phá)
-   Thiết kế Claymorphism 3D cao cấp & Chiều sâu không gian
+   ADVENTURE LEARNING MAP (Báº£n Ä‘á»“ HÃ nh TrÃ¬nh KhÃ¡m PhÃ¡)
+   Thiáº¿t káº¿ Claymorphism 3D cao cáº¥p & Chiá»u sÃ¢u khÃ´ng gian
    =================================================== */
 
 .skill-adventure-page {
@@ -8149,7 +8149,7 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
   color: #475569;
 }
 
-/* Station Label Pill: hiển thị trọn vẹn, không cắt chữ ba chấm */
+/* Station Label Pill: hiá»ƒn thá»‹ trá»n váº¹n, khÃ´ng cáº¯t chá»¯ ba cháº¥m */
 .station-label-pill {
   max-width: 190px;
   min-height: 42px;
@@ -8264,8 +8264,8 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
 }
 
 /* ===================================================
-   LEARNING SCREEN (Phòng học tập trung của bé)
-   Không gian vui tươi, ấm áp, sinh động và êm dịu cho mắt trẻ
+   LEARNING SCREEN (PhÃ²ng há»c táº­p trung cá»§a bÃ©)
+   KhÃ´ng gian vui tÆ°Æ¡i, áº¥m Ã¡p, sinh Ä‘á»™ng vÃ  Ãªm dá»‹u cho máº¯t tráº»
    =================================================== */
 
 body.focus-mode-active,
@@ -8357,7 +8357,7 @@ body.focus-mode-active,
 
 /* ===================================================
    ANSWER RESULT & CELEBRATION SCREENS (/learn answer)
-   Rực rỡ, hân hoan, tràn đầy niềm vui cho bé
+   Rá»±c rá»¡, hÃ¢n hoan, trÃ n Ä‘áº§y niá»m vui cho bÃ©
    =================================================== */
 
 .learning-success-overlay {
@@ -8761,7 +8761,7 @@ body.focus-mode-active,
   box-shadow: 0 18px 38px rgba(234, 88, 12, 0.45) !important;
 }
 
-/* Nút Quay Lại Nổi Bật Màu Cam Ấm Trực Quan Cho Bé */
+/* NÃºt Quay Láº¡i Ná»•i Báº­t MÃ u Cam áº¤m Trá»±c Quan Cho BÃ© */
 .learning-back-btn,
 .learning-focus-topbar .icon-link,
 .skill-library-header .icon-link,
@@ -8807,7 +8807,7 @@ body.focus-mode-active,
   color: #ffffff !important;
 }
 
-/* Retry Toast (Khi làm chưa đúng) */
+/* Retry Toast (Khi lÃ m chÆ°a Ä‘Ãºng) */
 .answer-retry-toast {
   display: flex;
   align-items: center;
@@ -8852,7 +8852,7 @@ body.focus-mode-active,
 }
 
 /* ===================================================
-   KIDS HOME SCREEN REDESIGN (Mềm Mại & Sang Trọng)
+   KIDS HOME SCREEN REDESIGN (Má»m Máº¡i & Sang Trá»ng)
    =================================================== */
 
 .kid-home-screen {
@@ -8905,7 +8905,7 @@ body.focus-mode-active,
   background: #fff8f0;
 }
 
-/* Toast Lời Chào Tự Động Thu Gọn */
+/* Toast Lá»i ChÃ o Tá»± Äá»™ng Thu Gá»n */
 .mascot-greeting-toast {
   display: flex;
   align-items: center;
@@ -8995,7 +8995,7 @@ body.focus-mode-active,
   font-size: 1.1rem;
 }
 
-/* Hero Mission Card (Bắt đầu bài học hôm nay & Góc tập tô) */
+/* Hero Mission Card (Báº¯t Ä‘áº§u bÃ i há»c hÃ´m nay & GÃ³c táº­p tÃ´) */
 .hero-mission-card {
   display: flex;
   align-items: center;
@@ -9214,7 +9214,7 @@ body.focus-mode-active,
   transform: translateX(4px);
 }
 
-/* Dải Màu Êm Dịu Cho Từng Nhóm Kỹ Năng - Luôn Bo Viền */
+/* Dáº£i MÃ u ÃŠm Dá»‹u Cho Tá»«ng NhÃ³m Ká»¹ NÄƒng - LuÃ´n Bo Viá»n */
 .theme-coral { border: 2.5px solid #fed7aa !important; }
 .theme-coral .skill-tile-icon-wrap { background: #fff7ed; color: #ea580c; border: 2px solid #fed7aa; }
 .theme-coral .skill-tag-pill { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
@@ -9507,7 +9507,7 @@ body.focus-mode-active,
   box-shadow: none !important;
 }
 
-/* Bài Tập Nối Cặp (Matching Activity - Drag to Connect) */
+/* BÃ i Táº­p Ná»‘i Cáº·p (Matching Activity - Drag to Connect) */
 .matching-board {
   position: relative !important;
   display: flex !important;
@@ -9617,7 +9617,7 @@ body.focus-mode-active,
   border: 1.5px solid #e2e8f0 !important;
 }
 
-/* Nối số với số lượng: chuỗi emoji là hình đếm, không phải nhãn văn bản. */
+/* Ná»‘i sá»‘ vá»›i sá»‘ lÆ°á»£ng: chuá»—i emoji lÃ  hÃ¬nh Ä‘áº¿m, khÃ´ng pháº£i nhÃ£n vÄƒn báº£n. */
 .matching-quantity-board .matching-item {
   min-height: clamp(112px, 16vw, 152px) !important;
   padding: clamp(8px, 1.5vw, 14px) !important;
@@ -9643,7 +9643,7 @@ body.focus-mode-active,
   filter: drop-shadow(0 3px 3px rgba(15, 23, 42, 0.13));
 }
 
-/* So sánh số lượng: hai khay đồ vật là trọng tâm, dấu bằng là lựa chọn ở giữa. */
+/* So sÃ¡nh sá»‘ lÆ°á»£ng: hai khay Ä‘á»“ váº­t lÃ  trá»ng tÃ¢m, dáº¥u báº±ng lÃ  lá»±a chá»n á»Ÿ giá»¯a. */
 .learning-focus-shell .comparison-quantity-board {
   grid-template-columns: minmax(0, 1fr) clamp(96px, 15vw, 132px) minmax(0, 1fr);
   align-items: stretch;
@@ -9797,7 +9797,7 @@ body.focus-mode-active,
   }
 }
 
-/* Ảnh là nội dung chính trong các hoạt động thao tác trực quan. */
+/* áº¢nh lÃ  ná»™i dung chÃ­nh trong cÃ¡c hoáº¡t Ä‘á»™ng thao tÃ¡c trá»±c quan. */
 .learning-focus-shell .interaction-matching .matching-item.has-answer-photo,
 .learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram,
 .learning-focus-shell .interaction-matching .matching-item.has-answer-visual {
@@ -9977,8 +9977,8 @@ body.focus-mode-active,
 }
 
 /* ===================================================
-   KIDS SUMMARY & REWARDS SCREENS (Tổng Kết & Kho Quà)
-   Chuẩn tỷ lệ, ngăn nắp, rực rỡ và chuyên nghiệp
+   KIDS SUMMARY & REWARDS SCREENS (Tá»•ng Káº¿t & Kho QuÃ )
+   Chuáº©n tá»· lá»‡, ngÄƒn náº¯p, rá»±c rá»¡ vÃ  chuyÃªn nghiá»‡p
    =================================================== */
 
 .kid-summary-screen,
@@ -10109,7 +10109,7 @@ body.focus-mode-active,
   font-weight: 700;
 }
 
-/* Stat Grid 3 Cột 1 Hàng Gọn Gàng */
+/* Stat Grid 3 Cá»™t 1 HÃ ng Gá»n GÃ ng */
 .summary-stat-grid {
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
@@ -10430,10 +10430,10 @@ body.focus-mode-active,
 }
 
 /* ===================================================
-   KID TODAY SCREEN - HÃ€NH TRÃŒNH 20 NGÃ€Y VUI Há»ŒC (QUEST)
-   12 bÃ i chia 3 hÃ ng (3 cháº·ng) Ä‘á»“ng bá»™ khung rá»™ng 1200px
-   Header chuáº©n chung khÃ´ng gian bÃ© (child-zone-header clay-card)
-   Font chuáº©n Be Vietnam Pro chá»‘ng lá»—i font tiáº¿ng Viá»‡t
+   KID TODAY SCREEN - HÃƒâ‚¬NH TRÃƒÅ’NH 20 NGÃƒâ‚¬Y VUI HÃ¡Â»Å’C (QUEST)
+   12 bÃƒÂ i chia 3 hÃƒÂ ng (3 chÃ¡ÂºÂ·ng) Ã„â€˜Ã¡Â»â€œng bÃ¡Â»â„¢ khung rÃ¡Â»â„¢ng 1200px
+   Header chuÃ¡ÂºÂ©n chung khÃƒÂ´ng gian bÃƒÂ© (child-zone-header clay-card)
+   Font chuÃ¡ÂºÂ©n Be Vietnam Pro chÃ¡Â»â€˜ng lÃ¡Â»â€”i font tiÃ¡ÂºÂ¿ng ViÃ¡Â»â€¡t
    =================================================== */
 .kid-screen.kid-today-screen,
 .kid-today-screen {
@@ -10449,7 +10449,7 @@ body.focus-mode-active,
   font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* --- KHUNG Ná»˜I DUNG CHÃNH (CONTENT WRAPPER) --- */
+/* --- KHUNG NÃ¡Â»ËœI DUNG CHÃƒÂNH (CONTENT WRAPPER) --- */
 .today-content-wrap {
   width: 100%;
   max-width: 100%;
@@ -10461,7 +10461,7 @@ body.focus-mode-active,
   box-sizing: border-box;
 }
 
-/* --- Dáº¢I CHá»ŒN 20 NGÃ€Y SIÃŠU Gá»ŒN (COMPACT STRIP BAR) --- */
+/* --- DÃ¡ÂºÂ¢I CHÃ¡Â»Å’N 20 NGÃƒâ‚¬Y SIÃƒÅ U GÃ¡Â»Å’N (COMPACT STRIP BAR) --- */
 .today-compact-strip-bar {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 999px;
@@ -10599,7 +10599,7 @@ body.focus-mode-active,
   color: #94a3b8;
 }
 
-/* --- BANNER CHá»¦ Äá»€ NGÃ€Y & TIáº¾P Tá»¤C Há»ŒC (DAY HERO CARD) --- */
+/* --- BANNER CHÃ¡Â»Â¦ Ã„ÂÃ¡Â»â‚¬ NGÃƒâ‚¬Y & TIÃ¡ÂºÂ¾P TÃ¡Â»Â¤C HÃ¡Â»Å’C (DAY HERO CARD) --- */
 .today-day-hero-card {
   background: linear-gradient(135deg, #ffffff 0%, #fffbf5 100%);
   border-radius: 20px;
@@ -10720,7 +10720,7 @@ body.focus-mode-active,
   font-size: 20px;
 }
 
-/* --- 12 BÃ€I Há»ŒC CHIA LÃ€M 3 HÃ€NG (3 CHáº¶NG TRÃŠN KHUNG Rá»˜NG) --- */
+/* --- 12 BÃƒâ‚¬I HÃ¡Â»Å’C CHIA LÃƒâ‚¬M 3 HÃƒâ‚¬NG (3 CHÃ¡ÂºÂ¶NG TRÃƒÅ N KHUNG RÃ¡Â»ËœNG) --- */
 .today-stages-wrap {
   display: flex;
   flex-direction: column;
@@ -10738,7 +10738,7 @@ body.focus-mode-active,
   gap: 14px;
 }
 
-/* Header tá»«ng cháº·ng */
+/* Header tÃ¡Â»Â«ng chÃ¡ÂºÂ·ng */
 .stage-row-header {
   display: flex;
   align-items: center;
@@ -10816,14 +10816,14 @@ body.focus-mode-active,
   border: 1px solid #a7f3d0;
 }
 
-/* --- LÆ¯á»šI BÃ€I Há»ŒC (GRID CHUáº¨N 4 Cá»˜T / HÃ€NG TRÃŠN KHUNG Rá»˜NG 1200PX) --- */
+/* --- LÃ†Â¯Ã¡Â»Å¡I BÃƒâ‚¬I HÃ¡Â»Å’C (GRID CHUÃ¡ÂºÂ¨N 4 CÃ¡Â»ËœT / HÃƒâ‚¬NG TRÃƒÅ N KHUNG RÃ¡Â»ËœNG 1200PX) --- */
 .today-stage-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
-/* --- THáºº BÃ€I Há»ŒC NHIá»†M Vá»¤ (TINH Gá»ŒN, KHÃ”NG Bá»Š CHE CHá»®) --- */
+/* --- THÃ¡ÂºÂº BÃƒâ‚¬I HÃ¡Â»Å’C NHIÃ¡Â»â€ M VÃ¡Â»Â¤ (TINH GÃ¡Â»Å’N, KHÃƒâ€NG BÃ¡Â»Å  CHE CHÃ¡Â»Â®) --- */
 .today-quest-card {
   position: relative;
   display: flex;
@@ -11061,7 +11061,7 @@ body.focus-mode-active,
   font-size: 14px;
 }
 
-/* PhÃ¢n loáº¡i mÃ u pastel theo mÃ´n */
+/* PhÃƒÂ¢n loÃ¡ÂºÂ¡i mÃƒÂ u pastel theo mÃƒÂ´n */
 .quest-theme-amber .quest-icon-bubble {
   background: #fef3c7;
   color: #d97706;
@@ -11092,7 +11092,7 @@ body.focus-mode-active,
   color: #db2777;
 }
 
-/* Tráº¡ng thÃ¡i Tháº» */
+/* TrÃ¡ÂºÂ¡ng thÃƒÂ¡i ThÃ¡ÂºÂ» */
 .today-quest-card.completed {
   border-color: #bbf7d0;
   background: #ffffff;
@@ -11246,7 +11246,7 @@ body.focus-mode-active,
   }
 }
 
-/* Nối cặp có hình: hình là nội dung nhận biết chính, nhãn chỉ hỗ trợ bên dưới. */
+/* Ná»‘i cáº·p cÃ³ hÃ¬nh: hÃ¬nh lÃ  ná»™i dung nháº­n biáº¿t chÃ­nh, nhÃ£n chá»‰ há»— trá»£ bÃªn dÆ°á»›i. */
 .learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-visual {
   min-height: clamp(190px, 28vw, 250px) !important;
   flex-direction: column !important;
@@ -11707,7 +11707,7 @@ body.focus-mode-active,
 }
 
 /* ==========================================================================
-   Admin Learning Content Tree View (Kho nội dung dạng Cây thư mục)
+   Admin Learning Content Tree View (Kho ná»™i dung dáº¡ng CÃ¢y thÆ° má»¥c)
    ========================================================================== */
 
 .learning-filter-form {
@@ -12186,8 +12186,8 @@ body.focus-mode-active,
   vertical-align: middle;
 }
 
-/* Trọng tâm nhận biết cho trẻ: ảnh chính rõ, ảnh đáp án đủ lớn và không xếp
-   thành các hàng ngang nhỏ khó quan sát. Áp dụng chung cho mọi dạng lựa chọn. */
+/* Trá»ng tÃ¢m nháº­n biáº¿t cho tráº»: áº£nh chÃ­nh rÃµ, áº£nh Ä‘Ã¡p Ã¡n Ä‘á»§ lá»›n vÃ  khÃ´ng xáº¿p
+   thÃ nh cÃ¡c hÃ ng ngang nhá» khÃ³ quan sÃ¡t. Ãp dá»¥ng chung cho má»i dáº¡ng lá»±a chá»n. */
 .learning-focus-shell .choice-board {
   padding: clamp(14px, 2.4vw, 22px) !important;
 }
@@ -12390,7 +12390,7 @@ body.focus-mode-active,
 }
 
 /* ==========================================================================
-   Kids Tracing Hub (Góc Bé Tập Tô & Luyện Nét)
+   Kids Tracing Hub (GÃ³c BÃ© Táº­p TÃ´ & Luyá»‡n NÃ©t)
    ========================================================================== */
 
 .home-hero-actions-row {
@@ -12510,7 +12510,7 @@ body.focus-mode-active,
 }
 
 /* ==========================================================================
-   BILINGUAL LISTEN SCREEN - VƯỜN HỌC SONG NGỮ ANH - VIỆT
+   BILINGUAL LISTEN SCREEN - VÆ¯á»œN Há»ŒC SONG NGá»® ANH - VIá»†T
    ========================================================================== */
 .bilingual-listen-screen {
   max-width: 1040px !important;
@@ -12640,7 +12640,7 @@ body.audio-is-speaking .sound-wave-badge {
   background: #10b981;
 }
 
-/* Kiểm soát độ phủ bài học theo dạng tương tác trong trang quản trị. */
+/* Kiá»ƒm soÃ¡t Ä‘á»™ phá»§ bÃ i há»c theo dáº¡ng tÆ°Æ¡ng tÃ¡c trong trang quáº£n trá»‹. */
 .activity-coverage-summary {
   display: grid;
   gap: 7px;
@@ -14147,7 +14147,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ===================================================
-   MASCOT VOICE FEEDBACK (Gợi ý giọng nói thân thiện Sóc Nâu)
+   MASCOT VOICE FEEDBACK (Gá»£i Ã½ giá»ng nÃ³i thÃ¢n thiá»‡n SÃ³c NÃ¢u)
    =================================================== */
 
 .mascot-voice-toast {
@@ -14220,7 +14220,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ===================================================
-   TRACING ANIMATED STROKE DEMO (Mô tả bước vẽ theo mẫu)
+   TRACING ANIMATED STROKE DEMO (MÃ´ táº£ bÆ°á»›c váº½ theo máº«u)
    =================================================== */
 
 .tracing-demo-layer {
@@ -14289,14 +14289,14 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   HỆ THỐNG GIAO DIỆN ĐA THIẾT BỊ (MULTI-DEVICE SYSTEM DESIGN)
+   Há»† THá»NG GIAO DIá»†N ÄA THIáº¾T Bá»Š (MULTI-DEVICE SYSTEM DESIGN)
    1. Mobile (< 768px)
    2. Tablet Lenovo IdeaTab 2.5K 16:10 (768px - 1440px)
    3. PC / Web Laptop (> 1440px)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. GÓC CỦA BÉ (CHILD ZONE)
+   1. GÃ“C Cá»¦A BÃ‰ (CHILD ZONE)
    -------------------------------------------------------------------------- */
 .child-zone-shell {
   min-height: 100vh;
@@ -14311,8 +14311,8 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   TOPBAR CHUẨN ĐỒNG NHẤT KHÔNG GIAN BÉ (UNIFIED CHILD ZONE HEADER)
-   Chuẩn hóa cân đối 3 cột: Left, Center, Right - Tuyệt đối không vỡ giao diện
+   TOPBAR CHUáº¨N Äá»’NG NHáº¤T KHÃ”NG GIAN BÃ‰ (UNIFIED CHILD ZONE HEADER)
+   Chuáº©n hÃ³a cÃ¢n Ä‘á»‘i 3 cá»™t: Left, Center, Right - Tuyá»‡t Ä‘á»‘i khÃ´ng vá»¡ giao diá»‡n
    ========================================================================== */
 .child-zone-header {
   display: flex;
@@ -14334,7 +14334,7 @@ body.audio-is-speaking .sound-wave-badge {
   gap: 12px;
 }
 
-/* CỘT TRÁI: Nút Back + Avatar + Lời chào / Tên trang */
+/* Cá»˜T TRÃI: NÃºt Back + Avatar + Lá»i chÃ o / TÃªn trang */
 .child-header-left {
   display: flex;
   align-items: center;
@@ -14445,7 +14445,7 @@ body.audio-is-speaking .sound-wave-badge {
   text-overflow: ellipsis;
 }
 
-/* CỘT GIỮA: Huy hiệu tiến độ sao vàng 3D */
+/* Cá»˜T GIá»®A: Huy hiá»‡u tiáº¿n Ä‘á»™ sao vÃ ng 3D */
 .child-header-center {
   display: flex;
   align-items: center;
@@ -14495,7 +14495,7 @@ body.audio-is-speaking .sound-wave-badge {
   white-space: nowrap !important;
 }
 
-/* CỘT PHẢI: Nút Góc Ba Mẹ */
+/* Cá»˜T PHáº¢I: NÃºt GÃ³c Ba Máº¹ */
 .child-header-right {
   display: flex;
   align-items: center;
@@ -14541,7 +14541,7 @@ body.audio-is-speaking .sound-wave-badge {
   letter-spacing: 0.4px;
 }
 
-/* Main Lưới bài học */
+/* Main LÆ°á»›i bÃ i há»c */
 .child-zone-main {
   flex: 1;
   display: flex;
@@ -14571,7 +14571,7 @@ body.audio-is-speaking .sound-wave-badge {
   animation: childFadeIn 0.3s ease-out;
 }
 
-/* Cố định 2 hàng x 4 cột (8 thẻ/trang) vừa khít màn hình Tablet */
+/* Cá»‘ Ä‘á»‹nh 2 hÃ ng x 4 cá»™t (8 tháº»/trang) vá»«a khÃ­t mÃ n hÃ¬nh Tablet */
 .child-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -14581,7 +14581,7 @@ body.audio-is-speaking .sound-wave-badge {
   min-height: calc(100vh - 240px);
 }
 
-/* Thẻ bài học (Card): Bo góc lớn 28px, đổ bóng 3D, ảnh 70%, font 22px bold */
+/* Tháº» bÃ i há»c (Card): Bo gÃ³c lá»›n 28px, Ä‘á»• bÃ³ng 3D, áº£nh 70%, font 22px bold */
 .child-card-tile {
   position: relative;
   display: flex;
@@ -14604,7 +14604,7 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14), 0 6px 14px rgba(0, 0, 0, 0.06);
 }
 
-/* Themes của các thẻ */
+/* Themes cá»§a cÃ¡c tháº» */
 .child-card-tile.card-theme-amber {
   background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
   border-color: #fde68a;
@@ -14651,7 +14651,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #713f12;
 }
 
-/* Badge góc trên thẻ */
+/* Badge gÃ³c trÃªn tháº» */
 .card-badge-pill {
   font-size: 13px;
   font-weight: 800;
@@ -14663,7 +14663,7 @@ body.audio-is-speaking .sound-wave-badge {
   white-space: nowrap;
 }
 
-/* Minh họa chiếm 70% diện tích */
+/* Minh há»a chiáº¿m 70% diá»‡n tÃ­ch */
 .card-illustration-box {
   flex: 1;
   display: flex;
@@ -14684,7 +14684,7 @@ body.audio-is-speaking .sound-wave-badge {
   transform: scale(1.1);
 }
 
-/* Tên bài học font 22px in đậm */
+/* TÃªn bÃ i há»c font 22px in Ä‘áº­m */
 .card-title-box {
   width: 100%;
   text-align: center;
@@ -14699,7 +14699,7 @@ body.audio-is-speaking .sound-wave-badge {
   letter-spacing: -0.3px;
 }
 
-/* Điều hướng chân trang: Hai nút 88x88px ở hai góc dưới màn hình */
+/* Äiá»u hÆ°á»›ng chÃ¢n trang: Hai nÃºt 88x88px á»Ÿ hai gÃ³c dÆ°á»›i mÃ n hÃ¬nh */
 .child-zone-footer-nav {
   position: fixed;
   bottom: 18px;
@@ -14795,7 +14795,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* --------------------------------------------------------------------------
-   2. CỔNG MỞ KHÓA PHỤ HUYNH (PARENT GATE)
+   2. Cá»”NG Má»ž KHÃ“A PHá»¤ HUYNH (PARENT GATE)
    -------------------------------------------------------------------------- */
 .parent-gate-overlay {
   position: fixed;
@@ -14983,7 +14983,7 @@ body.audio-is-speaking .sound-wave-badge {
   margin-top: 8px;
 }
 
-/* Numpad: Phím tối thiểu 72x72px trên Tablet */
+/* Numpad: PhÃ­m tá»‘i thiá»ƒu 72x72px trÃªn Tablet */
 .parent-gate-numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -15053,14 +15053,14 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* --------------------------------------------------------------------------
-   3. GÓC PHỤ HUYNH (PARENT ZONE - 7:3 RATIO)
+   3. GÃ“C PHá»¤ HUYNH (PARENT ZONE - 7:3 RATIO)
    -------------------------------------------------------------------------- */
 .parent-portal-container {
   max-width: 1440px;
   padding: 24px 20px 48px;
 }
 
-/* Tablet Lenovo IdeaTab 2.5K: Bố cục 2 cột tỷ lệ 7:3 */
+/* Tablet Lenovo IdeaTab 2.5K: Bá»‘ cá»¥c 2 cá»™t tá»· lá»‡ 7:3 */
 .parent-portal-layout {
   display: grid;
   grid-template-columns: 7fr 3fr;
@@ -15078,7 +15078,7 @@ body.audio-is-speaking .sound-wave-badge {
   flex-direction: column;
 }
 
-/* Thanh tiến độ bài học của bé: Font 18px - 20px sắc nét */
+/* Thanh tiáº¿n Ä‘á»™ bÃ i há»c cá»§a bÃ©: Font 18px - 20px sáº¯c nÃ©t */
 .skills-progress-list-v2 {
   display: flex;
   flex-direction: column;
@@ -15129,7 +15129,7 @@ body.audio-is-speaking .sound-wave-badge {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Cần gạt thời lượng & cài đặt */
+/* Cáº§n gáº¡t thá»i lÆ°á»£ng & cÃ i Ä‘áº·t */
 .control-widget-card {
   border: 2px solid #e2e8f0;
 }
@@ -15228,7 +15228,7 @@ body.audio-is-speaking .sound-wave-badge {
   animation: childFadeIn 0.2s ease-out;
 }
 
-/* Danh mục ưu tiên */
+/* Danh má»¥c Æ°u tiÃªn */
 .priority-category-list {
   display: flex;
   flex-direction: column;
@@ -15299,7 +15299,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #64748b;
 }
 
-/* Nút Admin nổi bật trên cột phải */
+/* NÃºt Admin ná»•i báº­t trÃªn cá»™t pháº£i */
 .admin-callout-card {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
   color: #ffffff;
@@ -15351,7 +15351,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #ffffff;
 }
 
-/* Quick links bên cột phải */
+/* Quick links bÃªn cá»™t pháº£i */
 .side-quick-links {
   display: flex;
   flex-direction: column;
@@ -15391,7 +15391,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* --------------------------------------------------------------------------
-   4. PHÂN HỆ QUẢN TRỊ (ADMIN CMS)
+   4. PHÃ‚N Há»† QUáº¢N TRá»Š (ADMIN CMS)
    -------------------------------------------------------------------------- */
 .admin-top-navbar {
   display: flex;
@@ -15581,7 +15581,7 @@ body.audio-is-speaking .sound-wave-badge {
   display: block;
 }
 
-/* Toàn bộ bảng Admin có overflow-x: auto để không vỡ khung trên Tablet */
+/* ToÃ n bá»™ báº£ng Admin cÃ³ overflow-x: auto Ä‘á»ƒ khÃ´ng vá»¡ khung trÃªn Tablet */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -15589,12 +15589,12 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* --------------------------------------------------------------------------
-   5. RESPONSIVE BREAKPOINTS (3 NHÓM THIẾT BỊ)
+   5. RESPONSIVE BREAKPOINTS (3 NHÃ“M THIáº¾T Bá»Š)
    -------------------------------------------------------------------------- */
 
-/* Nhóm 2: MÁY TÍNH BẢNG (TABLET LENOVO IDEATAB 2.5K 16:10 / 768px - 1440px) */
+/* NhÃ³m 2: MÃY TÃNH Báº¢NG (TABLET LENOVO IDEATAB 2.5K 16:10 / 768px - 1440px) */
 @@media (min-width: 768px) and (max-width: 1440px) {
-  /* Admin Sidebar: Tự động co nhỏ thành cột icon 64px */
+  /* Admin Sidebar: Tá»± Ä‘á»™ng co nhá» thÃ nh cá»™t icon 64px */
   .admin-layout {
     grid-template-columns: 64px 1fr !important;
   }
@@ -15622,7 +15622,7 @@ body.audio-is-speaking .sound-wave-badge {
     height: 44px !important;
   }
 
-  /* Child Zone: Fixed 2x4 không cuộn */
+  /* Child Zone: Fixed 2x4 khÃ´ng cuá»™n */
   .child-zone-shell {
     height: 100vh;
     max-height: 100vh;
@@ -15640,15 +15640,15 @@ body.audio-is-speaking .sound-wave-badge {
     height: 100%;
   }
 
-  /* Parent Zone: 7:3 cố định */
+  /* Parent Zone: 7:3 cá»‘ Ä‘á»‹nh */
   .parent-portal-layout {
     grid-template-columns: 7fr 3fr;
   }
 }
 
-/* Nhóm 1: ĐIỆN THOẠI (MOBILE < 768px) */
+/* NhÃ³m 1: ÄIá»†N THOáº I (MOBILE < 768px) */
 @@media (max-width: 767px) {
-  /* Child Zone: Chuyển sang 1 cột cuộn dọc */
+  /* Child Zone: Chuyá»ƒn sang 1 cá»™t cuá»™n dá»c */
   .child-zone-header {
     padding: 10px 14px;
   }
@@ -15680,7 +15680,7 @@ body.audio-is-speaking .sound-wave-badge {
     font-size: 11px;
   }
 
-  /* Nút ổ khóa tối thiểu 48x48px */
+  /* NÃºt á»• khÃ³a tá»‘i thiá»ƒu 48x48px */
   .child-lock-gate-btn {
     width: 48px;
     height: 48px;
@@ -15694,7 +15694,7 @@ body.audio-is-speaking .sound-wave-badge {
     display: none;
   }
 
-  /* Lưới chuyển thành 1 cột cuộn */
+  /* LÆ°á»›i chuyá»ƒn thÃ nh 1 cá»™t cuá»™n */
   .child-zone-main {
     padding: 12px 14px 40px;
   }
@@ -15731,12 +15731,12 @@ body.audio-is-speaking .sound-wave-badge {
     font-size: 18px;
   }
 
-  /* Ẩn nút chuyển trang 88px góc dưới trên Mobile */
+  /* áº¨n nÃºt chuyá»ƒn trang 88px gÃ³c dÆ°á»›i trÃªn Mobile */
   .child-zone-footer-nav {
     display: none;
   }
 
-  /* Parent Gate: Numpad bám sát đáy màn hình một tay */
+  /* Parent Gate: Numpad bÃ¡m sÃ¡t Ä‘Ã¡y mÃ n hÃ¬nh má»™t tay */
   .parent-gate-container {
     width: 100%;
     max-width: 100%;
@@ -15763,7 +15763,7 @@ body.audio-is-speaking .sound-wave-badge {
     border-radius: 14px;
   }
 
-  /* Parent Zone: Xếp chồng 1 cột dọc */
+  /* Parent Zone: Xáº¿p chá»“ng 1 cá»™t dá»c */
   .parent-portal-layout {
     grid-template-columns: 1fr;
   }
@@ -15777,7 +15777,7 @@ body.audio-is-speaking .sound-wave-badge {
     gap: 12px;
   }
 
-  /* Admin CMS: Sidebar ẩn thành Drawer */
+  /* Admin CMS: Sidebar áº©n thÃ nh Drawer */
   .admin-layout {
     grid-template-columns: 1fr !important;
   }
@@ -15806,13 +15806,13 @@ body.audio-is-speaking .sound-wave-badge {
     display: none;
   }
 
-  /* Ẩn các cột phụ trên Mobile trong Data Table */
+  /* áº¨n cÃ¡c cá»™t phá»¥ trÃªn Mobile trong Data Table */
   .col-secondary {
     display: none !important;
   }
 }
 
-/* Nhóm 3: PC / WEB LAPTOP (> 1440px) */
+/* NhÃ³m 3: PC / WEB LAPTOP (> 1440px) */
 @@media (min-width: 1441px) {
   .child-zone-main {
     max-width: 1440px;
@@ -15854,10 +15854,10 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   NÂNG CẤP TOÀN BỘ CÁC CHỨC NĂNG HỆ THỐNG (FULL-SYSTEM FUNCTIONAL UPGRADES)
+   NÃ‚NG Cáº¤P TOÃ€N Bá»˜ CÃC CHá»¨C NÄ‚NG Há»† THá»NG (FULL-SYSTEM FUNCTIONAL UPGRADES)
    ========================================================================== */
 
-/* 1. Màn hình Chọn Hồ Sơ Bé (Profiles/Index) */
+/* 1. MÃ n hÃ¬nh Chá»n Há»“ SÆ¡ BÃ© (Profiles/Index) */
 .profile-picker-shell {
   min-height: 100vh;
   background: radial-gradient(circle at 50% 10%, #fff7ed 0%, #fef3c7 40%, #fed7aa 100%);
@@ -16008,7 +16008,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #ea580c;
 }
 
-/* 2. Quản Lý Hồ Sơ Bé Trong Góc Phụ Huynh (Parent/Profiles) */
+/* 2. Quáº£n LÃ½ Há»“ SÆ¡ BÃ© Trong GÃ³c Phá»¥ Huynh (Parent/Profiles) */
 .parent-profiles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -16132,7 +16132,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #b91c1c;
 }
 
-/* 3. Thống Kê Chương Trình Danh Mục (Admin/Catalogs) */
+/* 3. Thá»‘ng KÃª ChÆ°Æ¡ng TrÃ¬nh Danh Má»¥c (Admin/Catalogs) */
 .curriculum-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -16181,7 +16181,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   BẢN ĐỒ HÀNH TRÌNH KHÁM PHÁ (UNIFIED SKILL ADVENTURE ROADMAP)
+   Báº¢N Äá»’ HÃ€NH TRÃŒNH KHÃM PHÃ (UNIFIED SKILL ADVENTURE ROADMAP)
    ========================================================================== */
 
 .skill-adventure-page {
@@ -16487,7 +16487,7 @@ body.audio-is-speaking .sound-wave-badge {
   font-size: 16px;
 }
 
-/* Modal Voice Bài Học */
+/* Modal Voice BÃ i Há»c */
 .lesson-voice-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -16679,7 +16679,7 @@ body.audio-is-speaking .sound-wave-badge {
   font-size: 18px;
 }
 
-/* Cổng Chào Chặng Thử Thách */
+/* Cá»•ng ChÃ o Cháº·ng Thá»­ ThÃ¡ch */
 .adventure-chapter-portal {
   width: 90%;
   max-width: 480px;
@@ -16749,7 +16749,7 @@ body.audio-is-speaking .sound-wave-badge {
   flex-shrink: 0;
 }
 
-/* Rương Sao Mốc Chặng */
+/* RÆ°Æ¡ng Sao Má»‘c Cháº·ng */
 .adventure-chest-station {
   width: 80%;
   max-width: 400px;
@@ -16805,7 +16805,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #047857;
 }
 
-/* Đám mây hoạt hình */
+/* ÄÃ¡m mÃ¢y hoáº¡t hÃ¬nh */
 .map-cloud {
   position: absolute;
   width: 100px;
@@ -16826,7 +16826,7 @@ body.audio-is-speaking .sound-wave-badge {
   100% { transform: translateX(25px); }
 }
 
-/* Chế độ xem Lưới Bài Học (Grid View) */
+/* Cháº¿ Ä‘á»™ xem LÆ°á»›i BÃ i Há»c (Grid View) */
 .skill-grid-wrap {
   max-width: 1100px;
   margin: 0 auto;
@@ -17029,8 +17029,8 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   BẢN ĐỒ ĐẢO PHIÊU LƯU 2 CỘT CHUẨN IPAD (BOTTOM TO TOP MAP ADVENTURE)
-   Theo đúng hình ảnh mẫu tham khảo, tối ưu trải nghiệm tablet & desktop
+   Báº¢N Äá»’ Äáº¢O PHIÃŠU LÆ¯U 2 Cá»˜T CHUáº¨N IPAD (BOTTOM TO TOP MAP ADVENTURE)
+   Theo Ä‘Ãºng hÃ¬nh áº£nh máº«u tham kháº£o, tá»‘i Æ°u tráº£i nghiá»‡m tablet & desktop
    ========================================================================== */
 
 .ipad-adventure-layout {
@@ -17040,7 +17040,7 @@ body.audio-is-speaking .sound-wave-badge {
   padding: 12px 14px 100px !important;
 }
 
-/* 1. Header Chặng Khám Phá (Chapter Overview Banner) */
+/* 1. Header Cháº·ng KhÃ¡m PhÃ¡ (Chapter Overview Banner) */
 .island-overview-banner {
   background: #ffffff;
   border: 2.5px solid #ffffff;
@@ -17189,7 +17189,7 @@ body.audio-is-speaking .sound-wave-badge {
   transform: translateY(-1px);
 }
 
-/* Thanh tiến trình đa sắc màu */
+/* Thanh tiáº¿n trÃ¬nh Ä‘a sáº¯c mÃ u */
 .island-progress-bar-wrap {
   margin-top: 16px;
   padding-top: 14px;
@@ -17233,15 +17233,15 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   BẢN ĐỒ HÀNH TRÌNH PHIÊU LƯU TINH GỌN (COMPACT ADVENTURE ROADMAP)
-   - Thanh tiện ích tiến trình siêu mỏng thay cho banner lớn
-   - Trải rộng bản đồ trung tâm (1 cột rộng rãi, không còn cột bên phải)
-   - Zic-zac ngắn gọn, tiết kiệm chiều dài, uốn lượn hình sin mềm mại
-   - Đa dạng màu sắc theo 6 theme rực rỡ bắt mắt
-   - Bấm vào trạm là vào học ngay lập tức
+   Báº¢N Äá»’ HÃ€NH TRÃŒNH PHIÃŠU LÆ¯U TINH Gá»ŒN (COMPACT ADVENTURE ROADMAP)
+   - Thanh tiá»‡n Ã­ch tiáº¿n trÃ¬nh siÃªu má»ng thay cho banner lá»›n
+   - Tráº£i rá»™ng báº£n Ä‘á»“ trung tÃ¢m (1 cá»™t rá»™ng rÃ£i, khÃ´ng cÃ²n cá»™t bÃªn pháº£i)
+   - Zic-zac ngáº¯n gá»n, tiáº¿t kiá»‡m chiá»u dÃ i, uá»‘n lÆ°á»£n hÃ¬nh sin má»m máº¡i
+   - Äa dáº¡ng mÃ u sáº¯c theo 6 theme rá»±c rá»¡ báº¯t máº¯t
+   - Báº¥m vÃ o tráº¡m lÃ  vÃ o há»c ngay láº­p tá»©c
    ========================================================================== */
 
-/* 1. Thanh Tiện Ích Tiến Trình Siêu Tinh Gọn (Cao ~42px) */
+/* 1. Thanh Tiá»‡n Ãch Tiáº¿n TrÃ¬nh SiÃªu Tinh Gá»n (Cao ~42px) */
 .skill-mini-strip {
   display: flex;
   align-items: center;
@@ -17307,11 +17307,11 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* ==========================================================================
-   TOPBAR & Báº¢N Äá»’ HÃ€NH TRÃŒNH KHÃM PHÃ (UNIFIED SKILL MAP & HEADER)
-   1. Há»£p nháº¥t 2 tiÃªu Ä‘á», xÃ³a bá» vÃ¹ng hiá»‡n sá»‘ bÃ i thá»«a trÃ¹ng láº·p
-   2. Báº£n Ä‘á»“ tráº£i rá»™ng 1160px cÃ¢n Ä‘á»‘i hoÃ n háº£o vá»›i tiÃªu Ä‘á»
-   3. Ziczac má»Ÿ rá»™ng Ä‘á»u 2 bÃªn trÃ¡i/pháº£i vá»›i dáº£i 12 Ä‘iá»ƒm lÆ°á»£n sÃ³ng
-   4. NÃºt tráº¡m Ä‘á»©ng yÃªn khi di chuá»™t (khÃ´ng rung láº¯c, khÃ´ng Ä‘á»•i vá»‹ trÃ­)
+   TOPBAR & BÃ¡ÂºÂ¢N Ã„ÂÃ¡Â»â€™ HÃƒâ‚¬NH TRÃƒÅ’NH KHÃƒÂM PHÃƒÂ (UNIFIED SKILL MAP & HEADER)
+   1. HÃ¡Â»Â£p nhÃ¡ÂºÂ¥t 2 tiÃƒÂªu Ã„â€˜Ã¡Â»Â, xÃƒÂ³a bÃ¡Â»Â vÃƒÂ¹ng hiÃ¡Â»â€¡n sÃ¡Â»â€˜ bÃƒÂ i thÃ¡Â»Â«a trÃƒÂ¹ng lÃ¡ÂºÂ·p
+   2. BÃ¡ÂºÂ£n Ã„â€˜Ã¡Â»â€œ trÃ¡ÂºÂ£i rÃ¡Â»â„¢ng 1160px cÃƒÂ¢n Ã„â€˜Ã¡Â»â€˜i hoÃƒÂ n hÃ¡ÂºÂ£o vÃ¡Â»â€ºi tiÃƒÂªu Ã„â€˜Ã¡Â»Â
+   3. Ziczac mÃ¡Â»Å¸ rÃ¡Â»â„¢ng Ã„â€˜Ã¡Â»Âu 2 bÃƒÂªn trÃƒÂ¡i/phÃ¡ÂºÂ£i vÃ¡Â»â€ºi dÃ¡ÂºÂ£i 12 Ã„â€˜iÃ¡Â»Æ’m lÃ†Â°Ã¡Â»Â£n sÃƒÂ³ng
+   4. NÃƒÂºt trÃ¡ÂºÂ¡m Ã„â€˜Ã¡Â»Â©ng yÃƒÂªn khi di chuÃ¡Â»â„¢t (khÃƒÂ´ng rung lÃ¡ÂºÂ¯c, khÃƒÂ´ng Ã„â€˜Ã¡Â»â€¢i vÃ¡Â»â€¹ trÃƒÂ­)
    ========================================================================== */
 .skill-unified-header {
   max-width: 1160px !important;
@@ -17408,7 +17408,7 @@ body.audio-is-speaking .sound-wave-badge {
   font-size: 18px;
 }
 
-/* Khung LÃ m Viá»‡c Báº£n Äá»“ Tráº£i Rá»™ng CÃ¢n Äá»‘i (1160px) */
+/* Khung LÃƒÂ m ViÃ¡Â»â€¡c BÃ¡ÂºÂ£n Ã„ÂÃ¡Â»â€œ TrÃ¡ÂºÂ£i RÃ¡Â»â„¢ng CÃƒÂ¢n Ã„ÂÃ¡Â»â€˜i (1160px) */
 .skill-map-workspace {
   display: block;
   max-width: 1160px !important;
@@ -17458,7 +17458,7 @@ body.audio-is-speaking .sound-wave-badge {
   padding-bottom: 24px;
 }
 
-/* SVG Ä‘Æ°á»ng mÃ²n káº¿t ná»‘i má»m máº¡i */
+/* SVG Ã„â€˜Ã†Â°Ã¡Â»Âng mÃƒÂ²n kÃ¡ÂºÂ¿t nÃ¡Â»â€˜i mÃ¡Â»Âm mÃ¡ÂºÂ¡i */
 .skill-map-trail-col .adventure-svg-road {
   position: absolute;
   top: 0;
@@ -17484,7 +17484,7 @@ body.audio-is-speaking .sound-wave-badge {
   stroke-linecap: round;
 }
 
-/* Äá»‰nh Báº£n Äá»“: LÃ¢u ÄÃ i BÃ­ Máº­t */
+/* Ã„ÂÃ¡Â»â€°nh BÃ¡ÂºÂ£n Ã„ÂÃ¡Â»â€œ: LÃƒÂ¢u Ã„ÂÃƒÂ i BÃƒÂ­ MÃ¡ÂºÂ­t */
 .map-summit-node {
   margin-bottom: 24px;
   z-index: 10;
@@ -17529,7 +17529,7 @@ body.audio-is-speaking .sound-wave-badge {
   color: #1e3a8a;
 }
 
-/* CÃ¡c Tráº¡m Há»c Zic-zac Má»Ÿ Rá»™ng 2 BÃªn (Äá»©ng YÃªn, KhÃ´ng Di Chuyá»ƒn Khi Di Chuá»™t) */
+/* CÃƒÂ¡c TrÃ¡ÂºÂ¡m HÃ¡Â»Âc Zic-zac MÃ¡Â»Å¸ RÃ¡Â»â„¢ng 2 BÃƒÂªn (Ã„ÂÃ¡Â»Â©ng YÃƒÂªn, KhÃƒÂ´ng Di ChuyÃ¡Â»Æ’n Khi Di ChuÃ¡Â»â„¢t) */
 .adventure-station-node {
   position: relative;
   display: flex;
@@ -17539,7 +17539,7 @@ body.audio-is-speaking .sound-wave-badge {
   z-index: 6;
 }
 
-/* Ziczac 7 Ä‘iá»ƒm tráº£i rá»™ng sang 2 bÃªn mÃ n hÃ¬nh (Desktop) */
+/* Ziczac 7 Ã„â€˜iÃ¡Â»Æ’m trÃ¡ÂºÂ£i rÃ¡Â»â„¢ng sang 2 bÃƒÂªn mÃƒÂ n hÃƒÂ¬nh (Desktop) */
 .pos-center { transform: translateX(0); }
 .pos-semi-right { transform: translateX(130px); }
 .pos-mid-right { transform: translateX(260px); }
@@ -17548,7 +17548,7 @@ body.audio-is-speaking .sound-wave-badge {
 .pos-mid-left { transform: translateX(-260px); }
 .pos-far-left { transform: translateX(-380px); }
 
-/* VÃ²ng trÃ²n tráº¡m há»c */
+/* VÃƒÂ²ng trÃƒÂ²n trÃ¡ÂºÂ¡m hÃ¡Â»Âc */
 .station-circle-btn {
   width: 76px;
   height: 76px;
@@ -17565,7 +17565,7 @@ body.audio-is-speaking .sound-wave-badge {
   transition: box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
 }
 
-/* Äá»¨NG YÃŠN KHI HOVER: KhÃ´ng dá»‹ch chuyá»ƒn hay scale Ä‘á»ƒ bÃ© dá»… dÃ ng báº¥m cháº¡m */
+/* Ã„ÂÃ¡Â»Â¨NG YÃƒÅ N KHI HOVER: KhÃƒÂ´ng dÃ¡Â»â€¹ch chuyÃ¡Â»Æ’n hay scale Ã„â€˜Ã¡Â»Æ’ bÃƒÂ© dÃ¡Â»â€¦ dÃƒÂ ng bÃ¡ÂºÂ¥m chÃ¡ÂºÂ¡m */
 .station-circle-btn:hover {
   filter: brightness(1.1);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25), inset 0 2px 0 rgba(255, 255, 255, 0.8);
@@ -17588,7 +17588,7 @@ body.audio-is-speaking .sound-wave-badge {
   height: 100%;
 }
 
-/* Chá»¯ cÃ¡i/KÃ½ tá»± hiá»ƒn thá»‹ to rÃµ nÃ©t trÃªn tráº¡m */
+/* ChÃ¡Â»Â¯ cÃƒÂ¡i/KÃƒÂ½ tÃ¡Â»Â± hiÃ¡Â»Æ’n thÃ¡Â»â€¹ to rÃƒÂµ nÃƒÂ©t trÃƒÂªn trÃ¡ÂºÂ¡m */
 .station-symbol-char {
   font-family: 'Be Vietnam Pro', var(--font-display, inherit);
   font-size: 1.95rem;
@@ -17634,7 +17634,7 @@ body.audio-is-speaking .sound-wave-badge {
   }
 }
 
-/* 6 Theme Màu Sắc Đa Dạng Theo Chu Kỳ Cho Các Trạm */
+/* 6 Theme MÃ u Sáº¯c Äa Dáº¡ng Theo Chu Ká»³ Cho CÃ¡c Tráº¡m */
 .station-completed.theme-amber {
   background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 45%, #d97706 100%) !important;
   box-shadow: 0 10px 22px rgba(217, 119, 6, 0.4), inset 0 -3px 0 rgba(0, 0, 0, 0.2), inset 0 3px 0 rgba(255, 255, 255, 0.7) !important;
@@ -17687,7 +17687,7 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Trạm Đang Học Dở (Lớn Nhất, Phát Sáng Hào Quang, Bấm Là Vào Học Ngay) */
+/* Tráº¡m Äang Há»c Dá»Ÿ (Lá»›n Nháº¥t, PhÃ¡t SÃ¡ng HÃ o Quang, Báº¥m LÃ  VÃ o Há»c Ngay) */
 .station-current {
   width: 86px !important;
   height: 86px !important;
@@ -17725,7 +17725,7 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Mascot Sóc Nâu đứng bên cạnh trạm đang học dở */
+/* Mascot SÃ³c NÃ¢u Ä‘á»©ng bÃªn cáº¡nh tráº¡m Ä‘ang há»c dá»Ÿ */
 .squirrel-chat-guide {
   position: absolute;
   top: -24px;
@@ -17775,7 +17775,7 @@ body.audio-is-speaking .sound-wave-badge {
   object-fit: cover;
 }
 
-/* Trạm Rương Thưởng Mốc (mỗi 5 trạm) */
+/* Tráº¡m RÆ°Æ¡ng ThÆ°á»Ÿng Má»‘c (má»—i 5 tráº¡m) */
 .chest-node-badge {
   display: flex;
   flex-direction: column;
@@ -17819,7 +17819,7 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* Trạm Khóa */
+/* Tráº¡m KhÃ³a */
 .station-locked {
   background: linear-gradient(145deg, #f1f5f9 0%, #cbd5e1 100%) !important;
   border: 3.5px solid #ffffff !important;
@@ -17836,7 +17836,7 @@ body.audio-is-speaking .sound-wave-badge {
   display: none;
 }
 
-/* Nhãn Trạm Học Gọn Gàng Bên Dưới */
+/* NhÃ£n Tráº¡m Há»c Gá»n GÃ ng BÃªn DÆ°á»›i */
 .station-label-pill {
   margin-top: 6px;
   white-space: nowrap !important;
@@ -17874,7 +17874,7 @@ body.audio-is-speaking .sound-wave-badge {
   margin-right: 2px;
 }
 
-/* 3. Đáy Bản Đồ (Start Gate) */
+/* 3. ÄÃ¡y Báº£n Äá»“ (Start Gate) */
 .map-start-node {
   margin-top: 14px;
   z-index: 10;
@@ -17899,7 +17899,7 @@ body.audio-is-speaking .sound-wave-badge {
   font-size: 1.2rem;
 }
 
-/* Toast Thông Báo Khi Bé Bấm Trạm Khóa */
+/* Toast ThÃ´ng BÃ¡o Khi BÃ© Báº¥m Tráº¡m KhÃ³a */
 .locked-station-toast {
   position: fixed;
   bottom: 84px;
@@ -17932,7 +17932,7 @@ body.audio-is-speaking .sound-wave-badge {
   font-size: 20px;
 }
 
-/* Animation Lắc Rung Trạm Khóa */
+/* Animation Láº¯c Rung Tráº¡m KhÃ³a */
 .station-shake-anim {
   animation: shakeLocked 0.5s ease;
 }
@@ -17943,7 +17943,7 @@ body.audio-is-speaking .sound-wave-badge {
   40%, 80% { transform: translateX(6px); }
 }
 
-/* Highlight trạm đang học dở khi nhảy đến */
+/* Highlight tráº¡m Ä‘ang há»c dá»Ÿ khi nháº£y Ä‘áº¿n */
 .highlight-station-pulse {
   animation: activeStationPulse 1.2s infinite;
 }
@@ -17956,10 +17956,10 @@ body.audio-is-speaking .sound-wave-badge {
 
 
 /* ==========================================================================
-   TIá»‚U Cáº¢NH VÃ€ TRANG TRÃ SINH Äá»˜NG Báº¢N Äá»’ Ká»¸ NÄ‚NG (VUI NHá»˜N, KHÃ”NG LOÃˆ LOáº¸T)
+   TIÃ¡Â»â€šU CÃ¡ÂºÂ¢NH VÃƒâ‚¬ TRANG TRÃƒÂ SINH Ã„ÂÃ¡Â»ËœNG BÃ¡ÂºÂ¢N Ã„ÂÃ¡Â»â€™ KÃ¡Â»Â¸ NÃ„â€šNG (VUI NHÃ¡Â»ËœN, KHÃƒâ€NG LOÃƒË† LOÃ¡ÂºÂ¸T)
    ========================================================================== */
 
-/* 1. Lá»›p Ná»n ThiÃªn NhiÃªn Sinh Äá»™ng */
+/* 1. LÃ¡Â»â€ºp NÃ¡Â»Ân ThiÃƒÂªn NhiÃƒÂªn Sinh Ã„ÂÃ¡Â»â„¢ng */
 .adventure-scenic-overlay {
   position: absolute;
   top: 0;
@@ -17972,7 +17972,7 @@ body.audio-is-speaking .sound-wave-badge {
   z-index: 1;
 }
 
-/* Cáº§u vá»“ng pastel má» áº£o phÃ­a Ä‘á»‰nh báº£n Ä‘á»“ */
+/* CÃ¡ÂºÂ§u vÃ¡Â»â€œng pastel mÃ¡Â»Â Ã¡ÂºÂ£o phÃƒÂ­a Ã„â€˜Ã¡Â»â€°nh bÃ¡ÂºÂ£n Ã„â€˜Ã¡Â»â€œ */
 .ambient-pastel-rainbow {
   position: absolute;
   top: 20px;
@@ -17991,107 +17991,18 @@ body.audio-is-speaking .sound-wave-badge {
   opacity: 0.85;
 }
 
-/* Khinh khÃ­ cáº§u pastel bá»“ng bá»nh á»Ÿ gÃ³c cao */
+/* Khinh khÃƒÂ­ cÃ¡ÂºÂ§u pastel bÃ¡Â»â€œng bÃ¡Â»Ânh Ã¡Â»Å¸ gÃƒÂ³c cao */
 .ambient-hot-air-balloon {
   position: absolute;
   top: 75px;
   right: 50px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(6px);
-  border: 2px solid rgba(254, 215, 170, 0.8);
-  border-radius: 999px;
-  padding: 4px 12px;
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.1);
-  animation: balloonFloatDrift 6s ease-in-out infinite alternate;
-  pointer-events: none;
-  z-index: 2;
-}
-
-@keyframes balloonFloatDrift {
-  0% { transform: translateY(0) rotate(-2deg); }
-  100% { transform: translateY(-14px) rotate(3deg); }
-}
-
-.ambient-hot-air-balloon .balloon-emoji {
-  font-size: 1.4rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-}
-
-.ambient-hot-air-balloon .balloon-label {
-  font-size: 0.76rem;
-  font-weight: 800;
-  color: #c2410c;
-  letter-spacing: 0.2px;
-}
-
-/* MÃ¢y trÃ´i bá»“ng bá»nh vá»›i gradient tráº¯ng má»m */
-.ambient-cloud {
-  position: absolute;
-  width: 140px;
-  height: 48px;
-  background: radial-gradient(ellipse at 50% 60%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.45) 60%, transparent 100%);
-  border-radius: 999px;
-  filter: blur(4px);
-  opacity: 0.65;
-  animation: cloudDriftSlow 18s ease-in-out infinite alternate;
-  pointer-events: none;
-}
-
-.ambient-cloud.cloud-1 {
-  top: 12%;
-  left: 8%;
-  width: 160px;
-  height: 54px;
-  animation-duration: 22s;
-}
-
-.ambient-cloud.cloud-2 {
-  top: 36%;
-  right: 7%;
-  width: 180px;
-  height: 58px;
-  animation-duration: 25s;
-  animation-delay: -5s;
-}
-
-.ambient-cloud.cloud-3 {
-  top: 62%;
-  left: 6%;
-  width: 150px;
-  height: 50px;
-  animation-duration: 20s;
-  animation-delay: -10s;
-}
-
-.ambient-cloud.cloud-4 {
-  top: 84%;
-  right: 10%;
-  width: 170px;
-  height: 52px;
-  animation-duration: 24s;
-  animation-delay: -3s;
-}
-
-@keyframes cloudDriftSlow {
-  0% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(35px) translateY(-8px); }
-  100% { transform: translateX(-20px) translateY(4px); }
-}
-
-/* 2. Khung HÃ ng Tráº¡m Há»c Chá»©a Tiá»ƒu Cáº£nh SÆ°á»n */
-.adventure-step-row {
-  position: relative;
-  width: 100%;
-  display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Huy hiá»‡u tiá»ƒu cáº£nh sÆ°á»n báº£n Ä‘á»“ (pointer-events: none Ä‘á»ƒ bÃ© khÃ´ng bá»‹ báº¥m nháº§m) */
+/* ==================== TIá»‚U Cáº¢NH & NHÃ‚N Váº¬T SINH Äá»˜NG VEN SÆ¯á»œN Báº¢N Äá»’ ==================== */
 .flank-landmark-deco {
   position: absolute;
   top: 50%;
@@ -18099,63 +18010,124 @@ body.audio-is-speaking .sound-wave-badge {
   pointer-events: none;
   user-select: none;
   z-index: 3;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  border: 2px solid #ffffff;
-  border-radius: 20px;
-  padding: 6px 14px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), inset 0 1px 0 #ffffff;
-  opacity: 0.9;
+  gap: 4px;
+  max-width: 250px;
   animation: flankGentleHover 5s ease-in-out infinite alternate;
-  max-width: 240px;
 }
 
 @keyframes flankGentleHover {
   0% { transform: translateY(-50%) translateY(0); }
-  100% { transform: translateY(-50%) translateY(-6px); }
+  50% { transform: translateY(-50%) translateY(-6px); }
+  100% { transform: translateY(-50%) translateY(0); }
 }
 
 .flank-landmark-deco.side-left {
-  left: 36px;
+  left: 28px;
+  align-items: flex-start;
 }
 
 .flank-landmark-deco.side-right {
-  right: 36px;
+  right: 28px;
+  align-items: flex-end;
 }
 
-/* Avatar báº¡n thÃº 3D nhá» nháº¯n */
+/* Khá»‘i hiá»ƒn thá»‹ nhÃ¢n váº­t vÃ  bong bÃ³ng Ä‘á»‘i thoáº¡i */
+.flank-vignette-scenery {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.flank-landmark-deco.side-right .flank-vignette-scenery {
+  flex-direction: row-reverse;
+}
+
+/* Avatar nhÃ¢n váº­t 3D / SVG lá»›n, ná»•i báº­t, sinh Ä‘á»™ng */
 .flank-avatar-wrap {
-  width: 36px;
-  height: 36px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: #fffbeb;
-  border: 2px solid #ffffff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  background: radial-gradient(circle at 35% 35%, #ffffff, #fef9c3);
+  border: 3px solid #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+  animation: flankCharBounce 3s ease-in-out infinite;
+}
+
+@keyframes flankCharBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08) rotate(3deg); }
 }
 
 .flank-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 .flank-landmark-deco .flank-icon {
-  font-size: 24px;
+  font-size: 28px;
   flex-shrink: 0;
 }
 
-.flank-text-wrap {
+/* Bong bÃ³ng Ä‘á»‘i thoáº¡i vui nhá»™n cá»§a nhÃ¢n váº­t */
+.flank-speech-cloud {
+  background: #ffffff;
+  border: 2px solid #fed7aa;
+  border-radius: 16px;
+  padding: 5px 10px;
+  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.15);
+  position: relative;
+  max-width: 150px;
+}
+
+.flank-speech-cloud::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+}
+
+.flank-landmark-deco.side-left .flank-speech-cloud::before {
+  left: -12px;
+  border-color: transparent #fed7aa transparent transparent;
+}
+
+.flank-landmark-deco.side-right .flank-speech-cloud::before {
+  right: -12px;
+  border-color: transparent transparent transparent #fed7aa;
+}
+
+.flank-bubble-text {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ea580c;
+  line-height: 1.2;
+  display: block;
+}
+
+/* Tháº» thÃ´ng tin nhÃ¢n váº­t / tiá»ƒu cáº£nh */
+.flank-info-chip {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border: 2px solid #ffffff;
+  border-radius: 14px;
+  padding: 4px 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .flank-title {
@@ -18165,103 +18137,1029 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 .flank-sub {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   color: #64748b;
   line-height: 1.2;
   white-space: nowrap;
 }
 
-/* CÃ¡c theme mÃ u dá»‹u pastel cho tá»«ng loáº¡i tiá»ƒu cáº£nh */
-.flank-landmark-deco.deco-bunny {
+/* Tháº£m cá» vÃ  hoa tÆ°Æ¡i dÆ°á»›i chÃ¢n nhÃ¢n váº­t */
+.flank-ground-patch {
+  display: flex;
+  gap: 4px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-top: -2px;
+  filter: drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2));
+}
+
+/* ==================== THEMES MÃ€U Sáº®C CHO Tá»ªNG NHÃ‚N Váº¬T & TIá»‚U Cáº¢NH ==================== */
+/* 1. Khá»§ng Long Xanh (Green / Lime) */
+.flank-landmark-deco.deco-dino .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #f0fdf4, #bbf7d0);
+  border-color: #86efac;
+}
+.flank-landmark-deco.deco-dino .flank-title { color: #15803d; }
+.flank-landmark-deco.deco-dino .flank-speech-cloud { border-color: #86efac; }
+.flank-landmark-deco.deco-dino .flank-bubble-text { color: #16a34a; }
+
+/* 2. Robot TÃ­ Hon (Cyan / Sky) */
+.flank-landmark-deco.deco-robot .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #f0f9ff, #bae6fd);
+  border-color: #7dd3fc;
+}
+.flank-landmark-deco.deco-robot .flank-title { color: #0369a1; }
+.flank-landmark-deco.deco-robot .flank-speech-cloud { border-color: #7dd3fc; }
+.flank-landmark-deco.deco-robot .flank-bubble-text { color: #0284c7; }
+
+/* 3. Xe Äua Tá»‘c Äá»™ (Rose / Coral) */
+.flank-landmark-deco.deco-car .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #fff1f2, #fecdd3);
+  border-color: #fda4af;
+}
+.flank-landmark-deco.deco-car .flank-title { color: #be123c; }
+.flank-landmark-deco.deco-car .flank-speech-cloud { border-color: #fda4af; }
+.flank-landmark-deco.deco-car .flank-bubble-text { color: #e11d48; }
+
+/* 4. TÃªn Lá»­a VÅ© Trá»¥ (Purple / Violet) */
+.flank-landmark-deco.deco-rocket .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #faf5ff, #e9d5ff);
+  border-color: #d8b4fe;
+}
+.flank-landmark-deco.deco-rocket .flank-title { color: #7e22ce; }
+.flank-landmark-deco.deco-rocket .flank-speech-cloud { border-color: #d8b4fe; }
+.flank-landmark-deco.deco-rocket .flank-bubble-text { color: #9333ea; }
+
+/* 5. MÃ¡y Bay Nhá» (Yellow / Gold) */
+.flank-landmark-deco.deco-plane .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #fefce8, #fef08a);
+  border-color: #fde047;
+}
+.flank-landmark-deco.deco-plane .flank-title { color: #a16207; }
+.flank-landmark-deco.deco-plane .flank-speech-cloud { border-color: #fde047; }
+.flank-landmark-deco.deco-plane .flank-bubble-text { color: #ca8a04; }
+
+/* 6. Thá» Tráº¯ng (Pink) */
+.flank-landmark-deco.deco-bunny .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #fff, #fce7f3);
   border-color: #fbcfe8;
-  box-shadow: 0 6px 18px rgba(244, 114, 182, 0.15);
 }
 .flank-landmark-deco.deco-bunny .flank-title { color: #be185d; }
+.flank-landmark-deco.deco-bunny .flank-speech-cloud { border-color: #fbcfe8; }
+.flank-landmark-deco.deco-bunny .flank-bubble-text { color: #db2777; }
 
-.flank-landmark-deco.deco-nature {
-  border-color: #a7f3d0;
-  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.15);
-}
-.flank-landmark-deco.deco-nature .flank-icon { color: #059669; }
-.flank-landmark-deco.deco-nature .flank-title { color: #047857; }
-
-.flank-landmark-deco.deco-bear {
+/* 7. Gáº¥u VÃ ng (Amber) */
+.flank-landmark-deco.deco-bear .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #fff, #fef3c7);
   border-color: #fde68a;
-  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.15);
 }
 .flank-landmark-deco.deco-bear .flank-title { color: #b45309; }
+.flank-landmark-deco.deco-bear .flank-speech-cloud { border-color: #fde68a; }
+.flank-landmark-deco.deco-bear .flank-bubble-text { color: #d97706; }
 
-.flank-landmark-deco.deco-mushroom {
-  border-color: #fed7aa;
-  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.15);
-}
-.flank-landmark-deco.deco-mushroom .flank-icon { color: #ea580c; }
-.flank-landmark-deco.deco-mushroom .flank-title { color: #c2410c; }
-
-.flank-landmark-deco.deco-dog {
+/* 8. CÃºn Con (Sky) */
+.flank-landmark-deco.deco-dog .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #fff, #e0f2fe);
   border-color: #bae6fd;
-  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.15);
 }
 .flank-landmark-deco.deco-dog .flank-title { color: #0369a1; }
+.flank-landmark-deco.deco-dog .flank-speech-cloud { border-color: #bae6fd; }
+.flank-landmark-deco.deco-dog .flank-bubble-text { color: #0284c7; }
 
-.flank-landmark-deco.deco-kite {
-  border-color: #e9d5ff;
-  box-shadow: 0 6px 18px rgba(168, 85, 247, 0.15);
-}
-.flank-landmark-deco.deco-kite .flank-icon { color: #9333ea; }
-.flank-landmark-deco.deco-kite .flank-title { color: #7e22ce; }
-
-.flank-landmark-deco.deco-cat {
+/* 9. MÃ¨o Con (Purple) */
+.flank-landmark-deco.deco-cat .flank-avatar-wrap {
+  background: radial-gradient(circle at 35% 35%, #fff, #ede9fe);
   border-color: #ddd6fe;
-  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.15);
 }
 .flank-landmark-deco.deco-cat .flank-title { color: #6d28d9; }
+.flank-landmark-deco.deco-cat .flank-speech-cloud { border-color: #ddd6fe; }
+.flank-landmark-deco.deco-cat .flank-bubble-text { color: #7c3aed; }
 
-.flank-landmark-deco.deco-camp {
-  border-color: #99f6e4;
-  box-shadow: 0 6px 18px rgba(20, 184, 166, 0.15);
-}
+/* 10. Rá»«ng CÃ¢y & Náº¥m & Tráº¡i */
+.flank-landmark-deco.deco-nature .flank-icon { color: #059669; }
+.flank-landmark-deco.deco-nature .flank-title { color: #047857; }
+.flank-landmark-deco.deco-mushroom .flank-icon { color: #ea580c; }
+.flank-landmark-deco.deco-mushroom .flank-title { color: #c2410c; }
 .flank-landmark-deco.deco-camp .flank-icon { color: #0d9488; }
 .flank-landmark-deco.deco-camp .flank-title { color: #0f766e; }
-
-.flank-landmark-deco.deco-compass {
-  border-color: #fef08a;
-  box-shadow: 0 6px 18px rgba(234, 179, 8, 0.15);
-}
-.flank-landmark-deco.deco-compass .flank-icon { color: #ca8a04; }
-.flank-landmark-deco.deco-compass .flank-title { color: #a16207; }
-
-.flank-landmark-deco.deco-trophy {
-  border-color: #fde047;
-  box-shadow: 0 6px 18px rgba(234, 179, 8, 0.2);
-}
 .flank-landmark-deco.deco-trophy .flank-icon { color: #d97706; }
 .flank-landmark-deco.deco-trophy .flank-title { color: #b45309; }
 
-/* Trang trÃ­ thÃªm cho cá»•ng xuáº¥t phÃ¡t */
+/* ==================== CÃC HOáº  TIáº¾T KHÃ”NG GIAN Báº¦U TRá»œI ==================== */
+/* TÃªn lá»­a bay gÃ³c trÃªn bÃªn trÃ¡i */
+.ambient-rocket-float {
+  position: absolute;
+  top: 14%;
+  left: 6%;
+  width: 70px;
+  height: 70px;
+  pointer-events: none;
+  animation: rocketSkyDrift 16s ease-in-out infinite alternate;
+  z-index: 2;
+  filter: drop-shadow(0 6px 14px rgba(225, 29, 72, 0.25));
+}
+
+@keyframes rocketSkyDrift {
+  0% { transform: translate(0, 0) rotate(5deg); }
+  50% { transform: translate(25px, -30px) rotate(15deg); }
+  100% { transform: translate(-15px, -15px) rotate(8deg); }
+}
+
+.ambient-rocket-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* MÃ¡y bay tÃ­ hon lÆ°á»£n gÃ³c pháº£i */
+.ambient-plane-float {
+  position: absolute;
+  top: 38%;
+  right: 6%;
+  width: 65px;
+  height: 65px;
+  pointer-events: none;
+  animation: planeSkyLoop 20s ease-in-out infinite alternate;
+  z-index: 2;
+  filter: drop-shadow(0 6px 14px rgba(234, 179, 8, 0.25));
+}
+
+@keyframes planeSkyLoop {
+  0% { transform: translate(0, 0) rotate(-5deg); }
+  50% { transform: translate(-30px, -20px) rotate(-15deg); }
+  100% { transform: translate(15px, 20px) rotate(0deg); }
+}
+
+.ambient-plane-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* BÆ°á»›m dáº­p dá»n */
+.ambient-butterfly {
+  position: absolute;
+  font-size: 24px;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
+}
+
+.ambient-butterfly.bfly-1 {
+  top: 25%;
+  left: 20%;
+  animation: butterflyFlutter1 12s ease-in-out infinite alternate;
+}
+
+.ambient-butterfly.bfly-2 {
+  top: 65%;
+  right: 18%;
+  animation: butterflyFlutter2 15s ease-in-out infinite alternate;
+}
+
+@keyframes butterflyFlutter1 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -25px) scale(1.15) rotate(10deg); }
+  100% { transform: translate(-20px, 15px) scale(0.9) rotate(-10deg); }
+}
+
+@keyframes butterflyFlutter2 {
+  0% { transform: translate(0, 0) scale(0.95); }
+  50% { transform: translate(-35px, -30px) scale(1.1) rotate(-12deg); }
+  100% { transform: translate(25px, 15px) scale(1) rotate(8deg); }
+}
+
+.ambient-cloud.cloud-5 {
+  top: 55%;
+  left: 8%;
+  width: 150px;
+  height: 48px;
+  animation-duration: 26s;
+  animation-delay: -5s;
+}
+
+/* ==========================================================================
+   GIAO DIá»†N TRANG CHá»¦ HOME V2 (LANDING PAGE HIá»†N Äáº I CHO PHá»¤ HUYNH & BÃ‰)
+   ========================================================================== */
+.landing-main-shell {
+  background: 
+    radial-gradient(ellipse at 15% 10%, rgba(254, 243, 199, 0.65) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 20%, rgba(224, 242, 254, 0.65) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 60%, rgba(240, 253, 244, 0.75) 0%, transparent 60%),
+    linear-gradient(180deg, #fffbf5 0%, #ffffff 40%, #f8fafc 100%);
+  padding-bottom: 60px;
+}
+
+.landing-hero-v2 {
+  padding: 48px 0 32px;
+}
+
+.hero-grid-v2 {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.eyebrow-pill-v2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+  border: 1.5px solid #fed7aa;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #c2410c;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.1);
+  margin-bottom: 16px;
+}
+
+.eyebrow-pill-v2.pill-white {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.hero-title-v2 {
+  font-family: var(--font-display);
+  font-size: 2.85rem;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #0f172a;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+
+.text-gradient-coral {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-text-v2 {
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: #475569;
+  margin-bottom: 28px;
+}
+
+.hero-actions-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.app-btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+  color: #ffffff !important;
+  text-decoration: none;
+  padding: 16px 28px;
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(234, 88, 12, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  border: 3px solid #ffedd5;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.app-btn-hero-primary:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 18px 36px rgba(234, 88, 12, 0.45);
+  color: #ffffff !important;
+}
+
+.btn-icon-pulse {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.btn-title-main {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.btn-sub-note {
+  font-size: 0.78rem;
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+.secondary-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.chip-link:hover {
+  border-color: #cbd5e1;
+  color: #0f172a;
+  transform: translateY(-2px);
+}
+
+.hero-stats-strip {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 16px;
+  border-top: 1.5px dashed #e2e8f0;
+}
+
+.strip-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.strip-icon {
+  font-size: 1.4rem;
+}
+
+.strip-text strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.strip-text span {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.strip-divider {
+  width: 1px;
+  height: 28px;
+  background: #e2e8f0;
+}
+
+.hero-mascot-card-v2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mascot-backdrop-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.35) 0%, rgba(254, 215, 170, 0.1) 70%, transparent 100%);
+  filter: blur(30px);
+  z-index: 1;
+}
+
+.mascot-central-display {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(145deg, #ffffff 0%, #fffbeb 100%);
+  border: 4px solid #fed7aa;
+  border-radius: 40px;
+  padding: 32px 28px 24px;
+  box-shadow: 0 20px 50px rgba(234, 88, 12, 0.15), inset 0 2px 4px #ffffff;
+  max-width: 380px;
+  width: 100%;
+}
+
+.mascot-img-bubble {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.mascot-3d-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(180, 83, 9, 0.2));
+}
+
+.mascot-dialog-cloud {
+  background: #ffffff;
+  border: 2px solid #fed7aa;
+  border-radius: 20px;
+  padding: 12px 18px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(251, 146, 60, 0.12);
+  margin-top: 4px;
+}
+
+.dialog-badge {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #ea580c;
+  margin-bottom: 4px;
+}
+
+.dialog-text {
+  font-size: 0.88rem;
+  color: #7c2d12;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* CÃ¡c huy hiá»‡u nhÃ¢n váº­t bay quanh SÃ³c NÃ¢u */
+.float-companion-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  font-size: 0.78rem;
+  font-weight: 800;
+  animation: floatOrb 4s ease-in-out infinite alternate;
+}
+
+.float-svg-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.float-dino {
+  top: -12px;
+  left: -20px;
+  color: #16a34a;
+  border-color: #bbf7d0;
+  animation-delay: 0s;
+}
+
+.float-robot {
+  top: 10px;
+  right: -24px;
+  color: #0284c7;
+  border-color: #bae6fd;
+  animation-delay: -1s;
+}
+
+.float-rocket {
+  bottom: 24px;
+  left: -26px;
+  color: #9333ea;
+  border-color: #e9d5ff;
+  animation-delay: -2s;
+}
+
+.float-car {
+  bottom: 8px;
+  right: -20px;
+  color: #e11d48;
+  border-color: #fecdd3;
+  animation-delay: -3s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+
+/* ==================== BIá»†T Äá»˜I Äá»’NG HÃ€NH BAR ==================== */
+.landing-companions-bar {
+  margin: 20px auto 48px;
+  text-align: center;
+}
+
+.companions-title-row {
+  margin-bottom: 24px;
+}
+
+.sparkle-tag {
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: #ea580c;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.companions-title-row h2 {
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.companions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.companion-card {
+  background: #ffffff;
+  border: 2.5px solid #f1f5f9;
+  border-radius: 24px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+}
+
+.companion-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.companion-img-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.companion-img-box img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.companion-card strong {
+  font-size: 0.92rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.companion-card p {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.companion-dino { border-color: #bbf7d0; }
+.companion-dino .companion-img-box { background: #f0fdf4; }
+.companion-dino strong { color: #15803d; }
+
+.companion-robot { border-color: #bae6fd; }
+.companion-robot .companion-img-box { background: #f0f9ff; }
+.companion-robot strong { color: #0369a1; }
+
+.companion-car { border-color: #fecdd3; }
+.companion-car .companion-img-box { background: #fff1f2; }
+.companion-car strong { color: #be123c; }
+
+.companion-rocket { border-color: #e9d5ff; }
+.companion-rocket .companion-img-box { background: #faf5ff; }
+.companion-rocket strong { color: #7e22ce; }
+
+.companion-plane { border-color: #fef08a; }
+.companion-plane .companion-img-box { background: #fefce8; }
+.companion-plane strong { color: #a16207; }
+
+.companion-bear { border-color: #fed7aa; }
+.companion-bear .companion-img-box { background: #fff7ed; }
+.companion-bear strong { color: #c2410c; }
+
+/* ==================== 4 TRá»¤ Cá»˜T BENTO GRID ==================== */
+.landing-curriculum-section {
+  margin: 48px auto;
+}
+
+.section-header-center {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 36px;
+}
+
+.section-main-heading {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.section-sub-heading {
+  font-size: 1.05rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.curriculum-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.bento-card {
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 32px;
+  border: 3px solid #f1f5f9;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.bento-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+}
+
+.bento-badge-pill {
+  width: fit-content;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.bento-icon-hero {
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.bento-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.bento-desc {
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.bento-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.bento-tag-list span {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.bento-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-weight: 800;
+  font-size: 0.92rem;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.bento-coral { border-color: #fed7aa; }
+.bento-coral .bento-badge-pill { background: #fff7ed; color: #ea580c; border: 1.5px solid #fed7aa; }
+.bento-coral .bento-icon-hero { background: #fff7ed; color: #ea580c; }
+.bento-coral .bento-link-btn { color: #ea580c; }
+
+.bento-amber { border-color: #fde68a; }
+.bento-amber .bento-badge-pill { background: #fffbeb; color: #d97706; border: 1.5px solid #fde68a; }
+.bento-amber .bento-icon-hero { background: #fffbeb; color: #d97706; }
+.bento-amber .bento-link-btn { color: #d97706; }
+
+.bento-sky { border-color: #bae6fd; }
+.bento-sky .bento-badge-pill { background: #f0f9ff; color: #0284c7; border: 1.5px solid #bae6fd; }
+.bento-sky .bento-icon-hero { background: #f0f9ff; color: #0284c7; }
+.bento-sky .bento-link-btn { color: #0284c7; }
+
+.bento-mint { border-color: #a7f3d0; }
+.bento-mint .bento-badge-pill { background: #ecfdf5; color: #059669; border: 1.5px solid #a7f3d0; }
+.bento-mint .bento-icon-hero { background: #ecfdf5; color: #059669; }
+.bento-mint .bento-link-btn { color: #059669; }
+
+
+/* ==================== Báº¢N Äá»’ GAMIFICATION PREVIEW ==================== */
+.landing-map-preview-wrap {
+  margin: 48px auto;
+}
+
+.map-preview-card {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border-radius: 36px;
+  padding: 48px;
+  color: #ffffff;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 36px;
+  align-items: center;
+  box-shadow: 0 20px 48px rgba(3, 105, 161, 0.25);
+  border: 4px solid #bae6fd;
+}
+
+.map-preview-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 12px 0 14px;
+}
+
+.map-preview-desc {
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: #e0f2fe;
+  margin-bottom: 20px;
+}
+
+.map-highlights-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.map-hl-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.mini-trail-mockup {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  border: 2px dashed rgba(255, 255, 255, 0.35);
+  border-radius: 28px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.mock-station {
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 16px;
+  padding: 8px 18px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mock-castle { background: #fef08a; color: #a16207; }
+.mock-active { background: #ea580c; color: #ffffff; transform: scale(1.06); }
+.mock-completed { background: #ecfdf5; color: #059669; }
+.mock-start { background: #f8fafc; color: #475569; }
+
+.mock-line {
+  width: 4px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+}
+
+/* ==================== Sá» LIá»†U Ná»”I Báº¬T ROW ==================== */
+.landing-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin: 48px auto;
+}
+
+.stat-box {
+  background: #ffffff;
+  border: 3px solid #f1f5f9;
+  border-radius: 28px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
+}
+
+.stat-box-coral { border-color: #fed7aa; }
+.stat-box-coral .stat-icon-wrap { background: #fff7ed; color: #ea580c; }
+
+.stat-box-mint { border-color: #a7f3d0; }
+.stat-box-mint .stat-icon-wrap { background: #ecfdf5; color: #059669; }
+
+.stat-box-sky { border-color: #bae6fd; }
+.stat-box-sky .stat-icon-wrap { background: #f0f9ff; color: #0284c7; }
+
+.stat-box-amber { border-color: #fde68a; }
+.stat-box-amber .stat-icon-wrap { background: #fffbeb; color: #d97706; }
+
+.stat-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* ==================== LÃ DO BA Máº¸ YÃŠN TÃ‚M ==================== */
+.landing-parents-trust {
+  margin: 48px auto;
+}
+
+.parents-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.trust-card {
+  background: #ffffff;
+  border: 2.5px solid #e2e8f0;
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.trust-card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: #f1f5f9;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 14px;
+}
+
+.trust-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.trust-card p {
+  font-size: 0.92rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ==================== BOTTOM CALL TO ACTION ==================== */
+.landing-bottom-cta {
+  margin: 56px auto 20px;
+}
+
+.bottom-cta-inner {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 60%, #f59e0b 100%);
+  border-radius: 36px;
+  padding: 48px 40px;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  box-shadow: 0 20px 48px rgba(234, 88, 12, 0.3);
+  border: 4px solid #ffedd5;
+  color: #ffffff;
+}
+
+.cta-mascot-img {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25));
+}
+
+.cta-copy-col h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.cta-copy-col p {
+  font-size: 1.05rem;
+  color: #ffedd5;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.cta-buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Trang trÃ­ cho cá»•ng xuáº¥t phÃ¡t */
 .start-gate-decor {
   font-size: 1.1rem;
 }
 
-/* Responsive: áº¨n hoáº·c thu gá»n trÃªn mÃ n hÃ¬nh nhá» Ä‘á»ƒ trÃ¡nh chiáº¿m chá»— */
+/* ==================== RESPONSIVE ADAPTATIONS ==================== */
 @media (max-width: 1023px) and (min-width: 768px) {
   .flank-landmark-deco {
+    max-width: 170px;
+    gap: 3px;
     padding: 4px 10px;
-    max-width: 180px;
   }
-  .flank-landmark-deco.side-left { left: 16px; }
-  .flank-landmark-deco.side-right { right: 16px; }
+  .flank-landmark-deco.side-left { left: 14px; }
+  .flank-landmark-deco.side-right { right: 14px; }
+  .flank-avatar-wrap { width: 42px; height: 42px; }
+  .flank-speech-cloud { display: none; }
   .flank-title { font-size: 0.72rem; }
   .flank-sub { font-size: 0.65rem; }
-  .flank-avatar-wrap { width: 30px; height: 30px; }
-  .flank-landmark-deco .flank-icon { font-size: 20px; }
+
+  .hero-grid-v2 { grid-template-columns: 1fr; gap: 32px; }
+  .hero-title-v2 { font-size: 2.3rem; }
+  .curriculum-bento-grid { grid-template-columns: 1fr; }
+  .landing-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .parents-trust-grid { grid-template-columns: 1fr; }
+  .map-preview-card { grid-template-columns: 1fr; padding: 32px; }
 }
 
 @media (max-width: 767px) {
   .flank-landmark-deco {
-    display: none !important;
+    max-width: 90px;
+    gap: 2px;
   }
+  .flank-landmark-deco.side-left { left: 8px; }
+  .flank-landmark-deco.side-right { right: 8px; }
+  .flank-avatar-wrap { width: 34px; height: 34px; }
+  .flank-speech-cloud, .flank-sub, .flank-ground-patch { display: none; }
+  .flank-title { font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
   .ambient-hot-air-balloon {
     top: 40px;
     right: 20px;
@@ -18271,4 +19169,14 @@ body.audio-is-speaking .sound-wave-badge {
     width: 240px;
     height: 120px;
   }
+
+  .hero-grid-v2 { grid-template-columns: 1fr; gap: 24px; }
+  .hero-title-v2 { font-size: 1.85rem; }
+  .app-btn-hero-primary { width: 100%; justify-content: center; }
+  .curriculum-bento-grid { grid-template-columns: 1fr; }
+  .landing-stats-row { grid-template-columns: 1fr; }
+  .parents-trust-grid { grid-template-columns: 1fr; }
+  .map-preview-card { grid-template-columns: 1fr; padding: 24px; }
+  .bottom-cta-inner { flex-direction: column; text-align: center; padding: 32px 20px; }
+  .cta-buttons-row { justify-content: center; }
 }

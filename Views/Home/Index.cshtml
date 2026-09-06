@@ -1,83 +1,368 @@
 @model HomeIndexViewModel
 @{
-    ViewData["Title"] = "Sóc Nâu Đồng Hành - Hành Trang Vào Lớp 1 Cho Bé";
+    ViewData["Title"] = "Sóc Nâu Đồng Hành - Hành Trang Vào Lớp 1 Cho Bé 5 Tuổi";
 }
 
-<section class="hero-wrap landing-hero">
-    <div class="container hero-grid">
-        <div class="hero-copy">
-            <span class="eyebrow-pill">🎒 Hành trang vào lớp 1 cho bé 5 tuổi</span>
-            <h1 class="hero-title">Học vui mỗi ngày cùng <span class="text-gradient-primary">Sóc Nâu</span>!</h1>
-            <p class="hero-text">Cùng bé luyện nét vẽ chữ, làm quen chữ số, chơi toán trực quan và tích lũy kỹ năng tự tin bước vào lớp 1 — chỉ 10 đến 15 phút mỗi ngày, học mà chơi, không áp lực.</p>
-            <div class="hero-actions">
-                <a class="app-btn clay-button app-btn-hero" asp-controller="Kids" asp-action="Home">
-                    <span class="material-symbols-outlined btn-icon-lg">play_circle</span>
-                    <span>Vào góc học của bé</span>
-                </a>
-                <a class="app-btn app-btn-muted clay-button" asp-controller="Parent" asp-action="Dashboard">
-                    <span class="material-symbols-outlined">family_restroom</span>
-                    <span>Góc phụ huynh</span>
-                </a>
-                <a class="app-btn app-btn-muted clay-button" asp-controller="Profiles" asp-action="Index">
-                    <span class="material-symbols-outlined">face</span>
-                    <span>Chọn hồ sơ bé</span>
-                </a>
-            </div>
-        </div>
-        <div class="hero-card clay-card landing-mascot-card">
-            <div class="landing-mascot-img-wrap">
-                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Đồng Hành" class="landing-mascot-img pulse-animation" />
-            </div>
-            <div class="landing-mascot-bubble">
-                <strong>Chào bạn nhỏ! 👋</strong>
-                <p>Hôm nay mình cùng khám phá những điều kỳ thú nhé!</p>
-            </div>
-        </div>
-    </div>
-</section>
+<div class="landing-main-shell">
+    <!-- ==================== HERO SECTION HIỆN ĐẠI ==================== -->
+    <section class="hero-wrap landing-hero-v2">
+        <div class="container hero-grid-v2">
+            <div class="hero-copy-v2">
+                <div class="eyebrow-pill-v2 pulse-gentle">
+                    <span class="eyebrow-icon">🎒</span>
+                    <span>Hành trang vào lớp 1 toàn diện cho bé 5–6 tuổi</span>
+                </div>
+                <h1 class="hero-title-v2">
+                    Khởi Đầu Tự Tin – Cùng <span class="text-gradient-coral">Sóc Nâu</span> Chinh Phục Lớp 1!
+                </h1>
+                <p class="hero-text-v2">
+                    Nền tảng vừa học vừa chơi chuẩn chương trình giáo dục mầm non 5 tuổi: Luyện nét chữ, nhận biết 29 chữ cái, đếm số 0–20, phát âm song ngữ chuẩn và tích lũy kỹ năng sống tự lập — <strong>chỉ 15 phút mỗi ngày, học mà chơi, không áp lực!</strong>
+                </p>
 
-<!-- 3 Cột Trụ Cột Nổi Bật -->
-<section class="container landing-features-section">
-    <div class="landing-feature-grid">
-        <div class="feature-card clay-card feature-coral">
-            <div class="feature-icon-wrap">
-                <span class="material-symbols-outlined">menu_book</span>
-            </div>
-            <h3>29 Chữ Cái & 14 Nét Viết</h3>
-            <p>Nhận biết mặt chữ, phát âm chuẩn tiếng Việt và bảng tô nét tương tác trực quan.</p>
-        </div>
-        <div class="feature-card clay-card feature-amber">
-            <div class="feature-icon-wrap">
-                <span class="material-symbols-outlined">calculate</span>
-            </div>
-            <h3>Chữ Số & Toán Trực Quan</h3>
-            <p>Làm quen số 0-9, đếm số lượng hoa quả, so sánh nhiều ít và ghép nhóm dễ hiểu.</p>
-        </div>
-        <div class="feature-card clay-card feature-mint">
-            <div class="feature-icon-wrap">
-                <span class="material-symbols-outlined">self_improvement</span>
-            </div>
-            <h3>Kỹ Năng & Thói Quen Tốt</h3>
-            <p>Rèn luyện nề nếp tự phục vụ, an toàn giao thông và giao tiếp tự tin khi đến trường.</p>
-        </div>
-    </div>
-</section>
+                <div class="hero-actions-v2">
+                    <a class="app-btn-hero-primary" asp-controller="Kids" asp-action="Home" title="Bắt đầu học ngay">
+                        <span class="btn-bubble-mascot">🐿️</span>
+                        <div class="btn-text-group">
+                            <strong class="btn-title-main">VÀO GÓC HỌC CỦA BÉ</strong>
+                            <span class="btn-subtitle-mini">Bản đồ phiêu lưu & bài học vui nhộn ▶</span>
+                        </div>
+                    </a>
 
-<!-- Thống Kê Nổi Bật -->
-<section class="container stat-row landing-stats">
-    <div class="soft-card clay-card stat-card stat-coral">
-        <span class="material-symbols-outlined stat-icon">category</span>
-        <strong>@Model.SkillGroupCount</strong>
-        <span>Nhóm kỹ năng toàn diện</span>
-    </div>
-    <div class="soft-card clay-card stat-card stat-mint">
-        <span class="material-symbols-outlined stat-icon">auto_stories</span>
-        <strong>@Model.PublishedItemCount</strong>
-        <span>Bài học tương tác có hình ảnh</span>
-    </div>
-    <div class="soft-card clay-card stat-card stat-sky">
-        <span class="material-symbols-outlined stat-icon">child_care</span>
-        <strong>@Model.ChildProfileCount</strong>
-        <span>Bé đang đồng hành</span>
-    </div>
-</section>
+                    <div class="hero-sub-actions">
+                        <a class="app-btn-hero-secondary" asp-controller="Parent" asp-action="Dashboard" title="Dành cho ba mẹ theo dõi con">
+                            <span class="material-symbols-outlined">family_restroom</span>
+                            <span>Góc Phụ Huynh</span>
+                        </a>
+                        <a class="app-btn-hero-secondary" asp-controller="Profiles" asp-action="Index" title="Chọn hoặc thêm bé yêu">
+                            <span class="material-symbols-outlined">face_6</span>
+                            <span>Chọn hồ sơ bé</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Dải cam kết phụ huynh -->
+                <div class="hero-trust-badges">
+                    <div class="trust-badge-item">
+                        <span class="material-symbols-outlined trust-icon">verified</span>
+                        <span>Chuẩn kiến thức vào lớp 1</span>
+                    </div>
+                    <div class="trust-badge-item">
+                        <span class="material-symbols-outlined trust-icon">timer</span>
+                        <span>15 phút/ngày không gây nghiện</span>
+                    </div>
+                    <div class="trust-badge-item">
+                        <span class="material-symbols-outlined trust-icon">shield</span>
+                        <span>An toàn 100% không quảng cáo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mascot Hero Card Tương Tác 3D -->
+            <div class="hero-interactive-card">
+                <div class="interactive-glow-backdrop"></div>
+                <div class="mascot-central-display">
+                    <div class="mascot-img-bubble pulse-animation">
+                        <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu Đồng Hành" class="mascot-3d-img" />
+                    </div>
+
+                    <div class="mascot-dialog-cloud">
+                        <div class="dialog-badge">Sóc Nâu chào bạn nhỏ! 👋</div>
+                        <p class="dialog-text">"Hôm nay bạn muốn tô chữ, đếm số hay cùng tớ thám hiểm bản đồ nào?"</p>
+                    </div>
+
+                    <!-- Floating Badges Quanh Sóc Nâu -->
+                    <div class="float-companion-badge float-dino" title="Bạn Khủng Long xanh">
+                        <img src="~/images/decorations/dinosaur.svg" alt="Khủng Long" class="float-svg-icon" />
+                        <span>Khủng Long</span>
+                    </div>
+                    <div class="float-companion-badge float-robot" title="Bạn Robot thông minh">
+                        <img src="~/images/decorations/robot.svg" alt="Robot" class="float-svg-icon" />
+                        <span>Robot Nhí</span>
+                    </div>
+                    <div class="float-companion-badge float-rocket" title="Tên lửa vươn cao">
+                        <img src="~/images/decorations/rocket.svg" alt="Tên lửa" class="float-svg-icon" />
+                        <span>Tên Lửa</span>
+                    </div>
+                    <div class="float-companion-badge float-car" title="Xe đua tí hon">
+                        <img src="~/images/decorations/cute-car.svg" alt="Ô tô" class="float-svg-icon" />
+                        <span>Xe Đua #1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CÁC BẠN NHỎ ĐỒNG HÀNH ==================== -->
+    <section class="container landing-companions-bar">
+        <div class="companions-title-row">
+            <span class="sparkle-tag">✨ BIỆT ĐỘI ĐỒNG HÀNH</span>
+            <h2>Các bạn nhỏ siêu đáng yêu cùng bé học mỗi ngày</h2>
+        </div>
+        <div class="companions-grid">
+            <div class="companion-card companion-dino">
+                <div class="companion-img-box">
+                    <img src="~/images/decorations/dinosaur.svg" alt="Khủng Long" />
+                </div>
+                <strong>Khủng Long Xanh</strong>
+                <p>Khỏe khoắn & tự tin</p>
+            </div>
+            <div class="companion-card companion-robot">
+                <div class="companion-img-box">
+                    <img src="~/images/decorations/robot.svg" alt="Robot" />
+                </div>
+                <strong>Robot Tí Hon</strong>
+                <p>Thông minh & logic</p>
+            </div>
+            <div class="companion-card companion-car">
+                <div class="companion-img-box">
+                    <img src="~/images/decorations/cute-car.svg" alt="Ô tô" />
+                </div>
+                <strong>Xe Đua Tốc Độ</strong>
+                <p>Vui vẻ & chăm chỉ</p>
+            </div>
+            <div class="companion-card companion-rocket">
+                <div class="companion-img-box">
+                    <img src="~/images/decorations/rocket.svg" alt="Tên lửa" />
+                </div>
+                <strong>Tên Lửa Tri Thức</strong>
+                <p>Vươn xa ước mơ</p>
+            </div>
+            <div class="companion-card companion-plane">
+                <div class="companion-img-box">
+                    <img src="~/images/decorations/cute-plane.svg" alt="Máy bay" />
+                </div>
+                <strong>Máy Bay Thám Hiểm</strong>
+                <p>Khám phá thế giới</p>
+            </div>
+            <div class="companion-card companion-bear">
+                <div class="companion-img-box">
+                    <img src="~/images/avatars/avatar-bear.png" alt="Gấu Vàng" />
+                </div>
+                <strong>Gấu Vàng Ngoan</strong>
+                <p>Ôm mật ngọt ngào</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 4 TRỤ CỘT BÀI HỌC VÀO LỚP 1 (BENTO GRID) ==================== -->
+    <section class="container landing-curriculum-section">
+        <div class="section-header-center">
+            <span class="eyebrow-pill-v2">📚 LỘ TRÌNH CHUẨN MẦM NON 5 TUỔI</span>
+            <h2 class="section-main-heading">4 Nhóm Kỹ Năng Cốt Lõi Cho Bé Vào Lớp 1</h2>
+            <p class="section-sub-heading">Được cố vấn chuyên môn, sắp xếp khoa học từ dễ đến nâng cao, học mà chơi cực kỳ hào hứng.</p>
+        </div>
+
+        <div class="curriculum-bento-grid">
+            <!-- Khối 1: Luyện nét & Tô chữ -->
+            <div class="bento-card bento-coral">
+                <div class="bento-badge-pill">Vận động tinh & Ngôn ngữ</div>
+                <div class="bento-icon-hero">
+                    <span class="material-symbols-outlined">draw</span>
+                </div>
+                <h3 class="bento-title">13 Nét Viết & 29 Chữ Cái Chuẩn</h3>
+                <p class="bento-desc">Bảng vẽ cảm ứng tương tác thông minh. Bé tập tô các nét cơ bản (thẳng, xiên, móc, khuyết), chữ in hoa, in thường và nhận biết âm vần tiếng Việt.</p>
+                <div class="bento-tag-list">
+                    <span>✏️ Nét khuyết trên/dưới</span>
+                    <span>🔤 29 Chữ cái Việt - Anh</span>
+                    <span>🎨 Tô tranh sáng tạo</span>
+                </div>
+                <a class="bento-link-btn" asp-controller="Kids" asp-action="Tracing">
+                    <span>Vào phòng tập tô</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- Khối 2: Chữ Số & Toán Trực Quan -->
+            <div class="bento-card bento-amber">
+                <div class="bento-badge-pill">Tư duy & Số lượng</div>
+                <div class="bento-icon-hero">
+                    <span class="material-symbols-outlined">calculate</span>
+                </div>
+                <h3 class="bento-title">Chữ Số 0–20 & Toán Trực Quan</h3>
+                <p class="bento-desc">Làm quen mặt số tự nhiên, đếm số lượng qua hình ảnh các loại quả, thú cưng, so sánh lớn hơn – bé hơn – bằng nhau và làm quen phép cộng trừ trong phạm vi 10.</p>
+                <div class="bento-tag-list">
+                    <span>🔢 Số từ 0 đến 20</span>
+                    <span>🍎 Đếm hoa quả trực quan</span>
+                    <span>⚖️ So sánh nhiều ít</span>
+                </div>
+                <a class="bento-link-btn" asp-controller="Kids" asp-action="Home">
+                    <span>Khám phá toán vui</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- Khối 3: Nghe & Phát Âm Song Ngữ -->
+            <div class="bento-card bento-sky">
+                <div class="bento-badge-pill">Nghe nhìn & Phản xạ</div>
+                <div class="bento-icon-hero">
+                    <span class="material-symbols-outlined">record_voice_over</span>
+                </div>
+                <h3 class="bento-title">Nghe Song Ngữ Việt – Anh Chuẩn</h3>
+                <p class="bento-desc">Flashcard âm thanh tương tác cao cấp. Giọng phát âm chuẩn phổ thông và giọng bản ngữ tiếng Anh giúp con phát triển thính giác ngôn ngữ tự nhiên từ sớm.</p>
+                <div class="bento-tag-list">
+                    <span>🎧 Flashcard âm thanh</span>
+                    <span>🇬🇧 Song ngữ Anh - Việt</span>
+                    <span>🗣️ Phát âm chuẩn từ vựng</span>
+                </div>
+                <a class="bento-link-btn" asp-controller="Kids" asp-action="BilingualListen">
+                    <span>Góc nghe song ngữ</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- Khối 4: Kỹ Năng Sống & Thói Quen Tốt -->
+            <div class="bento-card bento-mint">
+                <div class="bento-badge-pill">Thói quen & Tự lập</div>
+                <div class="bento-icon-hero">
+                    <span class="material-symbols-outlined">volunteer_activism</span>
+                </div>
+                <h3 class="bento-title">Kỹ Năng Sống & Tự Tin Đến Trường</h3>
+                <p class="bento-desc">Rèn nề nếp tự phục vụ (rửa tay, xếp đồ vào balo, giữ gìn sách vở), an toàn giao thông, phép lịch sự cảm ơn – xin lỗi và tự tin hòa nhập trường tiểu học.</p>
+                <div class="bento-tag-list">
+                    <span>🎒 Tự xếp balo đi học</span>
+                    <span>🚦 An toàn khi qua đường</span>
+                    <span>🤝 Lễ phép & biết chia sẻ</span>
+                </div>
+                <a class="bento-link-btn" asp-controller="Kids" asp-action="Home">
+                    <span>Học kỹ năng sống</span>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== BẢN ĐỒ GAMIFICATION SHOWCASE ==================== -->
+    <section class="container landing-map-preview-wrap">
+        <div class="map-preview-card">
+            <div class="map-preview-content">
+                <span class="eyebrow-pill-v2 pill-white">🗺️ HỌC THEO BẢN ĐỒ PHIÊU LƯU</span>
+                <h2 class="map-preview-title">Học Từng Trạm – Mở Rương Báu – Về Đích Lâu Đài!</h2>
+                <p class="map-preview-desc">
+                    Không còn những bài tập khô khan! Mỗi bài học là một trạm thám hiểm trên bản đồ uốn lượn kỳ thú. Khi hoàn thành, bé được thưởng 3 sao vàng rực rỡ, tích lũy điểm đổi huy hiệu và khám phá các bí mật trên đỉnh lâu đài.
+                </p>
+                <div class="map-highlights-row">
+                    <div class="map-hl-item">
+                        <span class="hl-icon">🚩</span>
+                        <span>Tự động lưu tiến độ</span>
+                    </div>
+                    <div class="map-hl-item">
+                        <span class="hl-icon">🎁</span>
+                        <span>Mở rương báu định kỳ</span>
+                    </div>
+                    <div class="map-hl-item">
+                        <span class="hl-icon">🏰</span>
+                        <span>Chinh phục lâu đài tri thức</span>
+                    </div>
+                </div>
+                <a class="app-btn-hero-primary mt-3" asp-controller="Kids" asp-action="Home">
+                    <span class="material-symbols-outlined">explore</span>
+                    <div class="btn-text-group">
+                        <strong class="btn-title-main">KHÁM PHÁ BẢN ĐỒ NGAY</strong>
+                    </div>
+                </a>
+            </div>
+            <div class="map-preview-illustration">
+                <div class="mini-trail-mockup">
+                    <div class="mock-station mock-castle">🏰 Lâu Đài Bí Mật</div>
+                    <div class="mock-line"></div>
+                    <div class="mock-station mock-active">🐿️ Trạm Đang Học</div>
+                    <div class="mock-line"></div>
+                    <div class="mock-station mock-completed">⭐⭐⭐ Trạm Đã Xong</div>
+                    <div class="mock-line"></div>
+                    <div class="mock-station mock-start">🌱 Cổng Khởi Hành</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SỐ LIỆU NỔI BẬT ==================== -->
+    <section class="container landing-stats-row">
+        <div class="stat-box stat-box-coral">
+            <div class="stat-icon-wrap">
+                <span class="material-symbols-outlined">category</span>
+            </div>
+            <strong class="stat-number">@Model.SkillGroupCount</strong>
+            <span class="stat-label">Nhóm kỹ năng chuẩn Bộ GD</span>
+        </div>
+        <div class="stat-box stat-box-mint">
+            <div class="stat-icon-wrap">
+                <span class="material-symbols-outlined">auto_stories</span>
+            </div>
+            <strong class="stat-number">@Model.PublishedItemCount</strong>
+            <span class="stat-label">Bài học & trò chơi tương tác</span>
+        </div>
+        <div class="stat-box stat-box-sky">
+            <div class="stat-icon-wrap">
+                <span class="material-symbols-outlined">child_care</span>
+            </div>
+            <strong class="stat-number">@Model.ChildProfileCount</strong>
+            <span class="stat-label">Bạn nhỏ đang tiến bộ mỗi ngày</span>
+        </div>
+        <div class="stat-box stat-box-amber">
+            <div class="stat-icon-wrap">
+                <span class="material-symbols-outlined">verified</span>
+            </div>
+            <strong class="stat-number">100%</strong>
+            <span class="stat-label">An toàn, không quảng cáo</span>
+        </div>
+    </section>
+
+    <!-- ==================== LÝ DO BA MẸ YÊN TÂM ==================== -->
+    <section class="container landing-parents-trust">
+        <div class="section-header-center">
+            <span class="eyebrow-pill-v2">👨‍👩‍👧 DÀNH CHO PHỤ HUYNH</span>
+            <h2 class="section-main-heading">Đồng Hành Nhẹ Nhàng – Con Tự Tin Từng Bước</h2>
+        </div>
+
+        <div class="parents-trust-grid">
+            <div class="trust-card">
+                <div class="trust-card-icon">
+                    <span class="material-symbols-outlined">lock</span>
+                </div>
+                <h3>Cổng Bảo Vệ Phụ Huynh (Parent Gate)</h3>
+                <p>Khóa an toàn bằng phép tính thông minh, ngăn bé vô tình vào phần quản trị hay cài đặt của cha mẹ.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon">
+                    <span class="material-symbols-outlined">insights</span>
+                </div>
+                <h3>Báo Cáo Tiến Độ Rõ Ràng</h3>
+                <p>Theo dõi chính xác chữ nào con đã nhớ, nét nào con đã tô khéo và kỹ năng nào cần luyện tập thêm.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon">
+                    <span class="material-symbols-outlined">mood</span>
+                </div>
+                <h3>Giao Diện Chuẩn Trẻ Em</h3>
+                <p>Màu sắc tươi vui, nút bấm chạm to dễ thao tác, âm thanh vỗ tay và lời khích lệ giúp con hào hứng tự giác.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== BANNER KÊU GỌI HÀNH ĐỘNG DƯỚI CÙNG ==================== -->
+    <section class="container landing-bottom-cta">
+        <div class="bottom-cta-inner">
+            <div class="cta-mascot-col">
+                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="cta-mascot-img pulse-animation" />
+            </div>
+            <div class="cta-copy-col">
+                <h2>Cùng bé chuẩn bị hành trang tốt nhất vào lớp 1 ngay hôm nay!</h2>
+                <p>Học vui, nhớ lâu, tự tin tỏa sáng khi bước vào ngôi trường mới cùng Sóc Nâu và những người bạn.</p>
+                <div class="cta-buttons-row">
+                    <a class="app-btn-hero-primary" asp-controller="Kids" asp-action="Home">
+                        <span class="material-symbols-outlined">play_arrow</span>
+                        <div class="btn-text-group">
+                            <strong class="btn-title-main">BẮT ĐẦU TRẢI NGHIỆM CÙNG BÉ</strong>
+                        </div>
+                    </a>
+                    <a class="app-btn-hero-secondary btn-white-border" asp-controller="Parent" asp-action="Dashboard">
+                        <span class="material-symbols-outlined">family_restroom</span>
+                        <span>Vào Góc Phụ Huynh</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
