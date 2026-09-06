@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f4fbff;
   --surface: #ffffff;
   --surface-strong: #fff7cf;
@@ -6197,18 +6197,17 @@ a {
   box-shadow: 0 0 0 3px rgba(255, 125, 77, 0.25) !important;
 }
 
-.answer-photo {
-  width: 56px !important;
-  height: 56px !important;
-  max-height: 56px !important;
-  object-fit: contain !important;
-  border-radius: 10px !important;
+.activity-option:not(.matching-item) .answer-photo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 10px;
 }
 
-.answer-pictogram {
-  width: 48px !important;
-  height: 48px !important;
-  object-fit: contain !important;
+.activity-option:not(.matching-item) .answer-pictogram {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .answer-shape,
@@ -8538,7 +8537,7 @@ body.focus-mode-active,
   border-radius: inherit;
   background: var(--success-primary);
   transform-origin: left;
-  animation: successTimer 3s linear forwards;
+  animation: successTimer 2s linear forwards;
 }
 
 .learning-success-popup > small {
@@ -9604,22 +9603,18 @@ body.focus-mode-active,
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
 }
 
-.matching-item .answer-photo {
-  width: clamp(38px, 8vw, 60px) !important;
-  height: clamp(38px, 8vw, 60px) !important;
+.matching-item .answer-photo,
+.matching-item .answer-pictogram {
+  width: clamp(110px, 18vw, 160px) !important;
+  height: clamp(110px, 18vw, 160px) !important;
+  max-width: 100% !important;
+  max-height: none !important;
   object-fit: contain !important;
-  border-radius: clamp(10px, 2vw, 14px) !important;
+  border-radius: clamp(12px, 2vw, 18px) !important;
   flex-shrink: 0 !important;
   background: #f8fafc !important;
-  padding: 3px !important;
+  padding: 4px !important;
   border: 1.5px solid #e2e8f0 !important;
-}
-
-.matching-item .answer-pictogram {
-  width: clamp(34px, 7vw, 54px) !important;
-  height: clamp(34px, 7vw, 54px) !important;
-  object-fit: contain !important;
-  flex-shrink: 0 !important;
 }
 
 /* Nối số với số lượng: chuỗi emoji là hình đếm, không phải nhãn văn bản. */
@@ -9804,26 +9799,30 @@ body.focus-mode-active,
 
 /* Ảnh là nội dung chính trong các hoạt động thao tác trực quan. */
 .learning-focus-shell .interaction-matching .matching-item.has-answer-photo,
-.learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram {
-  min-height: clamp(158px, 22vw, 196px) !important;
+.learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram,
+.learning-focus-shell .interaction-matching .matching-item.has-answer-visual {
+  min-height: clamp(168px, 24vw, 215px) !important;
   flex-direction: column !important;
+  justify-content: center !important;
   padding: clamp(10px, 1.8vw, 16px) !important;
   gap: 8px !important;
 }
 
 .learning-focus-shell .interaction-matching .matching-item .answer-photo,
 .learning-focus-shell .interaction-matching .matching-item .answer-pictogram {
-  width: clamp(108px, 16vw, 152px) !important;
-  height: clamp(108px, 16vw, 152px) !important;
-  max-width: 72% !important;
-  padding: 3px !important;
+  width: clamp(110px, 18vw, 160px) !important;
+  height: clamp(110px, 18vw, 160px) !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  padding: 4px !important;
   object-fit: contain !important;
 }
 
 .learning-focus-shell .interaction-matching .matching-item.has-answer-visual .answer-label {
   flex: 0 0 auto !important;
-  font-size: clamp(.92rem, 2vw, 1.16rem) !important;
-  line-height: 1.2 !important;
+  font-size: clamp(.95rem, 2vw, 1.18rem) !important;
+  line-height: 1.25 !important;
+  margin-top: 2px !important;
 }
 
 .learning-focus-shell .interaction-drag_drop .drag-source {
@@ -9906,15 +9905,18 @@ body.focus-mode-active,
 
 @media (max-width: 640px) {
   .learning-focus-shell .interaction-matching .matching-item.has-answer-photo,
-  .learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram {
-    min-height: 142px !important;
+  .learning-focus-shell .interaction-matching .matching-item.has-answer-pictogram,
+  .learning-focus-shell .interaction-matching .matching-item.has-answer-visual {
+    min-height: clamp(140px, 35vw, 175px) !important;
     padding: 8px !important;
   }
 
   .learning-focus-shell .interaction-matching .matching-item .answer-photo,
   .learning-focus-shell .interaction-matching .matching-item .answer-pictogram {
-    width: clamp(84px, 27vw, 112px) !important;
-    height: clamp(84px, 27vw, 112px) !important;
+    width: clamp(90px, 26vw, 128px) !important;
+    height: clamp(90px, 26vw, 128px) !important;
+    max-height: none !important;
+    max-width: 100% !important;
   }
 
   .learning-focus-shell .interaction-drag_drop .drag-source,
@@ -11241,6 +11243,59 @@ body.focus-mode-active,
   .summary-banner-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* Nối cặp có hình: hình là nội dung nhận biết chính, nhãn chỉ hỗ trợ bên dưới. */
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-visual {
+  min-height: clamp(190px, 28vw, 250px) !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: clamp(10px, 1.8vw, 16px) !important;
+}
+
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-photo .answer-photo,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-pictogram .answer-pictogram,
+.learn-screen.learning-focus-shell .interaction-matching .matching-item .answer-photo,
+.learn-screen.learning-focus-shell .interaction-matching .matching-item .answer-pictogram {
+  width: clamp(110px, 18vw, 160px) !important;
+  height: clamp(110px, 18vw, 160px) !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+  padding: 4px !important;
+  border-radius: 16px !important;
+  object-fit: contain !important;
+}
+
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-visual .answer-label,
+.learn-screen.learning-focus-shell .interaction-matching .matching-item.has-answer-visual .answer-label {
+  flex: 0 0 auto !important;
+  font-size: clamp(0.95rem, 2vw, 1.18rem) !important;
+  line-height: 1.25 !important;
+}
+
+@media (max-width: 640px) {
+  .learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-board {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-column {
+    width: calc(50% - 6px) !important;
+  }
+
+  .learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-visual {
+    min-height: clamp(166px, 43vw, 210px) !important;
+    padding: 8px !important;
+  }
+
+  .learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-photo .answer-photo,
+  .learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.has-answer-pictogram .answer-pictogram {
+    width: 100% !important;
+    height: clamp(112px, 32vw, 156px) !important;
+    max-height: none !important;
   }
 }
 

@@ -57,7 +57,7 @@
         if (event.key === "Escape") continueLearning();
     });
 
-    navigationTimer = window.setTimeout(continueLearning, 3000);
+    navigationTimer = window.setTimeout(continueLearning, 2000);
     window.requestAnimationFrame(() => overlay.classList.add("is-visible"));
     overlay.querySelector("[data-success-continue]")?.focus({preventScroll: true});
 })();
