@@ -1,10 +1,17 @@
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Application.Learning;
 using HanhTrangLop1.Application.Voice;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Cấu hình DataProtection lưu khóa vào App_Data để duy trì cookie/session khi App Pool recycle
+var dataProtectionPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtection-Keys");
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath))
+    .SetApplicationName("HanhTrangLop1");
 
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

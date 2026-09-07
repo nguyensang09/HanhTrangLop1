@@ -6421,6 +6421,7 @@ a {
 
 html,
 body {
+  overflow-x: hidden !important;
   overflow-y: auto !important;
   height: auto !important;
   min-height: 100% !important;
@@ -6430,6 +6431,7 @@ body {
 main,
 .learning-focus-shell,
 .learn-screen {
+  overflow-x: hidden !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
   height: auto !important;
@@ -21264,6 +21266,7 @@ body.audio-is-speaking .sound-wave-badge {
               radial-gradient(circle at 90% 30%, rgba(224, 242, 254, 0.45) 0%, transparent 40%),
               linear-gradient(180deg, #fffbeb 0%, #fef3c7 35%, #f0fdf4 100%);
   font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: clip;
 }
 
 /* Khu vực chính: Lưới thống nhất tất cả hoạt động */
@@ -21272,6 +21275,8 @@ body.audio-is-speaking .sound-wave-badge {
   flex-direction: column;
   gap: 10px;
   width: 100%;
+  box-sizing: border-box;
+  overflow-x: clip;
 }
 
 .ipad-hub-headline-row {
@@ -21321,6 +21326,8 @@ body.audio-is-speaking .sound-wave-badge {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ipad-card-tile {
@@ -21339,7 +21346,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 .ipad-card-tile:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-5px);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12), inset 0 2px 0 #ffffff;
 }
 
