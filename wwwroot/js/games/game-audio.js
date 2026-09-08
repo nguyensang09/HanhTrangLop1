@@ -9,6 +9,7 @@ class GameAudioEngine {
         this.isSpeaking = false;
         this.onSpeakingStateChange = null;
         this.selectedVoice = null;
+        this.selectedEnglishVoice = null;
         this.audioCache = new Map();
         this.activeAudio = null;
         this.initVoiceSynthesis();
@@ -43,6 +44,13 @@ class GameAudioEngine {
             this.selectedVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.startsWith('vi')) ||
                                 voices.find(v => v.lang.includes('vi')) ||
                                 null;
+
+            // Ưu tiên giọng tiếng Anh chuẩn (Google US English, Zira, David, en-US, en-GB)
+            this.selectedEnglishVoice = 
+                voices.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Zira') || v.name.includes('David') || v.name.includes('Online'))) ||
+                voices.find(v => v.lang === 'en-US' || v.lang === 'en_US') ||
+                voices.find(v => v.lang.startsWith('en')) ||
+                null;
         };
 
         updateVoices();
@@ -61,48 +69,48 @@ class GameAudioEngine {
 
         const letterMap = {
             'A': 'chữ A',
-            'Ă': 'chữ Á',
+            'Ă': 'chữ Ă',
             'Â': 'chữ Â',
-            'B': 'chữ Bờ',
-            'C': 'chữ Cờ',
-            'D': 'chữ Dờ',
-            'Đ': 'chữ Đờ',
+            'B': 'chữ B',
+            'C': 'chữ C',
+            'D': 'chữ D',
+            'Đ': 'chữ Đ',
             'E': 'chữ E',
             'Ê': 'chữ Ê',
-            'G': 'chữ Gờ',
-            'H': 'chữ Hờ',
+            'G': 'chữ G',
+            'H': 'chữ H',
             'I': 'chữ I',
-            'K': 'chữ Ca',
-            'L': 'chữ Lờ',
-            'M': 'chữ Mờ',
-            'N': 'chữ Nờ',
+            'K': 'chữ K',
+            'L': 'chữ L',
+            'M': 'chữ M',
+            'N': 'chữ N',
             'O': 'chữ O',
             'Ô': 'chữ Ô',
             'Ơ': 'chữ Ơ',
-            'P': 'chữ Pờ',
-            'Q': 'chữ Quy',
-            'R': 'chữ Rờ',
-            'S': 'chữ Sờ',
-            'T': 'chữ Tờ',
+            'P': 'chữ P',
+            'Q': 'chữ Q',
+            'R': 'chữ R',
+            'S': 'chữ S',
+            'T': 'chữ T',
             'U': 'chữ U',
             'Ư': 'chữ Ư',
-            'V': 'chữ Vờ',
-            'X': 'chữ Xờ',
+            'V': 'chữ V',
+            'X': 'chữ X',
             'Y': 'chữ Y'
         };
 
         const numberMap = {
-            '0': 'số không',
-            '1': 'số một',
-            '2': 'số hai',
-            '3': 'số ba',
-            '4': 'số bốn',
-            '5': 'số năm',
-            '6': 'số sáu',
-            '7': 'số bảy',
-            '8': 'số tám',
-            '9': 'số chín',
-            '10': 'số mười'
+            '0': 'số 0',
+            '1': 'số 1',
+            '2': 'số 2',
+            '3': 'số 3',
+            '4': 'số 4',
+            '5': 'số 5',
+            '6': 'số 6',
+            '7': 'số 7',
+            '8': 'số 8',
+            '9': 'số 9',
+            '10': 'số 10'
         };
 
         if (letterMap[upper]) return letterMap[upper];
@@ -176,11 +184,54 @@ class GameAudioEngine {
     }
 
     /**
-     * Đọc tên chữ cái hoặc số vừa gắp được từ hệ thống chung
+     * Đọc tên chữ cái hoặc số riêng biệt chuẩn từ kho voice hệ thống chung
+     * Ưu tiên tra cứu trực tiếp chữ/số đó từ cache (giống như /kids/learn đọc đúng chữ cái khi click)
      */
     async speakLetter(char, onEnded = null) {
-        const phonic = this.getPhonicText(char);
-        await this.playSystemVoiceOrSpeak(phonic, onEnded);
+        if (!this.soundEnabled || !char) {
+            if (onEnded) onEnded();
+            return;
+        }
+
+        const rawChar = String(char).trim();
+        this.stopVoice();
+
+        // 1. Ưu tiên tìm kiếm trực tiếp theo ký tự riêng biệt (như 'A', 'Â', '1')
+        let audioUrl = await this.resolveSystemVoice(rawChar);
+        
+        // 2. Nếu chưa có, thử tìm tiếp theo dạng phonic ('chữ A', 'số 1')
+        if (!audioUrl) {
+            const phonic = this.getPhonicText(rawChar);
+            audioUrl = await this.resolveSystemVoice(phonic);
+        }
+
+        if (audioUrl) {
+            try {
+                this.activeAudio = new Audio(audioUrl);
+                this.isSpeaking = true;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(true);
+
+                this.activeAudio.onended = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    if (onEnded) onEnded();
+                };
+                this.activeAudio.onerror = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    const phonic = this.getPhonicText(rawChar);
+                    this.speak(phonic, onEnded);
+                };
+                await this.activeAudio.play();
+                return;
+            } catch (err) {
+                console.warn('[GameAudio] Audio play failed, falling back to TTS:', err);
+            }
+        }
+
+        // 3. Fallback sang giọng đọc mầm non Web Speech API
+        const phonic = this.getPhonicText(rawChar);
+        this.speak(phonic, onEnded);
     }
 
     /**
@@ -228,6 +279,98 @@ class GameAudioEngine {
             window.speechSynthesis.speak(utterance);
         } catch (e) {
             console.warn('[GameAudio] Speech error:', e);
+            this.isSpeaking = false;
+            if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+            if (onEnded) onEnded();
+        }
+    }
+
+    /**
+     * Đọc ký tự chữ cái hoặc số bằng giọng tiếng Anh chuẩn (English Voice)
+     */
+    speakLetterEnglish(char, onEnded = null) {
+        if (!this.soundEnabled || !char) {
+            if (onEnded) onEnded();
+            return;
+        }
+
+        const raw = String(char).trim().toUpperCase();
+        // Ánh xạ số sang từ tiếng Anh để TTS phát âm hoàn hảo
+        const numberEnglishWords = {
+            '0': 'Zero', '1': 'One', '2': 'Two', '3': 'Three', '4': 'Four',
+            '5': 'Five', '6': 'Six', '7': 'Seven', '8': 'Eight', '9': 'Nine'
+        };
+
+        // Ánh xạ chữ tiếng Việt có dấu sang phát âm tiếng Anh tương ứng để không bị nghẹn
+        const vietnameseToEnglishLetters = {
+            'Ă': 'A', 'Â': 'A',
+            'Đ': 'D',
+            'Ê': 'E',
+            'Ô': 'O', 'Ơ': 'O',
+            'Ư': 'U'
+        };
+
+        const textToSpeak = numberEnglishWords[raw] || vietnameseToEnglishLetters[raw] || raw;
+        this.speakEnglish(textToSpeak, onEnded, 0.82);
+    }
+
+    /**
+     * Đọc văn bản bằng giọng tiếng Anh chuẩn (Web Speech API en-US)
+     */
+    speakEnglish(text, onEnded = null, customRate = 0.85) {
+        if (!this.soundEnabled || !text) {
+            if (onEnded) onEnded();
+            return;
+        }
+
+        this.stopVoice();
+
+        if (!('speechSynthesis' in window)) {
+            if (onEnded) setTimeout(onEnded, 800);
+            return;
+        }
+
+        try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(String(text));
+            utterance.lang = 'en-US';
+            utterance.rate = customRate;
+            utterance.pitch = 1.05;
+
+            // Đảm bảo voice tiếng Anh
+            if (this.selectedEnglishVoice) {
+                utterance.voice = this.selectedEnglishVoice;
+            } else {
+                const voices = window.speechSynthesis.getVoices() || [];
+                const enVoice = voices.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Zira') || v.name.includes('David'))) ||
+                                voices.find(v => v.lang === 'en-US' || v.lang === 'en_US') ||
+                                voices.find(v => v.lang.startsWith('en')) ||
+                                null;
+                if (enVoice) {
+                    this.selectedEnglishVoice = enVoice;
+                    utterance.voice = enVoice;
+                }
+            }
+
+            this.isSpeaking = true;
+            if (this.onSpeakingStateChange) this.onSpeakingStateChange(true);
+
+            utterance.onend = () => {
+                this.isSpeaking = false;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                if (onEnded) onEnded();
+            };
+
+            utterance.onerror = () => {
+                this.isSpeaking = false;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                if (onEnded) onEnded();
+            };
+
+            this.currentUtterance = utterance;
+            window.speechSynthesis.speak(utterance);
+        } catch (e) {
+            console.warn('[GameAudio] English Speech error:', e);
             this.isSpeaking = false;
             if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
             if (onEnded) onEnded();

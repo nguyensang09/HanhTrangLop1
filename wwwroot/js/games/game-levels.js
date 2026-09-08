@@ -107,218 +107,50 @@ window.GAME_LEVELS = {
         }
     ],
 
-    // 2. MỎ VÀNG TRI THỨC - ĐÀO VÀNG CHỮ & SỐ (CHUẨN ĐẶC TẢ TƯƠNG TÁC 1 CHẠM)
+    // 2. MỎ VÀNG TRI THỨC - ĐÀO VÀNG CHỮ & SỐ (CHUẨN BẢNG CHỮ CÁI TIẾNG VIỆT 29 CHỮ + 10 SỐ)
     "gold-miner": [
-        {
-            level: 1,
-            target: "A",
-            targetType: "letter",
-            instruction: "Con hãy tìm và chạm vào khối chữ A nhé",
-            mode: "find-letter",
-            items: [
-                { text: "A", type: "gold", x: 220, y: 340, size: 56, points: 10 },
-                { text: "B", type: "rock", x: 120, y: 260, size: 50, points: 0 },
-                { text: "C", type: "gem", x: 380, y: 280, size: 52, points: 0 },
-                { text: "D", type: "amethyst", x: 500, y: 330, size: 50, points: 0 },
-                { text: "E", type: "rock", x: 320, y: 390, size: 52, points: 0 },
-                { text: "💎", type: "gem", x: 170, y: 390, size: 42, points: 5 }
-            ],
-            praiseText: "Đúng rồi! Đây là chữ A. Bé giỏi quá!",
-            rewardStars: 1
-        },
-        {
-            level: 2,
-            target: "Ă",
-            targetType: "letter",
-            instruction: "Con hãy tìm chữ Ă có chiếc mũ ngược xinh xắn",
-            mode: "find-letter",
-            items: [
-                { text: "A", type: "rock", x: 140, y: 270, size: 50, points: 0 },
-                { text: "Â", type: "ruby", x: 460, y: 270, size: 50, points: 0 },
-                { text: "Ă", type: "gold", x: 300, y: 340, size: 56, points: 10 },
-                { text: "B", type: "amethyst", x: 200, y: 380, size: 52, points: 0 },
-                { text: "C", type: "rock", x: 420, y: 370, size: 50, points: 0 },
-                { text: "⭐", type: "star", x: 110, y: 360, size: 42, points: 5 }
-            ],
-            praiseText: "Tuyệt vời! Chữ Ă có chiếc mũ trăng khuyết.",
-            rewardStars: 1
-        },
-        {
-            level: 3,
-            target: "Ơ",
-            targetType: "letter",
-            instruction: "Con hãy tìm khối chữ Ơ có chiếc râu nhỏ nào",
-            mode: "find-letter",
-            items: [
-                { text: "O", type: "rock", x: 130, y: 300, size: 52, points: 0 },
-                { text: "Ô", type: "amethyst", x: 250, y: 260, size: 52, points: 0 },
-                { text: "Ơ", type: "gold", x: 380, y: 330, size: 56, points: 10 },
-                { text: "C", type: "gem", x: 490, y: 290, size: 50, points: 0 },
-                { text: "Q", type: "rock", x: 240, y: 380, size: 50, points: 0 },
-                { text: "🎁", type: "chest", x: 430, y: 390, size: 44, points: 5 }
-            ],
-            praiseText: "Chính xác! Ơ tròn như quả trứng có thêm chiếc râu.",
-            rewardStars: 1
-        },
-        {
-            level: 4,
-            target: "3",
-            targetType: "number",
-            instruction: "Con hãy chạm vào khối số 3 may mắn",
-            mode: "find-number",
-            items: [
-                { text: "1", type: "rock", x: 130, y: 270, size: 50, points: 0 },
-                { text: "2", type: "gem", x: 470, y: 280, size: 50, points: 0 },
-                { text: "3", type: "gold", x: 280, y: 340, size: 56, points: 10 },
-                { text: "4", type: "amethyst", x: 170, y: 370, size: 50, points: 0 },
-                { text: "5", type: "ruby", x: 410, y: 370, size: 50, points: 0 },
-                { text: "💎", type: "gem", x: 310, y: 260, size: 42, points: 5 }
-            ],
-            praiseText: "Đúng số 3 rồi! Bé đếm giỏi lắm.",
-            rewardStars: 1
-        },
-        {
-            level: 5,
-            target: "5",
-            targetType: "number",
-            instruction: "Con hãy tìm khối số 5 có chiếc bụng tròn nhé",
-            mode: "find-number",
-            items: [
-                { text: "2", type: "rock", x: 140, y: 320, size: 50, points: 0 },
-                { text: "4", type: "amethyst", x: 240, y: 270, size: 50, points: 0 },
-                { text: "5", type: "gold", x: 360, y: 350, size: 56, points: 10 },
-                { text: "6", type: "gem", x: 480, y: 310, size: 50, points: 0 },
-                { text: "7", type: "rock", x: 250, y: 390, size: 50, points: 0 },
-                { text: "⭐", type: "star", x: 430, y: 390, size: 42, points: 5 }
-            ],
-            praiseText: "Hoan hô! Bé đã đào được số 5 vàng óng.",
-            rewardStars: 1
-        },
-        {
-            level: 6,
-            target: "8",
-            targetType: "number",
-            instruction: "Cẩn thận nhầm chữ B với số 8 nhé! Hãy đào số 8",
-            mode: "find-number",
-            items: [
-                { text: "B", type: "rock", x: 160, y: 310, size: 52, points: 0 },
-                { text: "3", type: "amethyst", x: 260, y: 260, size: 50, points: 0 },
-                { text: "8", type: "gold", x: 370, y: 340, size: 56, points: 10 },
-                { text: "9", type: "gem", x: 480, y: 280, size: 50, points: 0 },
-                { text: "0", type: "ruby", x: 220, y: 390, size: 50, points: 0 },
-                { text: "💎", type: "gem", x: 450, y: 370, size: 42, points: 5 }
-            ],
-            praiseText: "Mắt bé tinh quá! Đây chính là số 8 tròn xinh.",
-            rewardStars: 2
-        },
-        {
-            level: 7,
-            target: "Đ",
-            targetType: "letter",
-            instruction: "Bé hãy lắng nghe và tìm chữ Đ có nét gạch ngang",
-            mode: "listen-letter",
-            audioTarget: "Đ",
-            items: [
-                { text: "D", type: "rock", x: 140, y: 290, size: 52, points: 0 },
-                { text: "Đ", type: "gold", x: 300, y: 350, size: 56, points: 10 },
-                { text: "B", type: "amethyst", x: 430, y: 280, size: 50, points: 0 },
-                { text: "O", type: "gem", x: 200, y: 380, size: 50, points: 0 },
-                { text: "P", type: "ruby", x: 470, y: 360, size: 50, points: 0 },
-                { text: "🎁", type: "chest", x: 330, y: 260, size: 44, points: 5 }
-            ],
-            praiseText: "Tuyệt vời! Bé nghe rất chuẩn chữ Đ.",
-            rewardStars: 2
-        },
-        {
-            level: 8,
-            target: "m",
-            targetType: "letter",
-            instruction: "Con hãy tìm chữ thường m của chữ M in hoa",
-            mode: "case-match",
-            hintWord: "M in hoa ➔ m thường",
-            items: [
-                { text: "n", type: "rock", x: 150, y: 310, size: 52, points: 0 },
-                { text: "m", type: "gold", x: 320, y: 340, size: 56, points: 10 },
-                { text: "u", type: "amethyst", x: 460, y: 270, size: 50, points: 0 },
-                { text: "w", type: "gem", x: 220, y: 260, size: 50, points: 0 },
-                { text: "v", type: "rock", x: 410, y: 360, size: 50, points: 0 },
-                { text: "⭐", type: "star", x: 190, y: 380, size: 42, points: 5 }
-            ],
-            praiseText: "Đúng rồi! Đây là chữ m viết thường.",
-            rewardStars: 2
-        },
-        {
-            level: 9,
-            target: "4",
-            targetType: "count",
-            instruction: "Có bao nhiêu viên kim cương 💎 đang tỏa sáng? Bé chọn số đúng nhé",
-            mode: "count-objects",
-            countIcons: "💎 💎 💎 💎",
-            items: [
-                { text: "2", type: "rock", x: 130, y: 280, size: 50, points: 0 },
-                { text: "3", type: "amethyst", x: 240, y: 350, size: 50, points: 0 },
-                { text: "4", type: "gold", x: 360, y: 320, size: 56, points: 10 },
-                { text: "5", type: "gem", x: 480, y: 290, size: 50, points: 0 },
-                { text: "6", type: "ruby", x: 400, y: 380, size: 50, points: 0 },
-                { text: "💎", type: "gem", x: 170, y: 370, size: 42, points: 5 }
-            ],
-            praiseText: "Chính xác! Có đúng 4 viên kim cương lấp lánh.",
-            rewardStars: 2
-        },
-        {
-            level: 10,
-            target: "5",
-            targetType: "math",
-            instruction: "Bé tính giúp bác thợ mỏ: 2 + 3 bằng mấy nào?",
-            mode: "math-add",
-            mathFormula: "2 + 3 = ?",
-            items: [
-                { text: "4", type: "rock", x: 150, y: 290, size: 50, points: 0 },
-                { text: "5", type: "gold", x: 300, y: 350, size: 56, points: 10 },
-                { text: "6", type: "amethyst", x: 440, y: 300, size: 50, points: 0 },
-                { text: "7", type: "gem", x: 210, y: 370, size: 50, points: 0 },
-                { text: "3", type: "ruby", x: 420, y: 380, size: 50, points: 0 },
-                { text: "⭐", type: "star", x: 330, y: 260, size: 42, points: 5 }
-            ],
-            praiseText: "Tuyệt đỉnh! 2 cộng 3 bằng 5. Bé làm toán siêu quá!",
-            rewardStars: 2
-        },
-        {
-            level: 11,
-            target: "3",
-            targetType: "math",
-            instruction: "Phép trừ thử thách: 5 - 2 bằng mấy nhỉ?",
-            mode: "math-sub",
-            mathFormula: "5 - 2 = ?",
-            items: [
-                { text: "2", type: "rock", x: 140, y: 320, size: 50, points: 0 },
-                { text: "3", type: "gold", x: 330, y: 330, size: 56, points: 10 },
-                { text: "4", type: "amethyst", x: 460, y: 270, size: 50, points: 0 },
-                { text: "1", type: "gem", x: 220, y: 260, size: 50, points: 0 },
-                { text: "6", type: "ruby", x: 430, y: 370, size: 50, points: 0 },
-                { text: "💎", type: "gem", x: 180, y: 390, size: 42, points: 5 }
-            ],
-            praiseText: "Đúng rồi! 5 bớt 2 còn 3. Bé thật thông minh!",
-            rewardStars: 3
-        },
-        {
-            level: 12,
-            target: "10",
-            targetType: "number",
-            instruction: "Màn kho báu đặc biệt! Con hãy chạm vào khối số 10 vàng rực rỡ",
-            mode: "find-number",
-            items: [
-                { text: "7", type: "rock", x: 130, y: 290, size: 50, points: 0 },
-                { text: "8", type: "amethyst", x: 240, y: 260, size: 50, points: 0 },
-                { text: "9", type: "gem", x: 450, y: 280, size: 50, points: 0 },
-                { text: "10", type: "gold", x: 310, y: 350, size: 62, points: 20 },
-                { text: "0", type: "ruby", x: 180, y: 380, size: 50, points: 0 },
-                { text: "1", type: "rock", x: 430, y: 370, size: 50, points: 0 },
-                { text: "🎁", type: "chest", x: 330, y: 250, size: 46, points: 10 }
-            ],
-            praiseText: "Chúc mừng bé! Bé đã chinh phục trọn vẹn Mỏ Vàng Tri Thức!",
-            rewardStars: 3
-        }
+        // --- 29 CHỮ CÁI TIẾNG VIỆT ---
+        { level: 1, target: "A", targetType: "letter", instruction: "Con hãy tìm và gắp các khối chữ A màu vàng nhé", praiseText: "Đúng rồi! Đây là chữ A. Bé giỏi quá!", rewardStars: 1 },
+        { level: 2, target: "Ă", targetType: "letter", instruction: "Con hãy tìm chữ Ă có chiếc mũ ngược xinh xắn", praiseText: "Tuyệt vời! Chữ Ă có chiếc mũ trăng khuyết.", rewardStars: 1 },
+        { level: 3, target: "Â", targetType: "letter", instruction: "Con hãy tìm chữ Â có chiếc nón úp xinh xắn", praiseText: "Chính xác! Chữ Â đội chiếc nón lá che mưa nắng.", rewardStars: 1 },
+        { level: 4, target: "B", targetType: "letter", instruction: "Con hãy gắp các khối chữ Bờ (B) màu vàng nhé", praiseText: "Hoan hô! Bờ - Quả Bóng tròn xinh.", rewardStars: 1 },
+        { level: 5, target: "C", targetType: "letter", instruction: "Con hãy tìm khối chữ Cờ (C) cong tròn như vầng trăng khuyết", praiseText: "Tuyệt vời! Cờ - Con Cá đang bơi lội.", rewardStars: 1 },
+        { level: 6, target: "D", targetType: "letter", instruction: "Con hãy tìm khối chữ Dờ (D) màu vàng óng", praiseText: "Đúng rồi! Dờ - Quả Dưa hấu ngọt lành.", rewardStars: 1 },
+        { level: 7, target: "Đ", targetType: "letter", instruction: "Con hãy tìm chữ Đờ (Đ) có chiếc gạch ngang trên đầu", praiseText: "Chính xác! Đờ - Chiếc Đèn lồng đỏ tươi.", rewardStars: 1 },
+        { level: 8, target: "E", targetType: "letter", instruction: "Con hãy gắp khối chữ E màu vàng nhé", praiseText: "Bé giỏi quá! E - Bé ngoan đến trường.", rewardStars: 1 },
+        { level: 9, target: "Ê", targetType: "letter", instruction: "Con hãy tìm chữ Ê đội chiếc mũ nhỏ xinh", praiseText: "Tuyệt vời! Ê - Quả Khế thơm lừng.", rewardStars: 1 },
+        { level: 10, target: "G", targetType: "letter", instruction: "Con hãy tìm khối chữ Gờ (G) màu vàng", praiseText: "Đúng rồi! Gờ - Chú Gà Trống gáy vang ó o.", rewardStars: 1 },
+        { level: 11, target: "H", targetType: "letter", instruction: "Con hãy tìm chữ Hờ (H) có nét thẳng cao", praiseText: "Chính xác! Hờ - Bông Hoa tươi thắm.", rewardStars: 1 },
+        { level: 12, target: "I", targetType: "letter", instruction: "Con hãy tìm khối chữ I có dấu chấm nhỏ", praiseText: "Bé tinh mắt quá! I - Viên Kẹo ngọt ngào.", rewardStars: 1 },
+        { level: 13, target: "K", targetType: "letter", instruction: "Con hãy tìm chữ Ca (K) màu vàng rực rỡ", praiseText: "Tuyệt đỉnh! Ca - Chiếc Kem mát lạnh.", rewardStars: 1 },
+        { level: 14, target: "L", targetType: "letter", instruction: "Con hãy gắp khối chữ Lờ (L) nét thẳng", praiseText: "Đúng rồi! Lờ - Lá cây xanh mướt.", rewardStars: 1 },
+        { level: 15, target: "M", targetType: "letter", instruction: "Con hãy tìm chữ Mờ (M) có hai chiếc cầu cong", praiseText: "Hoan hô! Mờ - Mẹ yêu của con.", rewardStars: 1 },
+        { level: 16, target: "N", targetType: "letter", instruction: "Con hãy tìm khối chữ Nờ (N) màu vàng", praiseText: "Tuyệt vời! Nờ - Nụ hoa chớm nở.", rewardStars: 1 },
+        { level: 17, target: "O", targetType: "letter", instruction: "Con hãy tìm chữ O tròn như quả trứng gà", praiseText: "Chính xác! O tròn như quả trứng gà.", rewardStars: 1 },
+        { level: 18, target: "Ô", targetType: "letter", instruction: "Con hãy gắp chữ Ô đội chiếc nón lá", praiseText: "Đúng rồi! Ô đội nón che mưa che nắng.", rewardStars: 1 },
+        { level: 19, target: "Ơ", targetType: "letter", instruction: "Con hãy tìm chữ Ơ có chiếc râu nhỏ xinh", praiseText: "Tuyệt vời! Ơ thêm chiếc râu nhỏ xíu.", rewardStars: 1 },
+        { level: 20, target: "P", targetType: "letter", instruction: "Con hãy tìm khối chữ Pờ (P) màu vàng", praiseText: "Đúng rồi! Pờ - Chiếc Phao cứu sinh.", rewardStars: 1 },
+        { level: 21, target: "Q", targetType: "letter", instruction: "Con hãy gắp chữ Quy (Q) tròn xinh có nét móc", praiseText: "Chính xác! Quy - Quả Cam mọng nước.", rewardStars: 1 },
+        { level: 22, target: "R", targetType: "letter", instruction: "Con hãy tìm chữ Rờ (R) màu vàng lấp lánh", praiseText: "Bé giỏi quá! Rờ - Con Rùa chăm chỉ.", rewardStars: 1 },
+        { level: 23, target: "S", targetType: "letter", instruction: "Con hãy tìm chữ Sờ (S) uốn lượn như dòng suối", praiseText: "Tuyệt vời! Sờ - Ngôi Sao lấp lánh.", rewardStars: 1 },
+        { level: 24, target: "T", targetType: "letter", instruction: "Con hãy gắp khối chữ Tờ (T) màu vàng", praiseText: "Đúng rồi! Tờ - Chú Thỏ trắng tinh nhanh.", rewardStars: 1 },
+        { level: 25, target: "U", targetType: "letter", instruction: "Con hãy tìm khối chữ U như chiếc võng nhỏ", praiseText: "Chính xác! U - Chiếc Túi xách xinh xinh.", rewardStars: 1 },
+        { level: 26, target: "Ư", targetType: "letter", instruction: "Con hãy tìm chữ Ư có thêm chiếc móc câu", praiseText: "Tuyệt đỉnh! Ư - Dòng Nước mát trong veo.", rewardStars: 1 },
+        { level: 27, target: "V", targetType: "letter", instruction: "Con hãy tìm chữ Vờ (V) nét vát nhọn xinh xắn", praiseText: "Hoan hô! Vờ - Con Vịt bơi tung tăng.", rewardStars: 1 },
+        { level: 28, target: "X", targetType: "letter", instruction: "Con hãy gắp chữ Xờ (X) chéo nhau như cánh quạt", praiseText: "Bé siêu quá! Xờ - Chiếc Xe đạp bon bon.", rewardStars: 1 },
+        { level: 29, target: "Y", targetType: "letter", instruction: "Con hãy tìm chữ Y dài màu vàng óng ánh", praiseText: "Tuyệt vời! Y - Chim Yến bay liệng trên bầu trời.", rewardStars: 1 },
+        
+        // --- 10 CHỮ SỐ (0 ĐẾN 9) ---
+        { level: 30, target: "0", targetType: "number", instruction: "Bé hãy tìm và gắp số 0 tròn trĩnh nhé", praiseText: "Đúng số 0 rồi! Bé thật thông minh.", rewardStars: 1 },
+        { level: 31, target: "1", targetType: "number", instruction: "Con hãy tìm khối số 1 thẳng đứng như cây nến", praiseText: "Chính xác! Số 1 như một cây nến sáng rực.", rewardStars: 1 },
+        { level: 32, target: "2", targetType: "number", instruction: "Con hãy tìm số 2 cong cong như chú vịt nhỏ", praiseText: "Tuyệt vời! Số 2 uốn cong như chú vịt bơi.", rewardStars: 1 },
+        { level: 33, target: "3", targetType: "number", instruction: "Con hãy chạm vào khối số 3 may mắn", praiseText: "Đúng số 3 rồi! Bé đếm giỏi lắm.", rewardStars: 1 },
+        { level: 34, target: "4", targetType: "number", instruction: "Con hãy tìm khối số 4 như chiếc ghế gập", praiseText: "Hoan hô! Số 4 vàng óng đã được gắp lên.", rewardStars: 1 },
+        { level: 35, target: "5", targetType: "number", instruction: "Con hãy tìm khối số 5 có chiếc bụng tròn nhé", praiseText: "Bé giỏi quá! Số 5 béo tròn đáng yêu.", rewardStars: 1 },
+        { level: 36, target: "6", targetType: "number", instruction: "Con hãy gắp số 6 có nét móc xoắn phía dưới", praiseText: "Đúng số 6 rồi! Bé tinh mắt lắm.", rewardStars: 1 },
+        { level: 37, target: "7", targetType: "number", instruction: "Con hãy tìm khối số 7 như chiếc cuốc nhỏ của bác thợ", praiseText: "Tuyệt vời! Số 7 của bác thợ mỏ chăm chỉ.", rewardStars: 1 },
+        { level: 38, target: "8", targetType: "number", instruction: "Cẩn thận nhầm chữ B với số 8 nhé! Hãy gắp số 8", praiseText: "Mắt bé tinh quá! Đây chính là số 8 tròn xinh.", rewardStars: 1 },
+        { level: 39, target: "9", targetType: "number", instruction: "Con hãy tìm số 9 có chiếc đuôi uốn cong xinh xắn", praiseText: "Chúc mừng bé! Bé đã xuất sắc hoàn thành toàn bộ bảng chữ và số!", rewardStars: 2 }
     ],
 
     // 3. KHINH KHÍ CẦU GHÉP VẦN

@@ -1034,10 +1034,16 @@
 
 .stitch-game-stage-wrapper[data-game-key="gold-miner"] {
   padding: 0 !important;
-  margin: 0 !important;
+  margin: 0 auto !important;
   width: 100% !important;
+  max-width: 1440px !important;
   height: 100vh !important;
   max-height: 100vh !important;
+  aspect-ratio: unset !important;
+  border: 4px solid #fde047 !important;
+  border-radius: 28px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
 }
 
 .stitch-game-stage-wrapper[data-game-key="gold-miner"] .stitch-arena-container {
@@ -1068,7 +1074,6 @@
 /* 3D Jelly Gem Base Styling */
 .gem-block {
   position: absolute;
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease, opacity 0.4s ease;
   user-select: none;
   cursor: pointer;
   border-radius: 1.75rem;
@@ -1076,13 +1081,14 @@
   z-index: 20;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.25s ease, opacity 0.4s ease;
 }
 .gem-block:hover {
-  transform: scale(1.15) translateY(-5px) !important;
+  filter: brightness(1.18);
   z-index: 40 !important;
 }
 .gem-block:active {
-  transform: scale(0.92) !important;
+  filter: brightness(0.95);
 }
 
 /* Vệt sáng bóng phía trên của khối thạch 3D */
@@ -1097,57 +1103,128 @@
   pointer-events: none;
 }
 
-/* Khối Chữ Mục Tiêu Vàng Óng Mật Ong (Target Gem - Honey Gold) */
-.target-gem {
-  background: radial-gradient(circle at 35% 28%, #FFF59D, #F59E0B 55%, #B45309 100%);
-  box-shadow: 0 0 28px rgba(245, 158, 11, 0.95), 0 0 60px rgba(245, 158, 11, 0.4), inset 0 3px 8px rgba(255, 255, 255, 0.85), inset 0 -4px 8px rgba(146, 64, 14, 0.7), 0 10px 20px rgba(0, 0, 0, 0.45);
-  border: 3.5px solid #FEF08A;
+/* 3 Khối Mục Tiêu Với 3 Màu Sắc Khác Nhau */
+/* Nền trầm dịu, trong suốt mờ như ngọc quý, làm nổi bật chữ cái màu trắng tinh khôi */
+.target-gem-gold {
+  background: radial-gradient(circle at 35% 25%, rgba(217, 119, 6, 0.85) 0%, rgba(146, 64, 14, 0.94) 100%);
+  border: 3px solid #fde68a;
+  box-shadow: inset 0 0 0 3px rgba(254, 240, 138, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(245, 158, 11, 0.45);
+}
+.target-gem-ruby {
+  background: radial-gradient(circle at 35% 25%, rgba(225, 29, 72, 0.85) 0%, rgba(136, 19, 55, 0.94) 100%);
+  border: 3px solid #fecdd3;
+  box-shadow: inset 0 0 0 3px rgba(254, 205, 211, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(244, 63, 94, 0.45);
+}
+.target-gem-emerald {
+  background: radial-gradient(circle at 35% 25%, rgba(13, 148, 136, 0.85) 0%, rgba(19, 78, 74, 0.94) 100%);
+  border: 3px solid #99f6e4;
+  box-shadow: inset 0 0 0 3px rgba(153, 246, 228, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(13, 148, 136, 0.45);
 }
 
-/* Các màu sắc thạch đá quý cho các khối chữ và số khác */
-.gem-blue {
-  background: radial-gradient(circle at 35% 28%, #BAE6FD, #2563EB 60%, #1E3A8A 100%);
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.75), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(30, 58, 138, 0.7), 0 8px 16px rgba(0, 0, 0, 0.45);
-  border: 3px solid #BFDBFE;
+/* Các khối gây nhiễu CHỈ CÓ ICON (Không viền, Không nền, Chỉ hiển thị hình đồ vật) */
+.gem-pure-icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease !important;
 }
-.gem-purple {
-  background: radial-gradient(circle at 35% 28%, #F3E8FF, #9333EA 60%, #581C87 100%);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.75), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(88, 28, 135, 0.7), 0 8px 16px rgba(0, 0, 0, 0.45);
-  border: 3px solid #E9D5FF;
+
+.gem-pure-icon:hover {
+  transform: scale(1.22) !important;
+  filter: drop-shadow(0 0 16px rgba(254, 240, 138, 0.8)) !important;
 }
-.gem-green {
-  background: radial-gradient(circle at 35% 28%, #BBF7D0, #16A34A 60%, #14532D 100%);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.75), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(20, 83, 45, 0.7), 0 8px 16px rgba(0, 0, 0, 0.45);
-  border: 3px solid #DCFCE7;
+
+.pure-distractor-icon {
+  font-size: 3.8rem;
+  line-height: 1;
+  display: inline-block;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65));
+  pointer-events: none;
+  user-select: none;
 }
-.gem-ruby {
-  background: radial-gradient(circle at 35% 28%, #FECDD3, #E11D48 60%, #881337 100%);
-  box-shadow: 0 0 20px rgba(244, 63, 94, 0.75), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(136, 19, 55, 0.7), 0 8px 16px rgba(0, 0, 0, 0.45);
-  border: 3px solid #FFE4E6;
+
+/* Các khối Chữ/Số gây nhiễu: Đều có viền và nền sang trọng như ngọc chuẩn */
+.gem-letter-sapphire {
+  background: radial-gradient(circle at 35% 25%, rgba(37, 99, 235, 0.88) 0%, rgba(30, 58, 138, 0.95) 100%);
+  border: 3px solid #93c5fd;
+  box-shadow: inset 0 0 0 3px rgba(147, 197, 253, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(37, 99, 235, 0.45);
 }
-.gem-cyan {
-  background: radial-gradient(circle at 35% 28%, #CFFAFE, #0891B2 60%, #164E63 100%);
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.75), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(22, 78, 99, 0.7), 0 8px 16px rgba(0, 0, 0, 0.45);
-  border: 3px solid #E0F2FE;
+
+.gem-letter-amethyst {
+  background: radial-gradient(circle at 35% 25%, rgba(147, 51, 234, 0.88) 0%, rgba(88, 28, 135, 0.95) 100%);
+  border: 3px solid #d8b4fe;
+  box-shadow: inset 0 0 0 3px rgba(216, 180, 254, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(147, 51, 234, 0.45);
 }
-.gem-orange {
-  background: radial-gradient(circle at 35% 28%, #FED7AA, #EA580C 60%, #7C2D12 100%);
-  box-shadow: 0 0 20px rgba(234, 88, 12, 0.75), inset 0 3px 6px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(124, 45, 18, 0.7), 0 8px 16px rgba(0, 0, 0, 0.45);
-  border: 3px solid #FFEDD5;
+
+.gem-letter-amber {
+  background: radial-gradient(circle at 35% 25%, rgba(234, 88, 12, 0.88) 0%, rgba(154, 52, 18, 0.95) 100%);
+  border: 3px solid #fdba74;
+  box-shadow: inset 0 0 0 3px rgba(253, 186, 116, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(234, 88, 12, 0.45);
 }
+
+.gem-letter-teal {
+  background: radial-gradient(circle at 35% 25%, rgba(13, 148, 136, 0.88) 0%, rgba(19, 78, 74, 0.95) 100%);
+  border: 3px solid #5eead4;
+  box-shadow: inset 0 0 0 3px rgba(94, 234, 212, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(13, 148, 136, 0.45);
+}
+
+.gem-letter-rose {
+  background: radial-gradient(circle at 35% 25%, rgba(225, 29, 72, 0.88) 0%, rgba(136, 19, 55, 0.95) 100%);
+  border: 3px solid #fda4af;
+  box-shadow: inset 0 0 0 3px rgba(253, 164, 175, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(225, 29, 72, 0.45);
+}
+
+.gem-icon-distractor {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Chữ/Số trong khối mục tiêu: Trắng sáng tinh khôi, cực kỳ nổi bật trên nền đá quý */
+.text-hero-char {
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 3.9rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  z-index: 10;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.85), 0 0 22px rgba(255, 255, 255, 0.85);
+  letter-spacing: -0.02em;
+}
+
+/* 4 góc đinh tán kim loại trang trí cho viền sắc sảo, đẹp mắt */
+.gem-corner-rivet {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fef08a 30%, #d97706 90%);
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.8);
+  pointer-events: none;
+  z-index: 12;
+}
+.gem-corner-tl { top: 6px; left: 6px; }
+.gem-corner-tr { top: 6px; right: 6px; }
+.gem-corner-bl { bottom: 6px; left: 6px; }
+.gem-corner-br { bottom: 6px; right: 6px; }
 
 /* 3D Text shadows */
 .text-3d-gold {
-  text-shadow: 0 3px 0 #92400e, 0 6px 12px rgba(0, 0, 0, 0.65);
+  text-shadow: 0 4px 0 #92400e, 0 8px 14px rgba(0, 0, 0, 0.7);
 }
 .text-3d-white {
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.45), 0 6px 12px rgba(0, 0, 0, 0.65);
 }
 
 /* Keyframe animations */
 @keyframes pulseGentle {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.06); filter: brightness(1.12); }
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.15); }
 }
 
 @keyframes sparkleAnim {
@@ -1439,5 +1516,663 @@
   align-items: center;
   gap: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* ==========================================================================
+   7. CHUNG: GAME MODAL OVERLAY & CARD (Level Complete & Pause)
+   ========================================================================== */
+.game-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeInModal 0.25s ease-out;
+}
+
+.game-modal-card {
+  position: relative;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 4px solid #f59e0b;
+  border-radius: 32px;
+  padding: 32px 28px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 45px rgba(245, 158, 11, 0.35);
+  animation: scalePopModal 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #ffffff;
+  font-family: 'Fredoka', 'Be Vietnam Pro', sans-serif;
+}
+
+/* Thông báo chiến thắng nhỏ gọn tự động chuyển màn */
+.victory-toast-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.96) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 3px solid #f59e0b;
+  border-radius: 26px;
+  padding: 22px 26px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 35px rgba(245, 158, 11, 0.4);
+  animation: scalePopModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #ffffff;
+  font-family: 'Fredoka', 'Be Vietnam Pro', sans-serif;
+  pointer-events: auto;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.modal-confetti-art {
+  font-size: 4.5rem;
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: bounceArt 1.5s infinite;
+}
+
+.modal-title {
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: #fde047;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px 0;
+  text-shadow: 0 3px 0 #854d0e, 0 6px 16px rgba(0, 0, 0, 0.6);
+}
+
+.modal-stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.6));
+}
+
+.modal-desc {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 24px 0;
+}
+
+.modal-desc strong {
+  color: #fef08a;
+  font-weight: 800;
+}
+
+.modal-actions-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  font-family: 'Fredoka', 'Be Vietnam Pro', sans-serif;
+}
+
+.modal-btn-primary {
+  background: linear-gradient(180deg, #fde047 0%, #eab308 50%, #ca8a04 100%);
+  color: #451a03 !important;
+  border: 2.5px solid #fef08a;
+  box-shadow: 0 5px 0 #854d0e, 0 8px 16px rgba(0, 0, 0, 0.3);
+  flex: 1;
+}
+.modal-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.modal-btn-primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #854d0e;
+}
+
+.modal-btn-secondary {
+  background: linear-gradient(180deg, #64748b 0%, #334155 100%);
+  color: #ffffff !important;
+  border: 2px solid #94a3b8;
+  box-shadow: 0 5px 0 #1e293b, 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+.modal-btn-secondary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+.modal-btn-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #1e293b;
+}
+
+@keyframes bounceArt {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ==========================================================================
+   8. GOLD MINER 3D: PRECISION CLAW, ALPHABET MODAL & PARTICLES
+   ========================================================================== */
+
+/* Top bar styles for Gold Miner (Pure Vanilla CSS) */
+.miner-nav-bar {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.miner-nav-left, .miner-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.miner-nav-center-spacer {
+  flex: 1;
+  min-width: 80px;
+  pointer-events: none;
+}
+
+.miner-level-badge {
+  background: rgba(0, 0, 0, 0.65);
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
+  color: #fde68a;
+  font-size: 0.84rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.miner-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+  font-family: 'Fredoka', 'Be Vietnam Pro', sans-serif;
+  border: none;
+}
+.miner-pill-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+.miner-pill-btn:active {
+  transform: translateY(2px);
+}
+
+.btn-lobby-amber {
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  color: #ffffff;
+  border: 2px solid #fde68a;
+  box-shadow: 0 4px 10px rgba(180, 83, 9, 0.4);
+}
+
+.btn-alphabet-teal {
+  background: linear-gradient(180deg, #06b6d4 0%, #0e7490 100%);
+  color: #ffffff;
+  border: 2px solid #a5f3fc;
+  box-shadow: 0 4px 10px rgba(14, 116, 144, 0.4);
+}
+
+/* Mission Center Capsule */
+.miner-mission-capsule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(69, 26, 3, 0.94), rgba(41, 15, 2, 0.96));
+  border: 2.5px solid #f59e0b;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 158, 11, 0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.miner-voice-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f43f5e, #be123c);
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.5);
+  transition: transform 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.miner-voice-btn:hover {
+  transform: scale(1.1);
+}
+
+.miner-target-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: radial-gradient(circle at 35% 28%, #fff59d, #f59e0b 55%, #b45309 100%);
+  border: 2.5px solid #fef08a;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.8), 0 4px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-weight: 900;
+  font-size: 1.7rem;
+  color: #ffffff;
+  text-shadow: 0 2px 0 #78350f, 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* 3-Star Progress Dots */
+.miner-star-slot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.miner-star-slot.empty {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1.5px solid #64748b;
+  color: #64748b;
+}
+.miner-star-slot.filled {
+  background: radial-gradient(circle, #fde047, #f59e0b);
+  border: 2px solid #ffffff;
+  color: #451a03;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.9);
+  transform: scale(1.15);
+  font-weight: 900;
+}
+
+/* Mechanical Claw Pulley & Cable System */
+.miner-pulley-rig {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.miner-pulley-bracket {
+  width: 76px;
+  height: 28px;
+  background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
+  border: 2px solid #d97706;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.miner-pulley-wheel {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fbbf24 40%, #b45309 90%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+}
+
+/* Precision Crane Boom & Cable (transform-origin: top center) */
+.miner-crane-arm {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform-origin: top center;
+  pointer-events: none;
+  z-index: 24;
+}
+
+.miner-crane-cable {
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 4px;
+  height: 40px;
+  background: repeating-linear-gradient(
+    180deg,
+    #e2e8f0 0px,
+    #cbd5e1 4px,
+    #78350f 5px,
+    #451a03 6px
+  );
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+  border-radius: 2px;
+}
+
+.miner-claw-head {
+  position: absolute;
+  top: 40px;
+  left: -24px;
+  width: 48px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.miner-claw-wrist {
+  width: 26px;
+  height: 16px;
+  background: linear-gradient(180deg, #475569 0%, #1e293b 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 6px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.miner-claw-wrist-gem {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fde047;
+}
+
+.miner-claw-pincers {
+  position: relative;
+  width: 44px;
+  height: 28px;
+  margin-top: -2px;
+}
+
+.miner-pincer-left, .miner-pincer-right {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 26px;
+  border: 3.5px solid #f59e0b;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.miner-pincer-left {
+  left: 4px;
+  border-right: none;
+  border-top: none;
+  border-radius: 0 0 0 16px;
+  transform-origin: top right;
+  transform: rotate(-18deg);
+}
+.miner-pincer-right {
+  right: 4px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 16px 0;
+  transform-origin: top left;
+  transform: rotate(18deg);
+}
+
+/* Khi móng vuốt kẹp chặt (closed state) */
+.miner-claw-pincers.is-closed .miner-pincer-left {
+  transform: rotate(26deg);
+}
+.miner-claw-pincers.is-closed .miner-pincer-right {
+  transform: rotate(-26deg);
+}
+
+/* Khi kéo về thành công: Tia sáng nổ hạt vàng */
+@keyframes harvestBurst {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; filter: brightness(2); }
+  50% { transform: translate(-50%, -50%) scale(1.6); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+}
+
+.miner-harvest-burst {
+  position: absolute;
+  pointer-events: none;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffbeb 0%, #fde047 40%, rgba(245, 158, 11, 0) 70%);
+  animation: harvestBurst 0.6s ease-out forwards;
+  z-index: 50;
+}
+
+/* Alphabet Chooser Modal */
+.alphabet-modal-content {
+  max-width: 680px !important;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.alphabet-tabs-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.alphabet-tab-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  transition: all 0.15s ease;
+  font-family: 'Fredoka', 'Be Vietnam Pro', sans-serif;
+}
+.alphabet-tab-btn.active {
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  color: #ffffff;
+  border-color: #fef08a;
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.4);
+}
+
+.alphabet-grid-wrap {
+  overflow-y: auto;
+  padding: 8px 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 10px;
+  max-height: 50vh;
+}
+
+.alphabet-pick-card {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+  border: 2.5px solid #64748b;
+  color: #ffffff;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+.alphabet-pick-card:hover {
+  transform: translateY(-3px) scale(1.08);
+  border-color: #fde047;
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.4);
+}
+.alphabet-pick-card.active-target {
+  border-color: #fde047;
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+}
+.alphabet-pick-card .star-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   9. GOLD MINER GEM BLOCKS & VICTORY TOAST
+   ========================================================================== */
+
+.gem-block {
+  position: absolute;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  z-index: 20;
+  overflow: hidden;
+  transition: transform 0.1s ease, filter 0.15s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.gem-block:hover {
+  filter: brightness(1.14);
+  z-index: 25;
+}
+
+.gem-block:active {
+  transform: scale(0.95);
+}
+
+/* 3 Khối mục tiêu: CÙNG 1 CHỮ CÁI NHƯNG KHÁC MÀU (Vàng - Đỏ Ruby - Xanh Lục Bảo) */
+.target-gem-gold {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.78) 0%, rgba(146, 64, 14, 0.90) 100%);
+  border: 2.5px solid rgba(254, 240, 138, 0.9);
+  box-shadow: inset 0 0 14px rgba(254, 240, 138, 0.45), 0 8px 24px rgba(217, 119, 6, 0.5);
+}
+
+.target-gem-ruby {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.78) 0%, rgba(159, 18, 57, 0.90) 100%);
+  border: 2.5px solid rgba(254, 205, 211, 0.9);
+  box-shadow: inset 0 0 14px rgba(254, 205, 211, 0.45), 0 8px 24px rgba(225, 29, 72, 0.5);
+}
+
+.target-gem-emerald {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.78) 0%, rgba(6, 95, 70, 0.90) 100%);
+  border: 2.5px solid rgba(167, 243, 208, 0.9);
+  box-shadow: inset 0 0 14px rgba(167, 243, 208, 0.45), 0 8px 24px rgba(5, 150, 105, 0.5);
+}
+
+/* Khối gây nhiễu mỏ: CHỈ CÓ ICON ĐỒ VẬT (KHÔNG CÓ CHỮ/SỐ) */
+.gem-icon-distractor {
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.72) 0%, rgba(30, 41, 59, 0.88) 100%);
+  border: 2px solid rgba(148, 163, 184, 0.5);
+  box-shadow: inset 0 0 10px rgba(148, 163, 184, 0.25), 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* Chữ Cái / Chữ Số mục tiêu: Trắng tinh khôi, cực nổi bật và sắc nét */
+.text-hero-char {
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 3.9rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  z-index: 10;
+  text-shadow: 
+    0 2px 0 #0f172a,
+    0 4px 10px rgba(0, 0, 0, 0.85),
+    0 0 16px rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+/* 4 Đinh tán kim loại giác ngọc tạo điểm nhấn sang trọng */
+.gem-corner-rivet {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 20%, #cbd5e1 55%, #64748b 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  z-index: 8;
+  pointer-events: none;
+}
+.gem-corner-tl { top: 5px; left: 5px; }
+.gem-corner-tr { top: 5px; right: 5px; }
+.gem-corner-bl { bottom: 5px; left: 5px; }
+.gem-corner-br { bottom: 5px; right: 5px; }
+
+/* Ánh sáng jelly phản chiếu */
+.jelly-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 22px 22px 50% 50%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* Animation ngôi sao lấp lánh */
+.animate-sparkle {
+  animation: sparkRotate 2s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 12;
+}
+@keyframes sparkRotate {
+  0%, 100% { transform: scale(0.9) rotate(0deg); opacity: 0.8; }
+  50% { transform: scale(1.2) rotate(15deg); opacity: 1; filter: drop-shadow(0 0 6px rgba(254, 240, 138, 0.9)); }
+}
+
+/* VICTORY TOAST NHỎ GỌN TỰ ĐỘNG QUA MÀN */
+.victory-toast-card {
+  max-width: 360px;
+  width: 88%;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.97) 100%);
+  border: 2px solid rgba(250, 204, 21, 0.8);
+  border-radius: 26px;
+  padding: 18px 22px;
+  text-align: center;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 30px rgba(234, 179, 8, 0.45);
+  animation: victoryToastPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+}
+
+@keyframes victoryToastPop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 

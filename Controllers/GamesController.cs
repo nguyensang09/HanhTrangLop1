@@ -45,6 +45,33 @@ public class GamesController : Controller
         {
             audioUrl = await _voiceLibraryService.ResolveVoiceAudioUrlAsync($"số {raw}", cancellationToken);
         }
+        if (string.IsNullOrEmpty(audioUrl) && (raw.StartsWith("chữ ", StringComparison.OrdinalIgnoreCase) || raw.StartsWith("số ", StringComparison.OrdinalIgnoreCase)))
+        {
+            var stripped = raw.Substring(raw.IndexOf(' ') + 1).Trim();
+            audioUrl = await _voiceLibraryService.ResolveVoiceAudioUrlAsync(stripped, cancellationToken);
+        }
+
+        if (string.IsNullOrEmpty(audioUrl))
+        {
+            try
+            {
+                var entry = await _voiceLibraryService.EnsureVoiceEntryAsync(raw, "game-voice", "Trò Chơi", cancellationToken);
+                if (entry != null)
+                {
+                    if (string.IsNullOrEmpty(entry.AudioUrl) || entry.Status != "ready")
+                    {
+                        entry.AudioUrl = await _voiceLibraryService.GenerateVoiceCacheFileAsync(entry, cancellationToken);
+                        entry.Status = "ready";
+                        await _db.SaveChangesAsync(cancellationToken);
+                    }
+                    audioUrl = entry.AudioUrl;
+                }
+            }
+            catch
+            {
+                // Bỏ qua lỗi sinh voice để không ảnh hưởng luồng chơi
+            }
+        }
 
         return Json(new { success = !string.IsNullOrEmpty(audioUrl), audioUrl = audioUrl ?? string.Empty });
     }

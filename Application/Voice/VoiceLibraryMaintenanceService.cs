@@ -1774,19 +1774,73 @@ public sealed class VoiceLibraryMaintenanceService
 
         var generalCaches = await GetCachedGeneralVoicesAsync(cancellationToken);
 
-        // 1. Khớp chính xác theo TextHash và chuỗi chuẩn hóa
-        var key = BuildTextToSpeechCacheKey(normalizedText);
-        var entry = generalCaches.FirstOrDefault(x =>
-            (x.Provider == key.Provider &&
-             x.Voice == key.Voice &&
-             x.ModelId == key.ModelId &&
-             x.Format == key.Format &&
-             x.TextHash == key.TextHash &&
-             x.Status == "ready" &&
-             !string.IsNullOrEmpty(x.AudioUrl)) ||
-            (x.Status == "ready" &&
-             !string.IsNullOrEmpty(x.AudioUrl) &&
-             (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)));
+        // Bóc tách chữ/số để xác định truy vấn riêng biệt
+        string bareLetter = normalizedText.ToLowerInvariant();
+        if (bareLetter.StartsWith("chữ ")) bareLetter = bareLetter.Substring(4).Trim();
+        else if (bareLetter.StartsWith("số ")) bareLetter = bareLetter.Substring(3).Trim();
+        bool isShortCharOrNum = bareLetter.Length <= 3;
+
+        TextToSpeechCache? entry = null;
+
+        // 0. Nếu truy vấn cho chữ cái hoặc chữ số riêng biệt: ƯU TIÊN tìm mục "option", "game-voice" của chữ/số đó
+        // TUYỆT ĐỐI không lấy nhầm câu hỏi (question) hay bài tô nét (tracing-prompt)
+        if (isShortCharOrNum)
+        {
+            var letterVariant = $"chữ {bareLetter}";
+            var numberVariant = $"số {bareLetter}";
+
+            // Ưu tiên 1: Mục option hoặc game-voice khớp chữ/số
+            entry = generalCaches.FirstOrDefault(x =>
+                x.Status == "ready" &&
+                !string.IsNullOrEmpty(x.AudioUrl) &&
+                (x.UsageType == "option" || x.UsageType == "game-voice" || x.UsageType == "content") &&
+                (string.Equals(x.NormalizedText, bareLetter, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.OriginalText, bareLetter, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.NormalizedText, letterVariant, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.OriginalText, letterVariant, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.NormalizedText, numberVariant, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.OriginalText, numberVariant, StringComparison.OrdinalIgnoreCase)));
+
+            // Ưu tiên 2: Bất kỳ mục nào khớp chữ cái/số nhưng KHÔNG PHẢI question/tracing-prompt
+            if (entry is null)
+            {
+                entry = generalCaches.FirstOrDefault(x =>
+                    x.Status == "ready" &&
+                    !string.IsNullOrEmpty(x.AudioUrl) &&
+                    x.UsageType != "question" && x.UsageType != "tracing-prompt" &&
+                    (string.Equals(x.NormalizedText, bareLetter, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(x.OriginalText, bareLetter, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(x.NormalizedText, letterVariant, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(x.OriginalText, letterVariant, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(x.NormalizedText, numberVariant, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(x.OriginalText, numberVariant, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            // Với chữ/số ngắn: Nếu đã tìm trong cache chữ/số mà không có, dừng ngay tại đây
+            // để GamesController tự sinh voice chuẩn HoaiMy đọc chữ/số, TUYỆT ĐỐI không rơi vào câu hỏi!
+            if (entry is { Status: "ready", AudioUrl.Length: > 0 })
+            {
+                return entry.AudioUrl;
+            }
+            return null;
+        }
+
+        // 1. Khớp chính xác theo TextHash và chuỗi chuẩn hóa (chỉ dành cho câu từ dài)
+        if (entry is null)
+        {
+            var key = BuildTextToSpeechCacheKey(normalizedText);
+            entry = generalCaches.FirstOrDefault(x =>
+                (x.Provider == key.Provider &&
+                 x.Voice == key.Voice &&
+                 x.ModelId == key.ModelId &&
+                 x.Format == key.Format &&
+                 x.TextHash == key.TextHash &&
+                 x.Status == "ready" &&
+                 !string.IsNullOrEmpty(x.AudioUrl)) ||
+                (x.Status == "ready" &&
+                 !string.IsNullOrEmpty(x.AudioUrl) &&
+                 (x.NormalizedText == normalizedText || x.OriginalText == rawText || x.NormalizedText == rawText)));
+        }
 
         // 2. Cắt bỏ dấu câu thừa (?, ., !, :, ;)
         if (entry is null)
@@ -1798,21 +1852,7 @@ public sealed class VoiceLibraryMaintenanceService
                 (x.NormalizedText == stripped || x.OriginalText == stripped));
         }
 
-        // 3. Khớp biến thể chữ cái hoặc chữ số (Ví dụ: "A" -> "Chữ A", "1" -> "Số 1")
-        if (entry is null && normalizedText.Length <= 3)
-        {
-            var letterVariant = $"chữ {normalizedText.ToLowerInvariant()}";
-            var numberVariant = $"số {normalizedText.ToLowerInvariant()}";
-            entry = generalCaches.FirstOrDefault(x =>
-                x.Status == "ready" &&
-                !string.IsNullOrEmpty(x.AudioUrl) &&
-                (x.NormalizedText.ToLower() == letterVariant ||
-                 x.OriginalText.ToLower() == letterVariant ||
-                 x.NormalizedText.ToLower() == numberVariant ||
-                 x.OriginalText.ToLower() == numberVariant));
-        }
-
-        // 4. Khớp phản hồi chuẩn sư phạm
+        // 3. Khớp phản hồi chuẩn sư phạm
         if (entry is null)
         {
             var lower = normalizedText.ToLowerInvariant();
@@ -1832,7 +1872,7 @@ public sealed class VoiceLibraryMaintenanceService
             }
         }
 
-        // 5. Khớp theo slug/tên bài học trong TextToSpeechCaches
+        // 4. Khớp theo slug/tên bài học trong TextToSpeechCaches (chỉ cho câu dài)
         if (entry is null)
         {
             var slug = NormalizeCode(normalizedText);

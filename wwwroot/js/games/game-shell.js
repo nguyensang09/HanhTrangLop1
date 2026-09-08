@@ -16,6 +16,18 @@ class GameShell {
         this.currentGame = null;
         this.currentLevelData = null;
 
+        // Nếu người dùng không chọn màn thủ công qua URL -> Mặc định theo tiến độ đã lưu lần trước
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('level')) {
+            try {
+                const saved = JSON.parse(localStorage.getItem('htl1_games_progress') || '{}');
+                const savedProgress = saved[this.gameKey];
+                if (savedProgress && savedProgress.currentLevel) {
+                    this.currentLevel = Math.max(1, Math.min(this.levels.length || 39, savedProgress.currentLevel));
+                }
+            } catch (e) {}
+        }
+
         this.initDOM();
         this.initAudio();
         this.startLevel(this.currentLevel);
@@ -79,6 +91,13 @@ class GameShell {
         this.currentLevel = levelNum;
         const levelIdx = Math.max(0, Math.min(levelNum - 1, this.levels.length - 1));
         this.currentLevelData = this.levels[levelIdx];
+
+        // Cập nhật tham số URL mà không cần tải lại trang
+        try {
+            const url = new URL(window.location);
+            url.searchParams.set('level', levelNum);
+            window.history.replaceState({}, '', url);
+        } catch (e) {}
 
         if (!this.currentLevelData) {
             console.error('Level data not found for level:', levelNum);
@@ -194,8 +213,10 @@ class GameShell {
         this.saveProgressLocal(this.gameKey, this.currentLevel, rewardStars);
         this.saveProgressServer(this.gameKey, this.currentLevel, rewardStars);
 
-        window.gameAudio.playVictoryFanfare();
-        this.showLevelCompleteModal(rewardStars);
+        if (this.gameKey !== 'gold-miner') {
+            window.gameAudio.playVictoryFanfare();
+            this.showLevelCompleteModal(rewardStars);
+        }
     }
 
     showLevelCompleteModal(starsWon) {
@@ -269,12 +290,13 @@ class GameShell {
             const raw = localStorage.getItem('htl1_games_progress') || '{}';
             const data = JSON.parse(raw);
             if (!data[gameKey]) {
-                data[gameKey] = { completedLevels: [], totalStars: 0 };
+                data[gameKey] = { completedLevels: [], totalStars: 0, currentLevel: 1 };
             }
             if (!data[gameKey].completedLevels.includes(level)) {
                 data[gameKey].completedLevels.push(level);
             }
-            data[gameKey].totalStars += stars;
+            data[gameKey].totalStars = (data[gameKey].totalStars || 0) + stars;
+            data[gameKey].currentLevel = level + 1;
             localStorage.setItem('htl1_games_progress', JSON.stringify(data));
         } catch (e) {}
     }
