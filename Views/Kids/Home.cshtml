@@ -79,7 +79,18 @@
         activityCards.Add(GetSkillGroupCard(soLuongToanGroup));
     }
 
-    // 5. Bài học hôm nay
+    // 5. Trò chơi vui nhộn (Game Hub mini-games)
+    activityCards.Add((
+        "Trò Chơi Vui Nhộn",
+        "sports_esports",
+        "🎮",
+        "card-theme-coral",
+        "4 Mini-game Hấp Dẫn",
+        "Bắn bóng, đào vàng, khinh khí cầu & tàu số",
+        Url.Action("Index", "Games")!
+    ));
+
+    // 6. Bài học hôm nay
     activityCards.Add((
         "Bài Học Hôm Nay",
         "play_circle",

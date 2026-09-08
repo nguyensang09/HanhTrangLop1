@@ -1,0 +1,131 @@
+@model HanhTrangLop1.Models.ViewModels.KidsGamePlayViewModel
+@{
+    ViewData["Title"] = $"{Model.GameTitle} - Sóc Nâu Đồng Hành";
+    ViewData["FocusMode"] = true;
+
+    var bgImage = Model.GameKey switch
+    {
+        "gold-miner" => "/images/games/bg-miner-v2.png",
+        "balloon-word" => "/images/games/bg-balloon.png",
+        "number-train" => "/images/games/bg-train.png",
+        _ => "/images/games/bg-bubble.png"
+    };
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800;900&family=Be+Vietnam+Pro:wght@500;600;700;800;900&display=swap" />
+@if (Model.GameKey == "gold-miner")
+{
+    <script src="https://cdn.tailwindcss.com"></script>
+}
+<link rel="stylesheet" href="~/css/games.css" asp-append-version="true" />
+
+<div class="stitch-game-stage-wrapper"
+     data-game-shell
+     data-game-key="@Model.GameKey"
+     data-initial-level="@Model.InitialLevel"
+     data-total-stars="@Model.TotalStars"
+     data-sound-enabled="@(Model.SoundEnabled ? "true" : "false")">
+
+    <!-- 3D Illustrated Game World Background -->
+    <img src="@bgImage" alt="Hình nền trò chơi @Model.GameTitle" class="stitch-stage-bg" asp-append-version="true" />
+    <div class="stitch-stage-shimmer"></div>
+
+    <!-- Topbar Header Chuẩn Stitch 3D -->
+    <header class="stitch-game-topbar">
+        <div class="stitch-topbar-left">
+            <a href="@Url.Action("Index", "Games")" class="btn-toy-yellow stitch-back-pill" title="Trở về sảnh trò chơi chính">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem;">arrow_back</span>
+                <span>SẢNH CHÍNH</span>
+            </a>
+            <div class="stitch-level-tag">
+                <span>Cấp độ: <strong>5 Tuổi • Mầm Non</strong></span>
+            </div>
+        </div>
+
+        <!-- Center: Mission Target Capsule -->
+        <div class="stitch-mission-capsule">
+            <button type="button" class="mission-speaker-btn" id="voiceReplayBtn" title="Nhấn để nghe lại phát âm">
+                <span class="material-symbols-outlined" style="font-size: 1.5rem;">volume_up</span>
+            </button>
+            <div class="mission-text-block">
+                <span class="mission-eyebrow">Nhiệm vụ của bé</span>
+                <div class="mission-title-target">
+                    <span id="missionActionText">BẮN CHỮ</span>
+                    <span class="target-char-pill" id="targetCharBadge">A</span>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; border-left: 2px solid rgba(120,53,15,0.3); padding-left: 10px;">
+                <span style="font-size: 0.68rem; font-weight: 900; color: #78350f;">TIẾN ĐỘ</span>
+                <div style="display: flex; gap: 4px; align-items: center;" id="progressDotsContainer">
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; border: 1.5px solid #ffffff;"></span>
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; border: 1.5px solid #ffffff;"></span>
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background: #ffffff; border: 1.5px solid #d97706;"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Indicators Right -->
+        <div class="stitch-topbar-right">
+            <div class="stitch-star-pill" id="shellStarCounter" title="Tổng số sao bé tích lũy được">
+                ⭐ @Model.TotalStars
+            </div>
+            <div class="stitch-hearts-pill" title="3 lượt thử vui vẻ">
+                <span>❤️</span><span>❤️</span><span>❤️</span>
+            </div>
+            <button type="button" class="stitch-icon-btn" id="soundToggleBtn" title="Bật/Tắt âm thanh">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem;">volume_up</span>
+            </button>
+            <button type="button" class="stitch-icon-btn" id="pauseBtn" title="Tạm dừng trò chơi">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Floating Mascot Speech Bubble -->
+    <div class="stitch-floating-speech" id="floatingSpeech">
+        <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu Đồng Hành" class="stitch-speech-avatar" id="guideMascotImg" />
+        <p class="stitch-speech-text" id="guidePromptText">
+            "Bé ơi, tìm và ngắm bắn đúng bong bóng chữ cái nhé!"
+        </p>
+    </div>
+
+    <!-- Vùng chơi tương tác trung tâm -->
+    <main class="stitch-arena-container" id="gamePlayStage">
+        <!-- Engine của trò chơi sẽ render vào đây -->
+    </main>
+
+    <!-- Bottom Hint & Action Bar -->
+    <footer class="stitch-bottom-bar">
+        <div class="bottom-hint-card" id="memoryWordCard" style="@(Model.GameKey == "gold-miner" ? "display: none !important;" : "")">
+            <span style="font-size: 1.4rem;">🍎</span>
+            <span>Từ mẫu: <strong id="hintWordText">Quả Na</strong></span>
+            <button type="button" class="btn-toy-yellow" onclick="window.gameShell?.replayInstruction()" style="width: 32px; height: 32px; border-radius: 50%; padding: 0;">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">volume_up</span>
+            </button>
+        </div>
+
+        <div style="background: rgba(15,23,42,0.6); backdrop-filter: blur(6px); border-radius: 999px; padding: 6px 16px; color: #fef08a; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <span>💡</span>
+            <span id="guideSubHint">Mẹo cho bé: Chạm vào mục tiêu để ghi điểm nhé!</span>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-3d-green" onclick="window.gameShell?.replayInstruction()" style="padding: 8px 18px; border-radius: 999px; font-size: 0.9rem;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem; margin-right: 4px;">auto_fix_high</span> Gợi Ý
+            </button>
+            <button type="button" class="btn-toy-yellow" onclick="window.gameShell?.showPauseModal()" style="padding: 8px 18px; border-radius: 999px; font-size: 0.9rem;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem; margin-right: 4px;">pause</span> Tạm Dừng
+            </button>
+        </div>
+    </footer>
+</div>
+
+@section Scripts {
+    <script src="~/js/games/game-audio.js" asp-append-version="true"></script>
+    <script src="~/js/games/game-levels.js" asp-append-version="true"></script>
+    <script src="~/js/games/games/bubble-game.js" asp-append-version="true"></script>
+    <script src="~/js/games/games/gold-miner-game.js" asp-append-version="true"></script>
+    <script src="~/js/games/games/balloon-word-game.js" asp-append-version="true"></script>
+    <script src="~/js/games/games/number-train-game.js" asp-append-version="true"></script>
+    <script src="~/js/games/game-shell.js" asp-append-version="true"></script>
+}

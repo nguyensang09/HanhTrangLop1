@@ -1,0 +1,247 @@
+@model HanhTrangLop1.Models.ViewModels.KidsGamesLobbyViewModel
+@{
+    ViewData["Title"] = "Trò Chơi Của Bé - Hành Trang Lớp 1";
+
+    string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
+        if (key.StartsWith("/")) return key;
+        return key switch
+        {
+            "avatar-cat" => "/images/avatars/avatar-cat.png",
+            "avatar-dog" => "/images/avatars/avatar-dog.png",
+            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
+            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
+            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
+            _ => "/images/mascot-squirrel-3d.png"
+        };
+    }
+}
+
+<link rel="stylesheet" href="~/css/games.css" asp-append-version="true" />
+
+<section class="kid-screen kid-home-screen ipad-home-hub-screen">
+    <!-- ==================== TOPBAR CHUẨN ĐỒNG NHẤT HỆ THỐNG ==================== -->
+    <header class="child-zone-header clay-card">
+        <div class="child-header-left">
+            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ" onclick="playAudioChime('tap')">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bạn nhỏ khác" onclick="playAudioChime('tap')">
+                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
+                <span class="child-avatar-switch-badge" title="Đổi bé">
+                    <span class="material-symbols-outlined">sync_alt</span>
+                </span>
+            </a>
+            <div class="child-header-greeting">
+                <span class="child-hi-eyebrow">Hành Trang Lớp 1</span>
+                <strong class="child-name-display">Trò Chơi Của Bé 🎮</strong>
+            </div>
+        </div>
+
+        <div class="child-header-center">
+            <a asp-controller="Kids" asp-action="Rewards" class="child-star-badge-3d" title="Số sao thưởng bé tích lũy được • Bấm xem kho quà" onclick="playAudioChime('celebrate')">
+                <span class="star-3d-icon">⭐</span>
+                <span class="star-number-display" id="lobbyTotalStars">@Model.TotalStars</span>
+                <span class="star-label-text">sao vàng</span>
+            </a>
+        </div>
+
+        <div class="child-header-right">
+            <button type="button" class="child-lock-gate-btn" onclick="playAudioChime('tap'); openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+                <span class="material-symbols-outlined lock-icon">lock</span>
+                <span class="lock-label-text">Ba mẹ</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ==================== DANH SÁCH CÁC TRÒ CHƠI ==================== -->
+    <div class="stitch-lobby-wrap" style="padding-top: 6px;">
+        <!-- Thanh công cụ & Bộ lọc nhanh -->
+        <div class="games-hub-header-bar">
+            <div class="games-hub-title-box">
+                <span class="games-hub-badge">🎮 4 Trò Chơi Học Tập</span>
+                <h1 class="games-hub-heading">Bé chọn trò chơi yêu thích nhé!</h1>
+            </div>
+
+            <!-- Filter Pills -->
+            <div class="stitch-filters-bar">
+                <button type="button" class="stitch-filter-pill active" data-filter="all">
+                    <span>⭐</span>
+                    <span>Tất Cả</span>
+                </button>
+                <button type="button" class="stitch-filter-pill" data-filter="letter">
+                    <span>🔤</span>
+                    <span>Chữ Cái &amp; Vần</span>
+                </button>
+                <button type="button" class="stitch-filter-pill" data-filter="number">
+                    <span>🔢</span>
+                    <span>Chữ Số &amp; Đếm</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Lưới 4 Thẻ Trò Chơi Tinh Gọn, Tập Trung Thông Tin -->
+        <div class="stitch-bento-grid">
+            <!-- 1. Bắn Bong Bóng Chữ Cái -->
+            <div class="stitch-bento-card" data-category="letter">
+                <div class="bento-image-stage">
+                    <img src="~/images/games/bg-bubble.png" alt="Bắn Bong Bóng Chữ Cái" class="bento-preview-img" />
+                    <span class="bento-category-tag tag-red">🔤 Học Chữ Cái</span>
+                </div>
+
+                <div class="bento-card-info">
+                    <h2 class="bento-card-title">🎈 Bắn Bong Bóng Chữ Cái</h2>
+                    <p class="bento-card-desc">
+                        Luyện nghe phát âm chuẩn, chạm nổ bóng bay để nhận diện mặt chữ tiếng Việt và rèn luyện phản xạ nhanh.
+                    </p>
+                </div>
+
+                <a href="@Url.Action("Play", "Games", new { game = "bubble" })" class="bento-card-btn btn-3d-green" onclick="playAudioChime('tap')">
+                    <span>Chơi Ngay</span>
+                    <span class="material-symbols-outlined">play_arrow</span>
+                </a>
+            </div>
+
+            <!-- 2. Đào Vàng Tìm Chữ & Số -->
+            <div class="stitch-bento-card" data-category="letter number">
+                <div class="bento-image-stage">
+                    <img src="~/images/games/bg-miner.png" alt="Đào Vàng Tìm Chữ & Số" class="bento-preview-img" />
+                    <span class="bento-category-tag tag-gold">⛏️ Chữ &amp; Số</span>
+                </div>
+
+                <div class="bento-card-info">
+                    <h2 class="bento-card-title">⛏️ Đào Vàng Tìm Chữ &amp; Số</h2>
+                    <p class="bento-card-desc">
+                        Căn thời gian thả móc câu gắp đúng khối vàng mang chữ cái và số kho báu, rèn khả năng quan sát tinh mắt.
+                    </p>
+                </div>
+
+                <a href="@Url.Action("Play", "Games", new { game = "gold-miner" })" class="bento-card-btn btn-3d-orange" onclick="playAudioChime('tap')">
+                    <span>Chơi Ngay</span>
+                    <span class="material-symbols-outlined">play_arrow</span>
+                </a>
+            </div>
+
+            <!-- 3. Khinh Khí Cầu Ghép Vần -->
+            <div class="stitch-bento-card" data-category="letter">
+                <div class="bento-image-stage">
+                    <img src="~/images/games/bg-balloon.png" alt="Khinh Khí Cầu Ghép Vần" class="bento-preview-img" />
+                    <span class="bento-category-tag tag-blue">☁️ Ghép Vần</span>
+                </div>
+
+                <div class="bento-card-info">
+                    <h2 class="bento-card-title">☁️ Khinh Khí Cầu Ghép Vần</h2>
+                    <p class="bento-card-desc">
+                        Kéo ghép âm đầu, vần và dấu thanh tạo thành các tiếng, từ ngữ quen thuộc có hình ảnh minh họa sinh động.
+                    </p>
+                </div>
+
+                <a href="@Url.Action("Play", "Games", new { game = "balloon-word" })" class="bento-card-btn btn-3d-blue" onclick="playAudioChime('tap')">
+                    <span>Chơi Ngay</span>
+                    <span class="material-symbols-outlined">play_arrow</span>
+                </a>
+            </div>
+
+            <!-- 4. Đoàn Tàu Chở Số -->
+            <div class="stitch-bento-card" data-category="number">
+                <div class="bento-image-stage">
+                    <img src="~/images/games/bg-train.png" alt="Đoàn Tàu Chở Số" class="bento-preview-img" />
+                    <span class="bento-category-tag tag-green">🚂 Tập Đếm Số</span>
+                </div>
+
+                <div class="bento-card-info">
+                    <h2 class="bento-card-title">🚂 Đoàn Tàu Chở Số</h2>
+                    <p class="bento-card-desc">
+                        Điền toa tàu còn thiếu theo thứ tự số đếm từ 1 đến 10 và đếm số lượng hoa quả, con vật để tàu lăn bánh.
+                    </p>
+                </div>
+
+                <a href="@Url.Action("Play", "Games", new { game = "number-train" })" class="bento-card-btn btn-3d-brown" onclick="playAudioChime('tap')">
+                    <span>Chơi Ngay</span>
+                    <span class="material-symbols-outlined">play_arrow</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (function () {
+            let audioCtx = null;
+
+            window.playAudioChime = function (type) {
+                try {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    if (type === 'celebrate') {
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(523.25, now);
+                        osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                        osc.start(now);
+                        osc.stop(now + 0.35);
+                    } else {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(587.33, now);
+                        osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.12);
+                        gain.gain.setValueAtTime(0.18, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                        osc.start(now);
+                        osc.stop(now + 0.18);
+                    }
+                } catch (e) {}
+            };
+
+            // Category Filter pills
+            const filterBtns = document.querySelectorAll('.stitch-filter-pill');
+            const cards = document.querySelectorAll('.stitch-bento-card');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const cat = btn.dataset.filter;
+
+                    cards.forEach(card => {
+                        if (cat === 'all' || card.dataset.category.includes(cat)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Đồng bộ sao từ LocalStorage nếu có
+            try {
+                const raw = localStorage.getItem('htl1_games_progress');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    let bonusStars = 0;
+                    Object.keys(data).forEach(k => {
+                        bonusStars += data[k].totalStars || 0;
+                    });
+                    const starEl = document.getElementById('lobbyTotalStars');
+                    if (starEl && bonusStars > 0) {
+                        const current = parseInt(starEl.textContent || '0', 10);
+                        starEl.textContent = current + bonusStars;
+                    }
+                }
+            } catch(e) {}
+        })();
+    </script>
+}

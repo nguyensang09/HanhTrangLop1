@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Khinh Khí Cầu Ghép Vần - Trò Chơi Giáo Dục Trẻ Em</title>
+<!-- Fonts: Be Vietnam Pro & Fredoka for playful numbers/letters -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&amp;family=Fredoka:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', 'sans-serif'],
+            display: ['"Fredoka"', '"Be Vietnam Pro"', 'sans-serif']
+          },
+          colors: {
+            'kid-yellow': '#FFD13B',
+            'kid-orange': '#FF8A1F',
+            'kid-pink': '#FF6584',
+            'kid-blue': '#2EB5FF',
+            'kid-green': '#32D74B',
+            'kid-purple': '#A259FF',
+            'wood-dark': '#8E481D',
+            'wood-light': '#F4B266'
+          },
+          boxShadow: {
+            'game-btn': '0 8px 0px rgba(0,0,0,0.18)',
+            'game-btn-active': '0 2px 0px rgba(0,0,0,0.2)',
+            'wood': 'inset 0 2px 4px rgba(255,255,255,0.4), 0 8px 0 #78350F, 0 12px 20px rgba(0,0,0,0.2)',
+            'cloud': '0 10px 25px -5px rgba(59, 130, 246, 0.25)',
+            'glow-yellow': '0 0 25px rgba(255, 209, 59, 0.6)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Game Styling -->
+<style data-purpose="game-animations">
+    @keyframes gentle-bob {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(1.5deg); }
+    }
+    @keyframes gentle-bob-alt {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-14px) rotate(-1.5deg); }
+    }
+    @keyframes pulse-scale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+    @keyframes float-cloud {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(12px); }
+    }
+    .animate-bob {
+      animation: gentle-bob 4s ease-in-out infinite;
+    }
+    .animate-bob-alt {
+      animation: gentle-bob-alt 4.8s ease-in-out infinite;
+    }
+    .animate-pulse-slow {
+      animation: pulse-scale 2.2s ease-in-out infinite;
+    }
+    .animate-sway {
+      animation: float-cloud 6s ease-in-out infinite;
+    }
+  </style>
+<style data-purpose="game-tactile-ui">
+    /* 3D Tactile Push Buttons for Kids */
+    .btn-3d {
+      transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .btn-3d:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0px rgba(0,0,0,0.2) !important;
+    }
+    /* Playful Letter Block Styling */
+    .wood-block {
+      background: linear-gradient(180deg, #FDE68A 0%, #F59E0B 100%);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.7), 0 8px 0 #B45309, 0 12px 14px rgba(0,0,0,0.25);
+    }
+    .wood-block-empty {
+      background: rgba(255, 255, 255, 0.7);
+      border: 4px dashed #F59E0B;
+      box-shadow: inset 0 4px 6px rgba(0,0,0,0.08);
+    }
+    .wood-shelf {
+      background: linear-gradient(180deg, #BA7A3F 0%, #8C4C1B 100%);
+      box-shadow: inset 0 4px 6px rgba(255,255,255,0.4), 0 8px 0 #5C2D0C, 0 16px 24px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body class="bg-sky-200 text-slate-800 font-sans select-none overflow-x-hidden min-h-screen relative flex flex-col justify-between">
+<!-- BEGIN: GameBackground -->
+<!-- Full-bleed Scenic Illustration Background -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" data-purpose="scenic-background">
+<img alt="Vibrant 3D cartoon educational game screen background of 'Khinh Khí Cầu Ghép Vần' (Hot Air Balloon Word Spelling game for 5-year-old kids)" class="w-full h-full object-cover object-center filter saturate-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUh5z0QDrD3mY73ou17PgBV-Gdc6of5jCXy8vJtLN0qIvpIpONShuegT_mrIeZUXCLu_p0pHI7dZ-tHC68LvOpcII8rY230UTzDBUVwJLIhJDAleTI9kFaurZR2uDBKmRh5KPfysFYsfUBUFoXVLa7iPqTqfPQI_OXcU90Wc08Bfh9MXO5avTkL6sYzjkZ1Yxc_JQOtcj_wVc81ui57sQup7zNvmhLXygR-58bawnp5yg6JHu-uTr_tQ"/>
+<!-- Gentle ambient sun glow overlay for readability -->
+<div class="absolute inset-0 bg-gradient-to-b from-sky-400/20 via-transparent to-amber-900/10"></div>
+</div>
+<!-- END: GameBackground -->
+<!-- BEGIN: TopHeaderNavigation -->
+<header class="relative z-20 w-full px-4 pt-3 pb-2 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-3" data-purpose="top-navigation-hub">
+<!-- Left Section: Home / Level Selector -->
+<div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+<button class="btn-3d flex items-center gap-2 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-amber-950 font-extrabold text-base md:text-lg px-5 py-2.5 rounded-full border-2 border-white shadow-game-btn" title="Quay lại sảnh trò chơi">
+<span class="text-xl">🏠</span>
+<span>‹ Sảnh Chơi</span>
+</button>
+<div class="flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border-2 border-amber-300 shadow-md">
+<span class="inline-block w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
+<span class="font-extrabold text-xs md:text-sm tracking-wide text-amber-900 uppercase">CỬA 03: Bầu Trời Ghép Chữ</span>
+</div>
+</div>
+<!-- Center Section: Mission Target Banner -->
+<div class="flex-1 max-w-2xl w-full" data-purpose="mission-target-card">
+<div class="bg-white/95 backdrop-blur-md rounded-3xl p-3 sm:px-6 sm:py-3 border-4 border-amber-300 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+<!-- Target Word Prompt -->
+<div class="flex items-center gap-3">
+<button aria-label="Phát âm từ cần ghép" class="btn-3d w-13 h-13 sm:w-14 sm:h-14 bg-gradient-to-b from-kid-blue to-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-game-btn border-2 border-white" title="Nghe mẫu phát âm">
+            🔊
+          </button>
+<div>
+<div class="text-xs sm:text-sm font-bold text-sky-800 uppercase tracking-wider flex items-center gap-1.5 justify-center sm:justify-start">
+<span>Bé hãy ghép chữ:</span>
+<span class="text-xl">🐟</span>
+</div>
+<div class="flex items-center gap-2 justify-center sm:justify-start font-display">
+<span class="text-2xl sm:text-3xl font-black text-rose-500 tracking-wider">C</span>
+<span class="text-xl font-bold text-slate-400">+</span>
+<span class="text-2xl sm:text-3xl font-black text-amber-500 tracking-wider">Á</span>
+<span class="text-xl font-bold text-slate-400">=</span>
+<span class="text-3xl sm:text-4xl font-black text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-xl border border-blue-200">CON CÁ</span>
+</div>
+</div>
+</div>
+<!-- Star Progress -->
+<div class="bg-amber-50 rounded-2xl px-4 py-2 border border-amber-200 flex flex-col items-center">
+<span class="text-xs font-bold text-amber-800 mb-1">Tiến độ: 2 / 4 từ</span>
+<div class="flex gap-1.5 text-xl">
+<span class="text-yellow-400 drop-shadow">⭐</span>
+<span class="text-yellow-400 drop-shadow">⭐</span>
+<span class="text-slate-300">☆</span>
+<span class="text-slate-300">☆</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Section: Points & Utilities -->
+<div class="flex items-center gap-2.5 w-full lg:w-auto justify-end">
+<!-- Score -->
+<div class="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-white font-extrabold px-4 py-2 rounded-2xl border-2 border-white shadow-game-btn">
+<span class="text-xl">⭐</span>
+<span class="text-lg md:text-xl font-display tracking-wide">1,450</span>
+</div>
+<!-- Relaxed Timer / Friendly Mode -->
+<div class="flex items-center gap-1.5 bg-white/90 text-sky-900 font-extrabold px-3 py-2 rounded-2xl border-2 border-sky-300 shadow-sm" title="Thời gian chơi thư giãn">
+<span class="text-lg">⏳</span>
+<span class="font-display text-base">02:00</span>
+</div>
+<!-- Audio Mute / Settings -->
+<button class="btn-3d w-11 h-11 bg-white hover:bg-slate-100 rounded-2xl border-2 border-slate-300 flex items-center justify-center text-xl shadow-game-btn text-slate-700" title="Cài đặt trò chơi">
+        ⚙️
+      </button>
+</div>
+</header>
+<!-- END: TopHeaderNavigation -->
+<!-- BEGIN: CenterSkyInteractiveArea -->
+<main class="relative z-10 flex-1 flex flex-col justify-center px-4 py-2 max-w-7xl mx-auto w-full" data-purpose="sky-balloon-letters">
+<!-- Mascot Speech Bubble Guide for 5-Year Olds -->
+<div class="max-w-md mx-auto sm:mx-0 sm:ml-6 mb-3 animate-sway" data-purpose="mascot-guidance">
+<div class="bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-3xl rounded-tl-sm border-4 border-yellow-300 shadow-xl flex items-start gap-3">
+<div class="w-12 h-12 bg-amber-100 rounded-full flex-shrink-0 flex items-center justify-center text-2xl border-2 border-amber-300 shadow-inner">
+          🦜
+        </div>
+<div>
+<p class="text-sm sm:text-base font-extrabold text-sky-900 leading-snug">
+            Bé ơi, chọn chữ <span class="text-pink-600 font-black underline decoration-pink-300">C</span> và chữ <span class="text-amber-600 font-black underline decoration-amber-300">Á</span> để giúp khinh khí cầu Cá Vàng bay lên nhé!
+          </p>
+<div class="text-xs font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+<span>✨ Chạm vào chữ cái bé muốn chọn</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Interactive Balloons with Letters -->
+<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4 lg:gap-6 items-end justify-center pt-2 pb-6">
+<!-- Balloon 1: Letter 'C' (Selected State) -->
+<div class="flex flex-col items-center animate-bob group cursor-pointer" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<!-- Balloon Body -->
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-rose-400 via-pink-500 to-rose-600 rounded-t-full rounded-b-3xl border-4 border-white shadow-2xl flex items-center justify-center relative overflow-hidden ring-4 ring-yellow-400 animate-pulse-slow">
+<div class="absolute inset-0 bg-white/20 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<!-- Letter Badge -->
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white drop-shadow-md">C</span>
+<span class="absolute top-1 right-2 text-xs">✨</span>
+</div>
+<!-- Strings -->
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<!-- Basket -->
+<div class="w-10 h-7 bg-amber-700 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-xs font-bold text-amber-200">ĐÃ CHỌN</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-rose-600 px-3 py-0.5 rounded-full border border-rose-300 shadow-sm">Chữ C</span>
+</div>
+<!-- Balloon 2: Letter 'A' (Target) -->
+<div class="flex flex-col items-center animate-bob-alt group cursor-pointer transform hover:scale-110 transition-transform" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-amber-300 via-yellow-400 to-orange-400 rounded-t-full rounded-b-3xl border-4 border-white shadow-xl flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-white/25 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-amber-950 drop-shadow-sm">A</span>
+</div>
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<div class="w-10 h-7 bg-amber-600 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-[10px] text-white font-bold">Chạm</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-amber-800 px-3 py-0.5 rounded-full border border-amber-300 shadow-sm">Chữ A</span>
+</div>
+<!-- Balloon 3: Tone Mark 'Sắc' (Dấu ´) -->
+<div class="flex flex-col items-center animate-bob group cursor-pointer transform hover:scale-110 transition-transform" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-emerald-300 via-teal-400 to-emerald-500 rounded-t-full rounded-b-3xl border-4 border-white shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-white/20 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white drop-shadow">/</span>
+</div>
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<div class="w-10 h-7 bg-amber-600 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-[10px] text-white font-bold">Dấu</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-sm">Dấu Sắc</span>
+</div>
+<!-- Balloon 4: Letter 'B' (Distractor) -->
+<div class="flex flex-col items-center animate-bob-alt group cursor-pointer transform hover:scale-110 transition-transform" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-sky-300 via-blue-400 to-indigo-500 rounded-t-full rounded-b-3xl border-4 border-white shadow-xl flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-white/20 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white drop-shadow">B</span>
+</div>
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<div class="w-10 h-7 bg-amber-600 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-[10px] text-white font-bold">Chạm</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-sky-800 px-3 py-0.5 rounded-full border border-sky-300 shadow-sm">Chữ B</span>
+</div>
+<!-- Balloon 5: Letter 'O' (Distractor) -->
+<div class="flex flex-col items-center animate-bob group cursor-pointer transform hover:scale-110 transition-transform" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-purple-300 via-violet-400 to-purple-600 rounded-t-full rounded-b-3xl border-4 border-white shadow-xl flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-white/20 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white drop-shadow">O</span>
+</div>
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<div class="w-10 h-7 bg-amber-600 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-[10px] text-white font-bold">Chạm</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-purple-800 px-3 py-0.5 rounded-full border border-purple-300 shadow-sm">Chữ O</span>
+</div>
+<!-- Balloon 6: Letter 'M' (Distractor) -->
+<div class="hidden sm:flex flex-col items-center animate-bob-alt group cursor-pointer transform hover:scale-110 transition-transform" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-lime-300 via-emerald-400 to-green-600 rounded-t-full rounded-b-3xl border-4 border-white shadow-xl flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-white/20 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white drop-shadow">M</span>
+</div>
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<div class="w-10 h-7 bg-amber-600 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-[10px] text-white font-bold">Chạm</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-emerald-800 px-3 py-0.5 rounded-full border border-emerald-300 shadow-sm">Chữ M</span>
+</div>
+<!-- Balloon 7: Letter 'E' (Distractor) -->
+<div class="hidden md:flex flex-col items-center animate-bob group cursor-pointer transform hover:scale-110 transition-transform" data-purpose="letter-balloon">
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-24 sm:w-24 sm:h-28 md:w-28 md:h-32 bg-gradient-to-b from-pink-300 via-rose-400 to-red-500 rounded-t-full rounded-b-3xl border-4 border-white shadow-xl flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-white/20 rounded-full w-8 h-14 -top-3 -left-1 transform -rotate-12"></div>
+<span class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white drop-shadow">E</span>
+</div>
+<div class="w-10 h-4 border-l-2 border-r-2 border-amber-800/60 my-0.5"></div>
+<div class="w-10 h-7 bg-amber-600 rounded-b-lg border-2 border-amber-900 flex items-center justify-center shadow-md">
+<span class="text-[10px] text-white font-bold">Chạm</span>
+</div>
+</div>
+<span class="mt-2 text-xs sm:text-sm font-black bg-white/90 text-rose-800 px-3 py-0.5 rounded-full border border-rose-300 shadow-sm">Chữ E</span>
+</div>
+</div>
+</main>
+<!-- END: CenterSkyInteractiveArea -->
+<!-- BEGIN: BottomWordDock -->
+<!-- Khung Băng Chuyền Ghép Chữ Của Bé -->
+<footer class="relative z-20 w-full px-4 pb-4 pt-2 max-w-5xl mx-auto" data-purpose="spelling-workbench">
+<div class="wood-shelf rounded-3xl p-4 sm:p-6 border-4 border-amber-200">
+<!-- Dock Header Label -->
+<div class="flex items-center justify-between mb-3 text-white font-bold px-2">
+<div class="flex items-center gap-2">
+<span class="text-xl">🪵</span>
+<span class="text-base sm:text-lg font-black uppercase tracking-wider text-amber-100 drop-shadow">Kệ Ghép Vần Bằng Gỗ</span>
+</div>
+<span class="text-xs sm:text-sm bg-amber-900/60 px-3 py-1 rounded-full text-amber-200 border border-amber-600">
+          Chạm chữ cái trên khinh khí cầu để xếp vào ô
+        </span>
+</div>
+<!-- Workbench Letter Slots and Result -->
+<div class="bg-amber-950/40 rounded-2xl p-4 sm:p-5 flex flex-wrap lg:flex-nowrap items-center justify-between gap-4 border border-amber-600/50">
+<!-- Interactive Letter Slots -->
+<div class="flex items-center justify-center gap-2 sm:gap-4 flex-1">
+<!-- Slot 1: Filled Letter 'C' -->
+<div class="flex flex-col items-center gap-1.5" data-purpose="letter-slot">
+<div class="wood-block w-16 h-18 sm:w-20 sm:h-24 rounded-2xl flex items-center justify-center border-2 border-yellow-200 cursor-pointer hover:scale-105 transition-transform" title="Bấm để gỡ chữ">
+<span class="font-display font-black text-3xl sm:text-5xl text-amber-950">C</span>
+</div>
+<span class="text-[11px] sm:text-xs font-bold text-amber-200 uppercase tracking-wider">Âm đầu</span>
+</div>
+<!-- Plus Sign -->
+<div class="text-2xl sm:text-4xl font-black text-amber-300 drop-shadow">+</div>
+<!-- Slot 2: Empty/Awaiting Letter 'Á' -->
+<div class="flex flex-col items-center gap-1.5" data-purpose="letter-slot">
+<div class="wood-block-empty w-16 h-18 sm:w-20 sm:h-24 rounded-2xl flex flex-col items-center justify-center cursor-pointer animate-pulse-slow">
+<span class="font-display font-black text-2xl sm:text-4xl text-amber-500 opacity-60">Á ?</span>
+<span class="text-[10px] font-extrabold text-amber-700 bg-amber-200/80 px-2 py-0.5 rounded-full mt-1">Đang chờ</span>
+</div>
+<span class="text-[11px] sm:text-xs font-bold text-amber-200 uppercase tracking-wider">Vần &amp; Dấu</span>
+</div>
+<!-- Equals Sign -->
+<div class="text-2xl sm:text-4xl font-black text-amber-300 drop-shadow">=</div>
+<!-- Result Preview Box -->
+<div class="flex flex-col items-center gap-1.5" data-purpose="word-preview">
+<div class="w-24 h-18 sm:w-32 sm:h-24 bg-white/95 rounded-2xl border-4 border-emerald-400 shadow-md flex flex-col items-center justify-center px-2">
+<span class="text-xl sm:text-2xl">🐟</span>
+<span class="font-display font-black text-xl sm:text-3xl text-emerald-700 tracking-wider">CÁ</span>
+</div>
+<span class="text-[11px] sm:text-xs font-black text-emerald-300 uppercase tracking-wider">Từ Hoàn Chỉnh</span>
+</div>
+</div>
+<!-- Big Reward Badge & Action Controls -->
+<div class="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-center lg:justify-end flex-wrap sm:flex-nowrap">
+<!-- Replay Word Audio -->
+<button class="btn-3d flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-b from-sky-400 to-blue-600 hover:from-sky-300 hover:to-blue-500 text-white font-extrabold text-sm sm:text-base px-4 py-3.5 rounded-2xl border-2 border-white shadow-game-btn" title="Đọc to từ này">
+<span class="text-xl">📢</span>
+<span class="whitespace-nowrap">ĐỌC LẠI TỪ</span>
+</button>
+<!-- Primary Confirmation Button: Fly Balloon! -->
+<button class="btn-3d flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-b from-emerald-400 via-green-500 to-emerald-600 hover:from-emerald-300 hover:to-green-500 text-white font-black text-base sm:text-lg px-6 py-3.5 rounded-2xl border-2 border-yellow-200 shadow-game-btn" title="Hoàn thành màn ghép vần">
+<span class="text-2xl">🎈</span>
+<span class="whitespace-nowrap">BAY LÊN!</span>
+</button>
+<!-- Hint & Pause Mini Tools -->
+<div class="flex items-center gap-1.5">
+<button class="btn-3d w-12 h-12 bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold rounded-2xl border-2 border-white flex items-center justify-center text-xl shadow-game-btn" title="Xem gợi ý cho bé">
+              💡
+            </button>
+<button class="btn-3d w-12 h-12 bg-rose-400 hover:bg-rose-300 text-white font-bold rounded-2xl border-2 border-white flex items-center justify-center text-xl shadow-game-btn" title="Tạm dừng trò chơi">
+              ⏸️
+            </button>
+</div>
+</div>
+</div>
+<!-- Kid-friendly encouragement footer note -->
+<div class="mt-3 flex items-center justify-center gap-2 text-center text-xs sm:text-sm font-bold text-amber-200/90">
+<span>🌈</span>
+<span>Bé hãy ghép thật nhanh để mở khóa Huy Hiệu "Phi Công Nhí Ghép Vần"!</span>
+<span>🎈</span>
+</div>
+</div>
+</footer>
+<!-- END: BottomWordDock -->
+</body></html>

@@ -21,7 +21,8 @@
     @{
         var focusMode = ViewData["FocusMode"] as bool? == true;
         var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-        var isKidsZone = string.Equals(currentController, "Kids", StringComparison.OrdinalIgnoreCase);
+        var isKidsZone = string.Equals(currentController, "Kids", StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(currentController, "Games", StringComparison.OrdinalIgnoreCase);
         var isAdminZone = string.Equals(currentController, "Admin", StringComparison.OrdinalIgnoreCase);
 
         // Lấy thông tin bé đang chọn

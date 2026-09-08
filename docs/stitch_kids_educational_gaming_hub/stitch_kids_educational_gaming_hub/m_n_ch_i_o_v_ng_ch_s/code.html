@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Đào Vàng Chữ &amp; Số - Bé Học Chữ Vui Nhộn</title>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Phosphor Icons for playful UI buttons -->
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', 'sans-serif'],
+          },
+          colors: {
+            wood: {
+              light: '#8B4513',
+              DEFAULT: '#5c2c16',
+              dark: '#3d1b0c',
+            },
+            gem: {
+              gold: '#FFD700',
+              ruby: '#FF2E63',
+              emerald: '#00E676',
+              sapphire: '#00D2FC',
+              amethyst: '#9D4EDD',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Stylesheet Blocks -->
+<!-- Styling for Wood-Texture and Cartoonish Shadows -->
+<style data-purpose="game-theme-styles">
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Chunky Cartoon 3D Button Shadows */
+    .btn-3d-yellow {
+      background: linear-gradient(180deg, #FFE066 0%, #FFB703 100%);
+      box-shadow: 0 8px 0 #D08A00, 0 12px 20px rgba(0, 0, 0, 0.4);
+      border: 3px solid #FFF3B0;
+    }
+    .btn-3d-yellow:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #D08A00, 0 6px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-3d-orange {
+      background: linear-gradient(180deg, #FF9E00 0%, #E85D04 100%);
+      box-shadow: 0 10px 0 #9D3C00, 0 14px 25px rgba(232, 93, 4, 0.5);
+      border: 4px solid #FFD166;
+    }
+    .btn-3d-orange:active {
+      transform: translateY(8px);
+      box-shadow: 0 2px 0 #9D3C00, 0 6px 15px rgba(232, 93, 4, 0.4);
+    }
+
+    .btn-3d-blue {
+      background: linear-gradient(180deg, #48CAE4 0%, #0077B6 100%);
+      box-shadow: 0 6px 0 #023E8A, 0 10px 18px rgba(0, 0, 0, 0.35);
+      border: 3px solid #ADE8F4;
+    }
+    .btn-3d-blue:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #023E8A, 0 5px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Wooden plank banner effect */
+    .wood-board {
+      background: linear-gradient(180deg, #8a4822 0%, #54250e 100%);
+      border: 4px solid #ad6839;
+      box-shadow: inset 0 3px 6px rgba(255, 220, 180, 0.3), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 18px rgba(0, 0, 0, 0.5);
+    }
+
+    .wood-counter {
+      background: rgba(36, 15, 6, 0.85);
+      border: 2px solid #b87333;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.8);
+    }
+
+    /* Sparkling effect animation */
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
+      50% { opacity: 1; transform: scale(1.3) rotate(45deg); }
+    }
+    .animate-sparkle {
+      animation: sparkle 2.5s infinite ease-in-out;
+    }
+
+    /* Subtle robotic hook sway animation hint */
+    @keyframes hookSway {
+      0% { transform: rotate(-18deg); }
+      50% { transform: rotate(18deg); }
+      100% { transform: rotate(-18deg); }
+    }
+    .animate-sway {
+      transform-origin: top center;
+      animation: hookSway 4s ease-in-out infinite;
+    }
+
+    /* Pulsing button highlight for toddlers */
+    @keyframes pulseTarget {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)); }
+      50% { transform: scale(1.06); filter: drop-shadow(0 0 22px rgba(255, 215, 0, 0.95)); }
+    }
+    .pulse-target {
+      animation: pulseTarget 1.8s infinite ease-in-out;
+    }
+  </style>
+<!-- END: Custom Stylesheet Blocks -->
+</head>
+<body class="bg-amber-950 text-white w-screen h-screen overflow-hidden flex flex-col justify-between select-none relative font-sans">
+<!-- BEGIN: GameBackground -->
+<!-- Illustrated mine cavern background image from provided source -->
+<div class="absolute inset-0 z-0 w-full h-full overflow-hidden pointer-events-none" data-purpose="background-layer">
+<img alt="Đào Vàng Chữ &amp; Số - Hầm Mỏ Kho Báu Lung Linh" class="w-full h-full object-cover object-center filter brightness-95" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHrr7laIwL8EQtLOjAVYGPsrRJo98Qeb9VYw1l6Or6zWe11avFwtibKps6zbTXXAnKUAKlO-VSYN_TLxcktvXn3PapZiIo42AzJpn7b4XbcuWAH8__RTsJJWNtHSh-b1k9-9uPRP7LAToKQgTuVZkMzoiCfN1eejQOM9f-Y9T6EPX8a8giMkgg92eJb1Wx2NMv0NjBmGLDoM-UQ6uFAplXsWRs-zUSORlUutdMVpxVwjzrQvnjVxMxhw"/>
+<!-- Dark gradient overlay for UI readability -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/60"></div>
+</div>
+<!-- END: GameBackground -->
+<!-- BEGIN: TopHeaderHUD -->
+<!-- Top Navigation, Missions, Target Counts, Score and Sound Controls -->
+<header class="relative z-20 w-full px-3 sm:px-6 pt-3 pb-2 flex flex-wrap items-start justify-between gap-2" data-purpose="top-hud">
+<!-- Left: Return Button & Level Indicator -->
+<div class="flex items-center gap-3">
+<!-- Back to Lobby Button -->
+<button class="btn-3d-blue rounded-2xl px-4 py-2.5 flex items-center gap-2 text-white font-extrabold text-sm sm:text-base tracking-wide transition-transform active:scale-95" data-purpose="return-lobby-button" title="Quay lại sảnh" type="button">
+<i class="ph-bold ph-caret-circle-left text-2xl text-yellow-300"></i>
+<span class="drop-shadow-md">Sảnh Chơi</span>
+</button>
+<!-- Stage Pill -->
+<div class="hidden md:flex items-center wood-board rounded-2xl px-3.5 py-1.5 border-amber-600">
+<span class="text-amber-200 text-xs font-bold uppercase tracking-wider mr-1">Cửa:</span>
+<span class="text-yellow-300 font-extrabold text-base">02 - Mỏ Vàng</span>
+</div>
+</div>
+<!-- Center: Main Mission Plank for 5-Year Old Kids -->
+<div class="wood-board rounded-3xl px-4 sm:px-7 py-2 text-center max-w-xl mx-auto shadow-2xl flex flex-col items-center" data-purpose="mission-board">
+<!-- Voice guide prompt pill -->
+<div class="flex items-center gap-2 bg-amber-900/90 border border-amber-400/50 rounded-full px-4 py-1 mb-1 shadow-inner">
+<span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+<p class="text-xs sm:text-sm font-bold text-amber-200 drop-shadow">
+          Bé hãy gắp: <span class="text-yellow-300 font-extrabold underline decoration-yellow-400 decoration-2">Chữ B</span> và <span class="text-emerald-300 font-extrabold underline decoration-emerald-400 decoration-2">Số 5</span>
+</p>
+<!-- Audio button to replay pronunciation voice for kids -->
+<button aria-label="Nghe đọc mẫu chữ" class="bg-amber-500 hover:bg-amber-400 text-amber-950 p-1.5 rounded-full transition-transform active:scale-90 flex items-center justify-center shadow" title="Bé nhấn để nghe cô đọc lại mẫu âm" type="button">
+<i class="ph-fill ph-speaker-high text-base"></i>
+</button>
+</div>
+<!-- Live Mission Targets Counters -->
+<div class="flex items-center gap-4 sm:gap-6 mt-0.5">
+<!-- Target 1: Letter B -->
+<div class="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-2xl border border-purple-400/40">
+<div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-fuchsia-400 flex items-center justify-center text-white font-black text-xl shadow-md ring-2 ring-purple-300">
+            B
+          </div>
+<div class="flex flex-col text-left">
+<span class="text-[10px] uppercase font-bold text-purple-200">Chữ B</span>
+<span class="text-yellow-300 font-black text-sm tracking-wide">2 / 3 <span class="text-xs font-semibold text-emerald-400">viên</span></span>
+</div>
+</div>
+<!-- Target 2: Number 5 -->
+<div class="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-2xl border border-blue-400/40">
+<div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center text-white font-black text-xl shadow-md ring-2 ring-cyan-300">
+            5
+          </div>
+<div class="flex flex-col text-left">
+<span class="text-[10px] uppercase font-bold text-sky-200">Số 5</span>
+<span class="text-yellow-300 font-black text-sm tracking-wide">1 / 2 <span class="text-xs font-semibold text-emerald-400">viên</span></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Points, Timer & Audio Control HUD -->
+<div class="flex items-center gap-2 sm:gap-3" data-purpose="status-indicators">
+<!-- Score Pill -->
+<div class="wood-counter rounded-2xl px-3 py-1.5 flex items-center gap-2">
+<i class="ph-fill ph-star text-yellow-400 text-xl sm:text-2xl drop-shadow"></i>
+<div>
+<div class="text-[9px] uppercase tracking-wider text-amber-300/80 font-bold">Điểm số</div>
+<div class="text-base sm:text-lg font-black text-amber-200 tracking-wider">1,250</div>
+</div>
+</div>
+<!-- Countdown Timer Pill -->
+<div class="wood-counter rounded-2xl px-3 py-1.5 flex items-center gap-2">
+<i class="ph-fill ph-clock text-amber-400 text-xl sm:text-2xl drop-shadow animate-pulse"></i>
+<div>
+<div class="text-[9px] uppercase tracking-wider text-amber-300/80 font-bold">Thời gian</div>
+<div class="text-base sm:text-lg font-black text-emerald-300 tracking-wider">01:45</div>
+</div>
+</div>
+<!-- Quick Audio Settings Button -->
+<button class="bg-amber-800/90 hover:bg-amber-700 text-amber-200 border-2 border-amber-600/80 p-2.5 rounded-2xl shadow-lg transition-transform active:scale-95" title="Bật/Tắt âm thanh" type="button">
+<i class="ph-fill ph-speaker-simple-high text-xl"></i>
+</button>
+<!-- Settings Icon -->
+<button class="bg-amber-800/90 hover:bg-amber-700 text-amber-200 border-2 border-amber-600/80 p-2.5 rounded-2xl shadow-lg transition-transform active:scale-95" title="Cài đặt" type="button">
+<i class="ph-fill ph-gear-six text-xl"></i>
+</button>
+</div>
+</header>
+<!-- END: TopHeaderHUD -->
+<!-- BEGIN: ActivePlayArea -->
+<!-- Middle interactive zone highlighting the swinging robot claw and game cues -->
+<main class="relative z-10 flex-1 flex flex-col justify-between items-center px-4 py-2 pointer-events-none" data-purpose="gameplay-interactive-zone">
+<!-- Upper Aim Helper / Trajectory Pointer Guideline -->
+<div class="w-full max-w-md flex flex-col items-center pt-2">
+<!-- Dynamic speech bubble from Robot Claw -->
+<div class="bg-white/95 text-slate-900 px-4 py-1.5 rounded-full text-xs sm:text-sm font-extrabold shadow-xl border-2 border-yellow-400 flex items-center gap-2 animate-bounce pointer-events-auto">
+<span class="text-lg">🤖</span>
+<span>"Canh đúng lúc chiếc móc chỉ vào chữ <b class="text-purple-600 text-base">B</b> hoặc số <b class="text-blue-600 text-base">5</b> rồi bấm thả móc nha bé!"</span>
+</div>
+<!-- Aim Direction Line Indicator -->
+<div class="w-1 h-14 border-l-2 border-dashed border-yellow-300/60 mt-1"></div>
+</div>
+<!-- Center Field Playful Sparkles overlaying gems -->
+<div class="w-full max-w-4xl relative h-36 flex items-center justify-around">
+<div class="animate-sparkle text-amber-200 text-2xl drop-shadow-lg">✨</div>
+<div class="animate-sparkle text-cyan-200 text-3xl drop-shadow-lg delay-700">⭐</div>
+<div class="animate-sparkle text-pink-300 text-2xl drop-shadow-lg delay-300">✨</div>
+</div>
+<!-- Bottom Guide Notice above ground treasures -->
+<div class="bg-black/60 backdrop-blur-md px-5 py-2 rounded-full border border-yellow-500/30 text-amber-200 text-xs sm:text-sm font-semibold tracking-wide flex items-center gap-2 pointer-events-auto shadow-lg">
+<i class="ph-fill ph-hand-tap text-yellow-400 text-xl"></i>
+<span>Chạm vào màn hình hoặc bấm nút cam khổng lồ góc phải để thả móc gắp!</span>
+</div>
+</main>
+<!-- END: ActivePlayArea -->
+<!-- BEGIN: BottomControlsDock -->
+<!-- Bottom bar with friendly helpers and the giant toddler-friendly "RELEASE HOOK" button -->
+<footer class="relative z-30 w-full px-4 sm:px-8 pb-4 pt-2 flex items-end justify-between" data-purpose="action-dock">
+<!-- Left: Animal Helpers Cheer Corner (Moles and Squirrels) -->
+<div class="pointer-events-auto flex items-center gap-3 bg-amber-950/80 backdrop-blur-md border-2 border-amber-600/70 p-2.5 rounded-3xl shadow-xl max-w-xs sm:max-w-md">
+<!-- Mascot Avatar icon -->
+<div class="w-12 h-12 rounded-2xl bg-amber-700 flex-shrink-0 flex items-center justify-center text-2xl border-2 border-amber-300 shadow">
+        🐿️
+      </div>
+<!-- Encouragement text -->
+<div class="flex-1 text-left">
+<p class="text-xs font-bold text-yellow-300 leading-tight">Sóc nâu cổ vũ bé:</p>
+<p class="text-xs sm:text-sm text-white font-medium drop-shadow">"Bé rất giỏi! Chỉ còn 1 viên ngọc số 5 nữa thôi!"</p>
+</div>
+<!-- Re-hear target pronunciation sound -->
+<button class="bg-yellow-400 hover:bg-yellow-300 text-amber-950 p-2 rounded-xl font-bold flex items-center justify-center shadow active:scale-95 transition-transform" title="Nghe lại chữ cần tìm" type="button">
+<i class="ph-bold ph-speaker-simple-high text-lg"></i>
+</button>
+</div>
+<!-- Right: Giant High-Visibility Hook Grab Action Button (Designed for 5yo finger tap) -->
+<div class="pointer-events-auto pl-2">
+<button class="btn-3d-orange pulse-target rounded-3xl px-6 sm:px-10 py-4 sm:py-5 flex items-center gap-3 text-white font-black text-lg sm:text-2xl uppercase tracking-wider transition-all duration-150" data-purpose="drop-hook-button" id="btn-drop-claw" title="Thả Móc Gắp Ngay!" type="button">
+<!-- Claw Icon -->
+<span class="text-2xl sm:text-3xl filter drop-shadow">🎯</span>
+<div class="flex flex-col text-left leading-none">
+<span class="drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">THẢ MÓC!</span>
+<span class="text-[10px] sm:text-xs font-bold text-yellow-200 tracking-normal mt-0.5 opacity-90 lowercase">chạm để gắp ngọc</span>
+</div>
+<i class="ph-bold ph-arrow-fat-lines-down text-2xl sm:text-3xl text-yellow-200 animate-bounce"></i>
+</button>
+</div>
+</footer>
+<!-- END: BottomControlsDock -->
+<!-- BEGIN: InteractiveScripts -->
+<!-- Audio effects and click feedback for 5-year-old game interface -->
+<script data-purpose="gameplay-interactions">
+    document.addEventListener('DOMContentLoaded', () => {
+      const dropClawBtn = document.getElementById('btn-drop-claw');
+      
+      // Simple toddler tap response
+      if (dropClawBtn) {
+        dropClawBtn.addEventListener('click', () => {
+          // Play visual pulse feedback
+          dropClawBtn.classList.add('scale-95');
+          setTimeout(() => {
+            dropClawBtn.classList.remove('scale-95');
+          }, 150);
+
+          // Web Audio synthetic playful boing/drop sound
+          try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.35);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+          } catch(e) {
+            // AudioContext fallback
+          }
+        });
+      }
+    });
+  </script>
+<!-- END: InteractiveScripts -->
+</body></html>
