@@ -1830,6 +1830,7 @@ public class AdminController : Controller
         {
             SkillGroupId = firstGroupId,
             TopicId = null,
+            Status = ContentStatus.Published,
             InteractionType = selectedInteractionType,
             InstructionText = template?.DefaultInstruction ?? "Con hãy thực hiện hoạt động.",
             PromptText = template?.DefaultPrompt ?? "Con trả lời câu hỏi nhé.",
@@ -1892,6 +1893,7 @@ public class AdminController : Controller
             Questions = new List<Question>()
         };
 
+        item.Status = model.Status == ContentStatus.Published ? ContentStatus.Published : ContentStatus.Draft;
         item.Title = Clean(model.Title);
         item.SkillGroupId = model.SkillGroupId;
         item.TopicId = model.TopicId;
