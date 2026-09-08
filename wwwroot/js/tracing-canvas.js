@@ -35,6 +35,8 @@
 
   const state = {
     drawing: false,
+    isPointerDown: false,
+    activePointerId: null,
     activeStrokeIndex: null,
     lastValidPoint: null,
     strokes: [],
@@ -45,7 +47,7 @@
     return window.tracingGuides?.getGuideCheckpoints(overlay) || [];
   }
 
-  function findClosestCheckpoint(p, checkpoints) {
+  function findClosestCheckpoint(p, checkpoints, isTouch = false) {
     if (!checkpoints || !checkpoints.length) {
       return { inCorridor: true, penWidth: 10, closestCheckpoint: null };
     }
@@ -63,7 +65,13 @@
       }
     }
 
-    const corridorRad = Math.max(22, closestCp?.corridorRadius || 24);
+    const baseRad = Math.max(22, closestCp?.corridorRadius || 24);
+    // On touch devices (smartphones, iPads), finger touch contact area is broad.
+    // Provide an adaptive corridor radius so strokes don't break on slight touch wobble.
+    const corridorRad = isTouch
+      ? Math.max(46, Math.round(baseRad * 1.85))
+      : Math.max(28, Math.round(baseRad * 1.2));
+
     const inCorridor = minDistanceSq <= corridorRad * corridorRad;
     return {
       inCorridor,
@@ -72,11 +80,24 @@
     };
   }
 
+  const BASE_WIDTH = 920;
+  const BASE_HEIGHT = 1200;
+  let dpr = 1;
+
+  function setupHiDpiCanvas() {
+    // Tự động nâng độ phân giải buffer vật lý tương thích màn hình 2.5K (2560 x 1600)
+    // Tối thiểu 2x hoặc theo window.devicePixelRatio thực tế để nét vẽ siêu mịn, sắc nét
+    dpr = Math.max(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(BASE_WIDTH * dpr);
+    canvas.height = Math.round(BASE_HEIGHT * dpr);
+    redraw();
+  }
+
   function pointFromEvent(event) {
     const rect = canvas.getBoundingClientRect();
     return {
-      x: Math.round(((event.clientX - rect.left) / rect.width) * canvas.width),
-      y: Math.round(((event.clientY - rect.top) / rect.height) * canvas.height),
+      x: Math.round(((event.clientX - rect.left) / rect.width) * BASE_WIDTH),
+      y: Math.round(((event.clientY - rect.top) / rect.height) * BASE_HEIGHT),
       t: Date.now()
     };
   }
@@ -102,9 +123,12 @@
   }
 
   function redraw() {
+    context.save();
     context.clearRect(0, 0, canvas.width, canvas.height);
+    context.scale(dpr, dpr);
     state.strokes.forEach(drawStroke);
     drawStroke(state.currentStroke);
+    context.restore();
   }
 
   function getAllDrawnPoints() {
@@ -337,44 +361,73 @@
   }
 
   function startStroke(event) {
-    stopStrokeDemo();
-    const pt = pointFromEvent(event);
-    const cps = getCheckpoints();
-    const match = findClosestCheckpoint(pt, cps);
-
-    if (!match.inCorridor) {
-      state.drawing = false;
-      return;
-    }
-
+    // Luôn ngăn chặn hành vi mặc định (cuộn trang, kéo tải lại) khi thao tác trên canvas
     if (event.cancelable) {
       event.preventDefault();
     }
-    pt.penWidth = match.penWidth;
-    state.drawing = true;
-    state.activeStrokeIndex = match.closestCheckpoint?.strokeIndex ?? null;
-    state.lastValidPoint = pt;
-    state.currentStroke = [pt];
-    canvas.setPointerCapture(event.pointerId);
-    redraw();
-    syncForm();
+    stopStrokeDemo();
+
+    state.isPointerDown = true;
+    state.activePointerId = event.pointerId;
+
+    try {
+      canvas.setPointerCapture(event.pointerId);
+    } catch (err) {
+      // Bỏ qua nếu trình duyệt không hỗ trợ hoặc đã capture
+    }
+
+    const isTouch = event.pointerType === "touch" || event.pointerType === "pen" || ("ontouchstart" in window);
+    const pt = pointFromEvent(event);
+    const cps = getCheckpoints();
+    const match = findClosestCheckpoint(pt, cps, isTouch);
+
+    if (match.inCorridor) {
+      pt.penWidth = match.penWidth;
+      state.drawing = true;
+      state.activeStrokeIndex = match.closestCheckpoint?.strokeIndex ?? null;
+      state.lastValidPoint = pt;
+      state.currentStroke = [pt];
+      redraw();
+      syncForm();
+    } else {
+      // Ngón tay chạm canvas ở sát ngoài corridor: giữ trạng thái nhấn để khi trượt vào nét sẽ bắt đầu vẽ ngay
+      state.drawing = false;
+      state.activeStrokeIndex = null;
+      state.lastValidPoint = null;
+    }
   }
 
   function continueStroke(event) {
-    if (!state.drawing) {
+    if (!state.isPointerDown) {
       return;
     }
 
     if (event.cancelable) {
       event.preventDefault();
     }
+
+    const isTouch = event.pointerType === "touch" || event.pointerType === "pen" || ("ontouchstart" in window);
     const pt = pointFromEvent(event);
     const cps = getCheckpoints();
-    const match = findClosestCheckpoint(pt, cps);
+    const match = findClosestCheckpoint(pt, cps, isTouch);
+    const currentStrokeIdx = match.closestCheckpoint?.strokeIndex ?? null;
 
-    // Nếu con trỏ kéo ra ngoài phạm vi nét vẽ (khoảng trắng giữa các chữ):
+    // Trường hợp 1: Ngón tay đang chạm kéo nhưng lúc đầu ở ngoài corridor, vừa lướt vào nét hợp lệ
+    if (!state.drawing) {
+      if (match.inCorridor) {
+        pt.penWidth = match.penWidth;
+        state.drawing = true;
+        state.activeStrokeIndex = currentStrokeIdx;
+        state.lastValidPoint = pt;
+        state.currentStroke = [pt];
+        redraw();
+        syncForm();
+      }
+      return;
+    }
+
+    // Trường hợp 2: Đang vẽ nhưng trỏ kéo ra ngoài phạm vi nét vẽ (khoảng trắng giữa các chữ)
     if (!match.inCorridor) {
-      // Lập tức ngắt nét vẽ hiện tại để không tạo đường nối nhảy cóc
       if (state.currentStroke.length > 1) {
         state.strokes.push(state.currentStroke);
       }
@@ -387,8 +440,7 @@
       return;
     }
 
-    // Kiểm tra xem có bị nhảy sang chữ/nét khác hoặc khoảng cách quá xa không
-    const currentStrokeIdx = match.closestCheckpoint?.strokeIndex ?? null;
+    // Trường hợp 3: Nằm trong corridor
     const lastPt = state.lastValidPoint || state.currentStroke[state.currentStroke.length - 1];
     let distanceSq = 0;
     if (lastPt) {
@@ -397,7 +449,9 @@
       distanceSq = dx * dx + dy * dy;
     }
 
-    const MAX_GAP_SQ = 45 * 45; // Tối đa 45px khoảng cách giữa 2 điểm liên tiếp trong 1 nét
+    // Dung sai khoảng cách giữa 2 điểm liên tiếp (trên cảm ứng khi vẽ nhanh, điểm có thể cách xa hơn)
+    const maxGap = isTouch ? 130 : 70;
+    const maxGapSq = maxGap * maxGap;
 
     if (state.activeStrokeIndex !== null && currentStrokeIdx !== null && state.activeStrokeIndex !== currentStrokeIdx) {
       // Đã di chuyển sang một chữ / nét khác -> Ngắt nét cũ, tạo nét mới độc lập
@@ -413,8 +467,8 @@
       return;
     }
 
-    if (distanceSq > MAX_GAP_SQ) {
-      // Bước nhảy quá xa -> Ngắt nét cũ, tạo nét mới
+    if (distanceSq > maxGapSq) {
+      // Bước nhảy quá xa giữa 2 điểm -> Ngắt nét cũ, tạo nét mới
       if (state.currentStroke.length > 1) {
         state.strokes.push(state.currentStroke);
       }
@@ -427,7 +481,7 @@
       return;
     }
 
-    // Nét vẽ hợp lệ trong cùng một chữ
+    // Nét vẽ hợp lệ liên tục
     pt.penWidth = match.penWidth;
     state.lastValidPoint = pt;
     state.currentStroke.push(pt);
@@ -436,21 +490,29 @@
   }
 
   function finishStroke(event) {
-    if (!state.drawing && !state.currentStroke.length) {
-      return;
-    }
-
     if (event && event.cancelable) {
       event.preventDefault();
     }
-    state.drawing = false;
-    state.activeStrokeIndex = null;
-    state.lastValidPoint = null;
+
+    if (event && event.pointerId && canvas.hasPointerCapture && canvas.hasPointerCapture(event.pointerId)) {
+      try {
+        canvas.releasePointerCapture(event.pointerId);
+      } catch (err) {
+        // Ignored
+      }
+    }
+
+    state.isPointerDown = false;
+    state.activePointerId = null;
+
     if (state.currentStroke.length > 1) {
       state.strokes.push(state.currentStroke);
     }
 
     state.currentStroke = [];
+    state.drawing = false;
+    state.activeStrokeIndex = null;
+    state.lastValidPoint = null;
     redraw();
     syncForm();
   }
@@ -492,16 +554,46 @@
   canvas.addEventListener("pointermove", continueStroke);
   canvas.addEventListener("pointerup", finishStroke);
   canvas.addEventListener("pointercancel", finishStroke);
-  canvas.addEventListener("pointerleave", finishStroke);
+
+  // An toàn khi ngón tay nhấc ra ngoài phạm vi canvas
+  window.addEventListener("pointerup", function (e) {
+    if (state.isPointerDown && e.pointerId === state.activePointerId) {
+      finishStroke(e);
+    }
+  });
+  window.addEventListener("pointercancel", function (e) {
+    if (state.isPointerDown && e.pointerId === state.activePointerId) {
+      finishStroke(e);
+    }
+  });
+
+  // Chặn triệt để cử chỉ cuộn trang, phóng to, kéo tải lại (pull-to-refresh) trên iOS Safari và Android Chrome
+  const preventTouchGesture = function (e) {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+  };
+  canvas.addEventListener("touchstart", preventTouchGesture, { passive: false });
+  canvas.addEventListener("touchmove", preventTouchGesture, { passive: false });
+  canvas.addEventListener("touchend", preventTouchGesture, { passive: false });
+  canvas.addEventListener("touchcancel", preventTouchGesture, { passive: false });
 
   // Allow trackpad / mouse wheel to scroll page over canvas
   canvas.addEventListener("wheel", function (event) {
     window.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
   }, { passive: true });
 
-  // Initial draw & sync
-  redraw();
+  // Initial setup high-DPI 2.5K resolution & sync
+  setupHiDpiCanvas();
   syncForm();
+
+  // Tự động căn chỉnh lại độ phân giải và tỷ lệ khi xoay màn hình hoặc đổi kích thước
+  window.addEventListener("resize", function () {
+    setupHiDpiCanvas();
+  });
+  window.addEventListener("orientationchange", function () {
+    setTimeout(setupHiDpiCanvas, 200);
+  });
 
   // Auto-play demo once when entering the lesson (only for letters/numbers/strokes, NOT for picture art tracing)
   window.setTimeout(function () {

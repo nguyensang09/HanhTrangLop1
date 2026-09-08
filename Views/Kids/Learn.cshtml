@@ -165,11 +165,12 @@
                      data-tracing-symbol="@Model.TracingSymbol"
                      data-is-picture="@(isPictureTracing ? "true" : "false")">
                     <div class="tracing-guide-overlay" aria-hidden="true"></div>
-                    <canvas class="tracing-canvas" width="920" height="1200" aria-label="Bảng tô nét"></canvas>
+                    <canvas class="tracing-canvas" width="920" height="1200" style="touch-action: none;" aria-label="Bảng tô nét"></canvas>
                 </div>
                 <form class="tracing-submit-form" asp-controller="Kids" asp-action="CompleteTracing" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" asp-route-fromTracing="@Model.FromTracing" method="post">
                     <input class="tracing-strokes-input" type="hidden" name="StrokeDataJson" value="[]" />
                     <input class="tracing-metrics-input" type="hidden" name="MetricsJson" value="{}" />
+                    <div class="tracing-status" aria-live="polite">Bé hãy tô theo từng nét đứt trên trang vở nhé! ✨</div>
                     <div class="tracing-bottom-bar">
                         <div class="board-actions tracing-controls-bar">
                             @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))

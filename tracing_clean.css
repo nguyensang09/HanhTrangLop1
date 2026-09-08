@@ -1,0 +1,400 @@
+/* Tracing Canvas Layout & Full-Immersion Notebook Board */
+body.focus-mode-active:has(.interaction-tracing) {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+body.focus-mode-active:has(.interaction-tracing) .app-page {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell,
+.learning-focus-shell:has(.interaction-tracing) {
+  --tracing-stage-w: min(96vw, calc((100dvh - 145px) * (920 / 1200)));
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 100dvh !important;
+  margin: 0 auto !important;
+  padding: 8px 12px 10px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  overscroll-behavior-y: none !important;
+}
+
+/* 1. THANH TIÊU ĐỀ TRÊN (Topbar) - Cân đối tuyệt đối 3 cột */
+.learning-focus-shell:has(.interaction-tracing) .learning-common-zone {
+  width: 100% !important;
+  max-width: var(--tracing-stage-w) !important;
+  margin: 0 auto 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 6px 14px !important;
+  min-height: 48px !important;
+  border-radius: 18px !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+  border: 2px solid #e2e8f0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-back-btn {
+  grid-column: 1 !important;
+  justify-self: start !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar h1 {
+  grid-column: 2 !important;
+  justify-self: center !important;
+  text-align: center !important;
+  margin: 0 !important;
+  color: #1e293b !important;
+  font-family: var(--font-display) !important;
+  font-size: clamp(1rem, 2.2vw, 1.25rem) !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-topbar-actions {
+  grid-column: 3 !important;
+  justify-self: end !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-topbar-actions .clay-button,
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-voice-button,
+.learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .tracing-demo {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 2. KHU VỰC BẢNG VẼ Ở GIỮA */
+.learning-focus-shell:has(.interaction-tracing) .choice-board,
+.choice-board.tracing-lesson-layout {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  width: 100% !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .choice-board.tracing-lesson-layout,
+.learning-focus-shell:has(.interaction-tracing) .tracing-answer-zone {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.tracing-answer-zone {
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Bảng vẽ chính - đồng bộ kích thước chuẩn theo tỷ lệ 920 : 1200 */
+.learning-focus-shell:has(.interaction-tracing) .tracing-board.tracing-canvas-host,
+.tracing-board.tracing-canvas-host {
+  position: relative !important;
+  width: var(--tracing-stage-w) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 920 / 1200 !important;
+  margin: 0 auto 6px !important;
+  padding: 0 !important;
+  background: #ffffff !important;
+  border: 3px solid #86efac !important;
+  border-radius: 20px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  box-sizing: border-box !important;
+}
+
+.tracing-corner-flashcard,
+.trace-letter {
+  display: none !important;
+}
+
+.tracing-guide-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  padding: 0;
+  margin: 0;
+}
+
+.tracing-guide-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tracing-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  cursor: crosshair;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  padding: 0;
+  margin: 0;
+}
+
+/* 3. THANH ĐIỀU KHIỂN & NÚT HOÀN THÀNH Ở DƯỚI (Đồng bộ chiều rộng chính xác) */
+.learning-focus-shell:has(.interaction-tracing) .tracing-submit-form,
+.tracing-answer-zone .tracing-submit-form {
+  width: var(--tracing-stage-w) !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  gap: 3px !important;
+  box-sizing: border-box !important;
+}
+
+.tracing-status {
+  min-height: 20px !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  text-align: center !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  transition: color 0.2s ease !important;
+}
+
+.tracing-status.ready {
+  color: #059669 !important;
+  font-weight: 800 !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .tracing-bottom-bar,
+.tracing-bottom-bar {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.tracing-controls-bar {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.tracing-controls-bar .clay-button {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.tracing-submit-button {
+  min-height: 46px !important;
+  padding: 8px 24px !important;
+  font-size: 1.02rem !important;
+  font-weight: 800 !important;
+  border-radius: 16px !important;
+  margin: 0 !important;
+}
+
+/* Nút Hoàn tác nét vẽ */
+.tracing-undo {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border: 2px solid #bae6fd !important;
+  color: #0284c7 !important;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.16), inset 0 1px 0 #ffffff !important;
+}
+
+.tracing-undo:hover {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important;
+  border-color: #7dd3fc !important;
+  color: #0369a1 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(2, 132, 199, 0.25), inset 0 1px 0 #ffffff !important;
+}
+
+/* Nút Xóa toàn bộ */
+.tracing-clear {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+  border: 2px solid #fecdd3 !important;
+  color: #e11d48 !important;
+  box-shadow: 0 3px 8px rgba(225, 29, 72, 0.16), inset 0 1px 0 #ffffff !important;
+}
+
+.tracing-clear:hover {
+  background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%) !important;
+  border-color: #fda4af !important;
+  color: #be123c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(225, 29, 72, 0.25), inset 0 1px 0 #ffffff !important;
+}
+
+/* Nút Nghe hướng dẫn nét tô */
+.tracing-audio {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border: 2px solid #fde68a !important;
+  color: #d97706 !important;
+  box-shadow: 0 3px 8px rgba(217, 119, 6, 0.16), inset 0 1px 0 #ffffff !important;
+}
+
+.tracing-audio:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+  border-color: #fcd34d !important;
+  color: #b45309 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(217, 119, 6, 0.25), inset 0 1px 0 #ffffff !important;
+}
+
+/* 4. CHẾ ĐỘ MÀN HÌNH DỌC (PORTRAIT) CHO TABLET 2.5K (2560x1600) VÀ ĐIỆN THOẠI */
+@media (orientation: portrait) {
+  .learning-focus-shell:has(.interaction-tracing) {
+    --tracing-stage-w: min(97vw, calc((100dvh - 140px) * (920 / 1200)));
+    padding: 6px 8px 10px !important;
+  }
+}
+
+/* Tablet độ phân giải cao 2.5K (2560x1600) ở màn hình dọc */
+@media (min-width: 768px) and (orientation: portrait) {
+  .learning-focus-shell:has(.interaction-tracing) {
+    --tracing-stage-w: min(96vw, calc((100dvh - 165px) * (920 / 1200)));
+    padding: 10px 14px 14px !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar {
+    min-height: 56px !important;
+    padding: 8px 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar h1 {
+    font-size: 1.35rem !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-back-btn,
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-voice-button,
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .tracing-demo {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 16px !important;
+  }
+
+  .tracing-controls-bar .clay-button {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 16px !important;
+  }
+
+  .tracing-controls-bar .clay-button .material-symbols-outlined {
+    font-size: 28px !important;
+  }
+
+  .tracing-submit-button {
+    min-height: 52px !important;
+    font-size: 1.08rem !important;
+    padding: 8px 26px !important;
+    border-radius: 18px !important;
+  }
+
+  .tracing-status {
+    font-size: 0.98rem !important;
+  }
+}
+
+/* Màn hình chiều cao thấp */
+@media (max-height: 640px) {
+  .learning-focus-shell:has(.interaction-tracing) {
+    --tracing-stage-w: min(94vw, calc((100dvh - 105px) * (920 / 1200)));
+    padding: 4px 6px 6px !important;
+  }
+  .learning-focus-shell:has(.interaction-tracing) .learning-common-zone {
+    margin-bottom: 2px !important;
+  }
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar {
+    min-height: 38px !important;
+    padding: 3px 10px !important;
+  }
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar h1 {
+    font-size: 0.92rem !important;
+  }
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-back-btn,
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-voice-button,
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .tracing-demo {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  .tracing-controls-bar .clay-button {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .tracing-submit-button {
+    min-height: 38px !important;
+    padding: 6px 16px !important;
+    font-size: 0.88rem !important;
+  }
+}

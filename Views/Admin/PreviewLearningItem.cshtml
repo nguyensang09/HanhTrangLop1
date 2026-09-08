@@ -86,9 +86,17 @@
         <div class="learning-focus-topbar">
             <a class="icon-link learning-back-btn clay-button" asp-action="LearningItems" title="Quay lại kho bài"><span class="material-symbols-outlined">arrow_back</span></a>
             <h1>@(Model.CurrentQuestion?.PromptText ?? Model.Item.Title)</h1>
-            <button class="learning-voice-button clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
-                <span class="material-symbols-outlined">volume_up</span>
-            </button>
+            <div class="learning-topbar-actions">
+                @if (Model.Item.InteractionType == InteractionTypes.Tracing)
+                {
+                    <button class="tracing-demo clay-button" type="button" title="Xem mẫu tô nét tự động">
+                        <span class="material-symbols-outlined">auto_draw_solid</span>
+                    </button>
+                }
+                <button class="learning-voice-button clay-button" type="button" title="Nghe câu hỏi" data-learning-replay="question">
+                    <span class="material-symbols-outlined">volume_up</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -157,20 +165,14 @@
                      data-tracing-symbol="@Model.TracingSymbol"
                      data-is-picture="@(isPictureTracing ? "true" : "false")">
                     <div class="tracing-guide-overlay" aria-hidden="true"></div>
-                    <canvas class="tracing-canvas" width="920" height="1200" aria-label="Bảng tô nét"></canvas>
+                    <canvas class="tracing-canvas" width="920" height="1200" style="touch-action: none;" aria-label="Bảng tô nét"></canvas>
                 </div>
                 <form class="tracing-submit-form" asp-action="PreviewTracing" asp-route-id="@Model.Item.Id" method="post">
                     <input class="tracing-strokes-input" type="hidden" name="StrokeDataJson" value="[]" />
                     <input class="tracing-metrics-input" type="hidden" name="MetricsJson" value="{}" />
+                    <div class="tracing-status" aria-live="polite">Bé hãy tô theo từng nét đứt trên trang vở nhé! ✨</div>
                     <div class="tracing-bottom-bar">
                         <div class="board-actions tracing-controls-bar">
-                            @if (!isPictureTracing)
-                            {
-                                <button class="tracing-demo clay-button" type="button" title="Xem mẫu tô nét tự động">
-                                    <span class="material-symbols-outlined">auto_draw_solid</span>
-                                    <span>Xem mẫu</span>
-                                </button>
-                            }
                             @if (!string.IsNullOrWhiteSpace(Model.TracingAudioUrl))
                             {
                                 <button class="tracing-audio clay-button" type="button" title="Nghe hướng dẫn"><span class="material-symbols-outlined">volume_up</span></button>
@@ -178,7 +180,7 @@
                             <button class="tracing-undo clay-button" type="button" title="Hoàn tác nét vẽ"><span class="material-symbols-outlined">undo</span></button>
                             <button class="tracing-clear clay-button" type="button" title="Xóa toàn bộ để vẽ lại"><span class="material-symbols-outlined">delete</span></button>
                         </div>
-                        <button class="app-btn app-btn-wide tracing-submit-button clay-button" type="submit" disabled>
+                        <button class="app-btn tracing-submit-button clay-button" type="submit" disabled>
                             <span class="material-symbols-outlined">check_circle</span>
                             <span>Hoàn thành bài tô</span>
                         </button>
