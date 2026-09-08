@@ -135,8 +135,8 @@ public class CreateTracingItemViewModel
     [Required(ErrorMessage = "Vui lòng nhập ký tự hoặc nội dung cần tô."), MaxLength(120)]
     public string Symbol { get; set; } = "A";
 
-    [Required(ErrorMessage = "Vui lòng nhập lời hướng dẫn."), MaxLength(500)]
-    public string InstructionText { get; set; } = string.Empty;
+    [MaxLength(500)]
+    public string InstructionText { get; set; } = "Con tô theo nét gợi ý nhé.";
 
     [Required(ErrorMessage = "Vui lòng nhập câu hỏi."), MaxLength(500)]
     public string PromptText { get; set; } = string.Empty;

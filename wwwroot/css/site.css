@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f4fbff;
   --surface: #ffffff;
   --surface-strong: #fff7cf;
@@ -5306,9 +5306,168 @@ a {
   height: 36px;
 }
 
+/* ==========================================================================
+   Admin Tracing Builder Redesign
+   ========================================================================== */
+.tracing-builder-page {
+  padding-bottom: 50px;
+}
+
+.tracing-header-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.tracing-title-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-back-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f8fafc;
+  color: #334155;
+  text-decoration: none;
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-back-circle:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  transform: translateX(-2px);
+  border-color: #cbd5e1;
+}
+
+.tracing-page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.tracing-page-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.84rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.tracing-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Status & Workflow Strip */
+.tracing-status-workflow-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding: 14px 20px;
+  background: #ffffff;
+  border: 1.5px solid #e0f2fe;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.05);
+}
+
+.tracing-status-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tracing-status-info .status-label {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.status-hint-note {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.tracing-workflow-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dash-btn-sm {
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  border-radius: 10px;
+  gap: 6px;
+}
+
+.dash-btn-sm span.material-symbols-outlined {
+  font-size: 1.15rem;
+}
+
+.btn-action-publish {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 0;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
+}
+
+.btn-action-publish:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-action-review {
+  border-color: #f59e0b;
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.btn-action-review:hover {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-action-delete {
+  border-color: #fecaca;
+  color: #dc2626;
+  background: #fff5f5;
+}
+
+.btn-action-delete:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* 2-Column Tracing Builder Layout */
 .tracing-builder-layout {
   display: grid;
-  grid-template-columns: minmax(360px, 1fr) minmax(420px, 0.9fr);
+  grid-template-columns: minmax(360px, 460px) minmax(420px, 1fr);
   align-items: start;
   gap: 22px;
 }
@@ -5316,7 +5475,55 @@ a {
 .tracing-builder-preview {
   position: sticky;
   top: 18px;
-  padding: 18px;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.badge-preview-mode {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #0369a1;
+  background: #e0f2fe;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.tracing-guidance-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  border-radius: 14px;
+  color: #9a3412;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.tracing-guidance-audio {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 0;
+  background: #f97316;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.tracing-guidance-audio:hover {
+  transform: scale(1.08);
+  background: #ea580c;
 }
 
 .tracing-preview-board {
@@ -5324,11 +5531,18 @@ a {
   display: grid;
   place-items: center;
   aspect-ratio: 1;
-  max-width: 620px;
-  margin: 20px auto 0;
-  border: 5px solid #bfeef7;
-  border-radius: 8px;
-  background: #fff;
+  max-width: 100%;
+  margin: 16px auto 0;
+  border: 4px solid #bae6fd;
+  border-radius: 18px;
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(#cbd5e1 1.2px, transparent 1.2px),
+    radial-gradient(#cbd5e1 1.2px, #ffffff 1.2px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
 .tracing-preview-symbol {
@@ -5338,6 +5552,127 @@ a {
   line-height: 1;
   -webkit-text-stroke: 8px #98d8ca;
   text-stroke: 8px #98d8ca;
+}
+
+.tracing-preview-tips {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.tracing-preview-tips strong {
+  color: #334155;
+}
+
+/* Tracing Section Cards */
+.tracing-section-card {
+  background: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  margin-bottom: 20px;
+}
+
+.section-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid #f1f5f9;
+}
+
+.section-card-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.section-icon {
+  font-size: 1.3rem;
+  color: #f97316;
+  background: #fff7ed;
+  padding: 6px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-sub {
+  font-size: 0.76rem;
+  color: #64748b;
+  font-weight: 600;
+  background: #f8fafc;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-control-symbol {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0369a1;
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.form-control-symbol:focus {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+}
+
+.tracing-field-group {
+  margin-bottom: 16px;
+}
+
+.tracing-field-group:last-child {
+  margin-bottom: 0;
+}
+
+.tracing-field-group label {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.tracing-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.tracing-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.tracing-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 18px 22px;
+  background: #ffffff;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+  margin-top: 10px;
 }
 
 .tracing-preview-start {

@@ -1,137 +1,240 @@
 @model CreateTracingItemViewModel
 @{
-    ViewData["Title"] = "Tạo bài tô nét";
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Sửa bài tô nét" : "Tạo bài tô nét";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
 }
 
+<style>
+.tracing-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+@@media (max-width: 992px) {
+    .tracing-grid-4 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@@media (max-width: 576px) {
+    .tracing-grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
-    <main class="admin-main">
-        <partial name="_AdminHeader" model="@(Model.Id.HasValue ? "Sửa bài tô nét" : "Tạo bài tô nét")" />
+    <main class="admin-main tracing-builder-page">
+        <partial name="_AdminHeader" model="@(isEdit ? "Sửa bài tô nét" : "Tạo bài tô nét mới")" />
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-            <div>
-                <span class="admin-subheading">Biên tập bài tập tô chữ, từ, nét vẽ & tranh</span>
-                <p class="empty-note mb-0" style="color:#64748b; font-size:13px;">Nhập một ký tự, một từ, vài từ hoặc chọn mẫu tranh tạo hình có sẵn.</p>
+        <!-- 1. Thanh điều hướng & Thao tác chính gọn gàng (Đã loại bỏ các nút thừa) -->
+        <div class="tracing-header-toolbar">
+            <div class="tracing-title-block">
+                <a class="btn-back-circle" asp-action="LearningItems" title="Quay lại Kho bài học">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h2 class="tracing-page-title">@(isEdit ? (!string.IsNullOrWhiteSpace(Model.Title) ? Model.Title : "Chỉnh sửa bài tô nét") : "Tạo bài tập tô nét mới")</h2>
+                        @if (isEdit)
+                        {
+                            <span class="status-chip status-@Model.Status">@ContentStatus.GetDisplayName(Model.Status)</span>
+                        }
+                    </div>
+                    <p class="tracing-page-subtitle">Biên tập bảng tô nét chữ cái, chữ số, từ ngữ hoặc tranh nghệ thuật tương tác cho bé</p>
+                </div>
             </div>
-            <div class="dashboard-actions d-flex gap-2 flex-wrap">
-                <a class="app-btn app-btn-muted app-btn-small" asp-action="MediaLibrary"><span class="material-symbols-outlined">perm_media</span>Thư viện ảnh</a>
-                <a class="app-btn app-btn-muted app-btn-small" asp-action="VoiceCache"><span class="material-symbols-outlined">graphic_eq</span>Kiểm soát voice</a>
-                <a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems"><span class="material-symbols-outlined">library_books</span>Kho bài học</a>
-            </div>
-        </div>
 
-    <form class="tracing-builder-layout" asp-action="CreateTracing" method="post" enctype="multipart/form-data" data-admin-learning-form data-tracing-builder>
-        <input asp-for="Id" type="hidden" />
-        <input asp-for="Status" type="hidden" />
-        <input asp-for="IsCompatible" type="hidden" />
-        <input asp-for="AudioUrl" type="hidden" />
-        <input asp-for="TopicId" type="hidden" value="" />
+            <div class="tracing-toolbar-actions">
+                @if (isEdit)
+                {
+                    <form asp-action="GenerateLearningItemAudio" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        <button class="dash-btn dash-btn-outline" type="submit" title="Tự động tạo âm thanh giọng đọc AI cho lời dặn của bài học này">
+                            <span class="material-symbols-outlined">record_voice_over</span>
+                            <span>Tạo Voice AI</span>
+                        </button>
+                    </form>
 
-        <div class="soft-card tracing-builder-preview">
-            <div class="builder-stage-heading"><div><span class="material-symbols-outlined">draw</span><strong>Xem trước bảng tô</strong></div></div>
-            <div class="tracing-guidance-card tracing-preview-guidance">
-                <span class="material-symbols-outlined" aria-hidden="true">draw</span>
-                <strong>Bé vẽ theo đường nét đứt nhé!</strong>
-                <button class="learning-voice-button tracing-guidance-audio" type="button" disabled title="Nghe hướng dẫn">
-                    <span class="material-symbols-outlined">volume_up</span>
+                    <form asp-action="DeleteLearningItem" asp-route-id="@Model.Id" method="post" data-confirm-delete class="d-inline">
+                        <button class="dash-btn dash-btn-outline btn-action-delete" type="submit" title="Xóa bài tập tô này">
+                            <span class="material-symbols-outlined">delete</span>
+                            <span>Xóa</span>
+                        </button>
+                    </form>
+                }
+
+                <button class="dash-btn dash-btn-primary" type="submit" form="tracing-builder-form">
+                    <span class="material-symbols-outlined">save</span>
+                    <span>@(isEdit ? "Lưu thay đổi" : "Lưu bài tô")</span>
                 </button>
             </div>
-            <div class="tracing-preview-board tracing-canvas-host" data-tracing-preview-board>
-                <span class="tracing-preview-symbol trace-letter outline-guide" data-tracing-preview-symbol>@Model.Symbol</span>
-                <div class="tracing-guide-overlay" data-tracing-preview-guide aria-hidden="true"></div>
-            </div>
         </div>
 
-        <div class="soft-card admin-form tracing-builder-properties">
-            <div asp-validation-summary="All" class="text-danger"></div>
-
-            <h2>Phân loại bài tô</h2>
-            <label asp-for="SkillGroupId">Nhóm kỹ năng</label>
-            <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
-                @foreach (var group in skillGroups)
-                {
-                    <option value="@group.Id" data-group-code="@group.Code">@group.Name</option>
-                }
-            </select>
-
-            <h2>Nội dung cần tô</h2>
-            <label asp-for="Title">Tên bài</label>
-            <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ b" data-tracing-title-input />
-            <span asp-validation-for="Title" class="text-danger"></span>
-
-            <label asp-for="Symbol">Ký tự, từ hoặc mã tranh cần tô</label>
-            <input asp-for="Symbol" class="form-control" maxlength="120" data-tracing-symbol-input />
-            <span asp-validation-for="Symbol" class="text-danger"></span>
-            <p class="builder-field-help">Có thể nhập chữ hoa, chữ thường, số, một từ hoặc vài từ. Hệ thống giữ nguyên nội dung và tự dàn nét theo khung.</p>
-
-            <label for="tracingArtTemplate">Mẫu Tô tranh & Tạo hình nghệ thuật</label>
-            <select id="tracingArtTemplate" class="form-control" data-tracing-art-template>
-                <option value="">-- Không dùng mẫu tranh --</option>
-                <option value="phong-canh" data-title="Phong cảnh thiên nhiên">Phong cảnh thiên nhiên</option>
-                <option value="do-dung" data-title="Đồ dùng học tập">Đồ dùng học tập</option>
-                <option value="hinh-hoc" data-title="Hình học kỳ diệu">Hình học kỳ diệu</option>
-                <option value="meo-con" data-title="Chú mèo con">Chú mèo con</option>
-                <option value="ca-heo" data-title="Cá heo tung tăng">Cá heo tung tăng</option>
-                <option value="o-che-mua" data-title="Chiếc ô che mưa">Chiếc ô che mưa</option>
-                <option value="trai-tao" data-title="Quả táo và chú sâu">Quả táo và chú sâu</option>
-                <option value="tau-hoa" data-title="Đoàn tàu tí hon">Đoàn tàu tí hon</option>
-                <option value="chu-tho" data-title="Chú thỏ và cà rốt">Chú thỏ và cà rốt</option>
-                <option value="ong-vang" data-title="Ong vàng và hoa">Ong vàng và hoa</option>
-                <option value="may-bay" data-title="Máy bay trên trời">Máy bay trên trời</option>
-                <option value="thuyen" data-title="Thuyền buồm lướt sóng">Thuyền buồm lướt sóng</option>
-                <option value="cau-vong" data-title="Cầu vồng và lâu đài">Cầu vồng và lâu đài</option>
-                <option value="chu-buom" data-title="Bướm xinh trong vườn">Bướm xinh trong vườn</option>
-                <option value="khung-long" data-title="Khủng long tí hon">Khủng long tí hon</option>
-                <option value="ten-lua" data-title="Tên lửa và các vì sao">Tên lửa và các vì sao</option>
-            </select>
-            <p class="builder-field-help">Chọn mẫu sẽ tự chuyển sang nhóm Vận động tinh và điền đúng mã tranh để preview ngay.</p>
-
-            <div class="two-column-form">
-                <div>
-                    <label asp-for="GuideMode">Kiểu bảng tô</label>
-                    <select asp-for="GuideMode" class="form-control" data-tracing-guide-mode>
-                        <option value="outline">Tô theo đường viền</option>
-                        <option value="free">Tự viết trong khung</option>
-                    </select>
-                </div>
-                <div>
-                    <label asp-for="ExpectedStrokeCount">Số nét tham khảo</label>
-                    <input asp-for="ExpectedStrokeCount" class="form-control" type="number" min="1" max="200" />
-                    <small>Chỉ là thông tin mô tả; nét tô thực tế được dựng tự động theo toàn bộ ký tự hoặc cụm từ.</small>
-                </div>
-            </div>
+        <!-- 3. Form Trình tạo bài tô nét (2 cột cân đối, hiện đại) -->
+        <form id="tracing-builder-form" class="tracing-builder-layout" asp-action="CreateTracing" method="post" enctype="multipart/form-data" data-admin-learning-form data-tracing-builder>
+            <!-- Các trường dữ liệu ẩn & mặc định hệ thống (đã bỏ khỏi giao diện để tránh rườm rà) -->
+            <input asp-for="Id" type="hidden" />
+            <input asp-for="IsCompatible" type="hidden" />
+            <input asp-for="AudioUrl" type="hidden" />
+            <input asp-for="TopicId" type="hidden" value="" />
             <input asp-for="ShowStartPoint" type="hidden" value="true" />
+            <input asp-for="ExpectedStrokeCount" type="hidden" value="@(Model.ExpectedStrokeCount > 0 ? Model.ExpectedStrokeCount : 1)" />
+            <input asp-for="MinPoints" type="hidden" value="@(Model.MinPoints > 0 ? Model.MinPoints : 20)" />
+            <input asp-for="InstructionText" type="hidden" id="tracingInstructionHidden" />
 
-            <div class="two-column-form">
-                <div>
-                    <label asp-for="MinPoints">Mức hoàn thành tối thiểu</label>
-                    <input asp-for="MinPoints" class="form-control" type="number" min="5" max="300" />
+            <!-- CỘT 1: KHUNG XEM TRƯỚC BẢNG TÔ TRỰC QUAN -->
+            <aside class="tracing-builder-preview">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined" style="color:#0284c7;">draw</span>
+                        <strong style="color:#0f172a; font-size:1.05rem;">Xem trước bảng tô</strong>
+                    </div>
+                    <span class="badge-preview-mode" data-preview-mode-badge>Tô nét đứt viền</span>
                 </div>
-                <div>
-                    <label asp-for="SortOrder">Thứ tự học</label>
-                    <input asp-for="SortOrder" class="form-control" type="number" min="0" max="100000" placeholder="Tự động" />
+
+                <!-- Lời thoại hướng dẫn kèm loa nghe thử -->
+                <div class="tracing-guidance-card">
+                    <span class="material-symbols-outlined" aria-hidden="true">record_voice_over</span>
+                    <span data-tracing-guidance-text style="flex:1; line-height:1.35;">@(string.IsNullOrWhiteSpace(Model.PromptText) ? "Bé vẽ theo đường nét đứt nhé!" : Model.PromptText)</span>
+                    <button class="tracing-guidance-audio" type="button" id="btnPreviewVoice" title="Bấm để nghe thử phát âm lời dặn này">
+                        <span class="material-symbols-outlined" style="font-size:18px;">volume_up</span>
+                    </button>
                 </div>
-                <div>
-                    <label asp-for="Level">Độ khó</label>
-                    <select asp-for="Level" class="form-control"><option value="1">Dễ</option><option value="2">Trung bình</option><option value="3">Nâng cao</option></select>
+
+                <!-- Bảng canvas trực quan có lưới ô ly tập viết tiểu học -->
+                <div class="tracing-preview-board tracing-canvas-host" data-tracing-preview-board>
+                    <span class="tracing-preview-symbol trace-letter outline-guide" data-tracing-preview-symbol>@Model.Symbol</span>
+                    <div class="tracing-guide-overlay" data-tracing-preview-guide aria-hidden="true"></div>
                 </div>
+
+                <!-- Gợi ý thao tác nhanh -->
+                <div class="tracing-preview-tips">
+                    <div style="font-weight:700; color:#334155; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                        <span class="material-symbols-outlined" style="font-size:16px; color:#f59e0b;">lightbulb</span>
+                        Gợi ý soạn nội dung:
+                    </div>
+                    <div>• <strong>Chữ cái / Số:</strong> Nhập chữ hoa, thường hoặc số (A, b, 5...).</div>
+                    <div>• <strong>Từ ngữ:</strong> Nhập từ ghép ("hoa sen", "mặt trời") hệ thống tự dàn đều.</div>
+                    <div>• <strong>Tranh nghệ thuật:</strong> Chọn nhanh mẫu vẽ ở menu bên phải để xem ngay.</div>
+                </div>
+            </aside>
+
+            <!-- CỘT 2: CÁC KHỐI CẤU HÌNH & NỘI DUNG GỌN GÀNG -->
+            <div class="tracing-builder-properties">
+                <div asp-validation-summary="All" class="text-danger mb-3" style="font-size:0.9rem; font-weight:600;"></div>
+
+                <!-- KHỐI 1: PHÂN LOẠI BÀI TÔ -->
+                <section class="tracing-section-card">
+                    <div class="section-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="section-icon material-symbols-outlined">category</span>
+                            <h3>Phân loại bài tô</h3>
+                        </div>
+                        <span class="badge-sub">Mục tiêu & Cấu hình</span>
+                    </div>
+
+                    <div class="tracing-grid-2 mb-3">
+                        <div class="tracing-field-group mb-0">
+                            <label asp-for="SkillGroupId">Nhóm kỹ năng <span class="text-danger">*</span></label>
+                            <select asp-for="SkillGroupId" class="form-control" data-skill-group-select>
+                                @foreach (var group in skillGroups)
+                                {
+                                    <option value="@group.Id" data-group-code="@group.Code">@group.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="tracing-field-group mb-0">
+                            <label for="tracingArtTemplate">Chọn nhanh mẫu tranh có sẵn</label>
+                            <select id="tracingArtTemplate" class="form-control" data-tracing-art-template>
+                                <option value="">-- Không dùng (Tự nhập chữ/từ) --</option>
+                                <option value="phong-canh" data-title="Phong cảnh thiên nhiên">Phong cảnh thiên nhiên</option>
+                                <option value="do-dung" data-title="Đồ dùng học tập">Đồ dùng học tập</option>
+                                <option value="hinh-hoc" data-title="Hình học kỳ diệu">Hình học kỳ diệu</option>
+                                <option value="meo-con" data-title="Chú mèo con">Chú mèo con</option>
+                                <option value="ca-heo" data-title="Cá heo tung tăng">Cá heo tung tăng</option>
+                                <option value="o-che-mua" data-title="Chiếc ô che mưa">Chiếc ô che mưa</option>
+                                <option value="trai-tao" data-title="Quả táo và chú sâu">Quả táo và chú sâu</option>
+                                <option value="tau-hoa" data-title="Đoàn tàu tí hon">Đoàn tàu tí hon</option>
+                                <option value="chu-tho" data-title="Chú thỏ và cà rốt">Chú thỏ và cà rốt</option>
+                                <option value="ong-vang" data-title="Ong vàng và hoa">Ong vàng và hoa</option>
+                                <option value="may-bay" data-title="Máy bay trên trời">Máy bay trên trời</option>
+                                <option value="thuyen" data-title="Thuyền buồm lướt sóng">Thuyền buồm lướt sóng</option>
+                                <option value="cau-vong" data-title="Cầu vồng và lâu đài">Cầu vồng và lâu đài</option>
+                                <option value="chu-buom" data-title="Bướm xinh trong vườn">Bướm xinh trong vườn</option>
+                                <option value="khung-long" data-title="Khủng long tí hon">Khủng long tí hon</option>
+                                <option value="ten-lua" data-title="Tên lửa và các vì sao">Tên lửa và các vì sao</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tracing-grid-4">
+                        <div class="tracing-field-group mb-0">
+                            <label asp-for="GuideMode">Kiểu hiển thị nét</label>
+                            <select asp-for="GuideMode" class="form-control" data-tracing-guide-mode>
+                                <option value="outline">Tô theo nét đứt viền</option>
+                                <option value="free">Tự viết trong khung</option>
+                            </select>
+                        </div>
+
+                        <div class="tracing-field-group mb-0">
+                            <label asp-for="Level">Độ khó</label>
+                            <select asp-for="Level" class="form-control">
+                                <option value="1">Dễ (Khởi đầu)</option>
+                                <option value="2">Trung bình (Luyện tập)</option>
+                                <option value="3">Nâng cao (Thử thách)</option>
+                            </select>
+                        </div>
+
+                        <div class="tracing-field-group mb-0">
+                            <label asp-for="SortOrder">Thứ tự bài học</label>
+                            <input asp-for="SortOrder" class="form-control" type="number" min="0" max="100000" placeholder="Tự động" />
+                        </div>
+
+                        <div class="tracing-field-group mb-0">
+                            <label asp-for="Status">Trạng thái bài học</label>
+                            <select asp-for="Status" class="form-control">
+                                <option value="@ContentStatus.Published">Xuất bản (Bé thấy bài)</option>
+                                <option value="@ContentStatus.Draft">Bản nháp (Đang soạn)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- KHỐI 2: NỘI DUNG BÀI TÔ & LỜI DẶN -->
+                <section class="tracing-section-card">
+                    <div class="section-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="section-icon material-symbols-outlined">edit_square</span>
+                            <h3>Nội dung bài học</h3>
+                        </div>
+                        <span class="badge-sub">Ký tự & Lời thoại</span>
+                    </div>
+
+                    <div class="tracing-field-group">
+                        <label asp-for="Title">Tên bài học <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Tập tô chữ b hoặc Bé vẽ Chú mèo con" data-tracing-title-input required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                        <small style="color:#64748b; font-size:0.82rem;">Tên bài xuất hiện trên bản đồ học tập và danh sách bài học của bé.</small>
+                    </div>
+
+                    <div class="tracing-field-group">
+                        <label asp-for="Symbol">Nội dung cần tô (Ký tự / Từ ngữ / Mã tranh) <span class="text-danger">*</span></label>
+                        <input asp-for="Symbol" class="form-control form-control-symbol" maxlength="120" placeholder="A, b, 5, gà con, meo-con..." data-tracing-symbol-input required />
+                        <span asp-validation-for="Symbol" class="text-danger"></span>
+                        <small style="color:#64748b; font-size:0.82rem;">Hệ thống giữ nguyên ký tự hoặc dàn đều nét vẽ theo khung ô ly.</small>
+                    </div>
+
+                    <div class="tracing-field-group">
+                        <label asp-for="PromptText">Lời dặn / Yêu cầu phát âm cho bé <span class="text-danger">*</span></label>
+                        <textarea asp-for="PromptText" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: Con hãy tô theo các đường nét đứt để hoàn thành chữ nhé!" data-tracing-prompt-input required></textarea>
+                        <span asp-validation-for="PromptText" class="text-danger"></span>
+                        <small style="color:#64748b; font-size:0.82rem;">Câu này sẽ được lưu vào hệ thống Voice AI để phát âm thanh tự động khi bé làm bài.</small>
+                    </div>
+                </section>
             </div>
-
-            <h2>Hướng dẫn và voice</h2>
-            <label asp-for="InstructionText">Lời hướng dẫn</label>
-            <input asp-for="InstructionText" class="form-control" />
-            <label asp-for="PromptText">Yêu cầu trên bảng tô</label>
-            <input asp-for="PromptText" class="form-control" data-tracing-prompt-input />
-            <p class="builder-field-help">Khi lưu bài, yêu cầu và phản hồi sẽ được đưa vào Kiểm soát voice để dùng lại file âm thanh trùng nội dung.</p>
-
-            <button class="app-btn app-btn-wide" type="submit"><span class="material-symbols-outlined">save</span>@(Model.Id.HasValue ? "Lưu thay đổi" : "Lưu bản nháp")</button>
-        </div>
-    </form>
-    @if (Model.Id.HasValue)
-    {
-        <partial name="_LearningItemWorkflow" model="@(new LearningItemWorkflowViewModel { Id = Model.Id.Value, Status = Model.Status, IsCompatible = Model.IsCompatible })" />
-    }
+        </form>
     </main>
 </section>
 

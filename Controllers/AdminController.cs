@@ -1975,6 +1975,7 @@ public class AdminController : Controller
         {
             SkillGroupId = selectedGroup?.Id ?? Guid.Empty,
             TopicId = null,
+            Status = ContentStatus.Published,
             InstructionText = "Con tô theo nét gợi ý nhé.",
             PromptText = "Con tô ký tự theo đường viền."
         });
@@ -1984,6 +1985,13 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateTracing(CreateTracingItemViewModel model)
     {
+        if (string.IsNullOrWhiteSpace(model.InstructionText))
+        {
+            model.InstructionText = string.IsNullOrWhiteSpace(model.PromptText)
+                ? "Con tÃ´ theo nÃ©t gá»£i Ã½ nhÃ©."
+                : model.PromptText.Trim();
+            ModelState.Remove(nameof(model.InstructionText));
+        }
         await ValidateClassificationAsync(model.SkillGroupId, model.TopicId);
         await ValidateTracingSkillGroupAsync(model.SkillGroupId);
         await PrepareTracingMediaAsync(model);
@@ -2046,6 +2054,7 @@ public class AdminController : Controller
             CreatedAt = now,
             Questions = new List<Question>()
         };
+        item.Status = model.Status == ContentStatus.Published ? ContentStatus.Published : ContentStatus.Draft;
         item.Title = model.Title.Trim();
         item.SkillGroupId = model.SkillGroupId;
         item.TopicId = model.TopicId;

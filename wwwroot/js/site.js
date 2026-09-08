@@ -1076,25 +1076,46 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
     const skillGroup = form.querySelector("[data-skill-group-select]");
     const titleInput = form.querySelector("[data-tracing-title-input]");
     const promptInput = form.querySelector("[data-tracing-prompt-input]");
+    const instructionHidden = form.querySelector("#tracingInstructionHidden");
+    const guidanceText = form.querySelector("[data-tracing-guidance-text]");
+    const previewModeBadge = form.querySelector("[data-preview-mode-badge]");
+    const voiceBtn = form.querySelector("#btnPreviewVoice");
 
     const updateTracingPreview = () => {
         const symbol = symbolInput?.value.trim() || "?";
+        const isFree = guideMode?.value === "free";
         if (symbolPreview) {
             symbolPreview.textContent = symbol;
-            symbolPreview.hidden = guideMode?.value === "free";
+            symbolPreview.hidden = isFree;
         }
         if (guidePreview) {
-            guidePreview.hidden = guideMode?.value === "free";
-            if (guideMode?.value === "free") {
+            guidePreview.hidden = isFree;
+            if (isFree) {
                 guidePreview.replaceChildren();
             } else {
                 window.tracingGuides?.renderTracingGuide(guidePreview, symbol);
             }
         }
+        if (previewModeBadge && guideMode) {
+            previewModeBadge.textContent = isFree ? "Vẽ tự do trong khung" : "Tô nét đứt viền";
+        }
+    };
+
+    const syncInstructionAndPrompt = () => {
+        const promptVal = promptInput?.value.trim() || "";
+        if (instructionHidden) {
+            instructionHidden.value = promptVal || "Con tô theo nét gợi ý nhé.";
+        }
+        if (guidanceText) {
+            guidanceText.textContent = promptVal || "Bé vẽ theo đường nét đứt nhé!";
+        }
     };
 
     symbolInput?.addEventListener("input", updateTracingPreview);
     guideMode?.addEventListener("change", updateTracingPreview);
+    promptInput?.addEventListener("input", syncInstructionAndPrompt);
+    form.addEventListener("submit", syncInstructionAndPrompt);
+
     artTemplate?.addEventListener("change", () => {
         const option = artTemplate.selectedOptions[0];
         if (!option?.value) return;
@@ -1106,8 +1127,22 @@ document.querySelectorAll("[data-tracing-builder]").forEach((form) => {
             skillGroup.value = fineMotorOption.value;
             skillGroup.dispatchEvent(new Event("change", { bubbles: true }));
         }
+        syncInstructionAndPrompt();
         updateTracingPreview();
     });
+
+    voiceBtn?.addEventListener("click", () => {
+        const textToSpeak = promptInput?.value.trim() || "Bé vẽ theo đường nét đứt nhé!";
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(textToSpeak);
+            utter.lang = "vi-VN";
+            utter.rate = 0.9;
+            window.speechSynthesis.speak(utter);
+        }
+    });
+
+    syncInstructionAndPrompt();
     updateTracingPreview();
 });
 
