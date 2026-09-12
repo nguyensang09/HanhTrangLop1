@@ -191,17 +191,12 @@ class GameShell {
             this.currentGame.init(this.currentLevelData);
         }
 
-        // Đọc câu hỏi mở đầu (với gold-miner chỉ phát âm chữ/số mục tiêu, bỏ câu nhắc nhở cho gọn nhẹ)
-        setTimeout(() => {
-            if (this.gameKey !== 'gold-miner') {
-                this.replayInstruction();
-            }
-        }, 400);
+        // Các trò chơi tự chủ động phát âm giọng bài học chuẩn hóa
     }
 
     replayInstruction() {
         if (this.currentLevelData && this.currentLevelData.instruction) {
-            window.gameAudio.speak(this.currentLevelData.instruction);
+            window.gameAudio?.playSystemVoiceOrSpeak(this.currentLevelData.instruction);
         }
     }
 
@@ -214,16 +209,10 @@ class GameShell {
 
         this.saveProgressLocal(this.gameKey, this.currentLevel, rewardStars);
         this.saveProgressServer(this.gameKey, this.currentLevel, rewardStars);
-
-        if (this.gameKey !== 'gold-miner') {
-            window.gameAudio.playVictoryFanfare();
-            this.showLevelCompleteModal(rewardStars);
-        }
     }
 
     showLevelCompleteModal(starsWon) {
         const isFinalLevel = this.currentLevel >= this.levels.length;
-        const starIcons = '⭐'.repeat(Math.max(1, Math.min(3, starsWon)));
 
         const modalOverlay = document.createElement('div');
         modalOverlay.className = 'game-modal-overlay';
@@ -231,19 +220,18 @@ class GameShell {
             <div class="game-modal-card">
                 <div class="modal-confetti-art">${isFinalLevel ? '🏆' : '🎉'}</div>
                 <h2 class="modal-title">${isFinalLevel ? 'Chúc Mừng Bé Xuất Sắc!' : 'Hoàn Thành Màn Chơi!'}</h2>
-                <div class="modal-stars-row">${starIcons}</div>
-                <p class="modal-desc">Bé nhận được <strong>+${starsWon} Sao Vàng</strong>!</p>
+                <p class="modal-desc">Bé đã hoàn thành xuất sắc màn ${this.currentLevel}!</p>
                 <div class="modal-actions-row">
                     <a href="/kids/games" class="modal-btn modal-btn-secondary">
                         <span class="material-symbols-outlined">home</span> Về Sảnh
                     </a>
                     ${!isFinalLevel ? `
                         <button type="button" class="modal-btn modal-btn-primary" id="modalNextLevelBtn">
-                            Chơi Tiếp <span class="material-symbols-outlined">arrow_forward</span>
+                            Màn Tiếp Theo <span class="material-symbols-outlined">arrow_forward</span>
                         </button>
                     ` : `
                         <a href="/kids/games" class="modal-btn modal-btn-primary">
-                            Nhận Thưởng <span class="material-symbols-outlined">stars</span>
+                            Về Sảnh <span class="material-symbols-outlined">home</span>
                         </a>
                     `}
                 </div>

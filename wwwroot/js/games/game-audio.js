@@ -755,7 +755,7 @@ class GameAudioEngine {
         });
     }
 
-    playSparkle() {
+    playRocketLaunch() {
         if (!this.soundEnabled) return;
         const ctx = this.getAudioContext();
         if (!ctx) return;
@@ -764,20 +764,144 @@ class GameAudioEngine {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1200, now);
-        osc.frequency.linearRampToValueAtTime(2400, now + 0.15);
+        // Tiếng vút của tên lửa đồ chơi: tần số tăng nhanh từ 280Hz -> 850Hz
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
 
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
 
         osc.start(now);
-        osc.stop(now + 0.2);
+        osc.stop(now + 0.22);
+    }
+
+    playRocketExplode() {
+        if (!this.soundEnabled) return;
+        const ctx = this.getAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+        
+        // 1. Âm thanh nổ bụp bọt nước giòn giã
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+
+        // 2. Tiếng lách tách vỡ bọt nước & tia sao lấp lánh
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1200, now + 0.04);
+        osc2.frequency.linearRampToValueAtTime(2400, now + 0.2);
+
+        gain2.gain.setValueAtTime(0.18, now + 0.04);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.04);
+        osc2.stop(now + 0.22);
+    }
+
+    playTrainCouple() {
+        if (!this.soundEnabled) return;
+        const ctx = this.getAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+        // Tiếng va chạm cơ khí 2 toa tàu gắn khớp nhau: Clang-chug!
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.14);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+    }
+
+    playFlameWhoosh() {
+        if (!this.soundEnabled) return;
+        const ctx = this.getAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime;
+        // Tiếng mỏ đốt khí khinh khí cầu bùng cháy: Whooosh!
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(380, now + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.35);
+
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.38);
+    }
+
+    /**
+     * Đọc từ vựng tiếng Anh kèm kiểm tra cache hệ thống
+     */
+    async speakWordEnglish(word, onEnded = null) {
+        if (!this.soundEnabled || !word) {
+            if (onEnded) onEnded();
+            return;
+        }
+
+        const raw = String(word).trim();
+        this.stopVoice();
+
+        const audioUrl = await this.resolveEnglishLetterVoice(raw);
+        if (audioUrl) {
+            try {
+                this.activeAudio = new Audio(audioUrl);
+                this.isSpeaking = true;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(true);
+
+                this.activeAudio.onended = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    if (onEnded) onEnded();
+                };
+                this.activeAudio.onerror = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    this.speakEnglish(raw, onEnded, 0.85);
+                };
+                await this.activeAudio.play();
+                return;
+            } catch (err) {
+                console.warn('[GameAudio] Audio play failed, falling back to TTS:', err);
+            }
+        }
+
+        this.speakEnglish(raw, onEnded, 0.85);
     }
 }
 
 // Khởi tạo đối tượng toàn cục
 window.gameAudio = new GameAudioEngine();
+

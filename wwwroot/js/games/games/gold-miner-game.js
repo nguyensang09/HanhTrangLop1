@@ -733,8 +733,6 @@ class GoldMinerGame {
         this.saveCurrentLevelProgress(nextLvl);
 
         window.gameAudio?.playVictoryFanfare();
-        // Voice ngắn gọn chuẩn từ hệ thống TextToSpeechCaches
-        window.gameAudio?.playSystemVoiceOrSpeak("Bé giỏi quá!");
 
         // Tự động mờ dần popup và chuyển sang màn tiếp theo sau 2.2 giây
         setTimeout(() => {

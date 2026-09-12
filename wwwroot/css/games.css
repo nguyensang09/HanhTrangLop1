@@ -1028,11 +1028,23 @@
 
 .stitch-game-stage-wrapper[data-game-key="gold-miner"] .stitch-game-topbar,
 .stitch-game-stage-wrapper[data-game-key="gold-miner"] #floatingSpeech,
-.stitch-game-stage-wrapper[data-game-key="gold-miner"] .stitch-bottom-bar {
+.stitch-game-stage-wrapper[data-game-key="gold-miner"] .stitch-bottom-bar,
+.stitch-game-stage-wrapper[data-game-key="bubble"] .stitch-game-topbar,
+.stitch-game-stage-wrapper[data-game-key="bubble"] #floatingSpeech,
+.stitch-game-stage-wrapper[data-game-key="bubble"] .stitch-bottom-bar,
+.stitch-game-stage-wrapper[data-game-key="balloon-word"] .stitch-game-topbar,
+.stitch-game-stage-wrapper[data-game-key="balloon-word"] #floatingSpeech,
+.stitch-game-stage-wrapper[data-game-key="balloon-word"] .stitch-bottom-bar,
+.stitch-game-stage-wrapper[data-game-key="number-train"] .stitch-game-topbar,
+.stitch-game-stage-wrapper[data-game-key="number-train"] #floatingSpeech,
+.stitch-game-stage-wrapper[data-game-key="number-train"] .stitch-bottom-bar {
   display: none !important;
 }
 
-.stitch-game-stage-wrapper[data-game-key="gold-miner"] {
+.stitch-game-stage-wrapper[data-game-key="gold-miner"],
+.stitch-game-stage-wrapper[data-game-key="bubble"],
+.stitch-game-stage-wrapper[data-game-key="balloon-word"],
+.stitch-game-stage-wrapper[data-game-key="number-train"] {
   padding: 0 !important;
   margin: 0 auto !important;
   width: 100% !important;
@@ -1046,7 +1058,10 @@
   overflow: hidden !important;
 }
 
-.stitch-game-stage-wrapper[data-game-key="gold-miner"] .stitch-arena-container {
+.stitch-game-stage-wrapper[data-game-key="gold-miner"] .stitch-arena-container,
+.stitch-game-stage-wrapper[data-game-key="bubble"] .stitch-arena-container,
+.stitch-game-stage-wrapper[data-game-key="balloon-word"] .stitch-arena-container,
+.stitch-game-stage-wrapper[data-game-key="number-train"] .stitch-arena-container {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
@@ -1060,7 +1075,8 @@
   overflow: hidden !important;
 }
 
-.miner-stage-container {
+.miner-stage-container,
+.game-stage-container {
   position: relative;
   width: 100%;
   height: 100%;
@@ -1140,22 +1156,21 @@
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
-  transition: transform 0.15s ease !important;
 }
 
-.gem-pure-icon:hover {
-  transform: scale(1.16) !important;
-  filter: none !important;
+.gem-pure-icon:hover .pure-distractor-icon {
+  transform: scale(1.18);
 }
 
 .pure-distractor-icon {
   font-size: 4rem;
   line-height: 1;
   display: inline-block;
-  filter: none !important; /* Không viền mờ, không bóng mờ */
   pointer-events: none;
   user-select: none;
+  transition: transform 0.15s ease;
 }
+
 
 /* Các khối Chữ/Số gây nhiễu: Đều có viền và nền sang trọng như ngọc chuẩn */
 .gem-letter-sapphire {
@@ -2142,4 +2157,897 @@
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* ==========================================================================
+   10. CHUẨN HÓA GIAO DIỆN CHUNG: BUBBLE, BALLOON WORD & NUMBER TRAIN
+   ========================================================================== */
+
+/* --- 1. BUBBLE POPPING STYLES --- */
+.bubble-stage-playfield {
+  position: absolute;
+  inset: 75px 0 0 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.bubble-sphere {
+  position: absolute;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 20;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28), 
+              inset 0 6px 14px rgba(255, 255, 255, 0.75), 
+              inset 0 -6px 14px rgba(0, 0, 0, 0.2);
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease, filter 0.16s ease;
+}
+
+.bubble-sphere:hover {
+  transform: scale(1.12);
+  filter: brightness(1.15);
+  z-index: 30;
+}
+
+.bubble-sphere:active {
+  transform: scale(0.92);
+}
+
+.bubble-sphere-char {
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 4px 10px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.bubble-reflection {
+  position: absolute;
+  top: 10%;
+  left: 18%;
+  width: 30%;
+  height: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 80%);
+  transform: rotate(-25deg);
+  pointer-events: none;
+}
+
+@keyframes bubbleDrift {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes popFade {
+  0% { transform: scale(0.6); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.9; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* --- 2. BALLOON WORD STYLES --- */
+.balloon-word-playfield {
+  position: absolute;
+  inset: 75px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 28px 24px 28px;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.hot-air-balloon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  animation: balloonFloat 3s ease-in-out infinite alternate;
+}
+
+.hot-air-balloon-wrap:hover {
+  transform: translateY(-8px) scale(1.08);
+}
+
+.hot-air-balloon-wrap:active {
+  transform: translateY(2px) scale(0.95);
+}
+
+.hot-air-balloon-wrap.is-chosen {
+  opacity: 0.28;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+.hot-air-balloon-envelope {
+  width: 84px;
+  height: 98px;
+  border-radius: 50% 50% 44% 44%;
+  border: 3.5px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3), inset 0 4px 10px rgba(255, 255, 255, 0.7);
+  position: relative;
+}
+
+.hot-air-balloon-basket {
+  width: 32px;
+  height: 22px;
+  background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
+  border: 2px solid #fed7aa;
+  border-radius: 4px 4px 8px 8px;
+  margin-top: 5px;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.hot-air-balloon-basket::before,
+.hot-air-balloon-basket::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  width: 2px;
+  height: 6px;
+  background: #fde68a;
+}
+.hot-air-balloon-basket::before { left: 5px; }
+.hot-air-balloon-basket::after { right: 5px; }
+
+@keyframes balloonFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-14px); }
+}
+
+.word-rack-wood {
+  background: linear-gradient(180deg, #92400e 0%, #78350f 65%, #451a03 100%);
+  border: 3.5px solid #fde68a;
+  border-radius: 26px;
+  padding: 16px 24px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 25;
+  box-sizing: border-box;
+}
+
+.word-rack-slot {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  border: 3.5px dashed #fde68a;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #78350f;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.word-rack-slot.is-filled {
+  border: 3.5px solid #ffffff;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
+}
+
+/* --- 3. NUMBER TRAIN STYLES --- */
+.train-stage-playfield {
+  position: absolute;
+  inset: 75px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 24px 20px 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.train-rail-container {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  border: 3px solid rgba(253, 224, 71, 0.45);
+  border-radius: 26px;
+  padding: 14px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow-x: auto;
+}
+
+.train-track-line {
+  position: absolute;
+  bottom: 24px;
+  left: 20px;
+  right: 20px;
+  height: 12px;
+  background: repeating-linear-gradient(90deg, #78350f 0px, #78350f 12px, transparent 12px, transparent 32px);
+  border-top: 3px solid #cbd5e1;
+  border-bottom: 3px solid #94a3b8;
+  z-index: 1;
+}
+
+.train-wagon-card {
+  width: 84px;
+  height: 88px;
+  border-radius: 20px;
+  border: 3.5px solid #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.16s ease, filter 0.16s ease;
+  user-select: none;
+}
+
+.train-wagon-card:hover {
+  transform: translateY(-6px) scale(1.08);
+  filter: brightness(1.12);
+}
+
+.train-wagon-card:active {
+  transform: scale(0.94);
+}
+
+@keyframes trainPuff {
+  0% { opacity: 0.8; transform: translateY(0) scale(0.6); }
+  100% { opacity: 0; transform: translateY(-24px) scale(1.4); }
+}
+
+@keyframes shakeWrong {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.shake-wrong {
+  animation: shakeWrong 0.5s ease-in-out;
+}
+
+/* ==========================================================================
+   ANIMATIONS & CHUYỂN ĐỘNG CHO 4 TRÒ CHƠI NÂNG CẤP
+   ========================================================================== */
+
+@keyframes puffSmoke {
+  0% { opacity: 0.9; transform: translate(0, 0) scale(0.6); }
+  50% { opacity: 0.6; transform: translate(-6px, -18px) scale(1.1); }
+  100% { opacity: 0; transform: translate(-14px, -36px) scale(1.6); }
+}
+
+@keyframes spinWheel {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulseSlot {
+  0%, 100% { transform: scale(1); border-color: #fde047; box-shadow: 0 0 0 rgba(253, 224, 71, 0); }
+  50% { transform: scale(1.05); border-color: #ffffff; box-shadow: 0 0 16px rgba(253, 224, 71, 0.6); }
+}
+
+@keyframes shakeWobble {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px) rotate(-3deg); }
+  75% { transform: translateX(6px) rotate(3deg); }
+}
+
+@keyframes flickerFlame {
+  0% { transform: scale(0.9) rotate(-2deg); filter: drop-shadow(0 0 8px #f59e0b); }
+  100% { transform: scale(1.15) rotate(2deg); filter: drop-shadow(0 0 16px #ef4444); }
+}
+
+@keyframes bounceEmoji {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-10px) scale(1.08); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.4); opacity: 0; }
+  80% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Bắn Bong Bóng & Tên Lửa Đồ Chơi (Không dùng transform trên phần tử di chuyển để tránh xung đột JS translate) */
+.toy-soap-bubble:hover {
+  filter: brightness(1.2);
+}
+
+.toy-soap-bubble:active {
+  filter: brightness(0.9);
+}
+
+/* Đám mây bay khinh khí cầu (Không dùng transform trên phần tử di chuyển) */
+.toy-sky-cloud:hover {
+  filter: brightness(1.1);
+}
+
+.toy-sky-cloud:active {
+  filter: brightness(0.92);
+}
+
+/* Toa tàu sân ga */
+.station-wagon-btn:hover {
+  transform: translateY(-6px) scale(1.06);
+  filter: brightness(1.1);
+}
+
+.station-wagon-btn:active {
+  transform: scale(0.94);
+}
+
+.cargo-item-btn:hover {
+  transform: scale(1.15);
+  background: #ffffff !important;
+}
+
+.cargo-item-btn:active {
+  transform: scale(0.92);
+}
+
+/* Modal hoàn thành màn chơi tinh gọn tự động biến mất như Đào Vàng */
+.victory-toast-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 4px solid #fde047;
+  border-radius: 32px;
+  padding: 24px 36px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(245, 158, 11, 0.3);
+  max-width: 440px;
+  width: 90%;
+  animation: popIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  backdrop-filter: blur(12px);
+  pointer-events: none; /* Trẻ 5 tuổi không cần phải bấm, popup tự mất sau 1.8s */
+}
+
+/* ==========================================================================
+   KHẨU ĐẠI BÁC ĐỒ CHƠI & ĐẠI DƯƠNG SINH ĐỘNG (BUBBLE CANNON V2)
+   ========================================================================== */
+
+@keyframes swimAcross {
+  0% { transform: translateX(110vw) scaleX(-1); }
+  100% { transform: translateX(-20vw) scaleX(-1); }
+}
+
+@keyframes swimTurtle {
+  0% { transform: translateX(-20vw); }
+  100% { transform: translateX(110vw); }
+}
+
+@keyframes floatJelly {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-16px) rotate(2deg); }
+}
+
+@keyframes causticsLight {
+  0%, 100% { opacity: 0.15; transform: rotate(-15deg) scaleX(1); }
+  50% { opacity: 0.28; transform: rotate(-12deg) scaleX(1.15); }
+}
+
+@keyframes pulseGoldGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(253, 224, 71, 0.4); }
+  50% { box-shadow: 0 0 22px rgba(253, 224, 71, 0.8); }
+}
+
+.sea-floor-coral-left {
+  position: absolute;
+  bottom: 0;
+  left: -10px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.sea-floor-coral-right {
+  position: absolute;
+  bottom: 0;
+  right: -10px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.coral-stalk {
+  border-radius: 18px 18px 0 0;
+  box-shadow: inset -3px 0 6px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Bảng điều khiển mục tiêu ngay chân đại bác */
+.cannon-console-box {
+  background: linear-gradient(180deg, #78350f 0%, #451a03 100%);
+  border: 3.5px solid #f59e0b;
+  border-radius: 20px;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 2px 4px rgba(254, 240, 138, 0.4);
+}
+
+.cannon-target-pill {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fef08a 0%, #fde047 50%, #eab308 100%);
+  border: 2.5px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.8);
+}
+
+/* ==========================================================================
+   ĐOÀN TÀU HƠI NƯỚC SỐ HỌC 3D (THEO ĐÚNG GIAO DIỆN MOCKUP)
+   ========================================================================== */
+
+.btn-3d-orange {
+  background: linear-gradient(180deg, #ff9f1c 0%, #f77f00 60%, #d65a00 100%);
+  box-shadow: 0 5px 0 #9d3f00, 0 8px 16px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.6);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-3d-orange:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #9d3f00, 0 4px 8px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.6);
+}
+
+.btn-3d-teal {
+  background: linear-gradient(180deg, #2ec4b6 0%, #00a896 60%, #028072 100%);
+  box-shadow: 0 5px 0 #025950, 0 8px 16px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.6);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-3d-teal:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #025950, 0 4px 8px rgba(0,0,0,0.3);
+}
+.train-stage-container {
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  background: #38b000;
+  border: 6px solid #208b3a;
+  border-radius: 28px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.65), inset 0 4px 12px rgba(255,255,255,0.4);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.train-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 52px;
+  flex-shrink: 0;
+  z-index: 20;
+  width: 100%;
+}
+
+.train-target-hud {
+  background: linear-gradient(180deg, #252836 0%, #1a1c24 50%, #12131a 100%);
+  padding: 4px 22px;
+  border-radius: 24px;
+  border: 4px solid #ffbe0b;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 20px rgba(255,190,11,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.train-target-hud:hover {
+  transform: scale(1.03);
+}
+
+.train-target-val-box {
+  background: linear-gradient(180deg, #ffea00 0%, #ff9100 100%);
+  color: #591b00;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-weight: 900;
+  padding: 1px 14px;
+  border-radius: 12px;
+  font-size: 1.4rem;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.8);
+  border: 1px solid #ffe169;
+}
+
+.train-scenic-playfield {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 6px 0;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #7bdff2 0%, #b7efc5 55%, #52b788 100%);
+  border: 4px solid rgba(56, 163, 165, 0.45);
+  box-shadow: inset 0 4px 25px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.train-title-badge {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 16px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.train-question-bubble {
+  background: linear-gradient(90deg, #00b4d8 0%, #0077b6 100%);
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border: 2px solid #bae6fd;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.train-railroad-area {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.train-cars-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.train-car-3d {
+  width: 86px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  border: 4px solid #90e0ef;
+  background: linear-gradient(180deg, #4ea8de 0%, #1e6091 70%, #164971 100%);
+  box-shadow: 0 8px 0 #0f3554, 0 14px 22px rgba(0,0,0,0.35), inset 0 4px 6px rgba(255,255,255,0.6);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.train-car-num {
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 3px 6px rgba(0,0,0,0.6);
+}
+
+.train-coupler {
+  width: 12px;
+  height: 10px;
+  background: linear-gradient(180deg, #94a3b8 0%, #334155 100%);
+  border-radius: 3px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  border: 1px solid #64748b;
+  flex-shrink: 0;
+}
+
+.train-head-3d {
+  width: 120px;
+  height: 108px;
+  flex-shrink: 0;
+  border-radius: 22px;
+  border: 4px solid #fde047;
+  background: linear-gradient(180deg, #ff5964 0%, #ee2a3a 65%, #b51726 100%);
+  box-shadow: 0 8px 0 #7e0c17, 0 14px 24px rgba(0,0,0,0.4), inset 0 4px 8px rgba(255,255,255,0.6);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 8px;
+  box-sizing: border-box;
+}
+
+.train-chimney {
+  position: absolute;
+  top: -18px;
+  right: 14px;
+  width: 22px;
+  height: 24px;
+  background: linear-gradient(180deg, #292524 0%, #0c0a09 100%);
+  border-radius: 4px 4px 0 0;
+  border-top: 2px solid #78716c;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+}
+.train-chimney-cap {
+  position: absolute;
+  top: -4px;
+  width: 30px;
+  height: 8px;
+  background: #facc15;
+  border-radius: 999px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.train-whistle {
+  position: absolute;
+  top: -12px;
+  left: 28px;
+  width: 12px;
+  height: 15px;
+  background: #facc15;
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.train-cab-window {
+  width: 38px;
+  height: 32px;
+  background: linear-gradient(135deg, #a5f3fc 0%, #38bdf8 100%);
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.85);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.train-headlight {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fef08a 0%, #facc15 60%, #eab308 100%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 16px #fde047, inset 0 1px 2px rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.train-tu-tu-badge {
+  background: linear-gradient(90deg, #f59e0b 0%, #ea580c 100%);
+  color: #1e293b;
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-weight: 900;
+  font-size: 0.72rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid #fef08a;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+  margin: 0 auto;
+}
+
+.train-bumper {
+  width: 100%;
+  height: 7px;
+  background: rgba(12, 10, 9, 0.75);
+  border-radius: 999px;
+}
+
+.train-wheels-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4px;
+  margin-top: -10px;
+  position: relative;
+}
+
+.train-rod {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 5px;
+  background: linear-gradient(90deg, #e2e8f0 0%, #94a3b8 50%, #cbd5e1 100%);
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+  z-index: 20;
+  border: 1px solid #475569;
+}
+
+.wheel-3d {
+  background: radial-gradient(circle at 35% 35%, #94a3b8 0%, #475569 50%, #1e293b 100%);
+  box-shadow: inset 0 3px 5px rgba(255,255,255,0.7), 0 5px 6px rgba(0,0,0,0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wheel-hub {
+  background: radial-gradient(circle at 30% 30%, #facc15 0%, #ca8a04 100%);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.train-track-wrap {
+  width: 100%;
+  max-width: 860px;
+  height: 28px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.train-rail-top {
+  width: 100%;
+  height: 7px;
+  background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 50%, #475569 100%);
+  border-radius: 999px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  z-index: 10;
+}
+
+.train-ties-row {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  pointer-events: none;
+}
+
+.train-tie-wood {
+  width: 14px;
+  height: 24px;
+  background: linear-gradient(180deg, #854d0e 0%, #451a03 100%);
+  border-radius: 3px;
+  border-left: 1px solid #291502;
+  border-right: 1px solid #291502;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+}
+
+.train-rail-bottom {
+  width: 100%;
+  height: 7px;
+  background: linear-gradient(180deg, #94a3b8 0%, #64748b 50%, #334155 100%);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+  z-index: 10;
+  margin-top: 3px;
+}
+
+.train-platform-footer {
+  height: 160px;
+  flex-shrink: 0;
+  border-radius: 24px;
+  padding: 8px 18px;
+  background: linear-gradient(90deg, #e85d04 0%, #f48c06 50%, #faa307 100%);
+  border: 4px solid #ffba08;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.35), inset 0 3px 5px rgba(255,255,255,0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.car-pick-3d {
+  width: 108px;
+  height: 112px;
+  flex-shrink: 0;
+  border-radius: 22px;
+  border: 4px solid #ffd166;
+  background: linear-gradient(180deg, #e040fb 0%, #ab47bc 60%, #7b1fa2 100%);
+  box-shadow: 0 8px 0 #531171, 0 14px 20px rgba(0,0,0,0.35), inset 0 3px 6px rgba(255,255,255,0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  box-sizing: border-box;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.car-pick-3d:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 12px 0 #531171, 0 18px 24px rgba(0,0,0,0.35), inset 0 3px 6px rgba(255,255,255,0.7);
+}
+.car-pick-3d:active {
+  transform: translateY(3px) scale(0.97);
+  box-shadow: 0 3px 0 #531171, 0 6px 10px rgba(0,0,0,0.3);
+}
+
+.car-pick-num {
+  font-family: 'Fredoka', cursive, sans-serif;
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 4px 6px rgba(0,0,0,0.7);
+}
+
+.car-pick-badge {
+  background: #4a0e4e;
+  color: #ffd166;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid #ffd166;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+@keyframes puffSmokeBubble {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  30% { opacity: 0.85; }
+  100% { transform: translateY(-60px) translateX(-30px) scale(1.8); opacity: 0; }
+}
+.smoke-bubble-1 { animation: puffSmokeBubble 2.6s infinite ease-out; }
+.smoke-bubble-2 { animation: puffSmokeBubble 2.6s 0.9s infinite ease-out; }
+.smoke-bubble-3 { animation: puffSmokeBubble 2.6s 1.7s infinite ease-out; }
+
+@keyframes pulseSlotGlow {
+  0%, 100% { box-shadow: 0 0 12px 2px #facc15, inset 0 0 14px rgba(250,204,21,0.5); }
+  50% { box-shadow: 0 0 26px 8px #facc15, inset 0 0 22px rgba(250,204,21,0.8); transform: scale(1.02); }
+}
+.slot-pulsing {
+  animation: pulseSlotGlow 2s infinite ease-in-out;
+}
+
+@keyframes floatCloudSky {
+  0%, 100% { transform: translateX(0px); }
+  50% { transform: translateX(18px); }
+}
+.floating-cloud-bg {
+  animation: floatCloudSky 7s ease-in-out infinite;
+}
+
+
 
