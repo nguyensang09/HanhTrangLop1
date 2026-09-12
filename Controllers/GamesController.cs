@@ -27,7 +27,7 @@ public class GamesController : Controller
     }
 
     [HttpGet("voice")]
-    public async Task<IActionResult> GetVoice(string text, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetVoice(string text, string lang = "vi", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -35,6 +35,17 @@ public class GamesController : Controller
         }
 
         var raw = text.Trim();
+
+        // Nếu yêu cầu tiếng Anh: tra cứu giọng nữ tiếng Anh chuẩn (en-US-JennyNeural) trong kho TextToSpeechCaches
+        if (lang.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+        {
+            var enUrl = await _voiceLibraryService.ResolveBilingualListenAudioUrlAsync(raw, "en", cancellationToken);
+            if (!string.IsNullOrEmpty(enUrl))
+            {
+                return Json(new { success = true, audioUrl = enUrl });
+            }
+        }
+
         var audioUrl = await _voiceLibraryService.ResolveVoiceAudioUrlAsync(raw, cancellationToken);
         
         if (string.IsNullOrEmpty(audioUrl) && raw.Length <= 3)

@@ -1071,16 +1071,22 @@
   font-family: 'Be Vietnam Pro', 'Fredoka', sans-serif;
 }
 
-/* 3D Jelly Gem Base Styling */
+/* 3D Jelly Gem Base Styling - Tối ưu GPU chạy 60fps không reflow */
 .gem-block {
   position: absolute;
+  top: 0;
+  left: 0;
   user-select: none;
   cursor: pointer;
-  border-radius: 1.75rem;
-  backdrop-filter: blur(4px);
+  border-radius: 1.5rem;
   z-index: 20;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+  contain: layout style;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: box-shadow 0.25s ease, opacity 0.4s ease;
 }
 .gem-block:hover {
@@ -1121,29 +1127,32 @@
   box-shadow: inset 0 0 0 3px rgba(153, 246, 228, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -4px 8px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(13, 148, 136, 0.45);
 }
 
-/* Các khối gây nhiễu CHỈ CÓ ICON (Không viền, Không nền, Chỉ hiển thị hình đồ vật) */
+/* Các khối gây nhiễu CHỈ CÓ ICON HÌNH MINH HOẠ: BỎ VIỀN MỜ, BỎ NỀN, BỎ DROP-SHADOW (Hình là hình thôi) */
 .gem-pure-icon {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease !important;
+  transition: transform 0.15s ease !important;
 }
 
 .gem-pure-icon:hover {
-  transform: scale(1.22) !important;
-  filter: drop-shadow(0 0 16px rgba(254, 240, 138, 0.8)) !important;
+  transform: scale(1.16) !important;
+  filter: none !important;
 }
 
 .pure-distractor-icon {
-  font-size: 3.8rem;
+  font-size: 4rem;
   line-height: 1;
   display: inline-block;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65));
+  filter: none !important; /* Không viền mờ, không bóng mờ */
   pointer-events: none;
   user-select: none;
 }
@@ -1742,20 +1751,22 @@
   box-shadow: 0 4px 10px rgba(14, 116, 144, 0.4);
 }
 
-/* Mission Center Capsule */
-.miner-mission-capsule {
+/* Trạm mục tiêu to rõ ràng tích hợp ngay tại ô móc câu (Mechanical Hook Target Station) */
+.miner-target-station {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, rgba(69, 26, 3, 0.94), rgba(41, 15, 2, 0.96));
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
   border: 2.5px solid #f59e0b;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 158, 11, 0.3);
-  padding: 6px 16px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
+  border-top: none;
+  border-radius: 0 0 22px 22px;
+  padding: 6px 18px 8px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 16px rgba(245, 158, 11, 0.35);
+  pointer-events: auto;
+  user-select: none;
 }
 
-.miner-voice-btn {
+.miner-target-voice-btn {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1767,54 +1778,60 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(244, 63, 94, 0.5);
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease;
   padding: 0;
   flex-shrink: 0;
 }
-.miner-voice-btn:hover {
+.miner-target-voice-btn:hover {
   transform: scale(1.1);
+  filter: brightness(1.1);
+}
+.miner-target-voice-btn:active {
+  transform: scale(0.95);
 }
 
-.miner-target-badge {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: radial-gradient(circle at 35% 28%, #fff59d, #f59e0b 55%, #b45309 100%);
-  border: 2.5px solid #fef08a;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.8), 0 4px 8px rgba(0,0,0,0.3);
+.miner-target-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.miner-target-sublabel {
+  font-size: 10px;
+  font-weight: 900;
+  color: #fde047;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Chữ/Số mục tiêu TO, CỰC KỲ NỔI BẬT ĐẶT NGAY TẠI Ô MÓC */
+.miner-target-big-badge {
+  width: 66px;
+  height: 60px;
+  border-radius: 16px;
+  background: radial-gradient(circle at 35% 28%, #fff59d 0%, #f59e0b 55%, #b45309 100%);
+  border: 3px solid #fef08a;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.85), inset 0 2px 6px rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Fredoka', cursive, sans-serif;
   font-weight: 900;
-  font-size: 1.7rem;
+  font-size: 2.7rem;
+  line-height: 1;
   color: #ffffff;
-  text-shadow: 0 2px 0 #78350f, 0 4px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 0 #78350f, 0 4px 8px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  animation: pulseGentle 2.2s infinite;
 }
-
-/* 3-Star Progress Dots */
-.miner-star-slot {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.miner-target-big-badge:hover {
+  transform: scale(1.08);
 }
-.miner-star-slot.empty {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1.5px solid #64748b;
-  color: #64748b;
-}
-.miner-star-slot.filled {
-  background: radial-gradient(circle, #fde047, #f59e0b);
-  border: 2px solid #ffffff;
-  color: #451a03;
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.9);
-  transform: scale(1.15);
-  font-weight: 900;
+.miner-target-big-badge:active {
+  transform: scale(0.95);
 }
 
 /* Mechanical Claw Pulley & Cable System */
@@ -1824,23 +1841,24 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 25;
-  pointer-events: none;
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .miner-pulley-bracket {
-  width: 76px;
-  height: 28px;
+  width: 80px;
+  height: 24px;
   background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
   border: 2px solid #d97706;
   border-top: none;
-  border-radius: 0 0 16px 16px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: -2px;
 }
 
 .miner-pulley-wheel {
@@ -1855,7 +1873,7 @@
 /* Precision Crane Boom & Cable (transform-origin: top center) */
 .miner-crane-arm {
   position: absolute;
-  top: 24px;
+  top: 94px; /* Treo ngay dưới trạm mục tiêu và puly kéo */
   left: 50%;
   width: 0;
   height: 0;
@@ -2050,57 +2068,6 @@
 /* ==========================================================================
    9. GOLD MINER GEM BLOCKS & VICTORY TOAST
    ========================================================================== */
-
-.gem-block {
-  position: absolute;
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  touch-action: manipulation;
-  z-index: 20;
-  overflow: hidden;
-  transition: transform 0.1s ease, filter 0.15s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.gem-block:hover {
-  filter: brightness(1.14);
-  z-index: 25;
-}
-
-.gem-block:active {
-  transform: scale(0.95);
-}
-
-/* 3 Khối mục tiêu: CÙNG 1 CHỮ CÁI NHƯNG KHÁC MÀU (Vàng - Đỏ Ruby - Xanh Lục Bảo) */
-.target-gem-gold {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.78) 0%, rgba(146, 64, 14, 0.90) 100%);
-  border: 2.5px solid rgba(254, 240, 138, 0.9);
-  box-shadow: inset 0 0 14px rgba(254, 240, 138, 0.45), 0 8px 24px rgba(217, 119, 6, 0.5);
-}
-
-.target-gem-ruby {
-  background: linear-gradient(135deg, rgba(225, 29, 72, 0.78) 0%, rgba(159, 18, 57, 0.90) 100%);
-  border: 2.5px solid rgba(254, 205, 211, 0.9);
-  box-shadow: inset 0 0 14px rgba(254, 205, 211, 0.45), 0 8px 24px rgba(225, 29, 72, 0.5);
-}
-
-.target-gem-emerald {
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.78) 0%, rgba(6, 95, 70, 0.90) 100%);
-  border: 2.5px solid rgba(167, 243, 208, 0.9);
-  box-shadow: inset 0 0 14px rgba(167, 243, 208, 0.45), 0 8px 24px rgba(5, 150, 105, 0.5);
-}
-
-/* Khối gây nhiễu mỏ: CHỈ CÓ ICON ĐỒ VẬT (KHÔNG CÓ CHỮ/SỐ) */
-.gem-icon-distractor {
-  background: linear-gradient(135deg, rgba(51, 65, 85, 0.72) 0%, rgba(30, 41, 59, 0.88) 100%);
-  border: 2px solid rgba(148, 163, 184, 0.5);
-  box-shadow: inset 0 0 10px rgba(148, 163, 184, 0.25), 0 6px 18px rgba(0, 0, 0, 0.4);
-}
 
 /* Chữ Cái / Chữ Số mục tiêu: Trắng tinh khôi, cực nổi bật và sắc nét */
 .text-hero-char {

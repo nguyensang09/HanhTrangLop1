@@ -9107,7 +9107,7 @@ body.focus-mode-active,
   border-radius: inherit;
   background: var(--success-primary);
   transform-origin: left;
-  animation: successTimer 2s linear forwards;
+  animation: successTimer 1s linear forwards;
 }
 
 .learning-success-popup > small {

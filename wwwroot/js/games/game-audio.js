@@ -286,22 +286,91 @@ class GameAudioEngine {
     }
 
     /**
-     * Đọc ký tự chữ cái hoặc số bằng giọng tiếng Anh chuẩn (English Voice)
+     * Tìm kiếm file audio chữ/số tiếng Anh giọng nữ chuẩn (en-US-JennyNeural) từ TextToSpeechCaches
      */
-    speakLetterEnglish(char, onEnded = null) {
+    async resolveEnglishLetterVoice(char) {
+        if (!char) return null;
+        const raw = String(char).trim();
+        const cacheKey = `en_letter_${raw.toUpperCase()}`;
+        if (this.audioCache.has(cacheKey)) {
+            return this.audioCache.get(cacheKey);
+        }
+
+        try {
+            // 1. Thử lấy từ /kids/bilingual-audio (kho voice tiếng Anh giọng nữ en-US-JennyNeural của hệ thống)
+            let resp = await fetch(`/kids/bilingual-audio?text=${encodeURIComponent(raw)}&lang=en`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.success && data.audioUrl) {
+                    this.audioCache.set(cacheKey, data.audioUrl);
+                    return data.audioUrl;
+                }
+            }
+
+            // 2. Thử từ /kids/games/voice?lang=en
+            resp = await fetch(`/kids/games/voice?text=${encodeURIComponent(raw)}&lang=en`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.success && data.audioUrl) {
+                    this.audioCache.set(cacheKey, data.audioUrl);
+                    return data.audioUrl;
+                }
+            }
+        } catch (e) {
+            console.warn('[GameAudio] Error resolving English letter voice:', e);
+        }
+        return null;
+    }
+
+    /**
+     * Đọc ký tự chữ cái hoặc số bằng GIỌNG NỮ TIẾNG ANH CHUẨN CÓ SẴN TRONG HỆ THỐNG
+     */
+    async speakLetterEnglish(char, onEnded = null) {
         if (!this.soundEnabled || !char) {
             if (onEnded) onEnded();
             return;
         }
 
+        const raw = String(char).trim();
+        this.stopVoice();
+
+        // 1. ƯU TIÊN PHÁT AUDIO GIỌNG NỮ TIẾNG ANH CHUẨN TỪ HỆ THỐNG (en-US-JennyNeural)
+        const audioUrl = await this.resolveEnglishLetterVoice(raw);
+        if (audioUrl) {
+            try {
+                this.activeAudio = new Audio(audioUrl);
+                this.isSpeaking = true;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(true);
+
+                this.activeAudio.onended = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    if (onEnded) onEnded();
+                };
+                this.activeAudio.onerror = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    this.fallbackSpeakEnglishLetter(raw, onEnded);
+                };
+                await this.activeAudio.play();
+                return;
+            } catch (err) {
+                console.warn('[GameAudio] Audio play failed, falling back to Web Speech Female Voice:', err);
+            }
+        }
+
+        // 2. Fallback sang Web Speech API lọc CHUẨN GIỌNG NỮ
+        this.fallbackSpeakEnglishLetter(raw, onEnded);
+    }
+
+    fallbackSpeakEnglishLetter(char, onEnded = null) {
         const raw = String(char).trim().toUpperCase();
-        // Ánh xạ số sang từ tiếng Anh để TTS phát âm hoàn hảo
+        // Ánh xạ số sang từ tiếng Anh để phát âm hoàn hảo
         const numberEnglishWords = {
             '0': 'Zero', '1': 'One', '2': 'Two', '3': 'Three', '4': 'Four',
             '5': 'Five', '6': 'Six', '7': 'Seven', '8': 'Eight', '9': 'Nine'
         };
 
-        // Ánh xạ chữ tiếng Việt có dấu sang phát âm tiếng Anh tương ứng để không bị nghẹn
         const vietnameseToEnglishLetters = {
             'Ă': 'A', 'Â': 'A',
             'Đ': 'D',
@@ -311,11 +380,11 @@ class GameAudioEngine {
         };
 
         const textToSpeak = numberEnglishWords[raw] || vietnameseToEnglishLetters[raw] || raw;
-        this.speakEnglish(textToSpeak, onEnded, 0.82);
+        this.speakEnglish(textToSpeak, onEnded, 0.85);
     }
 
     /**
-     * Đọc văn bản bằng giọng tiếng Anh chuẩn (Web Speech API en-US)
+     * Đọc văn bản bằng giọng tiếng Anh chuẩn GIỌNG NỮ (Web Speech API en-US)
      */
     speakEnglish(text, onEnded = null, customRate = 0.85) {
         if (!this.soundEnabled || !text) {
@@ -335,21 +404,32 @@ class GameAudioEngine {
             const utterance = new SpeechSynthesisUtterance(String(text));
             utterance.lang = 'en-US';
             utterance.rate = customRate;
-            utterance.pitch = 1.05;
+            utterance.pitch = 1.08; // Giọng nữ cao độ tươi sáng, rõ ràng
 
-            // Đảm bảo voice tiếng Anh
-            if (this.selectedEnglishVoice) {
-                utterance.voice = this.selectedEnglishVoice;
-            } else {
-                const voices = window.speechSynthesis.getVoices() || [];
-                const enVoice = voices.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Zira') || v.name.includes('David'))) ||
-                                voices.find(v => v.lang === 'en-US' || v.lang === 'en_US') ||
+            const voices = window.speechSynthesis.getVoices() || [];
+            
+            // Bộ lọc CHỈ CHỌN GIỌNG NỮ (Jenny, Zira, Aria, Google US English, Samantha, Victoria...)
+            // TUYỆT ĐỐI LOẠI TRỪ các giọng nam (David, Mark, George, Guy, Male)
+            const isFemale = (v) => {
+                const name = (v.name || '').toLowerCase();
+                if (name.includes('david') || name.includes('mark') || name.includes('george') || name.includes('guy') || (name.includes('male') && !name.includes('female'))) {
+                    return false;
+                }
+                return name.includes('zira') || name.includes('jenny') || name.includes('aria') ||
+                       name.includes('google') || name.includes('samantha') || name.includes('victoria') ||
+                       name.includes('female') || name.includes('natural') || name.includes('hazel') ||
+                       name.includes('catherine');
+            };
+
+            const femaleVoice = voices.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && isFemale(v)) ||
+                                voices.find(v => v.lang.startsWith('en') && isFemale(v)) ||
+                                voices.find(v => (v.lang === 'en-US' || v.lang === 'en_US') && !v.name.toLowerCase().includes('david')) ||
                                 voices.find(v => v.lang.startsWith('en')) ||
                                 null;
-                if (enVoice) {
-                    this.selectedEnglishVoice = enVoice;
-                    utterance.voice = enVoice;
-                }
+
+            if (femaleVoice) {
+                this.selectedEnglishVoice = femaleVoice;
+                utterance.voice = femaleVoice;
             }
 
             this.isSpeaking = true;

@@ -191,9 +191,11 @@ class GameShell {
             this.currentGame.init(this.currentLevelData);
         }
 
-        // Đọc câu hỏi mở đầu
+        // Đọc câu hỏi mở đầu (với gold-miner chỉ phát âm chữ/số mục tiêu, bỏ câu nhắc nhở cho gọn nhẹ)
         setTimeout(() => {
-            this.replayInstruction();
+            if (this.gameKey !== 'gold-miner') {
+                this.replayInstruction();
+            }
         }, 400);
     }
 

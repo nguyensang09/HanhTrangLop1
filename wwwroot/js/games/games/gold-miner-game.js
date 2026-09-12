@@ -54,15 +54,15 @@ class GoldMinerGame {
 
         this.container.innerHTML = `
             <div class="miner-stage-container" id="minerStage">
-                <!-- Hiệu ứng nền bụi vàng lấp lánh trong hang mỏ -->
+                <!-- Hiệu ứng nền nhẹ nhàng trong hang mỏ (không dùng filter blur nặng) -->
                 <div style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;">
                     <div style="position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.15) 0%, rgba(10, 15, 29, 0.65) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.55) 100%);"></div>
-                    <div class="animate-sparkle" style="position: absolute; bottom: 110px; left: 22%; width: 12px; height: 12px; background: #fef08a; border-radius: 50%; filter: blur(1px);"></div>
-                    <div class="animate-sparkle" style="position: absolute; bottom: 140px; right: 26%; width: 10px; height: 10px; background: #fef9c3; border-radius: 50%; filter: blur(1px); animation-delay: 0.7s;"></div>
-                    <div class="animate-sparkle" style="position: absolute; bottom: 80px; left: 50%; width: 14px; height: 14px; background: #fde047; border-radius: 50%; filter: blur(2px); animation-delay: 1.3s;"></div>
+                    <div class="animate-sparkle" style="position: absolute; bottom: 110px; left: 22%; width: 10px; height: 10px; background: #fef08a; border-radius: 50%; opacity: 0.7;"></div>
+                    <div class="animate-sparkle" style="position: absolute; bottom: 140px; right: 26%; width: 8px; height: 8px; background: #fef9c3; border-radius: 50%; opacity: 0.6; animation-delay: 0.7s;"></div>
+                    <div class="animate-sparkle" style="position: absolute; bottom: 80px; left: 50%; width: 12px; height: 12px; background: #fde047; border-radius: 50%; opacity: 0.7; animation-delay: 1.3s;"></div>
                 </div>
 
-                <!-- 1. THANH ĐIỀU HƯỚNG & NHIỆM VỤ TRÊN CÙNG -->
+                <!-- 1. THANH ĐIỀU HƯỚNG GỌN GÀNG (ĐÃ BỎ KHỐI TIẾN ĐỘ RƯỜM RÀ) -->
                 <header class="miner-nav-bar" id="minerTopNav">
                     <!-- Trái: Nút Về Sảnh & Chọn Chữ -->
                     <div class="miner-nav-left">
@@ -81,52 +81,34 @@ class GoldMinerGame {
                         </div>
                     </div>
 
-                    <!-- Giữa: KHOẢNG TRỐNG HOÀN TOÀN ĐỂ LỘ PULI RÒNG RỌC VÀ DÂY CÁP MÓC KÉO -->
+                    <!-- Giữa: KHOẢNG TRỐNG CHO KHU VỰC MÓC CẨU VÀ MỤC TIÊU -->
                     <div class="miner-nav-center-spacer"></div>
 
-                    <!-- Phải: Viên Nang Nhiệm Vụ Mục Tiêu & Nút Âm Thanh -->
+                    <!-- Phải: Nút Âm Thanh Gọn Nhẹ -->
                     <div class="miner-nav-right">
-                        <div class="miner-mission-capsule">
-                            <!-- Nút loa nghe bài học -->
-                            <button type="button" class="miner-voice-btn" id="btnMissionVoice" title="Nhấn để nghe lại phát âm">
-                                <span class="material-symbols-outlined" style="font-size: 1.35rem;">volume_up</span>
-                            </button>
-
-                            <!-- Chữ mục tiêu -->
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="display: flex; flex-direction: column; text-align: left; line-height: 1.15;">
-                                    <span style="font-size: 10px; font-weight: 900; text-transform: uppercase; color: #fde047; letter-spacing: 0.05em;">BÉ GẮP ĐỦ 3 KHỐI:</span>
-                                    <span style="font-size: 12px; font-weight: 700; color: #f1f5f9;">${targetType}</span>
-                                </div>
-
-                                <div class="miner-target-badge" id="hudTargetChar">
-                                    ${target}
-                                </div>
-                            </div>
-
-                            <!-- Vạch phân cách -->
-                            <div style="width: 2px; height: 28px; background: rgba(245, 158, 11, 0.4); margin: 0 4px;"></div>
-
-                            <!-- 3 Ngôi Sao Tiến Độ (Gắp 3 lần) -->
-                            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                <div style="display: flex; gap: 5px;" id="minerProgressStars">
-                                    <div class="miner-star-slot empty" id="mstar-1">★</div>
-                                    <div class="miner-star-slot empty" id="mstar-2">★</div>
-                                    <div class="miner-star-slot empty" id="mstar-3">★</div>
-                                </div>
-                                <span style="font-size: 10px; font-weight: 800; color: #fef08a;" id="minerProgressCount">0 / 3</span>
-                            </div>
-                        </div>
-
-                        <button type="button" class="miner-pill-btn" id="btnAudioToggle" style="background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(245, 158, 11, 0.5); color: #fde047; padding: 7px 12px;" title="Bật/Tắt âm thanh">
+                        <button type="button" class="miner-pill-btn" id="btnAudioToggle" style="background: rgba(30, 41, 59, 0.85); border: 2px solid rgba(245, 158, 11, 0.5); color: #fde047; padding: 7px 14px;" title="Bật/Tắt âm thanh">
                             <span class="material-symbols-outlined" style="font-size: 1.3rem;">volume_up</span>
                         </button>
                     </div>
                 </header>
 
-                <!-- 2. HỆ THỐNG MÓC CÂU CƠ HỌC (PULLEY & MECHANICAL CLAW) -->
+                <!-- 2. HỆ THỐNG MÓC CÂU CƠ HỌC: MỤC TIÊU TO RÕ ĐẶT NGAY TẠI Ô MÓC -->
                 <div class="miner-pulley-rig" id="minerPulleyRig">
-                    <!-- Giá đỡ trần xe goòng -->
+                    <!-- Khối mục tiêu to rõ ràng đặt ngay tại ô móc -->
+                    <div class="miner-target-station" id="minerTargetStation">
+                        <button type="button" class="miner-target-voice-btn" id="btnMissionVoice" title="Nhấn để nghe lại phát âm mục tiêu">
+                            <span class="material-symbols-outlined" style="font-size: 1.35rem;">volume_up</span>
+                        </button>
+
+                        <div class="miner-target-body">
+                            <span class="miner-target-sublabel">MỤC TIÊU: ${targetType.toUpperCase()}</span>
+                            <div class="miner-target-big-badge" id="hudTargetChar" title="Bé chạm vào đây để nghe phát âm nhé!">
+                                ${target}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Giá đỡ puly và bánh răng cơ học -->
                     <div class="miner-pulley-bracket">
                         <div class="miner-pulley-wheel">⚙</div>
                     </div>
@@ -149,7 +131,7 @@ class GoldMinerGame {
                 </div>
 
                 <!-- 3. KHU VỰC CHƠI TƯƠNG TÁC (CÁC KHỐI THẠCH DI CHUYỂN BỒNG BỀNH) -->
-                <div class="relative z-20 w-full flex-1 pointer-events-auto overflow-hidden" id="gemPlayfield" style="position: absolute; inset: 65px 0 0 0;"></div>
+                <div class="relative z-20 w-full flex-1 pointer-events-auto overflow-hidden" id="gemPlayfield" style="position: absolute; inset: 95px 0 0 0;"></div>
 
                 <!-- 4. MODAL BẢNG CHỌN CHỮ CÁI & CHỮ SỐ (ALPHABET CHOOSER) -->
                 <div class="game-modal-overlay" id="alphabetModal" style="display: none;">
@@ -208,6 +190,7 @@ class GoldMinerGame {
 
         // Gắn sự kiện các nút
         document.getElementById('btnMissionVoice')?.addEventListener('click', () => this.playLessonVoice());
+        document.getElementById('hudTargetChar')?.addEventListener('click', () => this.playLessonVoice());
         document.getElementById('btnOpenAlphabet')?.addEventListener('click', () => this.openAlphabetModal());
         document.getElementById('btnCloseAlphabetModal')?.addEventListener('click', () => this.closeAlphabetModal());
 
@@ -241,8 +224,10 @@ class GoldMinerGame {
     updateOriginCoordinates() {
         if (!this.playfield) return;
         const rect = this.playfield.getBoundingClientRect();
-        this.originX = rect.width / 2;
-        this.originY = 0; // Đỉnh của playfield (dưới thanh top bar)
+        this.fieldWidth = rect.width || this.playfield.clientWidth || 1100;
+        this.fieldHeight = rect.height || this.playfield.clientHeight || 560;
+        this.originX = this.fieldWidth / 2;
+        this.originY = 0;
     }
 
     /**
@@ -295,9 +280,9 @@ class GoldMinerGame {
         availableLetters.sort(() => Math.random() - 0.5);
         availableNumbers.sort(() => Math.random() - 0.5);
 
-        // Lấy 3 chữ cái và 2 chữ số khác
-        const chosenLetters = availableLetters.slice(0, 3);
-        const chosenNumbers = availableNumbers.slice(0, 2);
+        // Lấy 2 chữ cái và 1 chữ số khác để tinh gọn màn chơi, tránh rối mắt cho bé
+        const chosenLetters = availableLetters.slice(0, 2);
+        const chosenNumbers = availableNumbers.slice(0, 1);
         const mixedDistractorChars = [...chosenLetters, ...chosenNumbers];
         mixedDistractorChars.sort(() => Math.random() - 0.5);
 
@@ -314,55 +299,38 @@ class GoldMinerGame {
                 id: `distractor-char-${idx}-${ch}`,
                 char: ch,
                 isTarget: false,
-                isItem: false, // Là chữ/số -> có viền, nền như hiện tại
+                isItem: false, // Là chữ/số -> có viền, nền đá quý
                 isNumber: /\d/.test(ch),
                 colorClass: gemDistractorColors[idx % gemDistractorColors.length],
                 size: 90
             });
         });
 
-        // 3. Khối đồ vật gây nhiễu: BỎ VIỀN, BỎ NỀN, CHỈ ĐỂ LẠI HÌNH ICON (ô tô, máy bay, phi thuyền, con chim, mặt trời, đám mây, chuông...)
+        // 3. Khối hình minh hoạ gây nhiễu: BỎ VIỀN MỜ, BỎ NỀN, BỎ BÓNG MỜ - HÌNH LÀ HÌNH THÔI
         const distractorIconsPool = [
-            // Phương tiện giao thông
-            { id: 'car', label: '🚗', voiceName: 'ô tô', size: 78 },
-            { id: 'racecar', label: '🏎️', voiceName: 'xe đua', size: 78 },
+            // Phương tiện giao thông & đồ vật quen thuộc
+            { id: 'car', label: '🚗', voiceName: 'ô tô', size: 80 },
             { id: 'plane', label: '✈️', voiceName: 'máy bay', size: 82 },
             { id: 'rocket', label: '🚀', voiceName: 'phi thuyền', size: 82 },
-            { id: 'ufo', label: '🛸', voiceName: 'đĩa bay', size: 80 },
-            { id: 'train', label: '🚂', voiceName: 'tàu hỏa', size: 80 },
-            { id: 'boat', label: '⛵', voiceName: 'thuyền buồm', size: 78 },
-
-            // Bầu trời & thiên nhiên
-            { id: 'bird', label: '🐦', voiceName: 'con chim', size: 76 },
-            { id: 'eagle', label: '🦅', voiceName: 'đại bàng', size: 80 },
             { id: 'sun', label: '☀️', voiceName: 'mặt trời', size: 82 },
-            { id: 'sunface', label: '🌞', voiceName: 'ông mặt trời', size: 82 },
             { id: 'cloud', label: '☁️', voiceName: 'đám mây', size: 80 },
-            { id: 'rainbow', label: '🌈', voiceName: 'cầu vồng', size: 82 },
-
-            // Vật dụng, quả chuông, quà tặng
-            { id: 'bell', label: '🔔', voiceName: 'quả chuông', size: 76 },
-            { id: 'diamond', label: '💎', voiceName: 'kim cương', size: 78 },
-            { id: 'mushroom', label: '🍄', voiceName: 'cây nấm', size: 74 },
-            { id: 'gift', label: '🎁', voiceName: 'hộp quà', size: 76 },
-            { id: 'star', label: '⭐', voiceName: 'ngôi sao', size: 76 },
-            { id: 'balloon', label: '🎈', voiceName: 'bong bóng', size: 76 },
-            { id: 'apple', label: '🍎', voiceName: 'quả táo', size: 74 },
-            { id: 'fish', label: '🐟', voiceName: 'con cá', size: 74 },
-            { id: 'flower', label: '🌸', voiceName: 'bông hoa', size: 74 },
-            { id: 'soccer', label: '⚽', voiceName: 'quả bóng', size: 76 }
+            { id: 'bell', label: '🔔', voiceName: 'quả chuông', size: 78 },
+            { id: 'star', label: '⭐', voiceName: 'ngôi sao', size: 78 },
+            { id: 'bird', label: '🐦', voiceName: 'con chim', size: 78 },
+            { id: 'apple', label: '🍎', voiceName: 'quả táo', size: 76 },
+            { id: 'balloon', label: '🎈', voiceName: 'bong bóng', size: 78 }
         ];
 
-        // Ưu tiên chọn các hình ô tô, máy bay, phi thuyền, chim, mặt trời, mây, chuông
-        const priorityIds = ['car', 'plane', 'rocket', 'bird', 'sun', 'cloud', 'bell'];
+        // Ưu tiên chọn các hình tiêu biểu (ô tô, máy bay, phi thuyền, mặt trời, quả chuông)
+        const priorityIds = ['car', 'plane', 'rocket', 'sun', 'bell'];
         const priorityItems = distractorIconsPool.filter(i => priorityIds.includes(i.id));
         const otherItems = distractorIconsPool.filter(i => !priorityIds.includes(i.id));
 
         priorityItems.sort(() => Math.random() - 0.5);
         otherItems.sort(() => Math.random() - 0.5);
 
-        // Lấy 4 hình ưu tiên + 3 hình ngẫu nhiên khác -> 7 khối icon
-        const chosenIconObjects = [...priorityItems.slice(0, 4), ...otherItems.slice(0, 3)];
+        // Lấy 3 hình ưu tiên + 2 hình khác -> đúng 5 hình minh hoạ thuần tuý
+        const chosenIconObjects = [...priorityItems.slice(0, 3), ...otherItems.slice(0, 2)];
         chosenIconObjects.sort(() => Math.random() - 0.5);
 
         chosenIconObjects.forEach((item) => {
@@ -372,24 +340,21 @@ class GoldMinerGame {
                 char: item.label,
                 voiceName: item.voiceName,
                 isTarget: false,
-                isItem: true, // Khối gây nhiễu đồ vật: KHÔNG VIỀN, KHÔNG NỀN
+                isItem: true, // Khối gây nhiễu đồ vật: KHÔNG VIỀN MỜ, KHÔNG NỀN
                 isNumber: false,
                 colorClass: 'gem-pure-icon',
                 size: item.size
             });
         });
 
-        // Kích thước vùng chơi
-        const rect = this.playfield.getBoundingClientRect();
-        let width = rect.width || this.playfield.clientWidth;
-        let height = rect.height || this.playfield.clientHeight;
-        if (!width || width < 300) width = Math.max(window.innerWidth - 80, 950);
-        if (!height || height < 300) height = Math.max(window.innerHeight - 150, 550);
+        // Kích thước vùng chơi từ bộ đệm đã cache
+        let width = this.fieldWidth || 1100;
+        let height = this.fieldHeight || 560;
 
         const minX = 40;
         const maxX = Math.max(300, width - 40);
-        const minY = 70; // Tránh móc đỉnh
-        const maxY = Math.max(200, height - 55);
+        const minY = 30;
+        const maxY = Math.max(200, height - 40);
 
         // 3 phân vùng riêng biệt cho 3 khối mục tiêu để luôn dàn trải đều màn hình
         const targetSlices = [
@@ -451,23 +416,27 @@ class GoldMinerGame {
             btn.setAttribute('data-gem', gemData.char);
             btn.setAttribute('data-target', gemData.isTarget ? 'true' : 'false');
 
-            btn.className = `gem-block ${gemData.colorClass} animate-pulse-gentle`;
+            btn.className = `gem-block ${gemData.colorClass}`;
+            if (gemData.isTarget) {
+                btn.classList.add('animate-pulse-gentle');
+            }
             btn.style.width = `${size}px`;
             btn.style.height = `${size}px`;
-            btn.style.left = `${Math.round(x)}px`;
-            btn.style.top = `${Math.round(y)}px`;
-            btn.style.transform = `rotate(${rot}deg)`;
+            btn.style.left = '0';
+            btn.style.top = '0';
+            // Tối ưu GPU bằng translate3d để hoàn toàn không gây reflow layout
+            btn.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) rotate(${rot}deg)`;
             btn.style.fontFamily = "'Fredoka', cursive, sans-serif";
 
             let innerContent = '';
 
             if (gemData.isItem) {
-                // Khối đồ vật gây nhiễu: BỎ VIỀN, BỎ NỀN, CHỈ ĐỂ LẠI HÌNH ICON!
+                // Khối hình minh hoạ: BỎ VIỀN MỜ, BỎ NỀN, BỎ BÓNG MỜ (Hình là hình thôi)
                 innerContent = `
                     <span class="pure-distractor-icon">${gemData.label}</span>
                 `;
             } else {
-                // Số hoặc Chữ (dù là mục tiêu hay gây nhiễu): ĐỀU CÓ VIỀN VÀ NỀN NHƯ HIỆN TẠI
+                // Số hoặc Chữ mục tiêu & gây nhiễu: Có viền và nền ngọc quý
                 innerContent = `
                     <div class="jelly-highlight"></div>
                     <div class="gem-corner-rivet gem-corner-tl"></div>
@@ -517,56 +486,56 @@ class GoldMinerGame {
         this.startPhysicsLoop();
     }
 
-
-
     /**
-     * Vòng lặp chuyển động liên tục của các khối chữ (60 FPS)
+     * Vòng lặp chuyển động liên tục của các khối chữ (60 FPS tối ưu GPU bằng translate3d)
      */
     startPhysicsLoop() {
         this.stopPhysicsLoop();
 
         const loop = (timestamp) => {
             if (!this.lastFrameTime) this.lastFrameTime = timestamp;
-            const delta = Math.min(32, timestamp - this.lastFrameTime);
+            let delta = timestamp - this.lastFrameTime;
             this.lastFrameTime = timestamp;
 
-            const rect = this.playfield?.getBoundingClientRect();
-            const width = rect?.width || this.playfield?.clientWidth || 1100;
-            const height = rect?.height || this.playfield?.clientHeight || 560;
-            const minX = 20;
-            const maxX = width - 20;
-            const minY = 50;
-            const maxY = height - 30;
+            // Giới hạn delta tránh giật hình khi tab bị lag
+            if (delta > 64) delta = 16;
+            const timeScale = delta / 16;
 
-            this.gems.forEach((gem) => {
-                // Nếu đang bị đóng băng hoặc đã thu hồi về đích -> không di chuyển
-                if (gem.isFrozen || gem.isCollected) return;
+            const width = this.fieldWidth || 1100;
+            const height = this.fieldHeight || 560;
+            const minX = 15;
+            const maxX = width - 15;
+            const minY = 20;
+            const maxY = height - 20;
 
-                gem.x += gem.vx * (delta / 16);
-                gem.y += gem.vy * (delta / 16);
+            for (let i = 0; i < this.gems.length; i++) {
+                const gem = this.gems[i];
+                if (gem.isFrozen || gem.isCollected) continue;
+
+                gem.x += gem.vx * timeScale;
+                gem.y += gem.vy * timeScale;
 
                 // Va chạm mép trái / phải
                 if (gem.x < minX) {
                     gem.x = minX;
-                    gem.vx = Math.abs(gem.vx) * (0.9 + Math.random() * 0.2);
+                    gem.vx = Math.abs(gem.vx);
                 } else if (gem.x + gem.size > maxX) {
                     gem.x = maxX - gem.size;
-                    gem.vx = -Math.abs(gem.vx) * (0.9 + Math.random() * 0.2);
+                    gem.vx = -Math.abs(gem.vx);
                 }
 
                 // Va chạm mép trên / dưới
                 if (gem.y < minY) {
                     gem.y = minY;
-                    gem.vy = Math.abs(gem.vy) * (0.9 + Math.random() * 0.2);
+                    gem.vy = Math.abs(gem.vy);
                 } else if (gem.y + gem.size > maxY) {
                     gem.y = maxY - gem.size;
-                    gem.vy = -Math.abs(gem.vy) * (0.9 + Math.random() * 0.2);
+                    gem.vy = -Math.abs(gem.vy);
                 }
 
-                // Cập nhật vị trí bằng left/top để không xung đột CSS animation
-                gem.element.style.left = `${gem.x.toFixed(1)}px`;
-                gem.element.style.top = `${gem.y.toFixed(1)}px`;
-            });
+                // Cập nhật vị trí bằng translate3d chạy 100% trên GPU, không gây reflow layout
+                gem.element.style.transform = `translate3d(${gem.x.toFixed(1)}px, ${gem.y.toFixed(1)}px, 0) rotate(${gem.rot}deg)`;
+            }
 
             this.animFrameId = requestAnimationFrame(loop);
         };
@@ -590,21 +559,30 @@ class GoldMinerGame {
      * 5. Về tới đỉnh: Khối chữ biến mất, nổ sao hạt vàng, phát âm "Đúng rồi!", tăng tiến độ
      */
     async handleGemClick(gem) {
-        if (this.isClawBusy || this.isCompleted || gem.isCollected) return;
-        this.isClawBusy = true;
+        if (this.isCompleted || gem.isCollected) return;
 
-        // 1. Chữ ĐỨNG IM NGAY LẬP TỨC
-        gem.isFrozen = true;
-
-        // 2. Phát âm: Chữ cái và chữ số đọc bằng voice tiếng Anh theo yêu cầu!
-        if (gem.isItem) {
-            window.gameAudio?.playSystemVoiceOrSpeak(gem.voiceName);
-        } else {
-            window.gameAudio?.speakLetterEnglish(gem.char);
+        // 1. NẾU LÀ KHỐI GÂY NHIỄU (HÌNH MINH HOẠ HOẶC CHỮ/SỐ KHÁC):
+        // Phát âm bình thường, KHÔNG giật lắc, KHÔNG nghẽn cần cẩu, để vật trôi bình thường
+        if (!gem.isTarget) {
+            if (gem.isItem) {
+                window.gameAudio?.playSystemVoiceOrSpeak(gem.voiceName);
+            } else {
+                window.gameAudio?.speakLetterEnglish(gem.char);
+            }
+            return;
         }
 
-        // 3. Tính toán góc và khoảng cách từ tâm mâm xoay cần cẩu tới tâm khối chữ
-        // Dùng getBoundingClientRect để đạt độ chính xác tuyệt đối theo viewport
+        // 2. NẾU LÀ KHỐI MỤC TIÊU: CẦN CẨU VƯƠN TỚI VÀ GẮP VỀ ĐÍCH Ô MÓC
+        if (this.isClawBusy) return;
+        this.isClawBusy = true;
+
+        // Khối mục tiêu đứng im ngay để móc gắp
+        gem.isFrozen = true;
+
+        // Phát âm chữ/số mục tiêu chuẩn giọng nữ tiếng Anh có sẵn trong hệ thống
+        window.gameAudio?.speakLetterEnglish(gem.char);
+
+        // Tính toán góc và khoảng cách từ tâm mâm xoay cần cẩu tới tâm khối chữ
         const armRect = this.craneArm.getBoundingClientRect();
         const pivotX = armRect.left;
         const pivotY = armRect.top;
@@ -616,10 +594,7 @@ class GoldMinerGame {
         const dx = gemCenterX - pivotX;
         const dy = gemCenterY - pivotY;
 
-        // Góc xoay chuẩn theo hệ trục màn hình:
-        // Cần cẩu mặc định cắm thẳng xuống (vector (0, 1) ở góc 0 độ).
-        // Khi gem ở bên phải (dx > 0): cần cẩu xoay ngược chiều kim đồng hồ -> góc âm.
-        // Khi gem ở bên trái (dx < 0): cần cẩu xoay cùng chiều kim đồng hồ -> góc dương.
+        // Góc xoay chuẩn theo hệ trục màn hình
         const angleRad = Math.atan2(-dx, dy);
         const angleDeg = angleRad * (180 / Math.PI);
         const distance = Math.hypot(dx, dy);
@@ -630,7 +605,7 @@ class GoldMinerGame {
             this.craneArm.style.transform = `rotate(${angleDeg.toFixed(2)}deg)`;
         }
 
-        // Mở rộng dây cáp vươn thẳng tới khối chữ (tốc độ cơ học chậm rãi hơn)
+        // Mở rộng dây cáp vươn thẳng tới khối chữ
         const targetCableLength = Math.max(30, distance - 20);
         const extendDuration = Math.min(1300, Math.max(900, distance * 1.5));
 
@@ -650,92 +625,53 @@ class GoldMinerGame {
             // Móng vuốt kẹp chặt
             this.clawPincers?.classList.add('is-closed');
 
-            if (gem.isTarget) {
-                // ==========================================
-                // ĐÚNG CHỮ MỤC TIÊU: KÉO CHẬM RÃI VỀ ĐÍCH
-                // ==========================================
-                const retractDuration = 1200; // Tốc độ kéo chậm rãi, rõ ràng
+            // Kéo chậm rãi về đích
+            const retractDuration = 1200;
 
-                // Thu dây cáp về đỉnh
-                if (this.craneCable) {
-                    this.craneCable.style.transition = `height ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-                    this.craneCable.style.height = `40px`;
-                }
-                if (this.clawHead) {
-                    this.clawHead.style.transition = `top ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-                    this.clawHead.style.top = `40px`;
-                }
-
-                // Khối chữ di chuyển theo móc về đỉnh đích (ngay dưới puli trần)
-                const playfieldRect = this.playfield.getBoundingClientRect();
-                const targetX = playfieldRect.width / 2 - gem.size / 2;
-                const targetY = -15;
-
-                gem.element.style.transition = `left ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1), top ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1), transform ${retractDuration}ms ease, opacity 0.3s ease ${retractDuration - 200}ms`;
-                gem.element.style.left = `${targetX}px`;
-                gem.element.style.top = `${targetY}px`;
-                gem.element.style.transform = `scale(0.5) rotate(0deg)`;
-
-                // Khi về tới đích trên trần
-                setTimeout(async () => {
-                    gem.isCollected = true;
-                    gem.element.remove();
-
-                    // BÙNG NỔ HẠT SAO VÀNG TẠI ĐÍCH ĐẾN
-                    this.triggerHarvestBurst(playfieldRect.width / 2, 20);
-
-                    // Âm thanh chúc mừng
-                    window.gameAudio?.playCorrectChime();
-
-                    // Mở móng vuốt
-                    this.clawPincers?.classList.remove('is-closed');
-
-                    // Tăng tiến độ
-                    this.targetGemsCollected++;
-                    this.updateProgressHUD();
-
-                    // Voice chuẩn ngắn gọn từ TextToSpeechCaches: "Đúng rồi!"
-                    await window.gameAudio?.playSystemVoiceOrSpeak("Đúng rồi!");
-
-                    this.isClawBusy = false;
-
-                    // Nếu gắp đủ 3/3 lần -> Chiến Thắng & Mở Màn Tiếp
-                    if (this.targetGemsCollected >= this.totalRequired) {
-                        this.showVictory();
-                    }
-                }, retractDuration);
-
-            } else {
-                // ==========================================
-                // CHỌN SAI CHỮ KHÁC HOẶC KHO BÁU MỎ: RUNG LẮC & THU MÓC
-                // ==========================================
-                this.wrongAttempts++;
-
-                // Khối chữ rung lắc cảnh báo nhẹ
-                gem.element.style.transform = `scale(0.92) rotate(${gem.rot + 10}deg)`;
-                window.gameAudio?.playWrongWobble();
-
-                const retractDuration = 850;
-                setTimeout(() => {
-                    // Mở móng vuốt và thu dây về
-                    this.clawPincers?.classList.remove('is-closed');
-                    if (this.craneCable) {
-                        this.craneCable.style.transition = `height ${retractDuration}ms ease`;
-                        this.craneCable.style.height = '40px';
-                    }
-                    if (this.clawHead) {
-                        this.clawHead.style.transition = `top ${retractDuration}ms ease`;
-                        this.clawHead.style.top = '40px';
-                    }
-                }, 220);
-
-                setTimeout(async () => {
-                    // Chữ được rã đông tiếp tục bồng bềnh
-                    gem.element.style.transform = `scale(1) rotate(${gem.rot}deg)`;
-                    gem.isFrozen = false;
-                    this.isClawBusy = false;
-                }, retractDuration + 240);
+            // Thu dây cáp về đỉnh
+            if (this.craneCable) {
+                this.craneCable.style.transition = `height ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+                this.craneCable.style.height = `40px`;
             }
+            if (this.clawHead) {
+                this.clawHead.style.transition = `top ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+                this.clawHead.style.top = `40px`;
+            }
+
+            // Khối chữ di chuyển theo móc về đỉnh đích (ngay dưới trạm móc câu và puly)
+            const playfieldRect = this.playfield.getBoundingClientRect();
+            const targetX = (armRect.left - playfieldRect.left) - gem.size / 2;
+            const targetY = (armRect.top - playfieldRect.top) + 10;
+
+            gem.element.style.transition = `transform ${retractDuration}ms cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease ${retractDuration - 200}ms`;
+            gem.element.style.transform = `translate3d(${targetX.toFixed(1)}px, ${targetY.toFixed(1)}px, 0) scale(0.45) rotate(0deg)`;
+            gem.element.style.opacity = '0';
+
+            // Khi về tới đích trên trần
+            setTimeout(async () => {
+                gem.isCollected = true;
+                gem.element.remove();
+
+                // BÙNG NỔ HẠT SAO VÀNG TẠI ĐÍCH ĐẾN (NGAY DƯỚI Ô MÓC)
+                this.triggerHarvestBurst(armRect.left - playfieldRect.left, armRect.top - playfieldRect.top + 20);
+
+                // Âm thanh chúc mừng nhẹ nhàng
+                window.gameAudio?.playCorrectChime();
+
+                // Mở móng vuốt
+                this.clawPincers?.classList.remove('is-closed');
+
+                // Tăng số lượng đã thu hoạch (KHÔNG đọc câu nhắc nhở để màn chơi gọn nhẹ, thanh thoát)
+                this.targetGemsCollected++;
+                this.updateProgressHUD();
+
+                this.isClawBusy = false;
+
+                // Nếu gắp đủ 3/3 lần -> Chiến Thắng & Mở Màn Tiếp
+                if (this.targetGemsCollected >= this.totalRequired) {
+                    this.showVictory();
+                }
+            }, retractDuration);
         }, extendDuration + 180);
     }
 
@@ -756,24 +692,10 @@ class GoldMinerGame {
     }
 
     /**
-     * Cập nhật thanh tiến độ 3 ngôi sao
+     * Cập nhật tiến độ (Đã lược bỏ thanh sao HUD theo yêu cầu để giao diện tinh gọn, không lag)
      */
     updateProgressHUD() {
-        const countEl = document.getElementById('minerProgressCount');
-        if (countEl) {
-            countEl.textContent = `${this.targetGemsCollected} / ${this.totalRequired}`;
-        }
-
-        for (let i = 1; i <= this.totalRequired; i++) {
-            const star = document.getElementById(`mstar-${i}`);
-            if (star) {
-                if (i <= this.targetGemsCollected) {
-                    star.className = 'miner-star-slot filled';
-                } else {
-                    star.className = 'miner-star-slot empty';
-                }
-            }
-        }
+        // Khối tiến độ được lược bỏ cho gọn nhẹ
     }
 
     /**
