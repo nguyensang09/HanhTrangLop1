@@ -93,6 +93,20 @@
         if (isPC || !isKidsZone()) return;
         if (e.touches.length !== 1) return;
 
+        // Riêng các màn hình danh sách học tập cần vuốt và cuộn:
+        // /kids/bilingual-listen, /kids/tap-to (/kids/tracing), /kids/home...
+        // Tuyệt đối mở hoàn toàn cử chỉ vuốt và thanh cuộn, không can thiệp touchmove
+        var path = (window.location.pathname || '').toLowerCase();
+        if (document.querySelector('.bilingual-listen-screen, .tracing-hub-screen, .kid-home-screen, .ipad-home-hub-screen') ||
+            path.includes('/bilingual-listen') ||
+            path.includes('/tap-to') ||
+            path.includes('/tracing') ||
+            path.includes('/home') ||
+            path === '/kids' ||
+            path === '/kids/') {
+            return;
+        }
+
         var scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0;
         var touchY = e.touches[0].clientY;
         var isPullingDown = touchY > touchStartY;
@@ -102,6 +116,26 @@
             if (e.cancelable) e.preventDefault();
         }
     }, { passive: false });
+
+    // Đánh dấu lớp mở thanh cuộn cho các màn hình danh sách bài học của bé
+    function markScrollableKidsScreens() {
+        var path = (window.location.pathname || '').toLowerCase();
+        if (document.querySelector('.bilingual-listen-screen, .tracing-hub-screen, .kid-home-screen, .ipad-home-hub-screen') ||
+            path.includes('/bilingual-listen') ||
+            path.includes('/tap-to') ||
+            path.includes('/tracing') ||
+            path.includes('/home') ||
+            path === '/kids' ||
+            path === '/kids/') {
+            if (document.body) document.body.classList.add('body-scrollable-kids');
+            if (document.documentElement) document.documentElement.classList.add('body-scrollable-kids');
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', markScrollableKidsScreens);
+    } else {
+        markScrollableKidsScreens();
+    }
 
     // ── D. Chặn Ctrl+Scroll zoom TRÊN THIẾT BỊ CẢM ỨNG (MỞ HOÀN TOÀN TRÊN PC) ───────────
     document.addEventListener('wheel', function (e) {

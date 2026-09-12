@@ -14457,6 +14457,64 @@ body.audio-is-speaking .sound-wave-badge {
   box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.15);
 }
 
+/* Cụm nút cấu hình Chế độ đọc: Chỉ Tiếng Anh (A - Apple) hoặc Song ngữ đầy đủ */
+.read-mode-toggle-group-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f8fafc;
+  padding: 3px 6px;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.read-mode-toggle-group-compact .read-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.read-mode-toggle-group-compact .read-mode-btn:hover {
+  color: #0284c7;
+  background: #f0f9ff;
+}
+
+.read-mode-toggle-group-compact .read-mode-btn.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+  transform: scale(1.02);
+}
+
+.read-mode-toggle-group-compact .read-mode-btn[data-mode="bilingual"].active {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35);
+}
+
+.mode-label-short {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .mode-label-full {
+    display: none;
+  }
+  .mode-label-short {
+    display: inline;
+  }
+}
+
 .speed-toggle-group-compact {
   display: inline-flex;
   align-items: center;
@@ -22220,6 +22278,69 @@ body.kids-zone-active button img,
 body.drag-interaction-active {
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/* ── 10. Mở hoàn toàn thanh cuộn & cử chỉ vuốt cho /kids/bilingual-listen, /kids/tap-to, /kids/home ── */
+html.body-scrollable-kids,
+body.body-scrollable-kids,
+html:has(.bilingual-listen-screen),
+html:has(.tracing-hub-screen),
+html:has(.kid-home-screen),
+html:has(.ipad-home-hub-screen),
+body:has(.bilingual-listen-screen),
+body:has(.tracing-hub-screen),
+body:has(.kid-home-screen),
+body:has(.ipad-home-hub-screen) {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: auto !important;
+}
+
+body.body-scrollable-kids .app-page,
+body.body-scrollable-kids main,
+body:has(.bilingual-listen-screen) .app-page,
+body:has(.bilingual-listen-screen) main,
+body:has(.tracing-hub-screen) .app-page,
+body:has(.tracing-hub-screen) main,
+body:has(.kid-home-screen) .app-page,
+body:has(.kid-home-screen) main,
+body:has(.ipad-home-hub-screen) .app-page,
+body:has(.ipad-home-hub-screen) main {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+}
+
+.bilingual-listen-screen,
+.tracing-hub-screen,
+.kid-home-screen,
+.ipad-home-hub-screen {
+  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.bilingual-card,
+.tracing-card,
+.ipad-hub-card,
+.activity-station-node,
+.bilingual-listen-screen button,
+.bilingual-listen-screen a,
+.tracing-hub-screen button,
+.tracing-hub-screen a,
+.kid-home-screen button,
+.kid-home-screen a,
+.ipad-home-hub-screen button,
+.ipad-home-hub-screen a {
+  touch-action: pan-y manipulation !important;
 }
 
 /* ==========================================================================

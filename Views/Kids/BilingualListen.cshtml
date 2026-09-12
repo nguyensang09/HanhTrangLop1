@@ -80,11 +80,17 @@
         </div>
 
         <div class="bilingual-tools-cluster">
-            <div class="bilingual-search-box">
-                <span class="material-symbols-outlined search-icon">search</span>
-                <input type="text" id="bilingualSearchInput" placeholder="Tìm chữ, số..." aria-label="Tìm kiếm thẻ song ngữ" autocomplete="off" />
-                <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Xóa tìm kiếm" hidden>
-                    <span class="material-symbols-outlined">close</span>
+            <!-- Cấu hình chế độ phát âm: Mặc định bật Chỉ Tiếng Anh (A - Apple) hoặc Song ngữ đầy đủ -->
+            <div class="read-mode-toggle-group-compact" role="group" aria-label="Chế độ phát âm">
+                <button type="button" class="read-mode-btn active" data-mode="en_only" title="Chỉ đọc Tiếng Anh: Chữ cái/Số - Từ mẫu (Ví dụ: A - Apple)">
+                    <span class="mode-icon">🔤</span>
+                    <span class="mode-label-full">Chỉ Tiếng Anh (A - Apple)</span>
+                    <span class="mode-label-short">Chỉ Tiếng Anh</span>
+                </button>
+                <button type="button" class="read-mode-btn" data-mode="bilingual" title="Đọc song ngữ Anh - Việt đầy đủ (A - Chữ A - Apple - Quả táo...)">
+                    <span class="mode-icon">🌐</span>
+                    <span class="mode-label-full">Song ngữ đầy đủ</span>
+                    <span class="mode-label-short">Song ngữ</span>
                 </button>
             </div>
 
@@ -104,14 +110,6 @@
                 <span class="tour-label">Tự động phát</span>
             </button>
         </div>
-    </div>
-
-    <!-- Thông báo khi tìm kiếm không có kết quả -->
-    <div id="noResultsNotice" class="no-results-card clay-card" hidden>
-        <span class="material-symbols-outlined notice-icon">search_off</span>
-        <h3>Không tìm thấy thẻ nào phù hợp</h3>
-        <p>Bé thử gõ chữ cái (A, B, C...) hoặc số (1, 2, 3...) xem sao nhé!</p>
-        <button type="button" class="clay-button" id="resetSearchBtn">Xem tất cả thẻ</button>
     </div>
 
     <!-- Khu vực 1: Bảng Chữ Cái Tiếng Anh -->
@@ -302,11 +300,11 @@
 
                 <!-- Cụm Duy Nhất 2 Nút Thao Tác: Nghe Song Ngữ Tích Hợp Toàn Bộ & Đọc Chậm -->
                 <div class="dialog-actions-cluster">
-                    <button type="button" class="dialog-action-btn btn-speak-bilingual clay-button" id="dialogSpeakBilingualBtn" title="Nghe đầy đủ: Chữ cái ➔ Từ vựng ➔ Câu ví dụ">
+                    <button type="button" class="dialog-action-btn btn-speak-bilingual clay-button" id="dialogSpeakBilingualBtn" title="Nghe âm thanh thẻ">
                         <span class="material-symbols-outlined btn-icon">headphones</span>
                         <div class="btn-text-wrap">
-                            <strong>Nghe Song Ngữ</strong>
-                            <small>Chữ cái ➔ Từ ➔ Câu ví dụ</small>
+                            <strong id="dialogSpeakModeTitle">Chỉ Tiếng Anh</strong>
+                            <small id="dialogSpeakModeSub">Chữ ➔ Từ ví dụ (A - Apple)</small>
                         </div>
                     </button>
 

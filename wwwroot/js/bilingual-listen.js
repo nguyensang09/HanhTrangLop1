@@ -37,20 +37,42 @@
   const autoplayTourBtn = document.getElementById("autoplayTourBtn");
   const speedBtns = document.querySelectorAll(".speed-toggle-btn");
   const tabBtns = document.querySelectorAll(".bilingual-tab-btn");
-  const searchInput = document.getElementById("bilingualSearchInput");
-  const clearSearchBtn = document.getElementById("clearSearchBtn");
-  const resetSearchBtn = document.getElementById("resetSearchBtn");
-  const noResultsNotice = document.getElementById("noResultsNotice");
+  const readModeBtns = document.querySelectorAll(".read-mode-btn");
+  const dialogSpeakModeTitle = document.getElementById("dialogSpeakModeTitle");
+  const dialogSpeakModeSub = document.getElementById("dialogSpeakModeSub");
   const sections = document.querySelectorAll("[data-section]");
 
   // State
   let currentCardIndex = 0;
   let visibleCards = [...allCards];
   let currentSpeed = "normal"; // 'normal' | 'slow'
+  let readMode = "en_only"; // 'en_only' (mặc định: A - Apple) | 'bilingual' (đầy đủ Anh - Việt)
+  try {
+    const savedMode = localStorage.getItem("hanhtrang_bilingual_read_mode");
+    if (savedMode === "bilingual" || savedMode === "en_only") {
+      readMode = savedMode;
+    }
+  } catch (e) {}
+
   let isAutoplaying = false;
   let autoplayTimer = null;
   let sequenceTimer = null;
   let activeAudio = null;
+
+  function updateReadModeUI() {
+    readModeBtns.forEach((btn) => {
+      const isMatch = btn.dataset.mode === readMode;
+      btn.classList.toggle("active", isMatch);
+      btn.setAttribute("aria-selected", isMatch ? "true" : "false");
+    });
+
+    if (dialogSpeakModeTitle) {
+      dialogSpeakModeTitle.textContent = readMode === "en_only" ? "Chỉ Tiếng Anh" : "Nghe Song Ngữ";
+    }
+    if (dialogSpeakModeSub) {
+      dialogSpeakModeSub.textContent = readMode === "en_only" ? "Chữ ➔ Từ ví dụ (A - Apple)" : "Chữ ➔ Từ ➔ Câu ví dụ";
+    }
+  }
 
   // LocalStorage for explored cards
   const STORAGE_KEY = "hanhtrang_bilingual_explored_" + childId;
@@ -401,13 +423,11 @@
     });
   }
 
-  // Chuỗi phát âm song ngữ chuẩn theo đúng yêu cầu:
-  // 1. A (en - giọng nữ) ➔ Dừng 1 nhịp (300ms)
-  // 2. Chữ A (vn - giọng nữ) ➔ Dừng 1 nhịp (300ms)
-  // 3. Apple (en - giọng nữ) ➔ Dừng 1 nhịp (300ms)
-  // 4. Quả táo (vn - giọng nữ) ➔ Dừng 1 nhịp (300ms)
-  // 5. Câu ví dụ mẫu (en - giọng nữ) ➔ Dừng 1 nhịp (300ms)
-  // 6. Câu ví dụ mẫu (vn - giọng nữ)
+  // Chuỗi phát âm:
+  // - Nếu readMode === 'en_only' (mặc định):
+  //   Chỉ đọc Tiếng Anh theo cấu trúc chữ - ví dụ cho chữ (Ví dụ: A - Apple / 1 - One) rồi dừng lại.
+  // - Nếu readMode === 'bilingual':
+  //   Đọc cấu trúc song ngữ đầy đủ như hiện tại (En - Vn - En - Vn - En - Vn).
   async function playIntegratedBilingualSequence(card, isSlow = false, onEndCallback) {
     stopAllAudio();
     if (!card) {
@@ -418,18 +438,23 @@
     const sequence = getBilingualSequence(card);
     const letterEn = sequence.en1;
     const letterVi = sequence.vi1;
-    const wordEn = sequence.en2;
+    // Chữ cái: 'Apple', Chữ số: 'One' (thay vì 'Number One' nếu đọc theo kiểu Chữ - Ví dụ: 1 - One)
+    const wordEn = (readMode === "en_only" && card?.dataset.kind === "number")
+      ? (card?.dataset.word || sequence.en2)
+      : sequence.en2;
     const meaningVi = sequence.vi2;
     const exampleEn = sequence.en3;
     const exampleVi = sequence.vi3;
 
-    // Tải trước ngầm tất cả các đoạn âm thanh giọng NỮ
+    // Tải trước ngầm các đoạn âm thanh giọng NỮ
     if (letterEn) getAudioUrl(letterEn, "en", isSlow);
-    if (letterVi) getAudioUrl(letterVi, "vi");
     if (wordEn) getAudioUrl(wordEn, "en", isSlow);
-    if (meaningVi) getAudioUrl(meaningVi, "vi");
-    if (exampleEn) getAudioUrl(exampleEn, "en", isSlow);
-    if (exampleVi) getAudioUrl(exampleVi, "vi");
+    if (readMode !== "en_only") {
+      if (letterVi) getAudioUrl(letterVi, "vi");
+      if (meaningVi) getAudioUrl(meaningVi, "vi");
+      if (exampleEn) getAudioUrl(exampleEn, "en", isSlow);
+      if (exampleVi) getAudioUrl(exampleVi, "vi");
+    }
 
     if (dialogSpeakBilingualBtn) dialogSpeakBilingualBtn.classList.add("is-playing");
     const audioBtn = card.querySelector(".card-audio-btn");
@@ -438,59 +463,69 @@
     markCardAsExplored(card);
 
     try {
-      // 1. Chữ cái / Số (Tiếng Anh - Giọng Nữ)
-      if (letterEn) {
-        await playVoiceItemPromise(letterEn, "en", isSlow);
-      }
-
-      // Dừng lại 1 nhịp (300ms) để chuyển voice
-      if (letterEn && letterVi) {
-        await waitGapPromise(300);
-      }
-
-      // 2. Chữ cái / Số (Tiếng Việt - Giọng Nữ)
-      if (letterVi) {
-        await playVoiceItemPromise(letterVi, "vi", isSlow);
-      }
-
-      // Dừng lại 1 nhịp (300ms) để chuyển voice
-      if (letterVi && wordEn) {
-        await waitGapPromise(300);
-      }
-
-      // 3. Từ vựng (Tiếng Anh - Giọng Nữ)
-      if (wordEn) {
-        await playVoiceItemPromise(wordEn, "en", isSlow);
-      }
-
-      // Dừng lại 1 nhịp (300ms) để chuyển voice
-      if (wordEn && meaningVi) {
-        await waitGapPromise(300);
-      }
-
-      // 4. Nghĩa từ vựng (Tiếng Việt - Giọng Nữ)
-      if (meaningVi) {
-        await playVoiceItemPromise(meaningVi, "vi", isSlow);
-      }
-
-      // 5. Câu ví dụ mẫu (Tiếng Anh trước ➔ 300ms ➔ Tiếng Việt sau)
-      if (exampleEn || exampleVi) {
-        // Dừng lại 1 nhịp (300ms) để chuyển sang câu ví dụ
-        await waitGapPromise(300);
-
-        // Câu ví dụ mẫu (Tiếng Anh - Giọng Nữ)
-        if (exampleEn) {
-          await playVoiceItemPromise(exampleEn, "en", isSlow);
+      if (readMode === "en_only") {
+        // Cấu trúc chỉ đọc Tiếng Anh: Chữ - Ví dụ cho chữ (Ví dụ: A - Apple) rồi dừng lại
+        if (letterEn) {
+          await playVoiceItemPromise(letterEn, "en", isSlow);
+        }
+        if (letterEn && wordEn) {
+          await waitGapPromise(300);
+        }
+        if (wordEn) {
+          await playVoiceItemPromise(wordEn, "en", isSlow);
+        }
+      } else {
+        // Cấu trúc song ngữ đầy đủ: En - Vn - En - Vn - En - Vn
+        // 1. Chữ cái / Số (Tiếng Anh - Giọng NỮ)
+        if (letterEn) {
+          await playVoiceItemPromise(letterEn, "en", isSlow);
         }
 
         // Dừng lại 1 nhịp (300ms) để chuyển voice
-        if (exampleEn && exampleVi) {
+        if (letterEn && letterVi) {
           await waitGapPromise(300);
         }
 
-        // Câu ví dụ mẫu (Tiếng Việt - Giọng Nữ)
-        if (exampleVi) {
-          await playVoiceItemPromise(exampleVi, "vi", isSlow);
+        // 2. Chữ cái / Số (Tiếng Việt - Giọng NỮ)
+        if (letterVi) {
+          await playVoiceItemPromise(letterVi, "vi", isSlow);
+        }
+
+        // Dừng lại 1 nhịp (300ms) để chuyển voice
+        if (letterVi && wordEn) {
+          await waitGapPromise(300);
+        }
+
+        // 3. Từ vựng (Tiếng Anh - Giọng NỮ)
+        if (wordEn) {
+          await playVoiceItemPromise(wordEn, "en", isSlow);
+        }
+
+        // Dừng lại 1 nhịp (300ms) để chuyển voice
+        if (wordEn && meaningVi) {
+          await waitGapPromise(300);
+        }
+
+        // 4. Nghĩa từ vựng (Tiếng Việt - Giọng NỮ)
+        if (meaningVi) {
+          await playVoiceItemPromise(meaningVi, "vi", isSlow);
+        }
+
+        // 5. Câu ví dụ mẫu (Tiếng Anh trước ➔ 300ms ➔ Tiếng Việt sau)
+        if (exampleEn || exampleVi) {
+          await waitGapPromise(300);
+
+          if (exampleEn) {
+            await playVoiceItemPromise(exampleEn, "en", isSlow);
+          }
+
+          if (exampleEn && exampleVi) {
+            await waitGapPromise(300);
+          }
+
+          if (exampleVi) {
+            await playVoiceItemPromise(exampleVi, "vi", isSlow);
+          }
         }
       }
     } finally {
@@ -614,13 +649,14 @@
       dialog.hidden = false;
       dialog.classList.add("is-active");
 
-      playCardSequence(card, false);
+      playCardSequence(card, currentSpeed === "slow");
 
+      const delay = readMode === "en_only" ? 2500 : 4500;
       autoplayTimer = setTimeout(() => {
         if (!isAutoplaying) return;
         currentCardIndex = (currentCardIndex + 1) % visibleCards.length;
         playStep();
-      }, 4200);
+      }, delay);
     }
 
     playStep();
@@ -639,39 +675,21 @@
     }
   }
 
-  // Tab & Search Filtering
+  // Tab Filtering
   function filterCards() {
     const activeTabBtn = document.querySelector(".bilingual-tab-btn.active");
     const activeTab = activeTabBtn ? activeTabBtn.dataset.tab : "all";
-    const searchQuery = removeAccents(searchInput ? searchInput.value : "");
-
-    let visibleCount = 0;
 
     allCards.forEach((card) => {
       const kind = card.dataset.kind; // 'letter' | 'number'
-      const symbol = removeAccents(card.dataset.symbol);
-      const word = removeAccents(card.dataset.word);
-      const meaning = removeAccents(card.dataset.meaning);
-      const phonetic = removeAccents(card.dataset.phonetic);
 
       // Check tab match
       let matchTab = true;
       if (activeTab === "letters" && kind !== "letter") matchTab = false;
       if (activeTab === "numbers" && kind !== "number") matchTab = false;
 
-      // Check search match
-      let matchSearch = true;
-      if (searchQuery) {
-        matchSearch =
-          symbol === searchQuery ||
-          word.includes(searchQuery) ||
-          meaning.includes(searchQuery) ||
-          phonetic.includes(searchQuery);
-      }
-
-      if (matchTab && matchSearch) {
+      if (matchTab) {
         card.style.display = "";
-        visibleCount++;
       } else {
         card.style.display = "none";
       }
@@ -686,14 +704,6 @@
 
     // Update visibleCards array
     visibleCards = allCards.filter((card) => card.style.display !== "none");
-
-    if (noResultsNotice) {
-      noResultsNotice.hidden = visibleCount > 0;
-    }
-
-    if (clearSearchBtn) {
-      clearSearchBtn.hidden = !searchInput.value;
-    }
   }
 
   // Event Listeners
@@ -809,34 +819,19 @@
     });
   });
 
-  // Search input
-  if (searchInput) {
-    searchInput.addEventListener("input", filterCards);
-  }
-
-  if (clearSearchBtn) {
-    clearSearchBtn.addEventListener("click", () => {
-      if (searchInput) searchInput.value = "";
-      filterCards();
-      searchInput.focus();
+  // Read Mode Buttons (Chỉ Tiếng Anh / Song ngữ)
+  readModeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      readMode = btn.dataset.mode || "en_only";
+      try {
+        localStorage.setItem("hanhtrang_bilingual_read_mode", readMode);
+      } catch (e) {}
+      updateReadModeUI();
     });
-  }
+  });
 
-  if (resetSearchBtn) {
-    resetSearchBtn.addEventListener("click", () => {
-      if (searchInput) searchInput.value = "";
-      tabBtns.forEach((b) => {
-        if (b.dataset.tab === "all") {
-          b.classList.add("active");
-          b.setAttribute("aria-selected", "true");
-        } else {
-          b.classList.remove("active");
-          b.setAttribute("aria-selected", "false");
-        }
-      });
-      filterCards();
-    });
-  }
+  // Khởi tạo trạng thái giao diện chế độ đọc
+  updateReadModeUI();
 
   // Tự động nạp ngầm toàn bộ âm thanh các thẻ khi tải trang để khi bé bấm là phát ngay tức thì
   function startBackgroundAudioPreload() {
