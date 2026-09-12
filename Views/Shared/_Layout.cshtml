@@ -2,6 +2,13 @@
 @using HanhTrangLop1.Data
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Db
+@{
+    // Tính toán sớm để dùng trong attribute của <body>
+    var _ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var _isKidsZone = string.Equals(_ctrl, "Kids", StringComparison.OrdinalIgnoreCase) ||
+                      string.Equals(_ctrl, "Games", StringComparison.OrdinalIgnoreCase);
+    var _isFocusMode = ViewData["FocusMode"] as bool? == true;
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,13 +23,26 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HanhTrangLop1.styles.css" asp-append-version="true" />
+    <script>
+        (function() {
+            var ua = navigator.userAgent || '';
+            var isTouch = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) || /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            document.documentElement.classList.add(isTouch ? 'is-touch-device' : 'is-pc-device');
+        })();
+    </script>
 </head>
-<body class="app-shell @(ViewData["FocusMode"] as bool? == true ? "focus-mode-active" : "")">
+<body class="app-shell @(_isFocusMode ? "focus-mode-active" : "") @(_isKidsZone ? "kids-zone-active" : "")">
+    <script>
+        if (document.documentElement.classList.contains('is-pc-device')) {
+            document.body.classList.add('is-pc-device');
+        } else if (document.documentElement.classList.contains('is-touch-device')) {
+            document.body.classList.add('is-touch-device');
+        }
+    </script>
     @{
-        var focusMode = ViewData["FocusMode"] as bool? == true;
-        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-        var isKidsZone = string.Equals(currentController, "Kids", StringComparison.OrdinalIgnoreCase) ||
-                         string.Equals(currentController, "Games", StringComparison.OrdinalIgnoreCase);
+        var focusMode = _isFocusMode;
+        var currentController = _ctrl;
+        var isKidsZone = _isKidsZone;
         var isAdminZone = string.Equals(currentController, "Admin", StringComparison.OrdinalIgnoreCase);
 
         // Lấy thông tin bé đang chọn

@@ -580,7 +580,16 @@
 
   // Allow trackpad / mouse wheel to scroll page over canvas
   canvas.addEventListener("wheel", function (event) {
-    window.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
+    if (event.ctrlKey || event.metaKey) {
+      // Để trình duyệt tự do phóng to / thu nhỏ trên PC
+      return;
+    }
+    const scrollTarget = document.scrollingElement || document.documentElement || document.body || window;
+    if (scrollTarget && typeof scrollTarget.scrollBy === "function") {
+      scrollTarget.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
+    } else {
+      window.scrollBy({ top: event.deltaY, left: event.deltaX, behavior: "auto" });
+    }
   }, { passive: true });
 
   // Initial setup high-DPI 2.5K resolution & sync

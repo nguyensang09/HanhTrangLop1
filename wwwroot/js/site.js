@@ -1,3 +1,152 @@
+/* =======================================================================
+   TOUCH PROTECTION MODULE – Góc của bé & Màn hình bài học
+   Chặn pinch-zoom, double-tap zoom, pull-to-refresh trên iPad / Phone
+   CHỈ hoạt động trên thiết bị cảm ứng di động (iPad, iPhone, Android).
+   TRÊN PC: Mở hoàn toàn các tác vụ con lăn chuột, phóng to/thu nhỏ, phím tắt.
+   ======================================================================= */
+(function () {
+    'use strict';
+
+    /** Kiểm tra thiết bị là iPad, điện thoại, tablet di động hay máy tính PC */
+    function isTouchMobileOrTablet() {
+        var ua = navigator.userAgent || '';
+        var isIOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isAndroid = /Android/i.test(ua);
+        var isOtherMobile = /webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+        return isIOS || isAndroid || isOtherMobile;
+    }
+
+    var isTouchDevice = isTouchMobileOrTablet();
+    var isPC = !isTouchDevice;
+
+    function applyDeviceClasses() {
+        if (isPC) {
+            document.documentElement.classList.add('is-pc-device');
+            if (document.body) document.body.classList.add('is-pc-device');
+        } else {
+            document.documentElement.classList.add('is-touch-device');
+            if (document.body) document.body.classList.add('is-touch-device');
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyDeviceClasses);
+    } else {
+        applyDeviceClasses();
+    }
+
+    /** Kiểm tra xem hiện tại có đang ở Góc của bé hay không */
+    function isKidsZone() {
+        return document.body && (
+            document.body.classList.contains('kids-zone-active') ||
+            document.body.classList.contains('focus-mode-active')
+        );
+    }
+
+    // ── A. Chặn pinch-to-zoom (multi-finger gesture) trên iPad / Điện thoại ──────────────────────
+    var lastTouchEndTime = 0;
+    var activeTouchCount = 0;
+
+    document.addEventListener('touchstart', function (e) {
+        if (isPC || !isKidsZone()) return;
+        activeTouchCount = e.touches.length;
+        // 2+ ngón tay → pinch-zoom / rotate gesture → chặn trên iPad/Phone
+        if (e.touches.length >= 2) {
+            if (e.cancelable) e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function (e) {
+        if (isPC || !isKidsZone()) return;
+        // Multi-touch move → luôn chặn trên iPad/Phone
+        if (e.touches.length >= 2) {
+            if (e.cancelable) e.preventDefault();
+        }
+    }, { passive: false });
+
+    // ── B. Chặn double-tap zoom trên iPad / Điện thoại ────────────────────────────
+    document.addEventListener('touchend', function (e) {
+        if (isPC || !isKidsZone()) return;
+        var now = Date.now();
+        var timeSinceLast = now - lastTouchEndTime;
+        lastTouchEndTime = now;
+
+        if (timeSinceLast < 300 && timeSinceLast > 0) {
+            var target = e.target;
+            var tag = target ? target.tagName.toUpperCase() : '';
+            if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+                if (e.cancelable) e.preventDefault();
+            }
+        }
+    }, { passive: false });
+
+    // ── C. Chặn pull-to-refresh trên iPad / Điện thoại ──────
+    var touchStartY = 0;
+    document.addEventListener('touchstart', function (e) {
+        if (isPC || !isKidsZone()) return;
+        if (e.touches.length === 1) {
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function (e) {
+        if (isPC || !isKidsZone()) return;
+        if (e.touches.length !== 1) return;
+
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0;
+        var touchY = e.touches[0].clientY;
+        var isPullingDown = touchY > touchStartY;
+
+        // Chặn pull-to-refresh: đang ở top của trang và kéo xuống
+        if (scrollTop <= 0 && isPullingDown) {
+            if (e.cancelable) e.preventDefault();
+        }
+    }, { passive: false });
+
+    // ── D. Chặn Ctrl+Scroll zoom TRÊN THIẾT BỊ CẢM ỨNG (MỞ HOÀN TOÀN TRÊN PC) ───────────
+    document.addEventListener('wheel', function (e) {
+        if (isPC || !isKidsZone()) return; // Trên PC: Cho phép con lăn chuột phóng to/thu nhỏ
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // ── E. Chặn Ctrl+= / Ctrl+- / Ctrl+0 zoom bằng bàn phím (MỞ HOÀN TOÀN TRÊN PC) ─────
+    document.addEventListener('keydown', function (e) {
+        if (isPC || !isKidsZone()) return; // Trên PC: Cho phép zoom bàn phím
+        if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
+            e.preventDefault();
+        }
+    });
+
+    // ── F. Context menu (long-press) trên cảm ứng (MỞ TRÊN PC) ──
+    document.addEventListener('contextmenu', function (e) {
+        if (isPC || !isKidsZone()) return; // Trên PC: Cho phép chuột phải
+        var tag = e.target ? e.target.tagName.toUpperCase() : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        e.preventDefault();
+    });
+
+    // ── G. Chặn gesturestart / gesturechange (Safari iOS) ────
+    document.addEventListener('gesturestart', function (e) {
+        if (isPC || !isKidsZone()) return;
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gesturechange', function (e) {
+        if (isPC || !isKidsZone()) return;
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gestureend', function (e) {
+        if (isPC || !isKidsZone()) return;
+        e.preventDefault();
+    }, { passive: false });
+
+})();
+
+/* ─────────────────────────────────────────────────────────────────────── */
+
 document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
     form.addEventListener("submit", (event) => {
         const message = form.dataset.confirmMessage || "Xóa vĩnh viễn bài học và toàn bộ lịch sử làm bài liên quan?";
@@ -320,8 +469,10 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             const element = document.createElement("button");
             element.type = "button";
             element.className = className;
-            const mediaUrl = itemMedia.get(String(text).trim().toLocaleLowerCase("vi-VN"));
-            if (mediaUrl) {
+            const clean = String(text).trim();
+            const isSingle = clean.length <= 2 && /^[\p{L}\p{N}]+$/u.test(clean);
+            const mediaUrl = isSingle ? "" : itemMedia.get(clean.toLocaleLowerCase("vi-VN"));
+            if (mediaUrl && !mediaUrl.includes("book.svg")) {
                 const image = document.createElement("img");
                 image.className = "preview-item-media";
                 image.src = mediaUrl;
@@ -350,7 +501,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         } else if (type === "ordering") {
             const items = (form.querySelector('[name="SequenceItemsText"]')?.value || "1\n2\n3")
                 .split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
-            items.slice(0, 5).forEach((item, index) => previewOptions.append(makePreviewItem(`${index + 1}. ${item}`, "preview-order-item")));
+            items.slice(0, 5).forEach((item) => previewOptions.append(makePreviewItem(item, "preview-order-item")));
         } else if (type === "drag_drop") {
             labels.slice(0, 4).forEach((label) => previewOptions.append(makePreviewItem(label)));
             previewOptions.append(makePreviewItem(form.querySelector('[name="TargetLabel"]')?.value || "Vùng đích", "preview-drop-zone"));

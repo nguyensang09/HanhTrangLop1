@@ -6940,22 +6940,26 @@ main,
   }
 }
 
-/* Tracing Canvas Layout & Full-Immersion Notebook Board */
-body.focus-mode-active:has(.interaction-tracing) {
+/* ─────────────────────────────────────────────────────────────────────────────
+   A. CẤU HÌNH CHO TOUCH (iPad / Điện thoại): Khóa cuộn trang khi bé vẽ nét
+   ───────────────────────────────────────────────────────────────────────────── */
+html.is-touch-device body.focus-mode-active:has(.interaction-tracing),
+body.is-touch-device.focus-mode-active:has(.interaction-tracing) {
   padding: 0 !important;
   margin: 0 !important;
   overflow: hidden !important;
 }
 
-body.focus-mode-active:has(.interaction-tracing) .app-page {
+html.is-touch-device body.focus-mode-active:has(.interaction-tracing) .app-page,
+body.is-touch-device.focus-mode-active:has(.interaction-tracing) .app-page {
   padding: 0 !important;
   margin: 0 !important;
   overflow: hidden !important;
 }
 
-body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell,
-.learning-focus-shell:has(.interaction-tracing) {
-  --tracing-stage-w: min(96vw, calc((100dvh - 145px) * (920 / 1200)));
+html.is-touch-device .learning-focus-shell:has(.interaction-tracing),
+body.is-touch-device.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
+  --tracing-stage-w: min(96vw, calc((100dvh - 145px) * (920 / 1200))) !important;
   width: 100% !important;
   max-width: 100% !important;
   height: 100dvh !important;
@@ -6971,6 +6975,97 @@ body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell,
   overflow: hidden !important;
   overscroll-behavior: none !important;
   overscroll-behavior-y: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   B. CẤU HÌNH CHO PC (Desktop / Laptop): Mở hoàn toàn thanh cuộn, con lăn và zoom
+   Áp dụng cho mọi màn hình không phải touch device (hoặc có is-pc-device)
+   ───────────────────────────────────────────────────────────────────────────── */
+html:not(.is-touch-device),
+html.is-pc-device {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+}
+
+html:not(.is-touch-device) body,
+html.is-pc-device body,
+body.is-pc-device,
+body.focus-mode-active:not(.is-touch-device) {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+}
+
+html:not(.is-touch-device) .app-page,
+html.is-pc-device .app-page,
+body.is-pc-device .app-page,
+html:not(.is-touch-device) main,
+html.is-pc-device main,
+body.is-pc-device main {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+}
+
+html:not(.is-touch-device) .learning-focus-shell:has(.interaction-tracing),
+html.is-pc-device .learning-focus-shell:has(.interaction-tracing),
+body.is-pc-device .learning-focus-shell:has(.interaction-tracing),
+body.focus-mode-active:not(.is-touch-device) .learning-focus-shell:has(.interaction-tracing),
+.learning-focus-shell:has(.interaction-tracing):not(.is-touch-device) {
+  --tracing-stage-w: min(720px, 92vw) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 12px 16px 48px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  overflow: visible !important;
+  overscroll-behavior: auto !important;
+  overscroll-behavior-y: auto !important;
+}
+
+/* Fallback chuẩn cho trình duyệt Desktop qua media query hover/pointer */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  html body,
+  body.focus-mode-active,
+  body.focus-mode-active:has(.interaction-tracing) {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  body.focus-mode-active .app-page,
+  body.focus-mode-active:has(.interaction-tracing) .app-page,
+  body.focus-mode-active main,
+  body.focus-mode-active:has(.interaction-tracing) main {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  body.focus-mode-active .learning-focus-shell,
+  body.focus-mode-active:has(.interaction-tracing) .learning-focus-shell,
+  .learning-focus-shell:has(.interaction-tracing) {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
+    --tracing-stage-w: min(720px, 92vw) !important;
+  }
 }
 
 /* 1. THANH TIÊU ĐỀ TRÊN (Topbar) - Cân đối tuyệt đối 3 cột */
@@ -21992,4 +22087,544 @@ body.audio-is-speaking .sound-wave-badge {
     font-size: 1.05rem;
   }
 }
+
+/* =====================================================================
+   TOUCH SAFETY LAYER – Góc của bé & Màn hình bài học
+   Chặn pinch-zoom, double-tap zoom, pull-to-refresh, text-selection
+   không mong muốn trên màn hình cảm ứng (iPad / Điện thoại)
+   Chỉ áp dụng cho Kids zone & Focus mode – KHÔNG ảnh hưởng phụ huynh
+   ===================================================================== */
+
+/* ── 1. Toàn Kids Zone: tắt text-selection và iOS long-press callout ── */
+.kid-screen,
+.learn-screen,
+.learning-focus-shell,
+.child-zone-shell,
+body.kids-zone-active {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  /* Tắt callout (long-press "Copy/Share/Lookup") trên iOS Safari */
+  -webkit-touch-callout: none;
+  /* Tắt tap highlight màu xanh/xám trên Android Chrome */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 2. Cho phép text selection trên nội dung văn bản cần đọc ── */
+.kid-screen .story-text,
+.kid-screen .reading-content,
+.learn-screen .question-text,
+.learn-screen .story-page-text,
+.bilingual-listen-screen .listen-card-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* ── 3. Buttons & option cards: chặn double-tap zoom, giữ single-tap ── */
+/* touch-action: manipulation = allow single-tap + pan, block double-tap zoom */
+.kid-screen button,
+.kid-screen a,
+.kid-screen .option-card,
+.kid-screen .choice-option,
+.kid-screen .match-item,
+.kid-screen .drag-item,
+.kid-screen .station-node,
+.kid-screen .tracing-tab-btn,
+.kid-screen .tracing-card,
+.kid-screen .tile-button,
+.learn-screen button,
+.learn-screen a,
+.learn-screen .option-card,
+.learn-screen .choice-option,
+.learn-screen .match-item,
+.learn-screen .drag-item,
+.learning-focus-shell button,
+.learning-focus-shell a,
+.learning-focus-shell .option-card,
+.learning-focus-shell .choice-option,
+body.kids-zone-active button,
+body.kids-zone-active a {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 4. Drop zones & drag boards: bàn giao toàn bộ pointer về JS ── */
+/* touch-action: none = tắt mọi gesture của trình duyệt, JS tự xử lý */
+.drop-zone,
+.matching-board,
+.drag-board,
+.quantity-board,
+.counting-board,
+.classification-board,
+.ordering-board {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── 5. Canvas tập tô: bổ sung overscroll và callout ── */
+.tracing-canvas-host,
+.tracing-board {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 6. Focus mode (đang trong bài học): chặn pull-to-refresh ── */
+body.focus-mode-active {
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
+body.focus-mode-active .app-page,
+body.focus-mode-active main {
+  overscroll-behavior: none;
+}
+
+/* ── 7. Kids zone chung: chặn pull-to-refresh ── */
+body.kids-zone-active {
+  overscroll-behavior-y: none;
+}
+
+/* ── 8. Image elements: không kéo ảnh ra ngoài được (iOS drag image) ── */
+.kid-screen img,
+.learn-screen img,
+.learning-focus-shell img,
+.child-zone-shell img,
+body.kids-zone-active img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}
+
+/* Khôi phục pointer-events cho các ảnh là nút bấm */
+.kid-screen a img,
+.kid-screen button img,
+.learn-screen a img,
+.learn-screen button img,
+body.kids-zone-active a img,
+body.kids-zone-active button img,
+.child-avatar-img,
+.child-avatar-touch img {
+  pointer-events: auto;
+}
+
+/* ── 9. Trạng thái "drag đang active": body lock cuộn ── */
+body.drag-interaction-active {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ==========================================================================
+   BÀI TẬP GHÉP ĐÔI CHỮ CÁI / KÝ HIỆU (MATCHING LETTER & SYMBOL BOARD)
+   Thiết kế thẻ chữ cái to, đậm, rõ nét theo ảnh mẫu: viền xanh tươi, chữ xanh dương đậm,
+   căn giữa hoàn hảo, loại bỏ hoàn toàn hình ảnh mặc định.
+   ========================================================================== */
+.matching-letter-board {
+  max-width: 620px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  gap: clamp(32px, 8vw, 76px) !important;
+  padding: 12px 10px !important;
+}
+
+.matching-letter-board .matching-column {
+  gap: clamp(14px, 2.5vw, 22px) !important;
+  width: clamp(120px, 44%, 220px) !important;
+}
+
+.matching-letter-board .matching-item,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.matching-letter-item,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.is-single-symbol,
+.matching-item.matching-letter-item,
+.matching-item.is-single-symbol {
+  width: 100% !important;
+  min-height: clamp(105px, 18vw, 150px) !important;
+  height: clamp(105px, 18vw, 150px) !important;
+  max-width: 220px !important;
+  margin: 0 auto !important;
+  padding: 6px 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: clamp(20px, 3.5vw, 28px) !important;
+  border: 3.5px solid #38bdf8 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.16), inset 0 -4px 0 #bae6fd !important;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  overflow: visible !important;
+}
+
+/* Ẩn hoàn toàn tất cả hình ảnh trong thẻ chữ cái / ký hiệu */
+.matching-letter-board .matching-item .answer-photo,
+.matching-letter-board .matching-item .answer-pictogram,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item .answer-photo,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item .answer-pictogram,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol .answer-photo,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol .answer-pictogram,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.matching-letter-item .answer-photo,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.matching-letter-item .answer-pictogram,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.is-single-symbol .answer-photo,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.is-single-symbol .answer-pictogram,
+.matching-item.matching-letter-item .answer-photo,
+.matching-item.matching-letter-item .answer-pictogram,
+.matching-item.is-single-symbol .answer-photo,
+.matching-item.is-single-symbol .answer-pictogram {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Chữ cái phóng to, cực đậm, sắc nét, màu xanh dương đặc trưng như ảnh mẫu */
+.matching-letter-board .matching-item .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.has-answer-visual .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.has-answer-visual .answer-label,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.is-single-symbol .answer-label,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.matching-letter-item .answer-label,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.is-single-symbol.has-answer-visual .answer-label,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-item.matching-letter-item.has-answer-visual .answer-label,
+.matching-item.matching-letter-item .answer-label,
+.matching-item.is-single-symbol .answer-label {
+  font-family: var(--font-display), "Nunito", "Be Vietnam Pro", system-ui, sans-serif !important;
+  font-size: clamp(3.4rem, 9.5vw, 5.2rem) !important;
+  font-weight: 900 !important;
+  color: #0284c7 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  letter-spacing: -0.02em !important;
+  flex: 0 0 auto !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+/* Hiệu ứng tương tác: Hover */
+.matching-letter-board .matching-item:hover,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item:hover,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol:hover,
+.matching-item.matching-letter-item:hover,
+.matching-item.is-single-symbol:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.25), inset 0 -4px 0 #bae6fd !important;
+}
+
+/* Hiệu ứng khi đang chọn (Selected) */
+.matching-letter-board .matching-item.selected,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.selected,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.selected,
+.matching-item.matching-letter-item.selected,
+.matching-item.is-single-symbol.selected {
+  border-color: #ff7d4d !important;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
+  box-shadow: 0 0 0 4px rgba(255, 125, 77, 0.35), inset 0 -4px 0 #fed7aa !important;
+}
+.matching-letter-board .matching-item.selected .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.selected .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.selected .answer-label {
+  color: #ea580c !important;
+}
+
+/* Hiệu ứng khi đối tượng bên phải sẵn sàng nhận nối */
+.matching-letter-board .matching-item.target-ready,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.target-ready,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.target-ready,
+.matching-item.matching-letter-item.target-ready,
+.matching-item.is-single-symbol.target-ready {
+  border-color: #0ea5e9 !important;
+  background: #f0f9ff !important;
+  animation: pulseTarget 1.5s infinite !important;
+}
+
+/* Hiệu ứng khi kéo rê trúng đích (Target Hover) */
+.matching-letter-board .matching-item.target-hover,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.target-hover,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.target-hover,
+.matching-item.matching-letter-item.target-hover,
+.matching-item.is-single-symbol.target-hover {
+  border-color: #f59e0b !important;
+  background: #fef3c7 !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.35) !important;
+}
+.matching-letter-board .matching-item.target-hover .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.target-hover .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.target-hover .answer-label {
+  color: #d97706 !important;
+}
+
+/* Hiệu ứng khi đã ghép đôi thành công (Matched) */
+.matching-letter-board .matching-item.matched,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.matched,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.matched,
+.matching-item.matching-letter-item.matched,
+.matching-item.is-single-symbol.matched {
+  border-color: #10b981 !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2), inset 0 -3px 0 #bbf7d0 !important;
+}
+.matching-letter-board .matching-item.matched .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.matching-letter-item.matched .answer-label,
+.learning-focus-shell .interaction-matching .matching-item.is-single-symbol.matched .answer-label {
+  color: #059669 !important;
+}
+
+/* ==========================================================================
+   BÀI TẬP NỐI SỐ VỚI SỐ LƯỢNG (MATCHING QUANTITY BOARD)
+   Thẻ số bên trái: số siêu to, đậm, rõ nét, nền trắng viền xanh tươi
+   Thẻ số lượng bên phải: các biểu tượng đồ vật đếm sinh động, rõ ràng
+   ========================================================================== */
+.matching-quantity-board {
+  max-width: 680px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  gap: clamp(28px, 6vw, 64px) !important;
+  padding: 12px 10px !important;
+}
+
+.matching-quantity-board .matching-column {
+  gap: clamp(14px, 2.5vw, 22px) !important;
+  width: clamp(130px, 46%, 280px) !important;
+}
+
+/* Đồng bộ khung thẻ của cả 2 bên trái & phải */
+.matching-quantity-board .matching-item,
+.learning-focus-shell .interaction-matching .matching-quantity-board .matching-item,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-quantity-board .matching-item {
+  width: 100% !important;
+  min-height: clamp(115px, 18vw, 155px) !important;
+  height: clamp(115px, 18vw, 155px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: clamp(20px, 3.5vw, 28px) !important;
+  border: 3.5px solid #38bdf8 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.16), inset 0 -4px 0 #bae6fd !important;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-sizing: border-box !important;
+  padding: clamp(6px, 1.5vw, 12px) !important;
+  overflow: visible !important;
+}
+
+/* Ẩn hoàn toàn ảnh thừa (quyển sách) ở cột số bên trái */
+.matching-quantity-board .matching-left .matching-item .answer-photo,
+.matching-quantity-board .matching-left .matching-item .answer-pictogram,
+.learning-focus-shell .interaction-matching .matching-quantity-board .matching-left .matching-item .answer-photo,
+.learning-focus-shell .interaction-matching .matching-quantity-board .matching-left .matching-item .answer-pictogram,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-quantity-board .matching-left .matching-item .answer-photo,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-quantity-board .matching-left .matching-item .answer-pictogram {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Chữ số bên trái: Siêu to, cực đậm, màu xanh dương đặc trưng như ảnh mẫu */
+.matching-quantity-board .matching-left .matching-item .answer-label,
+.matching-quantity-board .matching-left .matching-item.has-answer-visual .answer-label,
+.learning-focus-shell .interaction-matching .matching-quantity-board .matching-left .matching-item .answer-label,
+.learning-focus-shell .interaction-matching .matching-quantity-board .matching-left .matching-item.has-answer-visual .answer-label,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-quantity-board .matching-left .matching-item .answer-label,
+.learn-screen.learning-focus-shell .choice-board.interaction-matching .matching-quantity-board .matching-left .matching-item.has-answer-visual .answer-label {
+  font-family: var(--font-display), "Nunito", "Be Vietnam Pro", system-ui, sans-serif !important;
+  font-size: clamp(3.6rem, 10vw, 5.6rem) !important;
+  font-weight: 900 !important;
+  color: #0284c7 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  letter-spacing: -0.02em !important;
+  flex: 0 0 auto !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+/* Khung đồ vật đếm bên phải */
+.matching-quantity-board .matching-right .matching-item {
+  background: #ffffff !important;
+}
+
+.matching-quantity-board .answer-quantity-visual {
+  width: 100% !important;
+  max-width: 250px !important;
+  display: grid !important;
+  grid-template-columns: repeat(var(--quantity-columns, 3), minmax(0, 1fr)) !important;
+  place-items: center !important;
+  gap: clamp(4px, 1vw, 10px) !important;
+  line-height: 1 !important;
+}
+
+.matching-quantity-board .answer-quantity-symbol {
+  display: grid !important;
+  width: clamp(32px, 5.5vw, 50px) !important;
+  height: clamp(32px, 5.5vw, 50px) !important;
+  place-items: center !important;
+  font-size: clamp(2rem, 5.2vw, 3rem) !important;
+  line-height: 1 !important;
+  filter: drop-shadow(0 3px 4px rgba(15, 23, 42, 0.15)) !important;
+}
+
+/* Hover, Selected, Matched cho cả 2 bên của matching-quantity-board */
+.matching-quantity-board .matching-item:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.25), inset 0 -4px 0 #bae6fd !important;
+}
+
+.matching-quantity-board .matching-item.selected {
+  border-color: #ff7d4d !important;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
+  box-shadow: 0 0 0 4px rgba(255, 125, 77, 0.35), inset 0 -4px 0 #fed7aa !important;
+}
+.matching-quantity-board .matching-left .matching-item.selected .answer-label {
+  color: #ea580c !important;
+}
+
+.matching-quantity-board .matching-item.target-ready {
+  border-color: #0ea5e9 !important;
+  background: #f0f9ff !important;
+  animation: pulseTarget 1.5s infinite !important;
+}
+
+.matching-quantity-board .matching-item.target-hover {
+  border-color: #f59e0b !important;
+  background: #fef3c7 !important;
+  transform: scale(1.06) !important;
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.35) !important;
+}
+
+.matching-quantity-board .matching-item.matched {
+  border-color: #10b981 !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2), inset 0 -3px 0 #bbf7d0 !important;
+}
+.matching-quantity-board .matching-left .matching-item.matched .answer-label {
+  color: #059669 !important;
+}
+
+/* ==========================================================================
+   BÀI TẬP SẮP XẾP THỨ TỰ (ORDERING ACTIVITIES)
+   Loại bỏ hoàn toàn cột số thứ tự (STT) ở đầu hàng để tránh gây nhầm lẫn.
+   Phóng to chữ số hiển thị rõ nét, nổi bật, thao tác thuận tiện.
+   ========================================================================== */
+/* Bỏ cột STT trong tất cả bài sắp xếp thứ tự */
+.ordering-badge,
+.ordering-row .ordering-badge,
+.learning-focus-shell .ordering-badge {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Khung hàng sắp xếp */
+.ordering-list {
+  max-width: 640px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: clamp(12px, 2vw, 18px) !important;
+  padding: 8px 6px !important;
+}
+
+.ordering-row {
+  min-height: clamp(86px, 14vw, 115px) !important;
+  padding: clamp(8px, 1.5vw, 14px) clamp(14px, 2.5vw, 22px) !important;
+  border-radius: clamp(20px, 3.5vw, 28px) !important;
+  border: 3.5px solid #d8edf5 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(41, 126, 164, 0.08), inset 0 -3px 0 #f1f5f9 !important;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.ordering-row:hover {
+  transform: translateY(-2px) scale(1.015) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 12px 28px rgba(56, 189, 248, 0.2), inset 0 -3px 0 #e0f2fe !important;
+}
+
+.ordering-value-wrap {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: clamp(10px, 2vw, 18px) !important;
+  min-width: 0 !important;
+  padding: 0 clamp(6px, 1.5vw, 12px) !important;
+}
+
+/* Chữ số to, đậm nét trong bài sắp xếp số */
+.ordering-number-label,
+.ordering-row .ordering-number-label,
+.ordering-number-row .ordering-label,
+.ordering-row .ordering-label.short-label {
+  font-family: var(--font-display), "Nunito", "Be Vietnam Pro", system-ui, sans-serif !important;
+  font-size: clamp(3.4rem, 9vw, 5rem) !important;
+  font-weight: 900 !important;
+  color: #0284c7 !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  padding-left: clamp(8px, 2vw, 16px) !important;
+  letter-spacing: -0.02em !important;
+  text-shadow: none !important;
+}
+
+/* Nút mũi tên di chuyển lên / xuống */
+.ordering-actions {
+  display: flex !important;
+  gap: clamp(8px, 1.8vw, 12px) !important;
+  flex-shrink: 0 !important;
+}
+
+.ordering-control {
+  width: clamp(44px, 8.5vw, 54px) !important;
+  height: clamp(44px, 8.5vw, 54px) !important;
+  border-radius: clamp(14px, 2.5vw, 18px) !important;
+  border: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.ordering-control .material-symbols-outlined {
+  font-size: clamp(1.8rem, 4.2vw, 2.4rem) !important;
+  font-weight: 800 !important;
+}
+
+
+
 

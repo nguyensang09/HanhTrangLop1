@@ -700,48 +700,65 @@
   function generateWorksheetStrokes(baseStrokes) {
     const allStrokes = [];
 
-    // Tầng 1: Chữ Siêu To Khổng Lồ (Hero Letter) ở trên cùng (baseline = 250, không bị cắt dấu)
-    // 1. Chữ Siêu To Khổng Lồ (cx: 260, scale = 0.43, height ~ 220px)
+    // Hàng 1 (Tầng 1): Hàng mẫu to (Hero Header Box) ở trên cùng (baseline = 266)
+    // 1. Chữ Siêu To Khổng Lồ có số thứ tự nét (cx: 260, scale = 0.48, height ~ 240px)
     baseStrokes.forEach((stroke, strokeIdx) => {
       allStrokes.push({
-        commands: transformCommands(stroke, 0.43, 260, 250),
+        commands: transformCommands(stroke, 0.48, 260, 266),
         tier: "bold",
-        ghostWidth: 38,
-        corridorWidth: 30,
-        centerlineWidth: 4.5,
+        ghostWidth: 42,
+        corridorWidth: 34,
+        centerlineWidth: 4.8,
         dashArray: "8,8",
-        corridorRadius: 38,
-        penWidth: 22,
+        corridorRadius: 42,
+        penWidth: 24,
         showBadge: true,
         badgeLabel: String(strokeIdx + 1)
       });
     });
 
-    // 2. Chữ Lớn bên cạnh ở Tầng 1 (cx: 680, scale = 0.35, baseline = 250)
+    // 2. Chữ Lớn bên cạnh ở Hàng 1 (cx: 680, scale = 0.40, baseline = 266)
     baseStrokes.forEach((stroke) => {
       allStrokes.push({
-        commands: transformCommands(stroke, 0.35, 680, 250),
+        commands: transformCommands(stroke, 0.40, 680, 266),
         tier: "bold",
-        ghostWidth: 28,
-        corridorWidth: 22,
-        centerlineWidth: 3.6,
+        ghostWidth: 32,
+        corridorWidth: 26,
+        centerlineWidth: 3.8,
         dashArray: "7,7",
-        corridorRadius: 28,
-        penWidth: 16,
+        corridorRadius: 32,
+        penWidth: 18,
         showBadge: false
       });
     });
 
-    // Tầng 2 - Hàng 2 (Ô Ly Cỡ Lớn Vừa - 4 chữ rộng rãi, baseline = 480, scale = 0.32)
-    [130, 350, 570, 790].forEach((cx) => {
+    // Hàng 2 (Tầng 2): Ô Ly Cỡ Lớn Vừa - 4 chữ rộng rãi (cx: 140, 355, 565, 780; baseline = 556, scale = 0.38)
+    [140, 355, 565, 780].forEach((cx) => {
       baseStrokes.forEach((stroke) => {
         allStrokes.push({
-          commands: transformCommands(stroke, 0.32, cx, 480),
+          commands: transformCommands(stroke, 0.38, cx, 556),
+          tier: "medium",
+          ghostWidth: 26,
+          corridorWidth: 20,
+          centerlineWidth: 3.2,
+          dashArray: "6,6",
+          corridorRadius: 26,
+          penWidth: 15,
+          showBadge: false
+        });
+      });
+    });
+
+    // Hàng 3 (Tầng 3): Ô Ly Cỡ Vừa Lớp 1 - 5 chữ (cx: 110, 285, 460, 635, 810; baseline = 844, scale = 0.33)
+    [110, 285, 460, 635, 810].forEach((cx) => {
+      baseStrokes.forEach((stroke) => {
+        allStrokes.push({
+          commands: transformCommands(stroke, 0.33, cx, 844),
           tier: "medium",
           ghostWidth: 22,
-          corridorWidth: 17,
-          centerlineWidth: 3.0,
-          dashArray: "6,6",
+          corridorWidth: 16,
+          centerlineWidth: 2.8,
+          dashArray: "5,5",
           corridorRadius: 22,
           penWidth: 13,
           showBadge: false
@@ -749,52 +766,18 @@
       });
     });
 
-    // Tầng 3 - Hàng 3 (Ô Ly Cỡ Vừa Lớp 1 - 5 chữ, baseline = 710, scale = 0.27)
-    [100, 280, 460, 640, 820].forEach((cx) => {
+    // Hàng 4 (Tầng 4): Ô Ly Luyện Tập Nét Đứt - 5 chữ (cx: 110, 285, 460, 635, 810; baseline = 1132, scale = 0.28)
+    [110, 285, 460, 635, 810].forEach((cx) => {
       baseStrokes.forEach((stroke) => {
         allStrokes.push({
-          commands: transformCommands(stroke, 0.27, cx, 710),
-          tier: "medium",
+          commands: transformCommands(stroke, 0.28, cx, 1132),
+          tier: "fine",
           ghostWidth: 18,
-          corridorWidth: 14,
-          centerlineWidth: 2.6,
-          dashArray: "5,5",
+          corridorWidth: 13,
+          centerlineWidth: 2.2,
+          dashArray: "4,4",
           corridorRadius: 19,
-          penWidth: 11,
-          showBadge: false
-        });
-      });
-    });
-
-    // Tầng 4 - Hàng 4 (Ô Ly Hạ Cỡ Chữ - 6 chữ, baseline = 940, scale = 0.22)
-    [90, 238, 386, 534, 682, 830].forEach((cx) => {
-      baseStrokes.forEach((stroke) => {
-        allStrokes.push({
-          commands: transformCommands(stroke, 0.22, cx, 940),
-          tier: "fine",
-          ghostWidth: 14,
-          corridorWidth: 10,
-          centerlineWidth: 2.0,
-          dashArray: "4,4",
-          corridorRadius: 16,
-          penWidth: 8,
-          showBadge: false
-        });
-      });
-    });
-
-    // Tầng 5 - Hàng 5 (Ô Ly Hạ Cỡ Chữ Nét Mảnh - 6 chữ, baseline = 1170, scale = 0.22)
-    [90, 238, 386, 534, 682, 830].forEach((cx) => {
-      baseStrokes.forEach((stroke) => {
-        allStrokes.push({
-          commands: transformCommands(stroke, 0.22, cx, 1170),
-          tier: "fine",
-          ghostWidth: 14,
-          corridorWidth: 10,
-          centerlineWidth: 2.0,
-          dashArray: "4,4",
-          corridorRadius: 16,
-          penWidth: 8,
+          penWidth: 10,
           showBadge: false
         });
       });
@@ -817,7 +800,7 @@
     for (let index = 0; index < characters.length; index += maxCharacters) {
       lines.push(characters.slice(index, index + maxCharacters).join("").trim());
     }
-    return lines.filter(Boolean).slice(0, 5);
+    return lines.filter(Boolean).slice(0, 4);
   }
 
   function generatePhraseStrokes(text) {
@@ -830,15 +813,15 @@
       ? [sourceLines[0], sourceLines[0], sourceLines[0], sourceLines[0]]
       : sourceLines.length === 2
         ? [sourceLines[0], sourceLines[1], sourceLines[0], sourceLines[1]]
-        : sourceLines;
-    const baselines = rows.map((_, index) => 220 + index * (920 / Math.max(1, rows.length - 1)));
+        : sourceLines.slice(0, 4);
+    const baselines = [266, 556, 844, 1132].slice(0, rows.length);
     const result = [];
 
     for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
       const characters = splitGraphemes(rows[rowIndex]);
       const drawableCount = characters.filter((character) => !/^\s$/u.test(character)).length;
-      const scale = Math.min(0.34, 2.15 / Math.max(1, characters.length));
-      const advance = Math.min(185, 760 / Math.max(1, characters.length));
+      const scale = Math.min(0.40, 2.30 / Math.max(1, characters.length));
+      const advance = Math.min(200, 780 / Math.max(1, characters.length));
       const firstCenter = 460 - ((characters.length - 1) * advance / 2);
       let drawableIndex = 0;
 
@@ -851,12 +834,12 @@
           result.push({
             commands: transformCommands(stroke, scale, firstCenter + charIndex * advance, baselines[rowIndex]),
             tier: rowIndex === 0 ? "medium" : "fine",
-            ghostWidth: rowIndex === 0 ? 24 : 18,
-            corridorWidth: rowIndex === 0 ? 18 : 13,
-            centerlineWidth: rowIndex === 0 ? 3.2 : 2.4,
+            ghostWidth: rowIndex === 0 ? 26 : 20,
+            corridorWidth: rowIndex === 0 ? 20 : 15,
+            centerlineWidth: rowIndex === 0 ? 3.4 : 2.6,
             dashArray: rowIndex === 0 ? "6,6" : "5,5",
-            corridorRadius: rowIndex === 0 ? 23 : 18,
-            penWidth: rowIndex === 0 ? 13 : 10,
+            corridorRadius: rowIndex === 0 ? 24 : 20,
+            penWidth: rowIndex === 0 ? 14 : 11,
             showBadge: rowIndex === 0 && drawableIndex === 0 && strokeIndex === 0,
             badgeLabel: "1"
           });
@@ -876,13 +859,14 @@
       ? [sourceLines[0], sourceLines[0], sourceLines[0], sourceLines[0]]
       : sourceLines.length === 2
         ? [sourceLines[0], sourceLines[1], sourceLines[0], sourceLines[1]]
-        : sourceLines;
+        : sourceLines.slice(0, 4);
+    const baselines = [210, 500, 788, 1076];
     return rows.map((line, index) => ({
       text: line,
       x: 460,
-      y: 165 + index * (920 / Math.max(1, rows.length - 1)),
-      fontSize: Math.max(62, Math.min(190, 760 / Math.max(1, splitGraphemes(line).length * 0.64))),
-      maxWidth: 790
+      y: baselines[index] || (170 + index * 280),
+      fontSize: Math.max(70, Math.min(210, 800 / Math.max(1, splitGraphemes(line).length * 0.62))),
+      maxWidth: 800
     }));
   }
 
@@ -1055,35 +1039,34 @@
       appendSvgElement(gridLayer, "circle", { cx: "25", cy: "1175", r: "8", fill: "#bfdbfe" });
       appendSvgElement(gridLayer, "circle", { cx: "895", cy: "1175", r: "8", fill: "#bfdbfe" });
     } else {
-      // Standard Grade 1 Notebook 4-Grid Ô Ly (Ảnh 1)
-      // Tầng 1: Hero Header Box (h = 250)
+      // Standard Grade 1 Notebook 4-Grid Ô Ly (4 hàng chuẩn phóng to chữ mẫu)
+      // Hàng 1: Hero Header Box (y = 12, h = 264)
       appendSvgElement(gridLayer, "rect", {
         x: "6",
-        y: "10",
+        y: "12",
         width: "908",
-        height: "250",
+        height: "264",
         fill: "#f8fafc",
         rx: "12",
         stroke: "#e2e8f0",
         "stroke-width": "1.5"
       });
-      [10, 72, 135, 197, 260].forEach((y) => {
+      [12, 78, 144, 210, 276].forEach((y, idx) => {
         appendSvgElement(gridLayer, "line", {
           x1: "6",
           y1: String(y),
           x2: "914",
           y2: String(y),
-          stroke: "#e2e8f0",
-          "stroke-width": "0.8"
+          stroke: idx === 4 ? "#94a3b8" : "#e2e8f0",
+          "stroke-width": idx === 4 ? "1.8" : "0.8"
         });
       });
 
-      // Tầng 2, 3, 4, 5: 4-grid Ô Ly Boxes
+      // Hàng 2, 3, 4: 4-grid Ô Ly Boxes chuẩn tiểu học (h = 264)
       const rowBoxes = [
-        { y: 280, h: 210, lines: [280, 332, 385, 437, 490] },
-        { y: 510, h: 210, lines: [510, 562, 615, 667, 720] },
-        { y: 740, h: 210, lines: [740, 792, 845, 897, 950] },
-        { y: 970, h: 210, lines: [970, 1022, 1075, 1127, 1180] }
+        { y: 300, h: 264, lines: [300, 366, 432, 498, 564] },
+        { y: 588, h: 264, lines: [588, 654, 720, 786, 852] },
+        { y: 876, h: 264, lines: [876, 942, 1008, 1074, 1140] }
       ];
 
       rowBoxes.forEach(box => {
@@ -1109,7 +1092,7 @@
           });
         });
 
-        for (let x = 24; x < 914; x += 26) {
+        for (let x = 24; x < 914; x += 33) {
           appendSvgElement(gridLayer, "line", {
             x1: String(x),
             y1: String(box.y),

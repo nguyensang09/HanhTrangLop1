@@ -84,7 +84,7 @@ public static class LearningContentSeed
         for (var n = 1; n <= 9; n++)
         {
             var start = Math.Min(n, 7); var nums = Enumerable.Range(start, 3).ToArray();
-            Add(Matching($"number-quantity-{n}", "chu-so", $"Nối số với số lượng: nhóm {n}", nums.Select(x => (x.ToString(), Repeat(symbols[n-1], x))).ToArray()));
+            Add(Matching($"number-quantity-{n}", "chu-so", $"Nối số với số lượng: nhóm {n}", nums.Select(x => (x.ToString(), Repeat(symbols[(x-1) % symbols.Length], x))).ToArray()));
         }
         for (var n = 1; n <= 7; n++) { var seq = Enumerable.Range(n,3).Select(x => x.ToString()).ToArray(); Add(Ordering($"number-up-{n}", "chu-so", $"Sắp xếp từ bé đến lớn: {n} đến {n+2}", "Xếp ba số từ bé đến lớn.", seq)); Add(Ordering($"number-down-{n}", "chu-so", $"Sắp xếp từ lớn đến bé: {n+2} về {n}", "Xếp ba số từ lớn đến bé.", seq.Reverse().ToArray())); }
 
@@ -281,12 +281,16 @@ public static class LearningContentSeed
     private static LessonDefinition Matching(string slug, string group, string title, (string Left,string Right)[] pairs)
     {
         var media = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (left, right) in pairs)
+        var isSymbolMatching = pairs.All(p => p.Left.Length <= 2 && p.Right.Length <= 2);
+        if (!isSymbolMatching)
         {
-            var leftImg = ImageForLabel(left);
-            if (!string.IsNullOrEmpty(leftImg)) media[left] = leftImg;
-            var rightImg = ImageForLabel(right);
-            if (!string.IsNullOrEmpty(rightImg)) media[right] = rightImg;
+            foreach (var (left, right) in pairs)
+            {
+                var leftImg = ImageForLabel(left);
+                if (!string.IsNullOrEmpty(leftImg)) media[left] = leftImg;
+                var rightImg = ImageForLabel(right);
+                if (!string.IsNullOrEmpty(rightImg)) media[right] = rightImg;
+            }
         }
         return New(slug, group, InteractionTypes.Matching, title, "Bé hãy nối từng cặp tương ứng.", title, new { pairs = pairs.Select(x => new { left=x.Left,right=x.Right }), imageUrl="", itemMedia = media }, CanonicalMappings(pairs));
     }
@@ -329,9 +333,10 @@ public static class LearningContentSeed
     private sealed record CoverageProfile(string Code,string GroupCode,string Theme,string[] Items,(string Left,string Right)[] Pairs,string CategoryA,string CategoryB,string[] CategoryAItems,string[] CategoryBItems);
     private static string ImageForLabel(string label)
     {
+        if (string.IsNullOrWhiteSpace(label) || label.Length <= 2) return string.Empty;
         var value=label.ToLowerInvariant();
-        var file=value.Contains("mèo")?"cat":value.Contains("chó")?"dog":value.Contains("tôm")?"shrimp":value.Contains("cá")?"fish":value.Contains("thỏ")?"rabbit":value.Contains("chim")?"bird":value.Contains("ong")?"bee":value.Contains("táo")?"apple":value.Contains("cam")?"orange":value.Contains("cà rốt")?"carrot":value.Contains("hoa")?"flower":value.Contains("bút")?"pencil":value.Contains("sách")?"book":value.Contains("cặp")?"backpack":value.Contains("cốc")?"bowl":value.Contains("xà phòng")||value.Contains("rửa tay")?"soap":value.Contains("bàn chải")||value.Contains("đánh răng")?"toothbrush":value.Contains("xin lỗi")?"folded-hands":value.Contains("cảm ơn")||value.Contains("nắm tay")?"handshake":value.Contains("dây an toàn")?"car":value.Contains("giày")?"shoe":value.Contains("áo mưa")?"coat":value.Contains("ô")||value.Contains("che mưa")?"umbrella":value.Contains("mũ")?"helmet":value.Contains("mặt trăng")||value.Contains("ban đêm")?"moon":value.Contains("mặt trời")||value.Contains("trời nắng")?"sun":value.Contains("trời mưa")||value.Contains("uống nước")||value.Contains("nước")?"water":value.Contains("vẽ")?"artist-palette":value.Contains("cây")||value.Contains("hạt")?"seedling":value.Contains("bóng")?"ball":value.Contains("xe")?"car":"book";
-        return $"/images/pictograms/{file}.svg";
+        var file=value.Contains("mèo")?"cat":value.Contains("chó")?"dog":value.Contains("tôm")?"shrimp":value.Contains("cá")?"fish":value.Contains("thỏ")?"rabbit":value.Contains("chim")?"bird":value.Contains("ong")?"bee":value.Contains("táo")?"apple":value.Contains("cam")?"orange":value.Contains("cà rốt")?"carrot":value.Contains("hoa")?"flower":value.Contains("bút")?"pencil":value.Contains("sách")?"book":value.Contains("cặp")?"backpack":value.Contains("cốc")?"bowl":value.Contains("xà phòng")||value.Contains("rửa tay")?"soap":value.Contains("bàn chải")||value.Contains("đánh răng")?"toothbrush":value.Contains("xin lỗi")?"folded-hands":value.Contains("cảm ơn")||value.Contains("nắm tay")?"handshake":value.Contains("dây an toàn")?"car":value.Contains("giày")?"shoe":value.Contains("áo mưa")?"coat":value.Contains("ô")||value.Contains("che mưa")?"umbrella":value.Contains("mũ")?"helmet":value.Contains("mặt trăng")||value.Contains("ban đêm")?"moon":value.Contains("mặt trời")||value.Contains("trời nắng")?"sun":value.Contains("trời mưa")||value.Contains("uống nước")||value.Contains("nước")?"water":value.Contains("vẽ")?"artist-palette":value.Contains("cây")||value.Contains("hạt")?"seedling":value.Contains("bóng")?"ball":value.Contains("xe")?"car":"";
+        return string.IsNullOrEmpty(file) ? string.Empty : $"/images/pictograms/{file}.svg";
     }
     private static readonly IReadOnlyDictionary<string,CoverageProfile> CoverageProfiles = new Dictionary<string,CoverageProfile>
     {

@@ -134,10 +134,10 @@
         return match?.[1] || "";
     };
 
-    // ONLY single characters (length === 1) get a letter badge to prevent words like 'Cao' having duplicate text
+    // Chữ cái hoặc ký hiệu đơn: độ dài 1-2 ký tự (chữ cái tiếng Việt, tiếng Anh, hoặc chữ số)
     const isSingleSymbol = (text) => {
         const clean = String(text || "").trim();
-        return clean.length === 1 && (/^[A-Za-z0-9ĂÂĐÊÔƠƯăâđêôơư]+$/.test(clean) || /^[0-9]+$/.test(clean));
+        return clean.length >= 1 && clean.length <= 2 && /^[\p{L}\p{N}]+$/u.test(clean);
     };
 
     const getRepeatedPictureGroup = (text) => {
@@ -157,23 +157,52 @@
         // "Chữ E" thành "E" hoặc "Số 1" thành "1" vì sẽ làm lệch nội dung/voice.
         const value = rawValue;
         const normalized = value.trim().toLocaleLowerCase("vi-VN");
-        const mediaUrl = resolveItemMedia(rawValue);
-        const pictogram = resolvePictogram(value);
+        let mediaUrl = resolveItemMedia(rawValue);
+        let pictogram = resolvePictogram(value);
         const shape = shapeClasses.get(normalized);
         const color = colorValues.get(normalized);
         const repeatedPictureGroup = getRepeatedPictureGroup(value);
+        const singleSymbol = isSingleSymbol(value);
+
+        // Với bài tập chữ cái / ký hiệu đơn (Ă, A, â, b, B, c, C...) hoặc nếu mediaUrl là hình quyển sách book.svg bị gán mặc định:
+        // Tuyệt đối loại bỏ hình ảnh thừa để chữ cái hiển thị to, rõ nét, trực quan.
+        if (singleSymbol || (mediaUrl && mediaUrl.includes("book.svg") && !normalized.includes("sách") && !normalized.includes("vở"))) {
+            mediaUrl = "";
+            pictogram = "";
+        }
+
         button.replaceChildren();
 
         if (repeatedPictureGroup) {
             button.classList.add("is-quantity-visual");
-        } else if (isSingleSymbol(value)) {
-            button.classList.add("is-single-symbol");
+        } else if (singleSymbol) {
+            button.classList.add("is-single-symbol", "matching-letter-item");
         } else {
             button.classList.add("is-text-word");
             if (value.trim().length > 5) button.classList.add("is-long-phrase");
         }
 
         if (repeatedPictureGroup) {
+            // Khi các nhóm số lượng trong bài tập dùng chung một hình (như cùng là hoa),
+            // tự động dùng hình ảnh khác nhau cho từng số lượng để trẻ dễ phân biệt và sinh động hơn.
+            const countDistinctSymbols = {
+                1: "🍎", // Quả táo
+                2: "🚗", // Ô tô
+                3: "⭐", // Ngôi sao
+                4: "🐟", // Chú cá
+                5: "🌼", // Bông hoa
+                6: "🍓", // Quả dâu
+                7: "🐤", // Gà con
+                8: "🎈", // Bóng bay
+                9: "🦋", // Con bướm
+                10: "🍄" // Cây nấm
+            };
+            const rightGroups = (payload.pairs || []).map((p) => getRepeatedPictureGroup(p.right)).filter(Boolean);
+            const isAllSameSymbol = rightGroups.length > 1 && rightGroups.every((g) => g.symbol === rightGroups[0].symbol);
+            const displaySymbol = isAllSameSymbol
+                ? (countDistinctSymbols[repeatedPictureGroup.count] || repeatedPictureGroup.symbol)
+                : repeatedPictureGroup.symbol;
+
             const visual = document.createElement("span");
             visual.className = "answer-quantity-visual";
             visual.setAttribute("aria-hidden", "true");
@@ -181,12 +210,12 @@
             for (let index = 0; index < repeatedPictureGroup.count; index += 1) {
                 const picture = document.createElement("span");
                 picture.className = "answer-quantity-symbol";
-                picture.textContent = repeatedPictureGroup.symbol;
+                picture.textContent = displaySymbol;
                 visual.append(picture);
             }
             button.setAttribute("aria-label", `Nhóm có ${repeatedPictureGroup.count} đồ vật`);
             button.append(visual);
-        } else if (mediaUrl) {
+        } else if (mediaUrl && !singleSymbol) {
             const image = document.createElement("img");
             image.className = "answer-photo";
             image.src = mediaUrl;
@@ -194,7 +223,7 @@
             image.loading = "lazy";
             button.classList.add("has-answer-visual", "has-answer-photo");
             button.append(image);
-        } else if (pictogram) {
+        } else if (pictogram && !singleSymbol) {
             const image = document.createElement("img");
             image.className = "answer-pictogram";
             image.src = `${pictogramPath}${pictogram}`;
@@ -202,14 +231,14 @@
             image.loading = "lazy";
             button.classList.add("has-answer-visual", "has-answer-pictogram");
             button.append(image);
-        } else if (shape || color) {
+        } else if ((shape || color) && !singleSymbol) {
             const visual = document.createElement("span");
             visual.className = shape ? `answer-shape answer-shape-${shape}` : "answer-color-swatch";
             if (color) visual.style.backgroundColor = color;
             visual.setAttribute("aria-hidden", "true");
             button.classList.add("has-answer-visual");
             button.append(visual);
-        } else if (forceIcon) {
+        } else if (forceIcon && !singleSymbol) {
             const iconSpan = document.createElement("span");
             iconSpan.className = "material-symbols-outlined answer-icon-glyph";
             iconSpan.textContent = forceIcon;
@@ -464,6 +493,8 @@
             event.preventDefault();
             dragGhost.remove();
             dragGhost = null;
+            // Giải phóng khóa cuộn khi kéo thả xong
+            document.body.classList.remove("drag-interaction-active");
             const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
             target.classList.remove("drop-hover");
             if (dropTarget?.closest?.(".activity-drop-zone") && activeValue) {
@@ -480,6 +511,8 @@
             dragGhost = button.cloneNode(true);
             dragGhost.classList.add("drag-ghost");
             document.body.append(dragGhost);
+            // Khóa cuộn trang khi đang kéo thả – tránh trang bị scroll giữa chừng
+            document.body.classList.add("drag-interaction-active");
             button.setPointerCapture(event.pointerId);
             movePointerDrag(event);
         };
@@ -522,6 +555,10 @@
         const isQuantityMatching = pairs.length > 0 && pairs.every((pair) =>
             /^\d+$/.test(String(pair.left || "").trim()) && getRepeatedPictureGroup(pair.right));
         if (isQuantityMatching) board.classList.add("matching-quantity-board");
+
+        const isLetterMatching = pairs.length > 0 && pairs.every((pair) =>
+            isSingleSymbol(pair.left) && isSingleSymbol(pair.right));
+        if (isLetterMatching) board.classList.add("matching-letter-board");
         const lines = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         lines.classList.add("matching-lines");
         lines.setAttribute("aria-hidden", "true");
@@ -622,7 +659,8 @@
         };
 
         pairs.forEach((pair, index) => {
-            const button = createButton(pair.left, "activity-option clay-button matching-item");
+            const isLeftSymbol = isSingleSymbol(pair.left);
+            const button = createButton(pair.left, `activity-option clay-button matching-item${isLeftSymbol ? " matching-letter-item" : ""}`);
             button.dataset.value = pair.left;
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
 
@@ -637,6 +675,8 @@
                 leftColumn.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
                 button.classList.add("selected");
                 rightColumn.querySelectorAll("button").forEach((item) => item.classList.add("target-ready"));
+                // Khóa cuộn trang khi đang kéo nối – tránh trang bị scroll giữa chừng
+                document.body.classList.add("drag-interaction-active");
                 button.setPointerCapture(event.pointerId);
                 requestAnimationFrame(drawLines);
             });
@@ -653,6 +693,8 @@
 
             button.addEventListener("pointerup", (event) => {
                 if (!isDraggingLine) return;
+                // Giải phóng khóa cuộn khi nối xong
+                document.body.classList.remove("drag-interaction-active");
                 const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest(".matching-right .matching-item");
                 if (dropTarget && selectedLeft) {
                     connectPair(selectedLeft, dropTarget.dataset.value);
@@ -669,6 +711,8 @@
                 isDraggingLine = false;
                 dragSourceBtn = null;
                 currentPointerPos = null;
+                // Đảm bảo khóa được giải phóng khi sự kiện bị hủy
+                document.body.classList.remove("drag-interaction-active");
                 requestAnimationFrame(drawLines);
             });
 
@@ -677,7 +721,8 @@
 
         rights.forEach((right, index) => {
             const isSoundText = /^(meo|gâu|cạp|chíp|ò ó|reng|cục)/i.test(right.trim());
-            const button = createButton(right, "activity-option clay-button matching-item", isSoundText ? "volume_up" : "");
+            const isRightSymbol = isSingleSymbol(right);
+            const button = createButton(right, `activity-option clay-button matching-item${isRightSymbol ? " matching-letter-item" : ""}`, isSoundText ? "volume_up" : "");
             button.dataset.value = right;
             button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
 
@@ -697,6 +742,8 @@
         const items = [...(payload.items || [])].reverse();
         const list = document.createElement("div");
         list.className = "ordering-list";
+        const isNumberOrdering = items.every((it) => /^\d+$/.test(String(it || "").trim()));
+        if (isNumberOrdering) list.classList.add("ordering-number-list");
         const sync = () => setAnswer([...list.querySelectorAll(".ordering-value")].map((node) => node.dataset.rawItem).join("|"));
         let draggingIndex = -1;
         const moveItem = (from, to) => {
@@ -713,16 +760,13 @@
                 row.draggable = true;
                 row.dataset.index = String(index);
 
-                const badge = document.createElement("span");
-                badge.className = "ordering-badge";
-                badge.textContent = String(index + 1);
-
                 const value = document.createElement("div");
                 value.className = "ordering-value-wrap ordering-value";
                 value.dataset.rawItem = item;
                 const itemClean = String(item || "").trim();
-                const mediaUrl = resolveItemMedia(itemClean);
-                const pictogram = resolvePictogram(itemClean);
+                const isNumeric = /^\d+$/.test(itemClean);
+                const mediaUrl = isNumeric ? "" : resolveItemMedia(itemClean);
+                const pictogram = isNumeric ? "" : resolvePictogram(itemClean);
                 if (mediaUrl) {
                     const img = document.createElement("img");
                     img.className = "ordering-photo";
@@ -742,8 +786,15 @@
                 }
                 const label = document.createElement("span");
                 label.className = "ordering-label";
-                if (itemClean.length > 2) label.classList.add("long-label");
-                else label.classList.add("short-label");
+                if (isNumeric || itemClean.length <= 2) {
+                    label.classList.add("short-label");
+                    if (isNumeric) {
+                        label.classList.add("ordering-number-label");
+                        row.classList.add("ordering-number-row");
+                    }
+                } else {
+                    label.classList.add("long-label");
+                }
                 label.textContent = itemClean;
                 value.append(label);
 
@@ -783,7 +834,8 @@
                 row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
                 row.addEventListener("drop", (event) => { event.preventDefault(); moveItem(draggingIndex, index); });
                 row.addEventListener("dragend", () => { draggingIndex = -1; row.classList.remove("dragging"); });
-                row.append(badge, value, actions);
+                // Bỏ badge STT ở đầu hàng để không gây nhầm lẫn cho trẻ
+                row.append(value, actions);
                 list.append(row);
             });
             sync();
