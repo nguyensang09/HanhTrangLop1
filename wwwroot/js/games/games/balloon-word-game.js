@@ -174,17 +174,16 @@ class BalloonWordGame {
                     </div>
                 </div>
 
-                <!-- 4. POPUP HOÀN THÀNH MÀN TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP NHƯ ĐÀO VÀNG -->
-                <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center;">
+                <!-- 4. POPUP HOÀN THÀNH MÀN TRONG MỜ TINH TẾ TỰ ĐỘNG QUA MÀN -->
+                <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center; pointer-events: none;">
                     <div class="victory-toast-card" id="victoryToast">
-                        <div style="font-size: 4rem; margin-bottom: 6px; animation: bounceEmoji 1s infinite alternate;">🌈</div>
-                        <h2 style="font-family: 'Fredoka', cursive, sans-serif; font-size: 2rem; font-weight: 900; color: #ffffff; margin: 0 0 6px 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4);">
-                            XUẤT SẮC!
-                        </h2>
-                        <p style="color: #fef08a; font-size: 1.15rem; font-weight: 700; margin: 0 0 8px 0;">
-                            Khinh khí cầu đã bay qua cầu vồng với từ <strong style="color: #ffffff; font-size: 1.5rem;">${targetWord}</strong>!
-                        </p>
-                        <span style="font-size: 0.88rem; color: #94a3b8; font-weight: 700;">Đang chuyển sang màn tiếp theo...</span>
+                        <div style="font-size: 1.6rem; margin-bottom: 2px;">✨</div>
+                        <div style="font-family: 'Fredoka', cursive, sans-serif; font-size: 1.25rem; font-weight: 800; color: #fef08a; margin-bottom: 2px;">
+                            HOÀN THÀNH MÀN CHƠI!
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;" id="victoryMessage">
+                            Đang chuyển tiếp...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -441,8 +440,13 @@ class BalloonWordGame {
                 victoryModal.style.display = 'flex';
             }
 
-            const nextLvl = (this.currentLevelData?.level || 1) + 1;
-            const totalLevels = (this.shell?.levels || []).length || 10;
+            const levelNum = this.currentLevelData?.level || 1;
+            this.shell?.saveProgressLocal('balloon-word', levelNum, 1);
+            this.shell?.saveProgressServer('balloon-word', levelNum, 1);
+
+            const nextLvl = levelNum + 1;
+            this.saveCurrentLevelProgress(nextLvl);
+            const totalLevels = (this.shell?.levels || []).length || 40;
 
             // TỰ ĐỘNG QUA MÀN TIẾP THEO SAU 1.8S NHƯ ĐÀO VÀNG
             setTimeout(() => {

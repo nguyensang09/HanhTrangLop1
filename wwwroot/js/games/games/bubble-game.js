@@ -13,7 +13,7 @@ class BubbleGame {
         this.currentLevelData = null;
 
         this.targetPopped = 0;
-        this.totalRequired = 2;
+        this.totalRequired = 3;
         this.isCompleted = false;
         this.soundEnabled = true;
 
@@ -30,7 +30,8 @@ class BubbleGame {
         this.destroy();
         this.currentLevelData = levelData;
         this.targetPopped = 0;
-        this.totalRequired = levelData?.targetCount || 2;
+        // Bắt buộc thực hiện đúng 3 lần như Đào Vàng mới qua màn cho trò liên quan chữ
+        this.totalRequired = 3;
         this.isCompleted = false;
         this.bubbles = [];
         this.distractorCreatures = [];
@@ -71,7 +72,7 @@ class BubbleGame {
     }
 
     render() {
-        const target = this.currentLevelData?.target || 'b';
+        const target = this.currentLevelData?.target || 'A';
         const levelNum = this.currentLevelData?.level || 1;
 
         this.container.innerHTML = `
@@ -84,12 +85,8 @@ class BubbleGame {
                     <div style="position: absolute; top: -60px; right: 22%; width: 220px; height: 420px; background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%); transform: rotate(16deg); filter: blur(10px); animation: causticsLight 6s infinite alternate 1s;"></div>
                     
                     <!-- Đàn cá bơi lội trong nền xa -->
-                    <div style="position: absolute; top: 180px; font-size: 1.5rem; opacity: 0.35; animation: swimAcross 22s linear infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                    <div style="position: absolute; top: 140px; font-size: 1.5rem; opacity: 0.35; animation: swimAcross 22s linear infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
                         🐟 🐠 🐡
-                    </div>
-                    <!-- Chú rùa biển bơi lững lờ -->
-                    <div style="position: absolute; top: 320px; font-size: 2.2rem; opacity: 0.38; animation: swimTurtle 32s linear infinite;">
-                        🐢
                     </div>
 
                     <!-- Rặng san hô & hải quỳ màu sắc rực rỡ dưới đáy biển (Trái) -->
@@ -204,9 +201,9 @@ class BubbleGame {
                         </div>
                     </div>
 
-                    <!-- B. BẢNG MỤC TIÊU ĐẶT NGAY DƯỚI CHÂN KHẨU ĐẠI BÁC (THEO ĐÚNG ẢNH MẪU) -->
-                    <div class="cannon-console-box" id="cannonConsoleBox" style="margin-top: 2px; pointer-events: auto;">
-                        <!-- Nút loa phát âm mục tiêu -->
+                    <!-- B. BẢNG MỤC TIÊU ĐẶT NGAY DƯỚI CHÂN KHẨU ĐẠI BÁC THEO ĐÚNG Ý NGƯỜI DÙNG -->
+                    <div class="cannon-hud-base" style="pointer-events: auto; margin-top: -6px; z-index: 20; display: flex; align-items: center; gap: 12px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 2.5px solid #f59e0b; padding: 6px 18px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+                        <!-- Nút loa nghe lại phát âm chữ -->
                         <button type="button" class="btn-toy-yellow" id="btnMissionVoice" title="Nhấn để nghe phát âm chữ cái" style="width: 44px; height: 44px; border-radius: 50%; padding: 0; background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%); border: 2.5px solid #fde68a; display: flex; align-items: center; justify-content: center; color: #ffffff; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.35);">
                             <span class="material-symbols-outlined" style="font-size: 1.4rem;">volume_up</span>
                         </button>
@@ -216,7 +213,7 @@ class BubbleGame {
                             ${target}
                         </div>
 
-                        <!-- Tiến độ bắn 0/2 -->
+                        <!-- Tiến độ bắn 0/3 -->
                         <div style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.35); padding: 6px 14px; border-radius: 14px; border: 2px solid rgba(254,240,138,0.5);">
                             <span style="font-size: 1.2rem;">🎯</span>
                             <span id="bubbleProgressText" style="font-family: 'Fredoka', sans-serif; font-size: 1.35rem; font-weight: 900; color: #fef08a;">0 / ${this.totalRequired}</span>
@@ -240,17 +237,16 @@ class BubbleGame {
                     </div>
                 </div>
 
-                <!-- 6. POPUP HOÀN THÀNH MÀN TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP NHƯ ĐÀO VÀNG -->
-                <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center;">
+                <!-- 6. POPUP HOÀN THÀNH MÀN TRONG MỜ TINH TẾ TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP -->
+                <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center; pointer-events: none;">
                     <div class="victory-toast-card" id="victoryToast">
-                        <div style="font-size: 4rem; margin-bottom: 6px; animation: bounceEmoji 1s infinite alternate;">🎉</div>
-                        <h2 style="font-family: 'Fredoka', cursive, sans-serif; font-size: 2.1rem; font-weight: 900; color: #ffffff; margin: 0 0 6px 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4);">
-                            XUẤT SẮC!
-                        </h2>
-                        <p style="color: #fef08a; font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0;">
-                            Bé đã bắn trúng chữ <strong style="color: #ffffff; font-size: 1.6rem;">${target}</strong>!
-                        </p>
-                        <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 700;">Đang chuyển sang màn tiếp theo...</span>
+                        <div style="font-size: 1.6rem; margin-bottom: 2px;">✨</div>
+                        <div style="font-family: 'Fredoka', cursive, sans-serif; font-size: 1.25rem; font-weight: 800; color: #fef08a; margin-bottom: 2px;">
+                            HOÀN THÀNH MÀN CHƠI!
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;" id="victoryMessage">
+                            Đang chuyển tiếp...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -268,7 +264,7 @@ class BubbleGame {
         const alphabetModal = document.getElementById('alphabetModal');
 
         const playTargetVoice = () => {
-            const char = this.currentLevelData?.target || 'b';
+            const char = this.currentLevelData?.target || 'A';
             window.gameAudio?.speakLetterEnglish(char);
         };
 
@@ -333,7 +329,61 @@ class BubbleGame {
     }
 
     /* =========================================================================
-       SINH BONG BÓNG CHỮ VÀ VẬT GÂY NHIỄU (SỨA BIỂN, BÓNG GAI)
+       BỘ SƯU TẬP MÀU SẮC & CHỦNG LOẠI BONG BÓNG ĐA DẠNG 3D
+       ========================================================================= */
+    static THEMES = [
+        {
+            name: 'cyan',
+            bg: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(186, 230, 253, 0.75) 35%, rgba(56, 189, 248, 0.5) 65%, rgba(2, 132, 199, 0.92) 100%)',
+            border: 'rgba(255, 255, 255, 0.95)',
+            shadow: 'inset 0 -8px 18px rgba(2, 132, 199, 0.7), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 24px rgba(3, 105, 161, 0.45)',
+            textColor: '#ffffff',
+            textShadow: '0 3px 8px rgba(12, 74, 110, 0.95), 0 0 16px rgba(56, 189, 248, 0.9)'
+        },
+        {
+            name: 'coral',
+            bg: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(254, 205, 211, 0.78) 35%, rgba(244, 63, 94, 0.55) 65%, rgba(190, 18, 60, 0.92) 100%)',
+            border: 'rgba(255, 241, 242, 0.95)',
+            shadow: 'inset 0 -8px 18px rgba(190, 18, 60, 0.7), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 24px rgba(244, 63, 94, 0.45)',
+            textColor: '#fef08a',
+            textShadow: '0 3px 8px rgba(136, 19, 55, 0.95), 0 0 16px rgba(253, 224, 71, 0.9)'
+        },
+        {
+            name: 'amber',
+            bg: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(254, 240, 138, 0.8) 35%, rgba(245, 158, 11, 0.6) 65%, rgba(180, 83, 9, 0.92) 100%)',
+            border: 'rgba(255, 253, 245, 0.95)',
+            shadow: 'inset 0 -8px 18px rgba(180, 83, 9, 0.7), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 24px rgba(245, 158, 11, 0.45)',
+            textColor: '#ffffff',
+            textShadow: '0 3px 8px rgba(120, 53, 15, 0.95), 0 0 16px rgba(255, 255, 255, 0.9)'
+        },
+        {
+            name: 'emerald',
+            bg: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(167, 243, 208, 0.78) 35%, rgba(16, 185, 129, 0.55) 65%, rgba(4, 120, 87, 0.92) 100%)',
+            border: 'rgba(240, 253, 244, 0.95)',
+            shadow: 'inset 0 -8px 18px rgba(4, 120, 87, 0.7), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 24px rgba(16, 185, 129, 0.45)',
+            textColor: '#fef9c3',
+            textShadow: '0 3px 8px rgba(6, 78, 59, 0.95), 0 0 16px rgba(254, 240, 138, 0.9)'
+        },
+        {
+            name: 'amethyst',
+            bg: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(233, 213, 255, 0.78) 35%, rgba(168, 85, 247, 0.55) 65%, rgba(107, 33, 168, 0.92) 100%)',
+            border: 'rgba(250, 245, 255, 0.95)',
+            shadow: 'inset 0 -8px 18px rgba(107, 33, 168, 0.7), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 24px rgba(168, 85, 247, 0.45)',
+            textColor: '#67e8f9',
+            textShadow: '0 3px 8px rgba(59, 7, 100, 0.95), 0 0 16px rgba(103, 232, 249, 0.95)'
+        },
+        {
+            name: 'sunset',
+            bg: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(253, 186, 116, 0.78) 35%, rgba(249, 115, 22, 0.58) 65%, rgba(194, 65, 12, 0.92) 100%)',
+            border: 'rgba(255, 247, 237, 0.95)',
+            shadow: 'inset 0 -8px 18px rgba(194, 65, 12, 0.7), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 24px rgba(249, 115, 22, 0.45)',
+            textColor: '#ffffff',
+            textShadow: '0 3px 8px rgba(124, 45, 18, 0.95), 0 0 16px rgba(254, 215, 170, 0.9)'
+        }
+    ];
+
+    /* =========================================================================
+       SINH BONG BÓNG ĐA DẠNG CHỦNG LOẠI, KÍCH THƯỚC VÀ MÀU CHỮ
        ========================================================================= */
     spawnInitialBubbles() {
         const playfield = document.getElementById('bubblePlayfield');
@@ -344,17 +394,20 @@ class BubbleGame {
 
         const width = playfield.clientWidth || 800;
         const height = playfield.clientHeight || 500;
-        const choices = this.currentLevelData?.choices || ['b', 'd'];
-        const target = this.currentLevelData?.target || 'b';
+        const choices = this.currentLevelData?.choices || ['A', 'B'];
+        const target = this.currentLevelData?.target || 'A';
 
-        // Tạo 6 quả bong bóng chữ lơ lửng
-        const totalBubbles = 6;
+        // Đảm bảo ban đầu sinh 7 bong bóng, trong đó có ít nhất 3 quả chứa chữ/số mục tiêu
+        const totalBubbles = 7;
         for (let i = 0; i < totalBubbles; i++) {
-            const char = (i < 2) ? target : choices[Math.floor(Math.random() * choices.length)];
+            const char = (i < 3) ? target : choices[Math.floor(Math.random() * choices.length)];
             this.createBubble(char, width, height, i);
         }
     }
 
+    /* =========================================================================
+       THÊM NHIỀU VẬT GÂY NHIỄU: RÙA BIỂN, BẠCH TUỘC, CÁ HỀ, SỨA, CÁ NÓC, CUA
+       ========================================================================= */
     spawnDistractorCreatures() {
         const playfield = document.getElementById('bubblePlayfield');
         if (!playfield) return;
@@ -362,87 +415,58 @@ class BubbleGame {
         const width = playfield.clientWidth || 800;
         const height = playfield.clientHeight || 500;
 
-        // 1. Chú sứa biển màu hồng tím phát sáng bơi lơ lửng (Jellyfish distractor)
-        const jelly = document.createElement('div');
-        jelly.className = 'ocean-jellyfish-distractor';
-        jelly.innerHTML = `
-            <div style="font-size: 3.2rem; filter: drop-shadow(0 0 10px #ec4899); animation: floatJelly 2.5s infinite ease-in-out;">
-                🪼
-            </div>
-        `;
-        const jx = 60 + Math.random() * (width - 150);
-        const jy = 50 + Math.random() * (height * 0.4);
-        jelly.style.cssText = `
-            position: absolute;
-            left: 0;
-            top: 0;
-            transform: translate3d(${jx}px, ${jy}px, 0);
-            cursor: pointer;
-            z-index: 12;
-            user-select: none;
-            touch-action: manipulation;
-        `;
-        playfield.appendChild(jelly);
+        const creaturesConfig = [
+            { name: 'Sea Turtle', emoji: '🐢', size: 68, x: 50, y: 190, vx: 0.32, vy: 0.08, wobble: 0.0016, glow: '#10b981' },
+            { name: 'Octopus', emoji: '🐙', size: 62, x: width * 0.45, y: 110, vx: -0.38, vy: 0.12, wobble: 0.0022, glow: '#f43f5e' },
+            { name: 'Clownfish', emoji: '🐠', size: 54, x: width * 0.72, y: 75, vx: 0.45, vy: -0.15, wobble: 0.0028, glow: '#fb923c' },
+            { name: 'Jellyfish', emoji: '🪼', size: 60, x: 140, y: 60, vx: 0.28, vy: 0.18, wobble: 0.002, glow: '#ec4899' },
+            { name: 'Pufferfish', emoji: '🐡', size: 64, x: width * 0.6, y: 150, vx: -0.32, vy: -0.1, wobble: 0.0018, glow: '#facc15' },
+            { name: 'Little Crab', emoji: '🦀', size: 52, x: 260, y: 310, vx: 0.4, vy: 0.05, wobble: 0.0015, glow: '#ef4444' }
+        ];
 
-        const jellyObj = {
-            el: jelly,
-            isJelly: true,
-            x: jx,
-            y: jy,
-            size: 60,
-            vx: 0.35,
-            vy: 0.15,
-            wobbleSpeed: 0.002,
-            wobbleOffset: 0
-        };
+        creaturesConfig.forEach(cfg => {
+            const el = document.createElement('div');
+            el.className = 'ocean-creature-distractor';
+            el.innerHTML = `
+                <div style="font-size: ${cfg.size * 0.55}px; filter: drop-shadow(0 0 10px ${cfg.glow}); display: flex; align-items: center; justify-content: center;">
+                    ${cfg.emoji}
+                </div>
+            `;
+            const posX = Math.max(20, Math.min(cfg.x, width - cfg.size - 20));
+            const posY = Math.max(30, Math.min(cfg.y, height - cfg.size - 20));
+            el.style.cssText = `
+                position: absolute;
+                left: 0;
+                top: 0;
+                transform: translate3d(${posX}px, ${posY}px, 0);
+                cursor: pointer;
+                z-index: 12;
+                user-select: none;
+                touch-action: manipulation;
+                transition: transform 0.2s ease;
+            `;
+            playfield.appendChild(el);
 
-        jelly.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.handleCreatureClick(jellyObj, 'Jellyfish', '🪼');
+            const creatureObj = {
+                el,
+                name: cfg.name,
+                emoji: cfg.emoji,
+                x: posX,
+                y: posY,
+                size: cfg.size,
+                vx: cfg.vx,
+                vy: cfg.vy,
+                wobbleSpeed: cfg.wobble,
+                wobbleOffset: Math.random() * Math.PI * 2
+            };
+
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.handleCreatureClick(creatureObj, cfg.name, cfg.emoji);
+            });
+
+            this.distractorCreatures.push(creatureObj);
         });
-
-        this.distractorCreatures.push(jellyObj);
-
-        // 2. Quả bóng gai / Sao biển bọc bóng đỏ tím (Spiked sea urchin bubble)
-        const urchin = document.createElement('div');
-        urchin.className = 'ocean-urchin-distractor';
-        urchin.innerHTML = `
-            <div style="width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f43f5e 0%, #9f1239 70%, #4c0519 100%); border: 2.5px solid #fecdd3; box-shadow: 0 0 14px rgba(244,63,94,0.6), inset 0 3px 6px rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #ffffff;">
-                🐡
-            </div>
-        `;
-        const ux = width * 0.6 + Math.random() * (width * 0.25);
-        const uy = 80 + Math.random() * (height * 0.35);
-        urchin.style.cssText = `
-            position: absolute;
-            left: 0;
-            top: 0;
-            transform: translate3d(${ux}px, ${uy}px, 0);
-            cursor: pointer;
-            z-index: 12;
-            user-select: none;
-            touch-action: manipulation;
-        `;
-        playfield.appendChild(urchin);
-
-        const urchinObj = {
-            el: urchin,
-            isJelly: false,
-            x: ux,
-            y: uy,
-            size: 68,
-            vx: -0.3,
-            vy: -0.2,
-            wobbleSpeed: 0.0018,
-            wobbleOffset: 1.5
-        };
-
-        urchin.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.handleCreatureClick(urchinObj, 'Pufferfish', '🐡');
-        });
-
-        this.distractorCreatures.push(urchinObj);
     }
 
     handleCreatureClick(creature, name, emoji) {
@@ -456,16 +480,15 @@ class BubbleGame {
         const targetY = fieldRect.top + creature.y + creature.size / 2;
 
         this.fireRocket(targetX, targetY, null, () => {
-            // Khi tên lửa chạm vật gây nhiễu: Sinh vật nảy lên với âm thanh boing vui nhộn
             window.gameAudio?.playWrongWobble();
             window.gameAudio?.speakEnglish(name);
 
             if (creature.el) {
                 creature.el.animate([
-                    { transform: `${creature.el.style.transform} scale(1.3)` },
+                    { transform: `${creature.el.style.transform} scale(1.35)` },
                     { transform: `${creature.el.style.transform} scale(0.85)` },
                     { transform: `${creature.el.style.transform} scale(1)` }
-                ], { duration: 300 });
+                ], { duration: 320 });
             }
         });
     }
@@ -475,9 +498,17 @@ class BubbleGame {
         if (!playfield) return;
 
         const isTarget = char === this.currentLevelData?.target;
-        const size = 94;
+        
+        // Đa dạng kích thước: [86px, 98px, 112px] đảm bảo cực kỳ dễ chạm/click
+        const sizes = [86, 98, 112];
+        const size = sizes[Math.floor(Math.random() * sizes.length)];
+        const fontSizes = { 86: '2.5rem', 98: '2.9rem', 112: '3.3rem' };
+
+        // Đa dạng theme màu sắc 3D
+        const theme = BubbleGame.THEMES[Math.floor(Math.random() * BubbleGame.THEMES.length)];
+
         const x = 30 + Math.random() * Math.max(100, width - size - 60);
-        const y = 20 + (index * (height / 6)) + (Math.random() * 25);
+        const y = 20 + (index * (height / 7)) + (Math.random() * 20);
 
         const el = document.createElement('div');
         el.className = 'toy-soap-bubble';
@@ -489,9 +520,9 @@ class BubbleGame {
             top: 0;
             transform: translate3d(${x}px, ${y}px, 0);
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(186, 230, 253, 0.6) 35%, rgba(56, 189, 248, 0.45) 65%, rgba(2, 132, 199, 0.88) 100%);
-            border: 3px solid rgba(255, 255, 255, 0.92);
-            box-shadow: inset 0 -8px 18px rgba(2, 132, 199, 0.65), inset 0 4px 10px rgba(255, 255, 255, 0.95), 0 10px 26px rgba(0, 0, 0, 0.35);
+            background: ${theme.bg};
+            border: 3px solid ${theme.border};
+            box-shadow: ${theme.shadow};
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -502,27 +533,29 @@ class BubbleGame {
             transition: opacity 0.2s ease;
         `;
 
+        // Điểm phản quang mặt bóng 3D
         const highlight = document.createElement('div');
         highlight.style.cssText = `
             position: absolute;
-            top: 10px;
-            left: 18px;
-            width: 28px;
-            height: 16px;
-            background: rgba(255, 255, 255, 0.9);
+            top: ${size * 0.12}px;
+            left: ${size * 0.18}px;
+            width: ${size * 0.32}px;
+            height: ${size * 0.18}px;
+            background: rgba(255, 255, 255, 0.92);
             border-radius: 50%;
             transform: rotate(-35deg);
             pointer-events: none;
         `;
         el.appendChild(highlight);
 
+        // Ký tự chữ/số với màu sắc và viền chữ riêng biệt
         const charSpan = document.createElement('span');
         charSpan.style.cssText = `
             font-family: 'Fredoka', sans-serif;
-            font-size: 2.8rem;
+            font-size: ${fontSizes[size] || '2.8rem'};
             font-weight: 900;
-            color: #ffffff;
-            text-shadow: 0 3px 8px rgba(12, 74, 110, 0.95), 0 0 14px rgba(255, 255, 255, 0.85);
+            color: ${theme.textColor};
+            text-shadow: ${theme.textShadow};
             pointer-events: none;
         `;
         charSpan.textContent = char;
@@ -539,7 +572,7 @@ class BubbleGame {
             y,
             size,
             vx: (Math.random() - 0.5) * 0.7,
-            vy: -0.45 - Math.random() * 0.4,
+            vy: -0.45 - Math.random() * 0.35,
             wobbleSpeed: 0.002 + Math.random() * 0.002,
             wobbleOffset: Math.random() * Math.PI * 2,
             popped: false
@@ -680,12 +713,12 @@ class BubbleGame {
             window.gameAudio?.speakLetterEnglish(bubble.char);
         }
 
-        // Tạo bóng mới từ dưới lên
+        // Tạo bóng mới từ dưới lên, đảm bảo luôn có bóng mục tiêu cho bé bắn đủ 3 lần
         const playfield = document.getElementById('bubblePlayfield');
         if (playfield && !this.isCompleted) {
-            const choices = this.currentLevelData?.choices || ['b', 'd'];
-            const target = this.currentLevelData?.target || 'b';
-            const char = Math.random() < 0.45 ? target : choices[Math.floor(Math.random() * choices.length)];
+            const choices = this.currentLevelData?.choices || ['A', 'B'];
+            const target = this.currentLevelData?.target || 'A';
+            const char = (Math.random() < 0.55 || this.targetPopped < this.totalRequired) ? target : choices[Math.floor(Math.random() * choices.length)];
             this.createBubble(char, playfield.clientWidth || 800, playfield.clientHeight || 500);
         }
     }
@@ -703,11 +736,11 @@ class BubbleGame {
         `;
         document.body.appendChild(container);
 
-        const colors = ['#38bdf8', '#fde047', '#ffffff', '#fb7185'];
-        for (let i = 0; i < 8; i++) {
+        const colors = ['#38bdf8', '#fde047', '#ffffff', '#fb7185', '#34d399', '#c084fc'];
+        for (let i = 0; i < 10; i++) {
             const p = document.createElement('div');
-            const angle = (i / 8) * Math.PI * 2;
-            const dist = 36 + Math.random() * 40;
+            const angle = (i / 10) * Math.PI * 2;
+            const dist = 38 + Math.random() * 42;
             const px = Math.cos(angle) * dist;
             const py = Math.sin(angle) * dist;
             const color = colors[i % colors.length];
@@ -741,8 +774,13 @@ class BubbleGame {
             victoryModal.style.display = 'flex';
         }
 
-        const nextLvl = (this.currentLevelData?.level || 1) + 1;
-        const totalLevels = (this.shell?.levels || []).length || 12;
+        const levelNum = this.currentLevelData?.level || 1;
+        this.shell?.saveProgressLocal('bubble', levelNum, 1);
+        this.shell?.saveProgressServer('bubble', levelNum, 1);
+
+        const nextLvl = levelNum + 1;
+        this.saveCurrentLevelProgress(nextLvl);
+        const totalLevels = (this.shell?.levels || []).length || 50;
 
         // TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP THEO SAU 1.8 GIÂY NHƯ ĐÀO VÀNG
         setTimeout(() => {

@@ -158,21 +158,15 @@ class GoldMinerGame {
                     </div>
                 </div>
 
-                <!-- 5. POPUP THÔNG BÁO CHIẾN THẮNG NHỎ GỌN TỰ ĐỘNG QUA MÀN -->
+                <!-- 5. POPUP THÔNG BÁO CHIẾN THẮNG TRONG MỜ TINH TẾ TỰ ĐỘNG QUA MÀN -->
                 <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center; pointer-events: none;">
                     <div class="victory-toast-card" id="victoryToast">
-                        <div style="font-size: 2.8rem; margin-bottom: 4px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));">🏆</div>
-                        <div style="font-family: 'Fredoka', cursive; font-size: 1.75rem; font-weight: 900; color: #fef08a; text-shadow: 0 2px 8px rgba(0,0,0,0.6); margin-bottom: 2px;">
-                            BÉ GIỎI QUÁ!
+                        <div style="font-size: 1.6rem; margin-bottom: 2px;">✨</div>
+                        <div style="font-family: 'Fredoka', cursive; font-size: 1.25rem; font-weight: 800; color: #fef08a; margin-bottom: 2px;">
+                            HOÀN THÀNH MÀN CHƠI!
                         </div>
-                        <div style="display: flex; justify-content: center; gap: 6px; font-size: 1.3rem; margin-bottom: 6px;">
-                            <span>⭐</span><span>⭐</span><span>⭐</span>
-                        </div>
-                        <div style="color: #ffffff; font-size: 0.95rem; font-weight: 700; opacity: 0.95;" id="victoryMessage">
-                            Bé đã gắp đủ 3 khối!
-                        </div>
-                        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 800; color: #6ee7b7; margin-top: 10px; background: rgba(16, 185, 129, 0.22); padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(110, 231, 183, 0.4);">
-                            <span>Đang chuyển sang màn tiếp theo...</span>
+                        <div style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;" id="victoryMessage">
+                            Đang chuyển tiếp...
                         </div>
                     </div>
                 </div>

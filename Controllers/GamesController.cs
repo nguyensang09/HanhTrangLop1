@@ -116,7 +116,7 @@ public class GamesController : Controller
                 Emoji = "🎈",
                 ThemeClass = "card-theme-coral",
                 Badge = "Nghe & Nhận Diện",
-                TotalLevels = 12,
+                TotalLevels = 50,
                 CompletedLevels = 0,
                 EarnedStars = 0,
                 IsLocked = false
@@ -130,7 +130,7 @@ public class GamesController : Controller
                 Emoji = "⛏️",
                 ThemeClass = "card-theme-gold",
                 Badge = "Phản Xạ & Phân Biệt",
-                TotalLevels = 10,
+                TotalLevels = 39,
                 CompletedLevels = 0,
                 EarnedStars = 0,
                 IsLocked = false
@@ -144,7 +144,7 @@ public class GamesController : Controller
                 Emoji = "☁️",
                 ThemeClass = "card-theme-purple",
                 Badge = "Ghép Âm & Dấu Thanh",
-                TotalLevels = 10,
+                TotalLevels = 40,
                 CompletedLevels = 0,
                 EarnedStars = 0,
                 IsLocked = false
@@ -158,7 +158,7 @@ public class GamesController : Controller
                 Emoji = "🚂",
                 ThemeClass = "card-theme-emerald",
                 Badge = "Số Lượng & Thứ Tự",
-                TotalLevels = 10,
+                TotalLevels = 40,
                 CompletedLevels = 0,
                 EarnedStars = 0,
                 IsLocked = false

@@ -113,43 +113,77 @@ class NumberTrainGame {
                     </div>
                 </header>
 
-                <!-- 2. KHÔNG GIAN CHÍNH: THIÊN NHIÊN 3D, ĐƯỜNG RAY XE LỬA VÀ ĐOÀN TÀU -->
-                <section class="train-scenic-playfield">
+                <!-- 2. KHÔNG GIAN CHÍNH: THIÊN NHIÊN 3D, ĐƯỜNG RAY XE LỬA VÀ ĐOÀN TÀU ĐANG CHẠY -->
+                <section class="train-scenic-playfield" style="position: relative; overflow: hidden;">
                     
-                    <!-- Lớp cảnh quan 3D hoạt hình xóa bỏ khoảng trống -->
-                    <div style="position: absolute; inset: 0; pointer-events: none; overflow: hidden;">
-                        <!-- Mây bay 3D -->
-                        <div class="floating-cloud-bg" style="position: absolute; top: 14px; left: 30px; background: rgba(255,255,255,0.92); border-radius: 999px; width: 120px; height: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></div>
-                        <div class="floating-cloud-bg" style="position: absolute; top: 26px; right: 120px; background: rgba(255,255,255,0.85); border-radius: 999px; width: 150px; height: 46px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); animation-delay: -3s;"></div>
+                    <!-- LỚP BẦU TRỜI & CẢNH QUAN 3D CHUYỂN ĐỘNG (PARALLAX MOTION GIẢ TÀU ĐANG CHẠY) -->
+                    <div style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1;">
                         
-                        <!-- Khinh khí cầu mini ở góc trời -->
-                        <div style="position: absolute; top: 28px; left: 32%; display: flex; flex-direction: column; align-items: center; opacity: 0.85;">
-                            <div style="width: 32px; height: 40px; background: linear-gradient(135deg, #ec4899 0%, #f97316 50%, #facc15 100%); border-radius: 999px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"></div>
+                        <!-- A. CÁC ĐÁM MÂY TRẮNG TRÔI TỰ DO TỪ PHẢI QUA TRÁI -->
+                        <div class="floating-cloud-bg" style="position: absolute; top: 18px; width: 140px; height: 42px; background: rgba(255,255,255,0.92); border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); animation: cloudsDriftRightToLeft 24s linear infinite;"></div>
+                        <div class="floating-cloud-bg" style="position: absolute; top: 38px; width: 180px; height: 50px; background: rgba(255,255,255,0.85); border-radius: 999px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); animation: cloudsDriftRightToLeft 32s linear infinite 8s;"></div>
+                        <div class="floating-cloud-bg" style="position: absolute; top: 60px; width: 120px; height: 38px; background: rgba(255,255,255,0.88); border-radius: 999px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); animation: cloudsDriftRightToLeft 20s linear infinite 14s;"></div>
+
+                        <!-- B. CÁC ĐÁM MÂY CHỮ VÀ SỐ BAY BAY TỪ PHẢI QUA TRÁI (LẤP ĐẦY KHOẢNG TRỐNG) -->
+                        <div class="cloud-letter-float" style="top: 25px; width: 78px; height: 46px; animation: cloudsDriftRightToLeft 18s linear infinite 2s;" onclick="window.gameAudio?.speakLetterEnglish('A'); this.animate([{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:300});" title="Đám mây chữ A">
+                            <span class="cloud-letter-char" style="font-size: 1.9rem; color: #e11d48;">A</span>
+                        </div>
+                        <div class="cloud-letter-float" style="top: 65px; width: 78px; height: 46px; animation: cloudsDriftRightToLeft 22s linear infinite 7s;" onclick="window.gameAudio?.speakLetterEnglish(3); this.animate([{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:300});" title="Đám mây số 3">
+                            <span class="cloud-letter-char" style="font-size: 1.9rem; color: #0284c7;">3</span>
+                        </div>
+                        <div class="cloud-letter-float" style="top: 30px; width: 80px; height: 48px; animation: cloudsDriftRightToLeft 26s linear infinite 13s;" onclick="window.gameAudio?.speakLetterEnglish('B'); this.animate([{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:300});" title="Đám mây chữ B">
+                            <span class="cloud-letter-char" style="font-size: 1.9rem; color: #d97706;">B</span>
+                        </div>
+                        <div class="cloud-letter-float" style="top: 72px; width: 78px; height: 46px; animation: cloudsDriftRightToLeft 21s linear infinite 18s;" onclick="window.gameAudio?.speakLetterEnglish(7); this.animate([{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:300});" title="Đám mây số 7">
+                            <span class="cloud-letter-char" style="font-size: 1.9rem; color: #7c3aed;">7</span>
+                        </div>
+                        
+                        <!-- C. KHINH KHÍ CẦU MINI NHẤP NHÔ Ở GÓC TRỜI -->
+                        <div style="position: absolute; top: 22px; left: 22%; display: flex; flex-direction: column; align-items: center; opacity: 0.88; animation: bounceEmoji 3s infinite alternate;">
+                            <div style="width: 34px; height: 42px; background: linear-gradient(135deg, #ec4899 0%, #f97316 50%, #facc15 100%); border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);"></div>
                             <div style="width: 10px; height: 8px; background: #92400e; border-radius: 2px; margin-top: 2px;"></div>
                         </div>
 
                         <!-- Cầu vồng bán nguyệt mờ ảo phía xa -->
-                        <div style="position: absolute; -top: 60px; left: 50%; transform: translateX(-50%); width: 420px; height: 210px; border-top: 14px solid rgba(248,113,113,0.35); border-radius: 210px 210px 0 0; pointer-events: none;">
-                            <div style="width: 100%; height: 100%; border-top: 12px solid rgba(253,224,71,0.35); border-radius: 210px 210px 0 0;">
-                                <div style="width: 100%; height: 100%; border-top: 10px solid rgba(134,239,172,0.35); border-radius: 210px 210px 0 0;"></div>
+                        <div style="position: absolute; -top: 50px; left: 50%; transform: translateX(-50%); width: 460px; height: 230px; border-top: 14px solid rgba(248,113,113,0.32); border-radius: 230px 230px 0 0; pointer-events: none;">
+                            <div style="width: 100%; height: 100%; border-top: 12px solid rgba(253,224,71,0.32); border-radius: 230px 230px 0 0;">
+                                <div style="width: 100%; height: 100%; border-top: 10px solid rgba(134,239,172,0.32); border-radius: 230px 230px 0 0;"></div>
                             </div>
                         </div>
 
-                        <!-- Dãy đồi núi xanh 3D nhấp nhô -->
+                        <!-- D. DÃY ĐỒI NÚI XANH 3D DI CHUYỂN TỪ PHẢI SANG TRÁI (PARALLAX MOUNTAINS) -->
                         <div style="position: absolute; bottom: 50px; left: 0; right: 0; height: 160px; display: flex; align-items: flex-end; pointer-events: none;">
-                            <div style="width: 42%; height: 130px; background: linear-gradient(180deg, #52b788 0%, #2d6a4f 100%); border-radius: 0 140px 0 0; opacity: 0.9;"></div>
-                            <div style="width: 60%; height: 160px; margin-left: -70px; background: linear-gradient(180deg, #40916c 0%, #1b4332 100%); border-radius: 170px 150px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.15);"></div>
-                            <div style="width: 35%; height: 110px; margin-left: -80px; background: linear-gradient(180deg, #74c69d 0%, #2d6a4f 100%); border-radius: 110px 0 0 0;"></div>
+                            <div style="width: 45%; height: 135px; background: linear-gradient(180deg, #52b788 0%, #2d6a4f 100%); border-radius: 0 140px 0 0; opacity: 0.92;"></div>
+                            <div style="width: 60%; height: 165px; margin-left: -60px; background: linear-gradient(180deg, #40916c 0%, #1b4332 100%); border-radius: 170px 150px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.15);"></div>
+                            <div style="width: 35%; height: 115px; margin-left: -70px; background: linear-gradient(180deg, #74c69d 0%, #2d6a4f 100%); border-radius: 110px 0 0 0;"></div>
+                        </div>
+
+                        <!-- E. CỘT MỐC CÂY SỐ ĐƯỜNG SẮT & HOA DẠI LƯỚT NHANH TỪ PHẢI QUA TRÁI (TẠO CẢM GIÁC TÀU CHẠY NHANH) -->
+                        <div style="position: absolute; bottom: 42px; width: 45px; height: 32px; background: #ffffff; border: 2px solid #047857; border-radius: 6px 6px 0 0; box-shadow: 0 2px 6px rgba(0,0,0,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: #065f46; animation: trackFloraRushLeft 4.5s linear infinite;">
+                            <span>KM</span>
+                            <span style="color: #dc2626; font-size: 10px;">5</span>
+                        </div>
+                        <div style="position: absolute; bottom: 46px; width: 38px; height: 26px; background: #ffffff; border: 2px solid #047857; border-radius: 6px 6px 0 0; box-shadow: 0 2px 6px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: #065f46; animation: trackFloraRushLeft 4.5s linear infinite 2.2s;">
+                            <span>KM</span>
+                            <span style="color: #0284c7; font-size: 10px;">6</span>
+                        </div>
+
+                        <!-- Khóm hoa & cỏ dại ven đường lướt qua -->
+                        <div style="position: absolute; bottom: 44px; font-size: 1.5rem; animation: trackFloraRushLeft 3.5s linear infinite 1.2s;">
+                            🌼 🌿
+                        </div>
+                        <div style="position: absolute; bottom: 44px; font-size: 1.5rem; animation: trackFloraRushLeft 3.8s linear infinite 3s;">
+                            🌻 🌾
                         </div>
 
                         <!-- Cây nấm & cây thông 3D trang trí -->
-                        <div style="position: absolute; bottom: 65px; left: 40px; display: flex; align-items: baseline; gap: 10px;">
+                        <div style="position: absolute; bottom: 65px; left: 35px; display: flex; align-items: baseline; gap: 10px;">
                             <div style="width: 24px; height: 38px; background: #047857; border-radius: 999px; border: 2px solid #34d399; box-shadow: 0 2px 6px rgba(0,0,0,0.25);"></div>
                             <div style="width: 32px; height: 50px; background: #059669; border-radius: 999px; border: 2px solid #6ee7b7; box-shadow: 0 3px 8px rgba(0,0,0,0.3);"></div>
                         </div>
 
                         <!-- Nhà ga xe lửa mini 3D ở góc phải -->
-                        <div style="position: absolute; bottom: 80px; right: 40px; display: flex; flex-direction: column; align-items: center; opacity: 0.92;">
+                        <div style="position: absolute; bottom: 75px; right: 40px; display: flex; flex-direction: column; align-items: center; opacity: 0.94;">
                             <div style="width: 60px; height: 34px; background: #f43f5e; border-radius: 6px 6px 0 0; box-shadow: 0 3px 8px rgba(0,0,0,0.25); position: relative; border-bottom: 2px solid #78350f;">
                                 <div style="position: absolute; top: -10px; left: 4px; right: 4px; height: 12px; background: #dc2626; border-radius: 8px 8px 0 0;"></div>
                                 <div style="width: 14px; height: 16px; background: #fef08a; border-radius: 3px; margin: 10px auto 0;"></div>
@@ -232,17 +266,16 @@ class NumberTrainGame {
                     </div>
                 </div>
 
-                <!-- 5. POPUP HOÀN THÀNH MÀN TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP NHƯ ĐÀO VÀNG -->
-                <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center;">
+                <!-- 5. POPUP HOÀN THÀNH MÀN TRONG MỜ TINH TẾ TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP -->
+                <div class="game-modal-overlay" id="victoryModal" style="display: none; align-items: center; justify-content: center; pointer-events: none;">
                     <div class="victory-toast-card" id="victoryToast">
-                        <div style="font-size: 4rem; margin-bottom: 6px; animation: bounceEmoji 1s infinite alternate;">🎉</div>
-                        <h2 style="font-family: 'Fredoka', cursive, sans-serif; font-size: 2.1rem; font-weight: 900; color: #ffffff; margin: 0 0 6px 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4);">
-                            XUẤT SẮC!
-                        </h2>
-                        <p style="color: #fef08a; font-size: 1.2rem; font-weight: 700; margin: 0 0 8px 0;">
-                            Đoàn tàu số đã sẵn sàng lăn bánh về ga tiếp theo!
-                        </p>
-                        <span style="font-size: 0.88rem; color: #cbd5e1; font-weight: 700;">Đang chuyển sang màn tiếp theo...</span>
+                        <div style="font-size: 1.6rem; margin-bottom: 2px;">✨</div>
+                        <div style="font-family: 'Fredoka', cursive, sans-serif; font-size: 1.25rem; font-weight: 800; color: #fef08a; margin-bottom: 2px;">
+                            HOÀN THÀNH MÀN CHƠI!
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 0.85rem; font-weight: 600;" id="victoryMessage">
+                            Đang chuyển tiếp...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -335,11 +368,11 @@ class NumberTrainGame {
     getLocomotiveHeadHTML() {
         return `
             <div style="display: flex; flex-direction: column; align-items: center; position: relative; flex-shrink: 0;">
-                <!-- Khói 3D bốc lên -->
+                <!-- Khói 3D bốc lên và lướt lùi về sau -->
                 <div style="position: absolute; top: -50px; right: 14px; pointer-events: none;">
-                    <div class="smoke-bubble-1" style="position: absolute; width: 26px; height: 26px; background: rgba(255,255,255,0.88); border-radius: 50%; filter: blur(1px); box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
-                    <div class="smoke-bubble-2" style="position: absolute; width: 30px; height: 30px; background: rgba(241,245,249,0.82); border-radius: 50%; filter: blur(1.5px); box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
-                    <div class="smoke-bubble-3" style="position: absolute; width: 34px; height: 34px; background: rgba(226,232,240,0.75); border-radius: 50%; filter: blur(2px); box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
+                    <div class="train-smoke-puff-1"></div>
+                    <div class="train-smoke-puff-2"></div>
+                    <div class="train-smoke-puff-3"></div>
                 </div>
 
                 <!-- Thân đầu tàu màu đỏ cam 3D -->
@@ -369,16 +402,16 @@ class NumberTrainGame {
                     <div class="train-bumper"></div>
                 </div>
 
-                <!-- Bánh xe cơ khí & thanh truyền động -->
+                <!-- Bánh xe cơ khí lăn tròn & thanh truyền động -->
                 <div class="train-wheels-row">
-                    <div class="wheel-3d" style="width: 36px; height: 36px; z-index: 10;">
+                    <div class="wheel-3d train-wheel-running" style="width: 36px; height: 36px; z-index: 10;">
                         <div class="wheel-hub" style="width: 12px; height: 12px;"></div>
                     </div>
                     <div class="train-rod"></div>
-                    <div class="wheel-3d" style="width: 32px; height: 32px; z-index: 10;">
+                    <div class="wheel-3d train-wheel-running" style="width: 32px; height: 32px; z-index: 10;">
                         <div class="wheel-hub" style="width: 10px; height: 10px;"></div>
                     </div>
-                    <div class="wheel-3d" style="width: 28px; height: 28px; z-index: 10;">
+                    <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px; z-index: 10;">
                         <div class="wheel-hub" style="width: 8px; height: 8px;"></div>
                     </div>
                 </div>
@@ -430,10 +463,10 @@ class NumberTrainGame {
                                 <div style="width: 100%; height: 5px; background: rgba(0,119,182,0.6); border-radius: 999px;"></div>
                             </div>
                             <div style="display: flex; justify-content: space-between; width: 100%; padding: 0 4px; margin-top: -10px;">
-                                <div class="wheel-3d" style="width: 28px; height: 28px;">
+                                <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;">
                                     <div class="wheel-hub" style="width: 10px; height: 10px;"></div>
                                 </div>
-                                <div class="wheel-3d" style="width: 28px; height: 28px;">
+                                <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;">
                                     <div class="wheel-hub" style="width: 10px; height: 10px;"></div>
                                 </div>
                             </div>
@@ -580,8 +613,8 @@ class NumberTrainGame {
                             <div style="width: 100%; height: 5px; background: rgba(0,119,182,0.6); border-radius: 999px;"></div>
                         </div>
                         <div style="display: flex; justify-content: space-between; width: 100%; padding: 0 4px; margin-top: -10px;">
-                            <div class="wheel-3d" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
-                            <div class="wheel-3d" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
+                            <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
+                            <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
                         </div>
                     </div>
                     <div class="train-coupler"></div>
@@ -633,9 +666,9 @@ class NumberTrainGame {
                         <div style="width: 100%; height: 5px; background: rgba(0,0,0,0.3); border-radius: 999px;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; width: 100%; padding: 0 12px; margin-top: -10px;">
-                        <div class="wheel-3d" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
-                        <div class="wheel-3d" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
-                        <div class="wheel-3d" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
+                        <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
+                        <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
+                        <div class="wheel-3d train-wheel-running" style="width: 28px; height: 28px;"><div class="wheel-hub" style="width: 10px; height: 10px;"></div></div>
                     </div>
                 </div>
                 <div class="train-coupler"></div>
@@ -707,8 +740,13 @@ class NumberTrainGame {
                 victoryModal.style.display = 'flex';
             }
 
-            const nextLvl = (this.currentLevelData?.level || 1) + 1;
-            const totalLevels = (this.shell?.levels || []).length || 10;
+            const levelNum = this.currentLevelData?.level || 1;
+            this.shell?.saveProgressLocal('number-train', levelNum, 1);
+            this.shell?.saveProgressServer('number-train', levelNum, 1);
+
+            const nextLvl = levelNum + 1;
+            this.saveCurrentLevelProgress(nextLvl);
+            const totalLevels = (this.shell?.levels || []).length || 28;
 
             // TỰ ĐỘNG CHUYỂN QUA MÀN TIẾP THEO SAU 1.8S NHƯ ĐÀO VÀNG
             setTimeout(() => {
