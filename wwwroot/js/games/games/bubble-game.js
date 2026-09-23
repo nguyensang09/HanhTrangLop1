@@ -13,7 +13,7 @@ class BubbleGame {
         this.currentLevelData = null;
 
         this.targetPopped = 0;
-        this.totalRequired = 3;
+        this.totalRequired = 6;
         this.isCompleted = false;
         this.soundEnabled = true;
 
@@ -30,8 +30,8 @@ class BubbleGame {
         this.destroy();
         this.currentLevelData = levelData;
         this.targetPopped = 0;
-        // Bắt buộc thực hiện đúng 3 lần như Đào Vàng mới qua màn cho trò liên quan chữ
-        this.totalRequired = 3;
+        // Bắt buộc thực hiện đúng 6 lần như Đào Vàng mới qua màn cho trò liên quan chữ
+        this.totalRequired = 6;
         this.isCompleted = false;
         this.bubbles = [];
         this.distractorCreatures = [];

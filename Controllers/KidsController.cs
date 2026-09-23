@@ -166,6 +166,13 @@ public class KidsController : Controller
             .ThenBy(x => x.Level)
             .ThenBy(x => x.Title)
             .ToListAsync();
+
+        // Theo Phương án 1: Tách hoàn toàn bài Tập tô (Tracing) ra khỏi Lộ trình Kỹ năng /kids/skills/
+        // Các bài tập tô chữ và số được học tập trung chuyên biệt tại phân hệ /kids/tracing (Bé Tập Tô Nét)
+        if (skillGroup.Code != "van-dong-tinh")
+        {
+            items = items.Where(x => x.InteractionType != InteractionTypes.Tracing).ToList();
+        }
         items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
 
         var itemIds = items.Select(x => x.Id).ToList();
@@ -1458,15 +1465,25 @@ public class KidsController : Controller
             return await FindNextItemIdInCurrentSessionAsync(currentItem.Id);
         }
 
+        var skillGroup = await _db.SkillGroups
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == skillGroupId.Value);
+
         var items = await _db.LearningItems
+            .AsNoTracking()
             .Include(x => x.SkillGroup)
             .Include(x => x.Topic)
             .Where(x => x.SkillGroupId == skillGroupId.Value && x.Status == ContentStatus.Published)
-            .OrderBy(x => x.Topic!.SortOrder)
-            .ThenBy(x => x.SortOrder)
+            .OrderBy(x => x.SortOrder)
             .ThenBy(x => x.Level)
             .ThenBy(x => x.Title)
             .ToListAsync();
+
+        if (skillGroup?.Code != "van-dong-tinh")
+        {
+            items = items.Where(x => x.InteractionType != InteractionTypes.Tracing).ToList();
+        }
+
         var itemIds = items.Where(ActivityTemplateCatalog.IsItemAllowed).Select(x => x.Id).ToList();
 
         var currentIndex = itemIds.IndexOf(currentItem.Id);

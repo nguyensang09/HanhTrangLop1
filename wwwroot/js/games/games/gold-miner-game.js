@@ -15,7 +15,7 @@ class GoldMinerGame {
         this.currentLevelData = null;
 
         this.targetGemsCollected = 0;
-        this.totalRequired = 3;
+        this.totalRequired = 6;
         this.wrongAttempts = 0;
         this.isCompleted = false;
         this.isClawBusy = false;
@@ -35,7 +35,7 @@ class GoldMinerGame {
         this.stopPhysicsLoop();
         this.currentLevelData = levelData;
         this.targetGemsCollected = 0;
-        this.totalRequired = 3;
+        this.totalRequired = 6;
         this.wrongAttempts = 0;
         this.isCompleted = false;
         this.isClawBusy = false;
@@ -105,6 +105,12 @@ class GoldMinerGame {
                             <div class="miner-target-big-badge" id="hudTargetChar" title="Bé chạm vào đây để nghe phát âm nhé!">
                                 ${target}
                             </div>
+                        </div>
+
+                        <!-- Tiến độ gắp 0 / 6 -->
+                        <div style="display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.45); padding: 4px 10px; border-radius: 12px; border: 1.5px solid rgba(254,240,138,0.5); margin-left: 2px;">
+                            <span style="font-size: 1.1rem;">🎯</span>
+                            <span id="minerProgressText" style="font-family: 'Fredoka', sans-serif; font-size: 1.15rem; font-weight: 900; color: #fef08a;">0 / ${this.totalRequired}</span>
                         </div>
                     </div>
 
@@ -246,11 +252,18 @@ class GoldMinerGame {
         const target = this.currentLevelData?.target || 'A';
         const isNumber = this.currentLevelData?.targetType === 'number';
 
-        // 1. 3 Khối mục tiêu: CÙNG 1 CHỮ/SỐ NHƯNG KHÁC NHAU VỀ MÀU SẮC (Vàng, Đỏ ruby, Xanh lục bảo)
+        // 1. Khối mục tiêu: CÙNG 1 CHỮ/SỐ NHƯNG KHÁC NHAU VỀ MÀU SẮC (Vàng, Đỏ ruby, Xanh lục bảo)
+        const targetColorPool = [
+            { colorClass: 'target-gem-gold', spark: '✨' },
+            { colorClass: 'target-gem-ruby', spark: '🌟' },
+            { colorClass: 'target-gem-emerald', spark: '💚' }
+        ];
+
         const targetThemes = [
-            { id: 'target-1', colorClass: 'target-gem-gold', spark: '✨' },
-            { id: 'target-2', colorClass: 'target-gem-ruby', spark: '🌟' },
-            { id: 'target-3', colorClass: 'target-gem-emerald', spark: '💚' }
+            { id: 'target-1', colorClass: targetColorPool[0].colorClass, spark: targetColorPool[0].spark },
+            { id: 'target-2', colorClass: targetColorPool[1].colorClass, spark: targetColorPool[1].spark },
+            { id: 'target-3', colorClass: targetColorPool[2].colorClass, spark: targetColorPool[2].spark },
+            { id: 'target-4', colorClass: targetColorPool[0].colorClass, spark: targetColorPool[0].spark }
         ];
 
         const rawGems = targetThemes.map((t) => ({
@@ -350,11 +363,12 @@ class GoldMinerGame {
         const minY = 30;
         const maxY = Math.max(200, height - 40);
 
-        // 3 phân vùng riêng biệt cho 3 khối mục tiêu để luôn dàn trải đều màn hình
+        // 4 phân vùng riêng biệt cho các khối mục tiêu để luôn dàn trải đều màn hình
         const targetSlices = [
-            { minX: minX + 10, maxX: minX + (maxX - minX) * 0.32 },
-            { minX: minX + (maxX - minX) * 0.36, maxX: minX + (maxX - minX) * 0.64 },
-            { minX: minX + (maxX - minX) * 0.68, maxX: maxX - 20 }
+            { minX: minX + 10, maxX: minX + (maxX - minX) * 0.25 },
+            { minX: minX + (maxX - minX) * 0.28, maxX: minX + (maxX - minX) * 0.50 },
+            { minX: minX + (maxX - minX) * 0.53, maxX: minX + (maxX - minX) * 0.75 },
+            { minX: minX + (maxX - minX) * 0.78, maxX: maxX - 20 }
         ];
         targetSlices.sort(() => Math.random() - 0.5);
 
@@ -661,12 +675,117 @@ class GoldMinerGame {
 
                 this.isClawBusy = false;
 
-                // Nếu gắp đủ 3/3 lần -> Chiến Thắng & Mở Màn Tiếp
+                // Nếu gắp đủ 6 lần -> Chiến Thắng & Mở Màn Tiếp
                 if (this.targetGemsCollected >= this.totalRequired) {
                     this.showVictory();
+                } else {
+                    // Đảm bảo luôn có ít nhất 3 khối mục tiêu trôi nổi trên sân cho bé gắp tiếp
+                    const remainingActiveTargets = this.gems.filter(g => g.isTarget && !g.isCollected && !g.isFrozen).length;
+                    if (remainingActiveTargets < 3) {
+                        this.spawnSingleTargetGem();
+                    }
                 }
             }, retractDuration);
         }, extendDuration + 180);
+    }
+
+    /**
+     * Tự động sinh thêm 1 khối mục tiêu khi số lượng trên sân ít hơn 3
+     */
+    spawnSingleTargetGem() {
+        if (!this.playfield || this.isCompleted) return;
+
+        const target = this.currentLevelData?.target || 'A';
+        const isNumber = this.currentLevelData?.targetType === 'number';
+        const targetColorPool = [
+            { colorClass: 'target-gem-gold', spark: '✨' },
+            { colorClass: 'target-gem-ruby', spark: '🌟' },
+            { colorClass: 'target-gem-emerald', spark: '💚' }
+        ];
+        const t = targetColorPool[Math.floor(Math.random() * targetColorPool.length)];
+
+        const size = 96;
+        let width = this.fieldWidth || 1100;
+        let height = this.fieldHeight || 560;
+
+        const minX = 40;
+        const maxX = Math.max(300, width - 40);
+        const minY = 30;
+        const maxY = Math.max(200, height - 40);
+
+        const x = minX + Math.random() * Math.max(10, maxX - minX - size);
+        const y = minY + Math.random() * Math.max(10, maxY - minY - size);
+
+        const speed = 0.32 + Math.random() * 0.28;
+        const angle = Math.random() * Math.PI * 2;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        const rot = (Math.random() * 10 - 5).toFixed(1);
+
+        const gemData = {
+            id: `target-respawn-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            char: target,
+            isTarget: true,
+            isItem: false,
+            isNumber: isNumber,
+            colorClass: t.colorClass,
+            spark: t.spark,
+            size: size
+        };
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('data-id', gemData.id);
+        btn.setAttribute('data-gem', gemData.char);
+        btn.setAttribute('data-target', 'true');
+        btn.className = `gem-block ${gemData.colorClass} animate-pulse-gentle`;
+        btn.style.width = `${size}px`;
+        btn.style.height = `${size}px`;
+        btn.style.left = '0';
+        btn.style.top = '0';
+        btn.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) rotate(${rot}deg)`;
+        btn.style.fontFamily = "'Fredoka', cursive, sans-serif";
+        btn.style.opacity = '0';
+        btn.style.transition = 'opacity 0.4s ease';
+
+        btn.innerHTML = `
+            <div class="jelly-highlight"></div>
+            <div class="gem-corner-rivet gem-corner-tl"></div>
+            <div class="gem-corner-rivet gem-corner-tr"></div>
+            <div class="gem-corner-rivet gem-corner-bl"></div>
+            <div class="gem-corner-rivet gem-corner-br"></div>
+            <span class="text-hero-char">${gemData.char}</span>
+            <div style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; align-items: center; z-index: 5; opacity: 0.22; pointer-events: none;">
+                <span style="width: 5px; height: 3px; background: #ffffff; border-radius: 999px;"></span>
+                <span style="font-size: 10px; font-weight: bold; color: #ffffff;">‿</span>
+                <span style="width: 5px; height: 3px; background: #ffffff; border-radius: 999px;"></span>
+            </div>
+            <span style="position: absolute; top: -6px; right: -4px; font-size: 1.3rem;" class="animate-sparkle">${gemData.spark}</span>
+        `;
+
+        const gemObj = {
+            ...gemData,
+            element: btn,
+            x: x,
+            y: y,
+            vx: vx,
+            vy: vy,
+            rot: parseFloat(rot),
+            isFrozen: false,
+            isCollected: false
+        };
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleGemClick(gemObj);
+        });
+
+        this.playfield.appendChild(btn);
+        this.gems.push(gemObj);
+
+        requestAnimationFrame(() => {
+            btn.style.opacity = '1';
+        });
     }
 
     /**
@@ -686,10 +805,13 @@ class GoldMinerGame {
     }
 
     /**
-     * Cập nhật tiến độ (Đã lược bỏ thanh sao HUD theo yêu cầu để giao diện tinh gọn, không lag)
+     * Cập nhật tiến độ trên trạm mục tiêu
      */
     updateProgressHUD() {
-        // Khối tiến độ được lược bỏ cho gọn nhẹ
+        const progText = document.getElementById('minerProgressText');
+        if (progText) {
+            progText.textContent = `${this.targetGemsCollected} / ${this.totalRequired}`;
+        }
     }
 
     /**
@@ -704,7 +826,7 @@ class GoldMinerGame {
 
         const msgEl = document.getElementById('victoryMessage');
         if (msgEl) {
-            msgEl.innerHTML = `Bé đã xuất sắc gắp đủ <strong>3 khối ${targetType} ${target}</strong>!`;
+            msgEl.innerHTML = `Bé đã xuất sắc gắp đủ <strong>${this.totalRequired} khối ${targetType} ${target}</strong>!`;
         }
 
         const toastEl = document.getElementById('victoryToast');
