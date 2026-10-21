@@ -2,6 +2,9 @@
 @{
     ViewData["Title"] = $"[Xem thử] {Model.Item.Title}";
     ViewData["FocusMode"] = true;
+    // Chỉ bài tô nét mới cần thư viện nét mẫu và bảng vẽ.
+    var needsTracingAssets = Model.Item.InteractionType == InteractionTypes.Tracing;
+    ViewData["NeedsTracingGuides"] = needsTracingAssets;
     var customInteractionTypes = new[]
     {
         InteractionTypes.SingleChoice,
@@ -205,7 +208,8 @@
                 <textarea class="activity-payload" data-activity-payload hidden>@Model.CurrentQuestion.PayloadJson</textarea>
                 <div class="lesson-answer-zone">
                     <div class="lesson-answer-content">
-                        <div class="activity-runtime" data-activity-runtime data-activity-type="@Model.Item.InteractionType"></div>
+                        @* Trang xem trước của quản trị viên giữ nút kiểm tra thủ công để soạn/duyệt nội dung. *@
+                        <div class="activity-runtime" data-activity-runtime data-activity-type="@Model.Item.InteractionType" data-activity-autocheck="false"></div>
                     </div>
                     <button class="app-btn app-btn-wide activity-check-button clay-button" type="submit" disabled data-activity-submit>
                         <span class="material-symbols-outlined">check_circle</span>
@@ -234,7 +238,9 @@
 
 @section Scripts {
     <script src="~/js/learning-voice.js" asp-append-version="true"></script>
-    <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
-    <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
+    @if (needsTracingAssets)
+    {
+        <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
+    }
     <script src="~/js/learning-activities.js" asp-append-version="true"></script>
 }

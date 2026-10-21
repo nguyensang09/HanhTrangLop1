@@ -6,15 +6,8 @@
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
     <main class="admin-main">
-        @if (TempData["SuccessMessage"] is string msg)
-        {
-            <div class="feedback-band success">
-                <span class="material-symbols-outlined">check_circle</span>
-                <strong>@msg</strong>
-            </div>
-        }
-
         <partial name="_AdminHeader" model="@($"Hồ sơ bé {Model.Child.Nickname}")" />
+        <partial name="_AdminFlash" />
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div>

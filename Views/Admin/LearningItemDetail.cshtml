@@ -31,10 +31,7 @@
         </div>
 
     <div class="admin-detail-grid">
-        @if (TempData["AdminMessage"] is string message)
-        {
-            <div class="feedback-band retry"><span class="material-symbols-outlined">warning</span><strong>@message</strong></div>
-        }
+        <partial name="_AdminFlash" />
         @if (!isCompatible)
         {
             <div class="feedback-band retry"><span class="material-symbols-outlined">rule</span><strong>Dạng bài hiện tại không phù hợp với chủ đề. Bài sẽ không xuất hiện trong khu bé học cho tới khi được sửa đúng mẫu.</strong></div>

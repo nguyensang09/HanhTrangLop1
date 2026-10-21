@@ -13,7 +13,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>@ViewData["Title"] - Hành Trang Lớp 1 | Sóc Nâu Đồng Hành</title>
     <script type="importmap"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,26 +45,34 @@
         var isKidsZone = _isKidsZone;
         var isAdminZone = string.Equals(currentController, "Admin", StringComparison.OrdinalIgnoreCase);
 
-        // Lấy thông tin bé đang chọn
+        // Thanh điều hướng chung (nơi duy nhất dùng tới thông tin bé đang chọn) chỉ hiện
+        // ngoài khu bé học, khu quản trị và chế độ tập trung. Trước đây truy vấn hồ sơ bé
+        // chạy ở MỌI request, kể cả các trang không hề hiển thị chip thông tin bé, nên mỗi
+        // lần mở trang bài học hay trang quản trị đều có 1-2 truy vấn hoàn toàn bỏ đi.
+        var showSiteNavigation = !focusMode && !isKidsZone && !isAdminZone;
+
         HanhTrangLop1.Models.ChildProfile? activeChild = null;
-        var selectedRaw = Context.Session.GetString(SessionKeys.SelectedChildProfileId);
-        if (Guid.TryParse(selectedRaw, out var childId))
+        if (showSiteNavigation)
         {
-            activeChild = await Db.ChildProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == childId);
-        }
-        if (activeChild is null)
-        {
-            if (User.Identity?.IsAuthenticated == true)
+            var selectedRaw = Context.Session.GetString(SessionKeys.SelectedChildProfileId);
+            if (Guid.TryParse(selectedRaw, out var childId))
             {
-                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    activeChild = await Db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == userId).OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
-                }
+                activeChild = await Db.ChildProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == childId);
             }
-            else
+            if (activeChild is null)
             {
-                activeChild = await Db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == null).OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        activeChild = await Db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == userId).OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
+                    }
+                }
+                else
+                {
+                    activeChild = await Db.ChildProfiles.AsNoTracking().Where(x => x.ParentUserId == null).OrderBy(x => x.CreatedAt).FirstOrDefaultAsync();
+                }
             }
         }
 
@@ -84,7 +92,7 @@
         }
     }
 
-    @if (!focusMode && !isKidsZone && !isAdminZone)
+    @if (showSiteNavigation)
     {
     <header class="app-site-header">
         <nav class="navbar navbar-expand-lg app-navbar">
@@ -174,7 +182,7 @@
         </main>
     </div>
 
-    @if (!focusMode && !isKidsZone && !isAdminZone)
+    @if (showSiteNavigation)
     {
     <footer class="app-footer">
         <div class="container footer-content">
@@ -192,7 +200,14 @@
     <partial name="_ParentGateModal" />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
+    @* tracing-guides.js (65 KB) chỉ cần cho 3 trang có bảng tô nét, nhưng trước đây được
+       nạp ở MỌI trang, và 2 trang quản trị còn nạp thêm lần nữa trong mục Scripts nên tải
+       và chạy hai lần. Vẫn phải đặt trước site.js vì trình soạn bài tô nét gọi
+       window.tracingGuides ngay lúc site.js khởi tạo. *@
+    @if (ViewData["NeedsTracingGuides"] as bool? == true)
+    {
+        <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
+    }
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

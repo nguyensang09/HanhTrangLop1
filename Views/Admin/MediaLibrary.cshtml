@@ -23,10 +23,7 @@
             </div>
         </div>
 
-        @if (TempData["AdminMessage"] is string message)
-        {
-            <div class="feedback-band success"><span class="material-symbols-outlined">info</span>@message</div>
-        }
+        <partial name="_AdminFlash" />
 
         <datalist id="media-category-options">
             @foreach (var item in Model.Categories)

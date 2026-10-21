@@ -7,20 +7,7 @@
     <partial name="_AdminSidebar" />
     <main class="admin-main">
         <partial name="_AdminHeader" model='ViewData["Title"]' />
-        @if (TempData["SuccessMessage"] is string msg)
-        {
-            <div class="feedback-band success">
-                <span class="material-symbols-outlined">check_circle</span>
-                <strong>@msg</strong>
-            </div>
-        }
-        @if (TempData["ErrorMessage"] is string errMsg)
-        {
-            <div class="feedback-band error">
-                <span class="material-symbols-outlined">error</span>
-                <strong>@errMsg</strong>
-            </div>
-        }
+        <partial name="_AdminFlash" />
 
         <div class="dashboard-header">
             <div>

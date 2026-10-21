@@ -177,6 +177,7 @@
         <script type="application/json" data-voice-cache-json>@Html.Raw(voiceCacheJson)</script>
         <script type="application/json" data-image-assets-json>@Html.Raw(imageAssetsJson)</script>
         <partial name="_AdminHeader" model="@(isEdit ? "Sửa bài học" : "Tạo bài học mới")" />
+        <partial name="_AdminFlash" />
 
         <!-- 1. Thanh điều hướng & Thao tác chính gọn gàng (Đã loại bỏ các nút thừa) -->
         <div class="activity-header-toolbar">
@@ -213,6 +214,13 @@
                         </button>
                     </form>
 
+                    <form asp-action="DuplicateLearningItem" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        <button class="dash-btn dash-btn-outline" type="submit" title="Tạo một bản nháp giống bài này để dùng làm mẫu và sửa nhanh">
+                            <span class="material-symbols-outlined">content_copy</span>
+                            <span>Nhân bản</span>
+                        </button>
+                    </form>
+
                     <form asp-action="DeleteLearningItem" asp-route-id="@Model.Id" method="post" data-confirm-delete class="d-inline">
                         <button class="dash-btn dash-btn-outline btn-action-delete" type="submit" title="Xóa bài học này">
                             <span class="material-symbols-outlined">delete</span>
@@ -230,7 +238,7 @@
         </div>
 
         <!-- 2. Form Trình tạo bài học (Bố cục 2 cột cân đối, Live Preview luôn ghim cố định) -->
-        <form id="activity-builder-form" class="activity-builder-2col-layout" asp-action="CreateChoice" method="post" enctype="multipart/form-data" data-admin-learning-form data-activity-builder>
+        <form id="activity-builder-form" class="activity-builder-2col-layout" asp-action="CreateChoice" method="post" enctype="multipart/form-data" data-admin-learning-form data-activity-builder data-lesson-draft>
             <!-- Các trường dữ liệu ẩn & mặc định hệ thống -->
             <input asp-for="Id" type="hidden" />
             <input asp-for="IsCompatible" type="hidden" />
@@ -351,9 +359,13 @@
 
                         <div class="activity-field-group mb-0">
                             <label asp-for="Status">Trạng thái bài học</label>
+                            @* Liệt kê đủ 4 trạng thái: nếu thiếu, bài đang ở "Chờ duyệt" hoặc "Lưu trữ"
+                               sẽ không có option tương ứng và bị đổi trạng thái ngoài ý muốn khi lưu. *@
                             <select asp-for="Status" class="form-control">
                                 <option value="@ContentStatus.Published">Xuất bản (Bé thấy bài)</option>
                                 <option value="@ContentStatus.Draft">Bản nháp (Đang soạn)</option>
+                                <option value="@ContentStatus.Review">Chờ duyệt</option>
+                                <option value="@ContentStatus.Archived">Lưu trữ (Bé không thấy bài)</option>
                             </select>
                         </div>
                     </div>
@@ -570,4 +582,6 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @* Nạp sau site.js để trình soạn bài đã khởi tạo xong trước khi phục hồi bản nháp. *@
+    <script src="~/js/admin-lesson-draft.js" asp-append-version="true"></script>
 }

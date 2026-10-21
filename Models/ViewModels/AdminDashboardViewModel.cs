@@ -119,7 +119,9 @@ public class EditLearningItemViewModel
 public class CreateTracingItemViewModel
 {
     public Guid? Id { get; set; }
-    public string Status { get; set; } = ContentStatus.Draft;
+
+    // Xem ghi chú cùng nội dung ở CreateChoiceItemViewModel.Status.
+    public string? Status { get; set; }
     public bool IsCompatible { get; set; } = true;
 
     [Range(0, 100000, ErrorMessage = "Thứ tự bài học phải từ 0 đến 100000.")]
@@ -160,13 +162,6 @@ public class CreateTracingItemViewModel
 
     [Range(1, 3, ErrorMessage = "Độ khó phải từ 1 đến 3.")]
     public byte Level { get; set; } = 1;
-}
-
-public class LearningItemWorkflowViewModel
-{
-    public Guid Id { get; set; }
-    public string Status { get; set; } = ContentStatus.Draft;
-    public bool IsCompatible { get; set; } = true;
 }
 
 public class AdminCatalogViewModel

@@ -4190,6 +4190,32 @@ a {
   border: 1.5px solid #fecaca;
 }
 
+/* Mức cảnh báo dùng chung cho băng thông báo quản trị: trước đây chỉ có biến thể
+   ".retry" từ khu bé học nên băng cảnh báo trong Admin lệch hẳn bo góc và cỡ chữ
+   so với băng thành công / lỗi. */
+.feedback-band.warning {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1.5px solid #fde68a;
+}
+
+/* Dải đề nghị phục hồi bản đang soạn của trình tạo bài học. */
+.lesson-draft-band {
+  flex-wrap: wrap;
+}
+
+.lesson-draft-band .lesson-draft-text {
+  flex: 1 1 260px;
+  font-weight: 700;
+}
+
+.lesson-draft-band .lesson-draft-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .voice-filter {
   display: flex;
   flex-wrap: wrap;
@@ -9107,7 +9133,54 @@ body.focus-mode-active,
   border-radius: inherit;
   background: var(--success-primary);
   transform-origin: left;
-  animation: successTimer 1s linear forwards;
+  /* Thời lượng do learning-success.js đặt qua --success-timer-duration để thanh chạy
+     khớp đúng với lúc trang tự chuyển bài; giá trị dưới chỉ là mức dự phòng. */
+  animation: successTimer var(--success-timer-duration, 1.5s) linear forwards;
+}
+
+/* Thẻ "mở khóa rương quà" nằm trong màn chúc mừng. Trước đây thông báo này hiện thành
+   một băng riêng phía trên bảng làm bài, bị lớp phủ chúc mừng che và bị cuốn đi khi
+   trang tự chuyển bài, nên bé gần như không bao giờ thấy phần thưởng vừa mở được. */
+.learning-success-milestone {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  margin: 0 auto 14px;
+  padding: 10px 16px;
+  border: 2px dashed color-mix(in srgb, var(--success-primary) 45%, #fff);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--success-secondary) 22%, #fff);
+  color: #7c2d12;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.learning-success-milestone:hover,
+.learning-success-milestone:focus-visible {
+  border-style: solid;
+  background: color-mix(in srgb, var(--success-secondary) 34%, #fff);
+  color: #7c2d12;
+}
+
+.learning-success-milestone .material-symbols-outlined {
+  color: var(--success-primary);
+  font-size: 1.5rem;
+}
+
+.learning-success-milestone-cta {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--success-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .learning-success-popup > small {
@@ -17188,8 +17261,9 @@ body.audio-is-speaking .sound-wave-badge {
    -------------------------------------------------------------------------- */
 
 /* NhÃ³m 2: MÃY TÃNH Báº¢NG (TABLET LENOVO IDEATAB 2.5K 16:10 / 768px - 1440px) */
-@@media (min-width: 768px) and (max-width: 1440px) {
-  /* Admin Sidebar: Tá»± Ä‘á»™ng co nhá» thÃ nh cá»™t icon 64px */
+/* Sidebar quan tri chi thu gon thanh cot icon tren thiet bi cam ung,
+   de laptop rong 768-1440px van giu nguyen sidebar day du nhu truoc. */
+@media (min-width: 768px) and (max-width: 1440px) and (pointer: coarse) {
   .admin-layout {
     grid-template-columns: 64px 1fr !important;
   }
@@ -17216,33 +17290,36 @@ body.audio-is-speaking .sound-wave-badge {
     width: 44px !important;
     height: 44px !important;
   }
+}
 
-  /* Child Zone: Fixed 2x4 khÃ´ng cuá»™n */
+/* Vung hoc cua be: dung dvh de khop vung hien thi thuc cua trinh duyet iPad,
+   va luon cho cuon neu noi dung cao hon de khong bao gio bi cat mat the/nut. */
+@media (min-width: 768px) and (max-width: 1440px) {
   .child-zone-shell {
-    height: 100vh;
-    max-height: 100vh;
-    overflow: hidden;
+    min-height: 100dvh;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .child-zone-main {
-    height: calc(100vh - 120px);
-    overflow: hidden;
+    min-height: calc(100dvh - 120px);
+    overflow: visible;
     padding-bottom: 90px;
   }
 
   .child-cards-grid {
-    min-height: calc(100vh - 240px);
-    height: 100%;
+    min-height: calc(100dvh - 240px);
+    height: auto;
   }
 
-  /* Parent Zone: 7:3 cá»‘ Ä‘á»‹nh */
   .parent-portal-layout {
     grid-template-columns: 7fr 3fr;
   }
 }
 
 /* NhÃ³m 1: ÄIá»†N THOáº I (MOBILE < 768px) */
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
   /* Child Zone: Chuyá»ƒn sang 1 cá»™t cuá»™n dá»c */
   .child-zone-header {
     padding: 10px 14px;
@@ -17408,7 +17485,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* NhÃ³m 3: PC / WEB LAPTOP (> 1440px) */
-@@media (min-width: 1441px) {
+@media (min-width: 1441px) {
   .child-zone-main {
     max-width: 1440px;
     margin: 0 auto;
@@ -17426,22 +17503,22 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* Keyframe animations */
-@@keyframes starPulse {
+@keyframes starPulse {
   0%, 100% { transform: scale(1) rotate(0deg); }
   50% { transform: scale(1.15) rotate(6deg); }
 }
 
-@@keyframes childFadeIn {
+@keyframes childFadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@@keyframes gatePopIn {
+@keyframes gatePopIn {
   from { opacity: 0; transform: scale(0.92); }
   to { opacity: 1; transform: scale(1); }
 }
 
-@@keyframes gateShake {
+@keyframes gateShake {
   10%, 90% { transform: translate3d(-2px, 0, 0); }
   20%, 80% { transform: translate3d(4px, 0, 0); }
   30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
@@ -17765,7 +17842,7 @@ body.audio-is-speaking .sound-wave-badge {
 }
 
 /* Responsive tweaks */
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
   .parent-profiles-grid {
     grid-template-columns: 1fr;
   }
@@ -17892,7 +17969,7 @@ body.audio-is-speaking .sound-wave-badge {
   transform: scale(1.1) translateY(-4px);
 }
 
-@@media (min-width: 768px) {
+@media (min-width: 768px) {
   .adventure-station .station-circle {
     width: 96px;
     height: 96px;
@@ -17918,7 +17995,7 @@ body.audio-is-speaking .sound-wave-badge {
   }
 }
 
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
   .child-back-home-btn {
     width: 52px;
     height: 52px;
@@ -22746,6 +22823,287 @@ body:has(.ipad-home-hub-screen) main {
   font-weight: 800 !important;
 }
 
+/* ==========================================================================
+   AUTO-CHECK & RESPONSIVE LANDSCAPE (iPad 2560x1600 va man hinh ngang)
+   Bo sung cuoi tep de co uu tien cao nhat, khong sua cac quy tac dang chay.
+   ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   1. Bang bao trang thai tu dong kiem tra (thay cho nut Kiem tra dap an)
+   -------------------------------------------------------------------------- */
+.activity-autocheck {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 16px;
+  border: 2px solid #bbf7d0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
 
+.activity-autocheck[hidden] {
+  display: none;
+}
 
+.activity-autocheck.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.activity-autocheck-icon {
+  color: #059669;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.activity-autocheck-text {
+  flex: 1 1 140px;
+  min-width: 0;
+  color: #047857;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.activity-autocheck-bar {
+  display: block;
+  flex: 1 1 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d1fae5;
+}
+
+.activity-autocheck-bar > span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34d399 0%, #059669 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-autocheck {
+    transition: none;
+  }
+
+  .activity-autocheck-bar > span {
+    transition: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Vung an toan cua thiet bi (tai tho iPad / dieu huong cam ung)
+   -------------------------------------------------------------------------- */
+body.focus-mode-active .learning-focus-shell {
+  padding-left: max(12px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+}
+
+/* --------------------------------------------------------------------------
+   3. MAN HINH NGANG (LANDSCAPE) cho bai hoc thuong
+   Chieu cao kha dung thap nen phai thu nho o dem va gioi han chieu cao anh,
+   tuyet doi khong de nut hoac noi dung nam ngoai vung hien thi.
+   -------------------------------------------------------------------------- */
+@media (orientation: landscape) and (max-height: 900px) {
+  .learning-focus-shell:not(:has(.interaction-tracing)) {
+    width: min(1180px, 100%);
+    padding-top: 8px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .learning-focus-shell:not(:has(.interaction-tracing)) .learning-common-zone {
+    margin-bottom: 8px !important;
+  }
+
+  .learning-focus-shell:not(:has(.interaction-tracing)) .learning-focus-topbar {
+    padding: 4px 12px !important;
+  }
+
+  .learning-focus-shell .learning-focus-topbar .learning-back-btn,
+  .learning-focus-shell .learning-focus-topbar .learning-voice-button,
+  .learning-focus-shell .learning-focus-topbar .tracing-demo {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Hinh minh hoa khong duoc chiem het chieu cao, neu khong luoi dap an bi day
+     xuong duoi man hinh va be khong thay cac o lua chon. */
+  .learning-focus-shell .lesson-support-image,
+  .learning-focus-shell .story-image {
+    max-height: 32vh !important;
+  }
+
+  .learning-focus-shell .activity-option-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .learning-focus-shell .activity-option,
+  .learning-focus-shell .activity-drop-zone,
+  .learning-focus-shell .activity-audio-button {
+    min-height: 84px !important;
+  }
+
+  .learning-focus-shell .ordering-row {
+    min-height: 60px !important;
+  }
+
+  .activity-autocheck {
+    margin-top: 10px;
+    padding: 8px 14px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. MAN HINH NGANG cho bai tap to (tracing)
+   Truoc day chi co quy tac cho portrait, nen o landscape phan chrome thuc te
+   (topbar + dong trang thai + thanh dieu khien + nut Hoan thanh) cao hon muc
+   du tru 145px, lam thanh duoi bi day ra ngoai khung overflow hidden,
+   dan den be khong nhin thay nut Hoan thanh bai to.
+   -------------------------------------------------------------------------- */
+.learning-focus-shell:has(.interaction-tracing) {
+  --tracing-chrome: 150px;
+}
+
+/* Chot chan: bang ve luon bi gioi han theo chieu cao con lai, nen thanh dieu
+   khien va nut Hoan thanh bai to khong bao gio bi cat du tinh toan co lech. */
+.learning-focus-shell:has(.interaction-tracing) .tracing-board.tracing-canvas-host {
+  /* Gioi han theo CHIEU RONG suy ra tu chieu cao con lai (khong dung max-height):
+     aspect-ratio chi tinh canh con lai tu canh da biet, nen cap max-height se lam
+     bang ve bi bop meo va net to lech so voi net mau. */
+  max-width: min(100%, calc((100dvh - var(--tracing-chrome)) * (920 / 1200))) !important;
+  /* Khong cho flex co lai chieu cao (se lam lech ty le 920:1200); kich thuoc da
+     duoc chan bang max-width nen bang ve chac chan vua khung. */
+  flex: 0 0 auto !important;
+}
+
+.learning-focus-shell:has(.interaction-tracing) .tracing-submit-form {
+  flex: 0 0 auto !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+
+@media (orientation: landscape) {
+  .learning-focus-shell:has(.interaction-tracing) {
+    --tracing-chrome: 172px;
+    --tracing-stage-w: min(92vw, calc((100dvh - 172px) * (920 / 1200))) !important;
+    padding: 6px 12px 8px !important;
+  }
+
+  html.is-touch-device .learning-focus-shell:has(.interaction-tracing),
+  body.is-touch-device.focus-mode-active:has(.interaction-tracing) .learning-focus-shell {
+    --tracing-stage-w: min(92vw, calc((100dvh - 172px) * (920 / 1200))) !important;
+    justify-content: flex-start !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-common-zone {
+    margin-bottom: 4px !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar {
+    min-height: 46px !important;
+    padding: 4px 14px !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar h1 {
+    font-size: 1.04rem !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-back-btn,
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .learning-voice-button,
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar .tracing-demo {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .tracing-board.tracing-canvas-host {
+    margin: 0 auto 4px !important;
+  }
+
+  .tracing-status {
+    min-height: 18px !important;
+    font-size: 0.86rem !important;
+  }
+
+  .tracing-controls-bar .clay-button {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .tracing-submit-button {
+    min-height: 44px !important;
+    padding: 8px 20px !important;
+    font-size: 0.98rem !important;
+  }
+}
+
+/* iPad 2.5K xoay ngang: con nhieu khong gian ngang nen tang kich thuoc chu va
+   nut cho de bam, nhung van giu tran chieu cao de khong che khuat thanh duoi. */
+@media (orientation: landscape) and (min-width: 1024px) and (min-height: 700px) {
+  .learning-focus-shell:has(.interaction-tracing) {
+    --tracing-chrome: 184px;
+    --tracing-stage-w: min(70vw, calc((100dvh - 184px) * (920 / 1200))) !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar {
+    min-height: 54px !important;
+  }
+
+  .learning-focus-shell:has(.interaction-tracing) .learning-focus-topbar h1 {
+    font-size: 1.22rem !important;
+  }
+
+  .tracing-controls-bar .clay-button {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .tracing-submit-button {
+    min-height: 52px !important;
+    font-size: 1.08rem !important;
+    padding: 8px 26px !important;
+  }
+
+  .tracing-status {
+    font-size: 0.96rem !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. Popup chuc mung: luon vua man hinh ngang, nut sang bai tiep theo phai
+   nhin thay va bam duoc o moi do cao man hinh.
+   -------------------------------------------------------------------------- */
+.learning-success-overlay {
+  padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+
+.learning-success-popup {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+}
+
+@media (orientation: landscape) and (max-height: 820px) {
+  .learning-success-popup {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .learning-success-mascot {
+    max-height: 22vh;
+  }
+
+  .learning-success-popup h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .learning-success-decorations {
+    display: none !important;
+  }
+}

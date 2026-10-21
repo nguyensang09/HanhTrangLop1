@@ -1579,6 +1579,47 @@ public sealed class VoiceLibraryMaintenanceService
         return true;
     }
 
+    /// <summary>
+    /// Kiểm tra nhanh xem còn câu hỏi nào chưa được gắn đúng audio phản hồi chuẩn hay không.
+    /// Chỉ đếm trên SQL (không nạp entity) và có timeout ngắn riêng, để bước bảo trì giọng đọc
+    /// không bao giờ làm chậm hoặc chặn quá trình khởi động ứng dụng.
+    /// </summary>
+    private async Task<bool> HasStaleStandardFeedbackPayloadAsync(
+        string textVi,
+        string correctAudioUrl,
+        string correctAudioUrlEn,
+        CancellationToken cancellationToken)
+    {
+        var previousTimeout = _db.Database.GetCommandTimeout();
+        try
+        {
+            _db.Database.SetCommandTimeout(Math.Max(1, _configuration.GetValue("VoiceMaintenance:StartupProbeTimeoutSeconds", 10)));
+
+            var staleCount = await _db.Database
+                .SqlQuery<int>($"""
+                    SELECT TOP (1) 1 AS [Value]
+                    FROM [Questions] AS [q]
+                    WHERE [q].[FeedbackJson] LIKE {"%" + textVi + "%"}
+                      AND (ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctSpeechText'), N'') <> {textVi}
+                        OR ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctAudioUrl'), N'') <> {correctAudioUrl}
+                        OR ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctAudioUrlEn'), N'') <> {correctAudioUrlEn})
+                    """)
+                .ToListAsync(cancellationToken);
+
+            return staleCount.Count > 0;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Không chặn khởi động vì một bước tối ưu giọng đọc: bỏ qua lần này và thử lại sau.
+            _logger.LogWarning(ex, "Bỏ qua đồng bộ audio phản hồi chuẩn vì không kiểm tra được trạng thái dữ liệu.");
+            return false;
+        }
+        finally
+        {
+            _db.Database.SetCommandTimeout(previousTimeout);
+        }
+    }
+
     public async Task EnsureStandardCorrectFeedbackVoiceAsync(CancellationToken cancellationToken = default)
     {
         const string textVi = "Giỏi lắm";
@@ -1627,37 +1668,76 @@ public sealed class VoiceLibraryMaintenanceService
         await _db.SaveChangesAsync(cancellationToken);
         InvalidateVoiceLookupCache();
 
-        var lessons = await _db.LearningItems
-            .Include(x => x.Questions.OrderBy(q => q.SortOrder))
-            .Where(x => x.Questions.Any(q => q.FeedbackJson.Contains(textVi)))
-            .ToListAsync(cancellationToken);
-        foreach (var lesson in lessons)
+        // Phần bên dưới đồng bộ đường dẫn audio chuẩn vào payload của mọi bài học có
+        // phản hồi "Giỏi lắm". Việc này chỉ cần làm lại khi file voice chuẩn thay đổi,
+        // nên phải kiểm tra trước bằng một truy vấn đếm rẻ tiền. Trước đây bước này nạp
+        // toàn bộ bài học + câu hỏi và ghi lại ở MỌI lần khởi động, khiến hệ thống khởi
+        // động chậm và timeout (30s) nếu CSDL đang bận.
+        var correctAudioUrl = HasVoiceFile(entry.AudioUrl) ? entry.AudioUrl ?? string.Empty : string.Empty;
+        var correctAudioUrlEn = HasVoiceFile(entry.AudioUrlEn) ? entry.AudioUrlEn ?? string.Empty : string.Empty;
+        if (!await HasStaleStandardFeedbackPayloadAsync(textVi, correctAudioUrl, correctAudioUrlEn, cancellationToken))
         {
-            var lessonChanged = false;
-            var firstQuestion = lesson.Questions.OrderBy(q => q.SortOrder).FirstOrDefault();
-            foreach (var question in lesson.Questions.Where(q => q.FeedbackJson.Contains(textVi)))
-            {
-                var payload = ParsePayloadObject(question.PayloadJson);
-                payload["correctSpeechText"] = textVi;
-                payload["correctAudioUrl"] = HasVoiceFile(entry.AudioUrl) ? entry.AudioUrl : string.Empty;
-                payload["correctAudioUrlEn"] = HasVoiceFile(entry.AudioUrlEn) ? entry.AudioUrlEn : string.Empty;
-                var payloadJson = payload.ToJsonString();
-                if (!string.Equals(question.PayloadJson, payloadJson, StringComparison.Ordinal))
-                {
-                    question.PayloadJson = payloadJson;
-                    lessonChanged = true;
-                }
-
-                if (question == firstQuestion && !string.Equals(lesson.ContentJson, payloadJson, StringComparison.Ordinal))
-                {
-                    lesson.ContentJson = payloadJson;
-                    lessonChanged = true;
-                }
-            }
-            if (lessonChanged) lesson.UpdatedAt = DateTimeOffset.UtcNow;
+            return;
         }
 
-        if (lessons.Count > 0) await _db.SaveChangesAsync(cancellationToken);
+        // Cap nhat theo lo bang SQL thay vi nap toan bo bai hoc vao bo nho:
+        // chi dung mot luot quet cho moi cau lenh, chi ghi dung nhung dong con lech,
+        // va khong tao ra hang nghin entity trong ChangeTracker khi khoi dong.
+        var pattern = "%" + textVi + "%";
+        var changedAt = DateTimeOffset.UtcNow;
+
+        // (1) Danh dau bai hoc sap thay doi de giu nguyen y nghia cua truong UpdatedAt.
+        await _db.Database.ExecuteSqlAsync($"""
+            UPDATE [li]
+            SET [li].[UpdatedAt] = {changedAt}
+            FROM [LearningItems] AS [li]
+            WHERE EXISTS (
+                SELECT 1 FROM [Questions] AS [q]
+                WHERE [q].[LearningItemId] = [li].[Id]
+                  AND [q].[FeedbackJson] LIKE {pattern}
+                  AND ISJSON([q].[PayloadJson]) = 1
+                  AND (ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctSpeechText'), N'') <> {textVi}
+                    OR ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctAudioUrl'), N'') <> {correctAudioUrl}
+                    OR ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctAudioUrlEn'), N'') <> {correctAudioUrlEn}))
+            """, cancellationToken);
+
+        // (2) Gan audio phan hoi chuan vao payload cua tung cau hoi con lech.
+        var updatedQuestions = await _db.Database.ExecuteSqlAsync($"""
+            UPDATE [q]
+            SET [q].[PayloadJson] = JSON_MODIFY(
+                    JSON_MODIFY(
+                        JSON_MODIFY([q].[PayloadJson], '$.correctSpeechText', {textVi}),
+                        '$.correctAudioUrl', {correctAudioUrl}),
+                    '$.correctAudioUrlEn', {correctAudioUrlEn})
+            FROM [Questions] AS [q]
+            WHERE [q].[FeedbackJson] LIKE {pattern}
+              AND ISJSON([q].[PayloadJson]) = 1
+              AND (ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctSpeechText'), N'') <> {textVi}
+                OR ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctAudioUrl'), N'') <> {correctAudioUrl}
+                OR ISNULL(JSON_VALUE([q].[PayloadJson], '$.correctAudioUrlEn'), N'') <> {correctAudioUrlEn})
+            """, cancellationToken);
+
+        // (3) Dong bo ContentJson cua bai hoc theo payload cau hoi dau tien, dung nhu
+        //     hanh vi cu (chi khi cau hoi dau tien thuoc nhom co phan hoi chuan).
+        await _db.Database.ExecuteSqlAsync($"""
+            UPDATE [li]
+            SET [li].[ContentJson] = [fq].[PayloadJson]
+            FROM [LearningItems] AS [li]
+            CROSS APPLY (
+                SELECT TOP (1) [q2].[PayloadJson], [q2].[FeedbackJson]
+                FROM [Questions] AS [q2]
+                WHERE [q2].[LearningItemId] = [li].[Id]
+                ORDER BY [q2].[SortOrder], [q2].[Id]
+            ) AS [fq]
+            WHERE [fq].[FeedbackJson] LIKE {pattern}
+              AND [li].[ContentJson] <> [fq].[PayloadJson]
+            """, cancellationToken);
+
+        if (updatedQuestions > 0)
+        {
+            _logger.LogInformation(
+                "Da dong bo audio phan hoi chuan cho {Count} cau hoi.", updatedQuestions);
+        }
     }
 
     public async Task<TextToSpeechCache?> EnsureVoiceEntryAsync(string? text, string usageType, string? lessonTitle = null, CancellationToken cancellationToken = default)

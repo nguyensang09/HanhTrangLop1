@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = Model.Item.Title;
     ViewData["FocusMode"] = true;
+    // Bài chọn đáp án không dùng bảng tô nét, nên không nạp thư viện nét mẫu (65 KB) và
+    // bảng vẽ cho những bài đó nữa.
+    var needsTracingAssets = Model.Item.InteractionType == InteractionTypes.Tracing;
+    ViewData["NeedsTracingGuides"] = needsTracingAssets;
     var customInteractionTypes = new[]
     {
         InteractionTypes.SingleChoice,
@@ -59,6 +63,24 @@
             successActionText = "Về bản đồ bài học";
         }
     }
+
+    // Không bao giờ để trống đích đến: luôn có đường về bản đồ bài học
+    // để bé chắc chắn chuyển tiếp được sau khi hoàn thành bài.
+    if (Model.IsCorrect == true && string.IsNullOrWhiteSpace(successDestination))
+    {
+        successDestination = Url.Action("Today", "Kids") ?? "/kids/today";
+    }
+
+    // Lời khen do giáo viên soạn luôn được ưu tiên. Chỉ khi bài học không có lời khen
+    // riêng thì màn chúc mừng mới tự lấy một câu động viên trong bộ câu có sẵn, nhờ đó
+    // bé không phải đọc đúng một câu giống nhau sau mọi bài.
+    var successFeedback = Model.FeedbackMessage?.Trim();
+    var hasTeacherFeedback = !string.IsNullOrWhiteSpace(successFeedback);
+
+    // Mở khóa rương quà là việc bé cần tự quyết định (mở quà ngay hay học tiếp), nên
+    // riêng trường hợp này màn chúc mừng dừng lại chờ bé bấm thay vì tự chuyển bài.
+    var milestoneMessage = TempData["MilestoneMessage"] as string;
+    var hasMilestone = !string.IsNullOrWhiteSpace(milestoneMessage);
 }
 
 <section class="learn-screen learning-focus-shell"
@@ -83,16 +105,7 @@
          data-tracing-audio-url-en="@Model.TracingAudioUrlEn"
          data-feedback-text="@Model.FeedbackMessage"
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
-    @if (TempData["MilestoneMessage"] is string milestoneMessage)
-    {
-        <div class="reward-success-notice clay-card" role="status">
-            <span class="material-symbols-outlined">redeem</span>
-            <strong>@milestoneMessage</strong>
-            <a asp-controller="Kids" asp-action="Rewards">Mở quà</a>
-        </div>
-    }
-    
-    <textarea class="activity-payload" data-activity-payload hidden>@(Model.CurrentQuestion?.PayloadJson ?? "{}")</textarea>
+    <textarea class="activity-payload" data-activity-payload hidden>@Model.PayloadJson</textarea>
 
     <!-- Topbar Focus Mode (1 Tiêu đề chính + Nút nghe / Nút xem mẫu góc phải) -->
     <header class="learning-common-zone">
@@ -126,7 +139,7 @@
 
     @if (Model.IsCorrect == true)
     {
-        <div class="learning-success-overlay" data-learning-success-popup data-destination="@successDestination" role="dialog" aria-modal="true" aria-labelledby="learning-success-title">
+        <div class="learning-success-overlay" data-learning-success-popup data-destination="@successDestination" data-hold="@(hasMilestone ? "true" : "false")" role="dialog" aria-modal="true" aria-labelledby="learning-success-title">
             <div class="learning-success-popup" role="document">
                 <button class="learning-success-close clay-button" type="button" data-success-close aria-label="Đóng và chuyển bài">
                     <span class="material-symbols-outlined">close</span>
@@ -141,20 +154,34 @@
                     <img src="~/images/avatars/avatar-squirrel.png" alt="Nhân vật chúc mừng" class="learning-success-mascot" data-success-mascot />
                     <span class="learning-success-badge material-symbols-outlined" aria-hidden="true">stars</span>
                 </div>
-                <h2 id="learning-success-title">Xuất sắc quá! 🎉</h2>
-                <p>@(string.IsNullOrWhiteSpace(Model.FeedbackMessage) ? "Giỏi lắm" : Model.FeedbackMessage)</p>
+                <h2 id="learning-success-title" data-success-title>Xuất sắc quá! 🎉</h2>
+                <p data-success-message data-vary-message="@(hasTeacherFeedback ? "false" : "true")">@(hasTeacherFeedback ? successFeedback : "Giỏi lắm")</p>
+                @if (hasMilestone)
+                {
+                    <a class="learning-success-milestone" asp-controller="Kids" asp-action="Rewards">
+                        <span class="material-symbols-outlined">redeem</span>
+                        <strong>@milestoneMessage</strong>
+                        <span class="learning-success-milestone-cta">Mở quà</span>
+                    </a>
+                }
                 <a class="app-btn clay-button learning-success-continue" href="@successDestination" data-success-continue>
                     <span>@successActionText</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
-                <div class="learning-success-timer" aria-hidden="true"><span></span></div>
-                @* <small>Tự động chuyển sau 1 giây</small> *@
+                @if (!hasMilestone)
+                {
+                    <div class="learning-success-timer" aria-hidden="true"><span></span></div>
+                }
             </div>
         </div>
     }
 
 
-    @if (Model.Item.InteractionType == InteractionTypes.Tracing)
+    @* Khi bé đã làm đúng, không render lại bảng làm bài phía dưới màn chúc mừng nữa.
+       Trước đây bảng vẫn còn sống bên dưới lớp phủ, nên nếu JavaScript gặp sự cố bé có
+       thể bấm nộp thêm một lần và tạo ra lượt làm bài trùng. Trang xem thử của quản trị
+       viên vốn đã chặn theo cách này; khu bé học giờ làm giống để hai bên nhất quán. *@
+    @if (Model.IsCorrect != true && Model.Item.InteractionType == InteractionTypes.Tracing)
     {
         <div class="choice-board tracing-lesson-layout interaction-tracing">
             <div class="lesson-answer-zone tracing-answer-zone">
@@ -189,9 +216,9 @@
             </div>
         </div>
     }
-    else if (Model.CurrentQuestion is not null)
+    else if (Model.IsCorrect != true && Model.CurrentQuestion is not null)
     {
-        <form class="choice-board interaction-@Model.Item.InteractionType" asp-controller="Kids" asp-action="Answer" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" method="post">
+        <form class="choice-board interaction-@Model.Item.InteractionType" asp-controller="Kids" asp-action="Answer" asp-route-id="@Model.Item.Id" asp-route-skillGroupId="@Model.ReturnSkillGroupId" asp-route-fromTracing="@Model.FromTracing" method="post">
             <input type="hidden" name="QuestionId" value="@Model.CurrentQuestion.Id" />
             @if (!string.IsNullOrWhiteSpace(Model.QuestionImageUrl))
             {
@@ -202,15 +229,16 @@
             @if (customInteractionTypes.Contains(Model.Item.InteractionType))
             {
                 <input type="hidden" name="AnswerValue" data-activity-answer />
-                <textarea class="activity-payload" data-activity-payload hidden>@Model.CurrentQuestion.PayloadJson</textarea>
                 <div class="lesson-answer-zone">
                     <div class="lesson-answer-content">
                         <div class="activity-runtime" data-activity-runtime data-activity-type="@Model.Item.InteractionType"></div>
                     </div>
-                    <button class="app-btn app-btn-wide activity-check-button clay-button" type="submit" disabled data-activity-submit>
-                        <span class="material-symbols-outlined">check_circle</span>
-                        <span>Kiểm tra đáp án</span>
-                    </button>
+                    @* Bé trả lời xong là hệ thống tự kiểm tra; vùng này chỉ báo trạng thái, không cần bé bấm thêm. *@
+                    <div class="activity-autocheck" data-activity-autocheck-status role="status" aria-live="polite" hidden>
+                        <span class="material-symbols-outlined activity-autocheck-icon">auto_awesome</span>
+                        <span class="activity-autocheck-text" data-activity-autocheck-text>Cô đang kiểm tra bài của bé nhé...</span>
+                        <span class="activity-autocheck-bar" aria-hidden="true"><span data-activity-autocheck-progress></span></span>
+                    </div>
                 </div>
             }
             else
@@ -234,8 +262,14 @@
 
 @section Scripts {
     <script src="~/js/learning-voice.js" asp-append-version="true"></script>
-    <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
-    <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
+    @if (needsTracingAssets)
+    {
+        <script src="~/js/tracing-canvas.js" asp-append-version="true"></script>
+    }
     <script src="~/js/learning-activities.js" asp-append-version="true"></script>
-    <script src="~/js/learning-success.js" asp-append-version="true"></script>
+    @if (Model.IsCorrect == true)
+    {
+        @* Chỉ màn hoàn thành bài mới cần đoạn mã của màn chúc mừng. *@
+        <script src="~/js/learning-success.js" asp-append-version="true"></script>
+    }
 }

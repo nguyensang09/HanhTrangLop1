@@ -35,8 +35,21 @@ public static class SeedDataInitializer
         var rewardProgression = scope.ServiceProvider.GetRequiredService<RewardProgressionService>();
         await rewardProgression.EnsureBackfilledMilestoneGrantsAsync();
 
-        var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
-        await voiceLibrary.EnsureStandardCorrectFeedbackVoiceAsync();
+        // Bảo trì thư viện giọng đọc là bước tối ưu, KHÔNG bắt buộc để hệ thống chạy.
+        // Nếu CSDL bận hoặc bước này lỗi thì chỉ ghi cảnh báo, tuyệt đối không được làm
+        // ứng dụng không khởi động được.
+        if (configuration.GetValue("VoiceMaintenance:RunStandardFeedbackBackfillOnStartup", true))
+        {
+            try
+            {
+                var voiceLibrary = scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>();
+                await voiceLibrary.EnsureStandardCorrectFeedbackVoiceAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Bỏ qua bước đồng bộ giọng đọc phản hồi chuẩn khi khởi động.");
+            }
+        }
     }
 
     private static async Task EnsureMigrationHistoryForLegacyDatabaseAsync(ApplicationDbContext db)

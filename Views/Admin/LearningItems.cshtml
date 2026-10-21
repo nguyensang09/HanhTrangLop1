@@ -7,10 +7,7 @@
     <partial name="_AdminSidebar" />
     <main class="admin-main">
         <partial name="_AdminHeader" model='ViewData["Title"]' />
-        @if (TempData["AdminMessage"] is string message)
-        {
-            <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
-        }
+        <partial name="_AdminFlash" />
 
         <div class="dashboard-header">
             <div>
@@ -75,7 +72,7 @@
                             @foreach (var item in activityGroup.Items)
                             {
                                 var voice = Model.VoiceStatuses.GetValueOrDefault(item.Id) ?? new AdminLearningItemVoiceStatus();
-                                <tr><td class="col-secondary"><span class="sort-badge">#@item.SortOrder</span></td><td><a class="table-link lesson-name" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td><td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td><td><div data-voice-status-cell="@item.Id">@if (voice.Status == "full"){<span class="badge-voice-pill voice-ready">Đủ @voice.RequiredCount/@voice.RequiredCount</span>}else if (voice.Status == "partial"){<span class="badge-voice-pill voice-partial">VI @voice.VoiceViCount/@voice.RequiredCount · EN @voice.VoiceEnCount/@voice.RequiredCount</span>}else{<span class="badge-voice-pill voice-none">Chưa có</span>}</div></td><td class="table-actions"><a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id"><span class="material-symbols-outlined">visibility</span>Xem</a>@if(item.InteractionType == InteractionTypes.Tracing){<a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}else{<a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}<form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete><button class="mini-action danger" type="submit"><span class="material-symbols-outlined">delete</span>Xóa</button></form></td></tr>
+                                <tr><td class="col-secondary"><span class="sort-badge">#@item.SortOrder</span></td><td><a class="table-link lesson-name" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td><td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td><td><div data-voice-status-cell="@item.Id">@if (voice.Status == "full"){<span class="badge-voice-pill voice-ready">Đủ @voice.RequiredCount/@voice.RequiredCount</span>}else if (voice.Status == "partial"){<span class="badge-voice-pill voice-partial">VI @voice.VoiceViCount/@voice.RequiredCount · EN @voice.VoiceEnCount/@voice.RequiredCount</span>}else{<span class="badge-voice-pill voice-none">Chưa có</span>}</div></td><td class="table-actions"><a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id"><span class="material-symbols-outlined">visibility</span>Xem</a>@if(item.InteractionType == InteractionTypes.Tracing){<a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}else{<a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}<form class="inline-action-form" asp-action="DuplicateLearningItem" asp-route-id="@item.Id" method="post"><button class="mini-action" type="submit" title="Tạo một bản nháp giống bài này để sửa nhanh"><span class="material-symbols-outlined">content_copy</span>Nhân bản</button></form><form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete><button class="mini-action danger" type="submit"><span class="material-symbols-outlined">delete</span>Xóa</button></form></td></tr>
                             }
                             </tbody></table></div></div>
                         </div>

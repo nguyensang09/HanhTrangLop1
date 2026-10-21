@@ -8,6 +8,12 @@ public class LearnViewModel
     public LearningItem Item { get; set; } = new();
     public ChildProfile? ChildProfile { get; set; }
     public Question? CurrentQuestion { get; set; }
+
+    /// <summary>
+    /// Payload dành riêng cho giao diện: đã bổ sung đường dẫn audio và số đáp án cần chọn.
+    /// Dữ liệu gốc trong CSDL không bị thay đổi.
+    /// </summary>
+    public string PayloadJson { get; set; } = "{}";
     public IReadOnlyList<ChoiceOptionViewModel> Choices { get; set; } = [];
     public string TracingSymbol { get; set; } = "A";
     public int TracingMinPoints { get; set; } = 20;
@@ -57,7 +63,11 @@ public class SubmitTracingViewModel
 public class CreateChoiceItemViewModel
 {
     public Guid? Id { get; set; }
-    public string Status { get; set; } = ContentStatus.Draft;
+
+    // Không đặt giá trị mặc định: nhờ vậy bộ điều khiển phân biệt được "giáo viên chọn
+    // trạng thái Nháp" và "biểu mẫu không gửi trường trạng thái". Trường hợp sau sẽ giữ
+    // nguyên trạng thái hiện có của bài thay vì hạ xuống Nháp.
+    public string? Status { get; set; }
     public bool IsCompatible { get; set; } = true;
 
     [Required(ErrorMessage = "Vui lòng nhập tên bài."), MaxLength(200)]

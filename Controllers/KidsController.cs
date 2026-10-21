@@ -474,7 +474,7 @@ public class KidsController : Controller
 
     [HttpPost("learn/{id:guid}/answer")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Answer(Guid id, SubmitAnswerViewModel answer, Guid? skillGroupId)
+    public async Task<IActionResult> Answer(Guid id, SubmitAnswerViewModel answer, Guid? skillGroupId, bool fromTracing = false)
     {
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
@@ -541,7 +541,9 @@ public class KidsController : Controller
         var feedback = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
         if (isCorrect)
         {
-            return RedirectToAction(nameof(Learn), new { id = item.Id, skillGroupId, completed = true });
+            // Giữ nguyên ngữ cảnh điều hướng (vào bài từ Góc tập tô hay từ bản đồ kỹ năng)
+            // để màn hình hoàn thành luôn có đường dẫn sang bài tiếp theo hợp lệ.
+            return RedirectToAction(nameof(Learn), new { id = item.Id, skillGroupId, fromTracing, completed = true });
         }
 
         return View("Learn", await BuildLearnViewModelAsync(
@@ -550,7 +552,8 @@ public class KidsController : Controller
             child,
             skillGroupId,
             feedback,
-            isCorrect));
+            isCorrect,
+            fromTracing: fromTracing));
     }
 
     [HttpPost("learn/{id:guid}/complete-tracing")]
@@ -1178,10 +1181,14 @@ public class KidsController : Controller
         var retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync(retryFeedbackText);
         var retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(retryFeedbackText);
 
+        // Payload hiển thị chỉ dùng cho giao diện (đường dẫn audio, số đáp án cần chọn...).
+        // Không ghi đè vào entity Question để tránh làm thay đổi dữ liệu soạn bài trong CSDL
+        // khi SaveChangesAsync được gọi ở luồng chấm bài.
+        var displayPayloadJson = question?.PayloadJson ?? "{}";
         if (question is not null)
         {
-            question.PayloadJson = await EnrichPayloadOptionAudioAsync(question.PayloadJson);
-            var payload = System.Text.Json.Nodes.JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new System.Text.Json.Nodes.JsonObject();
+            displayPayloadJson = await EnrichPayloadOptionAudioAsync(question.PayloadJson);
+            var payload = System.Text.Json.Nodes.JsonNode.Parse(displayPayloadJson)?.AsObject() ?? new System.Text.Json.Nodes.JsonObject();
             payload["questionAudioUrl"] = questionAudioUrl;
             payload["questionAudioUrlEn"] = questionAudioUrlEn;
             payload["correctAudioUrl"] = correctFeedbackAudioUrl;
@@ -1205,24 +1212,28 @@ public class KidsController : Controller
                 payload["audioUrl"] = !string.IsNullOrWhiteSpace(contentAudioUrl) ? contentAudioUrl : questionAudioUrl;
                 payload["audioUrlEn"] = !string.IsNullOrWhiteSpace(contentAudioUrlEn) ? contentAudioUrlEn : questionAudioUrlEn;
             }
-            question.PayloadJson = payload.ToJsonString();
+            // Số phần tử của đáp án đúng: giao diện dùng để biết khi nào bé đã trả lời xong
+            // và tự động chấm bài, thay cho nút "Kiểm tra đáp án" trước đây.
+            payload["expectedAnswerCount"] = LearningJsonReader.ReadCorrectAnswerCount(question.CorrectAnswerJson);
+            displayPayloadJson = payload.ToJsonString();
         }
 
         return new LearnViewModel
         {
+            PayloadJson = displayPayloadJson,
             Item = item,
             ChildProfile = child,
             CurrentQuestion = question,
-            Choices = question is null ? [] : LearningJsonReader.ReadChoices(question.PayloadJson),
+            Choices = question is null ? [] : LearningJsonReader.ReadChoices(displayPayloadJson),
             TracingSymbol = tracingSymbol,
             TracingMinPoints = question is null ? 20 : LearningJsonReader.ReadIntProperty(question.CorrectAnswerJson, "minPoints", 20),
-            TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "guideMode", "outline"),
-            TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(question.PayloadJson, "expectedStrokeCount", 1),
-            TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(question.PayloadJson, "showStartPoint", true),
+            TracingGuideMode = question is null ? "outline" : LearningJsonReader.ReadStringProperty(displayPayloadJson, "guideMode", "outline"),
+            TracingExpectedStrokeCount = question is null ? 1 : LearningJsonReader.ReadIntProperty(displayPayloadJson, "expectedStrokeCount", 1),
+            TracingShowStartPoint = question is null || LearningJsonReader.ReadBoolProperty(displayPayloadJson, "showStartPoint", true),
             TracingAudioUrl = tracingAudioUrl,
             TracingAudioUrlEn = tracingAudioUrlEn,
             QuestionImageUrl = questionImageUrl,
-            QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(question.PayloadJson, "imageAltText", "Hình minh họa bài học"),
+            QuestionImageAltText = question is null ? "Hình minh họa bài học" : LearningJsonReader.ReadStringProperty(displayPayloadJson, "imageAltText", "Hình minh họa bài học"),
             TitleAudioUrl = titleAudioUrl,
             TitleAudioUrlEn = titleAudioUrlEn,
             QuestionAudioUrl = questionAudioUrl,

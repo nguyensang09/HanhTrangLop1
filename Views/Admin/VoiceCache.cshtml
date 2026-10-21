@@ -37,10 +37,7 @@
 <section class="admin-layout">
     <partial name="_AdminSidebar" />
     <main class="admin-main">
-        @if (TempData["AdminMessage"] is string message)
-        {
-            <div class="feedback-band success"><span class="material-symbols-outlined">check_circle</span><strong>@message</strong></div>
-        }
+        <partial name="_AdminFlash" />
 
         <partial name="_AdminHeader" model="@("Kiểm soát voice")" />
 

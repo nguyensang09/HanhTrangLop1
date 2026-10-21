@@ -2,9 +2,11 @@
     const runtime = document.querySelector("[data-activity-runtime]");
     const payloadElement = document.querySelector("[data-activity-payload]");
     const answerInput = document.querySelector("[data-activity-answer]");
+    // Nút "Kiểm tra đáp án" đã được loại bỏ ở màn hình học của bé; chỉ trang xem trước
+    // của quản trị viên còn giữ nút này nên mọi tham chiếu tới nút đều phải chịu được null.
     const submitButton = document.querySelector("[data-activity-submit]");
     const form = runtime?.closest("form");
-    if (!runtime || !payloadElement || !answerInput || !submitButton) return;
+    if (!runtime || !payloadElement || !answerInput) return;
 
     let payload = {};
     try {
@@ -32,10 +34,73 @@
     if (Array.isArray(payload.mappings)) payload.mappings = shuffleForDisplay(payload.mappings);
 
     const type = runtime.dataset.activityType;
-    const autoSubmitTypes = new Set(["single_choice", "listen_choose", "story_choice", "drag_drop", "counting", "comparison"]);
+
+    // ==========================================
+    // Cơ chế tự động kiểm tra đáp án dùng chung
+    // ==========================================
+    // Mọi dạng bài đều tự chấm khi bé trả lời xong, không cần thao tác xác nhận thêm.
+    // Khác biệt duy nhất giữa các dạng là thời điểm được coi là "đã trả lời xong":
+    //   - instant: chọn một đáp án là xong (chọn một, nghe và chọn, kéo thả, đếm, so sánh...)
+    //   - complete: phải điền đủ toàn bộ cặp/nhóm (nối cặp, phân loại, chọn nhiều đáp án)
+    //   - settle: bé có thể chỉnh nhiều lần, chấm sau khi dừng chỉnh (sắp xếp, tạo số lượng)
+    const INSTANT_DELAY = 1000;
+    const COMPLETE_DELAY = 900;
+    const SETTLE_DELAY = 2600;
+    const settleTypes = new Set(["ordering", "quantity_builder"]);
+    const autoCheckEnabled = runtime.dataset.activityAutocheck !== "false";
+
+    const statusElement = document.querySelector("[data-activity-autocheck-status]");
+    const statusText = document.querySelector("[data-activity-autocheck-text]");
+    const statusProgress = document.querySelector("[data-activity-autocheck-progress]");
+
     let submitTimer = 0;
     let optionColorIndex = 0;
-    if (autoSubmitTypes.has(type)) submitButton.hidden = true;
+    let hasSubmitted = false;
+
+    if (submitButton && autoCheckEnabled) submitButton.hidden = true;
+
+    const hideStatus = () => {
+        window.clearTimeout(submitTimer);
+        submitTimer = 0;
+        if (!statusElement) return;
+        statusElement.hidden = true;
+        statusElement.classList.remove("is-active");
+        if (statusProgress) statusProgress.style.transition = "none";
+        if (statusProgress) statusProgress.style.width = "0%";
+    };
+
+    const showStatus = (message, delay) => {
+        if (!statusElement) return;
+        statusElement.hidden = false;
+        if (statusText) statusText.textContent = message;
+        if (statusProgress) {
+            statusProgress.style.transition = "none";
+            statusProgress.style.width = "0%";
+            // Buộc trình duyệt áp dụng mốc 0% trước khi chạy hiệu ứng, nếu không thanh
+            // tiến trình sẽ nhảy thẳng tới 100% và bé không thấy phản hồi nào.
+            void statusProgress.offsetWidth;
+            statusProgress.style.transition = `width ${delay}ms linear`;
+            statusProgress.style.width = "100%";
+        }
+        window.requestAnimationFrame(() => statusElement.classList.add("is-active"));
+    };
+
+    const submitAnswer = () => {
+        if (hasSubmitted || !form) return;
+        hasSubmitted = true;
+        if (statusText) statusText.textContent = "Cô xem đáp án của bé nhé...";
+        if (typeof form.requestSubmit === "function") form.requestSubmit();
+        else form.submit();
+    };
+
+    // Lên lịch tự chấm bài. Mỗi lần bé thao tác lại thì hẹn giờ được đặt lại nên bé
+    // luôn có thể sửa đáp án trước khi hệ thống chấm.
+    const scheduleAutoSubmit = (delay, message) => {
+        if (!autoCheckEnabled || hasSubmitted || !form) return;
+        window.clearTimeout(submitTimer);
+        showStatus(message || "Cô đang kiểm tra bài của bé nhé...", delay);
+        submitTimer = window.setTimeout(submitAnswer, delay);
+    };
 
     const activityColors = ["#ff8a5b", "#29b6a6", "#3e9ed6", "#f4b740", "#8b79d1", "#ec407a", "#26a69a"];
     const pictogramPath = "/images/pictograms/";
@@ -368,13 +433,30 @@
         return button;
     };
 
-    const setAnswer = (value, ready = true, autoSubmit = false, autoSubmitDelay = 800) => {
+    // ready: bé đã trả lời đủ điều kiện hoàn thành của dạng bài này chưa.
+    // instant: dạng bài chốt ngay khi chọn (không cần chờ bé điền thêm phần nào khác).
+    const setAnswer = (value, ready = true, instant = false, instantDelay = INSTANT_DELAY) => {
         answerInput.value = value;
-        submitButton.disabled = !ready;
-        window.clearTimeout(submitTimer);
-        if (ready && autoSubmit && autoSubmitTypes.has(type)) {
-            submitTimer = window.setTimeout(() => form?.requestSubmit(), autoSubmitDelay);
+        if (submitButton) submitButton.disabled = !ready;
+
+        if (!ready) {
+            hideStatus();
+            return;
         }
+
+        if (instant) {
+            scheduleAutoSubmit(instantDelay, "Bé chọn xong rồi, cô kiểm tra nhé...");
+            return;
+        }
+
+        if (settleTypes.has(type)) {
+            // Bé còn có thể đổi ý: chỉ chấm sau khi bé dừng thao tác.
+            scheduleAutoSubmit(SETTLE_DELAY, "Bé cứ sắp xếp tiếp, cô chờ bé xong nhé...");
+            return;
+        }
+
+        // Nối cặp / phân loại / chọn nhiều đáp án: đã điền đủ thì chấm luôn.
+        scheduleAutoSubmit(COMPLETE_DELAY, "Bé làm xong rồi, cô kiểm tra nhé...");
     };
 
     const canonicalMappings = (mappings) => Object.entries(mappings)
@@ -412,6 +494,12 @@
     const renderChoice = (allowMultiple = false) => {
         appendEquationVisual();
         const selected = new Set();
+        // Số đáp án cần chọn do máy chủ cung cấp (chỉ là số lượng, không tiết lộ đáp án).
+        // Nhờ đó dạng "chọn nhiều đáp án" biết lúc nào bé đã trả lời xong để tự chấm.
+        const expectedCount = Number(payload.expectedAnswerCount || 0);
+        // Nếu không biết số đáp án cần chọn (dữ liệu cũ) thì không chấm ngay khi bé
+        // vừa chọn một ô: phải chờ bé chọn xong, nếu không bé luôn bị sai.
+        if (allowMultiple && expectedCount <= 0) settleTypes.add(type);
         const grid = document.createElement("div");
         grid.className = "activity-option-grid";
         const hasTextOptions = (payload.choices || []).some((choice) => String(choice ?? "").trim().length > 3);
@@ -439,7 +527,14 @@
                 selected.has(choice) ? selected.delete(choice) : selected.add(choice);
                 button.classList.toggle("selected", selected.has(choice));
                 const answer = allowMultiple ? [...selected].sort().join("|") : [...selected][0] || "";
-                setAnswer(answer, selected.size > 0, !allowMultiple, 1000);
+                if (!allowMultiple) {
+                    setAnswer(answer, selected.size > 0, true, INSTANT_DELAY);
+                    return;
+                }
+                const isComplete = expectedCount > 0
+                    ? selected.size === expectedCount
+                    : selected.size > 0;
+                setAnswer(answer, isComplete);
             });
             grid.append(button);
         });
@@ -744,10 +839,17 @@
         list.className = "ordering-list";
         const isNumberOrdering = items.every((it) => /^\d+$/.test(String(it || "").trim()));
         if (isNumberOrdering) list.classList.add("ordering-number-list");
-        const sync = () => setAnswer([...list.querySelectorAll(".ordering-value")].map((node) => node.dataset.rawItem).join("|"));
+        // Thứ tự hiện tại luôn được ghi vào ô đáp án, nhưng chỉ hẹn giờ tự chấm sau khi
+        // bé thực sự sắp xếp. Mốc chờ an toàn phía dưới xử lý trường hợp thứ tự ban đầu
+        // đã đúng và bé không cần di chuyển gì, tránh việc bé không thể hoàn thành bài.
+        let hasArranged = false;
+        const sync = () => setAnswer(
+            [...list.querySelectorAll(".ordering-value")].map((node) => node.dataset.rawItem).join("|"),
+            hasArranged);
         let draggingIndex = -1;
         const moveItem = (from, to) => {
             if (from < 0 || to < 0 || from === to) return;
+            hasArranged = true;
             const [moved] = items.splice(from, 1);
             items.splice(to, 0, moved);
             draw();
@@ -842,6 +944,11 @@
         };
         draw();
         runtime.append(list);
+        window.setTimeout(() => {
+            if (hasArranged) return;
+            hasArranged = true;
+            sync();
+        }, 15000);
     };
 
     const renderCounting = () => {

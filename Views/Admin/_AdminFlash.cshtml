@@ -1,0 +1,48 @@
+@*
+    Băng thông báo dùng chung cho toàn bộ khu quản trị.
+
+    Trước đây mỗi trang tự đọc TempData theo một khóa và tự chọn màu riêng, dẫn tới:
+      - Cùng một khóa "AdminMessage" hiện xanh "thành công" ở Kho bài học nhưng hiện
+        vàng "cảnh báo" ở Chi tiết bài học, nên một thông báo thành công lại trông như lỗi.
+      - Các trang soạn bài (Tạo/Sửa bài học) không render TempData, nên mọi thông báo
+        đặt trước khi chuyển về đó đều bị mất im lặng — ví dụ cảnh báo
+        "Bài học chưa phù hợp với chủ đề" của luồng đổi trạng thái.
+
+    Partial này đọc cả 3 khóa đang được dùng trong hệ thống và hiển thị bằng một
+    kiểu băng thống nhất. Mức độ của "AdminMessage" lấy từ TempData["AdminMessageKind"]
+    ("warning" / "error"); không đặt thì hiểu là thông báo thành công như trước.
+*@
+@{
+    var adminMessageKind = TempData["AdminMessageKind"] as string;
+    var flashEntries = new List<(string Kind, string Text)>();
+
+    void AddFlash(object? value, string kind)
+    {
+        if (value is string text && !string.IsNullOrWhiteSpace(text))
+        {
+            flashEntries.Add((kind, text));
+        }
+    }
+
+    AddFlash(TempData["SuccessMessage"], "success");
+    AddFlash(TempData["AdminMessage"], adminMessageKind switch
+    {
+        "warning" => "warning",
+        "error" => "error",
+        _ => "success"
+    });
+    AddFlash(TempData["ErrorMessage"], "error");
+}
+@foreach (var flash in flashEntries)
+{
+    var icon = flash.Kind switch
+    {
+        "warning" => "warning",
+        "error" => "error",
+        _ => "check_circle"
+    };
+    <div class="feedback-band @flash.Kind" role="status">
+        <span class="material-symbols-outlined">@icon</span>
+        <strong>@flash.Text</strong>
+    </div>
+}

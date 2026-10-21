@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using HanhTrangLop1.Models.ViewModels;
 
@@ -59,6 +60,11 @@ public static class LearningJsonReader
         }
     }
 
+    /// <summary>
+    /// Đọc đáp án đúng và luôn trả về dạng chuỗi canonical (các phần tử nối bằng '|').
+    /// Chấp nhận mọi kiểu dữ liệu đã từng được soạn trong CorrectAnswerJson (chuỗi, số,
+    /// true/false hoặc mảng) để tránh việc bé trả lời đúng nhưng hệ thống không chấm được.
+    /// </summary>
     public static string ReadCorrectAnswer(string correctAnswerJson)
     {
         if (string.IsNullOrWhiteSpace(correctAnswerJson))
@@ -70,7 +76,7 @@ public static class LearningJsonReader
         {
             using var document = JsonDocument.Parse(correctAnswerJson);
             return document.RootElement.TryGetProperty("value", out var value)
-                ? value.GetString() ?? string.Empty
+                ? ReadAnswerElement(value)
                 : string.Empty;
         }
         catch (JsonException)
@@ -78,6 +84,32 @@ public static class LearningJsonReader
             return string.Empty;
         }
     }
+
+    /// <summary>
+    /// Số phần tử đáp án cần có (dùng cho cơ chế tự động kiểm tra ở phía giao diện:
+    /// bé chọn đủ số phần tử thì hệ thống tự chấm, không cần nút "Kiểm tra đáp án").
+    /// </summary>
+    public static int ReadCorrectAnswerCount(string correctAnswerJson)
+    {
+        var canonical = ReadCorrectAnswer(correctAnswerJson);
+        return string.IsNullOrWhiteSpace(canonical)
+            ? 0
+            : canonical.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length;
+    }
+
+    private static string ReadAnswerElement(JsonElement value) => value.ValueKind switch
+    {
+        JsonValueKind.String => value.GetString() ?? string.Empty,
+        JsonValueKind.Number => value.TryGetInt64(out var number)
+            ? number.ToString(CultureInfo.InvariantCulture)
+            : value.GetDouble().ToString(CultureInfo.InvariantCulture),
+        JsonValueKind.True => "true",
+        JsonValueKind.False => "false",
+        JsonValueKind.Array => string.Join('|', value.EnumerateArray()
+            .Select(ReadAnswerElement)
+            .Where(x => !string.IsNullOrWhiteSpace(x))),
+        _ => string.Empty
+    };
 
     public static string ReadStringProperty(string json, string propertyName, string fallback)
     {

@@ -3,6 +3,8 @@
     var isEdit = Model.Id.HasValue;
     ViewData["Title"] = isEdit ? "Sửa bài tô nét" : "Tạo bài tô nét";
     var skillGroups = ViewBag.SkillGroups as IReadOnlyList<SkillGroup> ?? [];
+    // Trình soạn bài tô nét cần thư viện nét mẫu ngay khi site.js khởi tạo khung xem trước.
+    ViewData["NeedsTracingGuides"] = true;
 }
 
 <style>
@@ -27,6 +29,7 @@
     <partial name="_AdminSidebar" />
     <main class="admin-main tracing-builder-page">
         <partial name="_AdminHeader" model="@(isEdit ? "Sửa bài tô nét" : "Tạo bài tô nét mới")" />
+        <partial name="_AdminFlash" />
 
         <!-- 1. Thanh điều hướng & Thao tác chính gọn gàng (Đã loại bỏ các nút thừa) -->
         <div class="tracing-header-toolbar">
@@ -194,9 +197,13 @@
 
                         <div class="tracing-field-group mb-0">
                             <label asp-for="Status">Trạng thái bài học</label>
+                            @* Liệt kê đủ 4 trạng thái: nếu thiếu, bài đang ở "Chờ duyệt" hoặc "Lưu trữ"
+                               sẽ không có option tương ứng và bị đổi trạng thái ngoài ý muốn khi lưu. *@
                             <select asp-for="Status" class="form-control">
                                 <option value="@ContentStatus.Published">Xuất bản (Bé thấy bài)</option>
                                 <option value="@ContentStatus.Draft">Bản nháp (Đang soạn)</option>
+                                <option value="@ContentStatus.Review">Chờ duyệt</option>
+                                <option value="@ContentStatus.Archived">Lưu trữ (Bé không thấy bài)</option>
                             </select>
                         </div>
                     </div>
@@ -240,5 +247,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/tracing-guides.js" asp-append-version="true"></script>
 }

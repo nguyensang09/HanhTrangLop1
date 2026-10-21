@@ -137,15 +137,7 @@ public class AdminController : Controller
 
         var allSkillGroups = await _db.SkillGroups.AsNoTracking().OrderBy(x => x.SortOrder).ToListAsync();
 
-        // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ)
-        var redundantVoiceRows = await _db.TextToSpeechCaches
-            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
-            .ToListAsync();
-        if (redundantVoiceRows.Count > 0)
-        {
-            _db.TextToSpeechCaches.RemoveRange(redundantVoiceRows);
-            await _db.SaveChangesAsync();
-        }
+        await RemoveRedundantVoiceRowsAsync();
 
         var items = await query.ToListAsync();
         var voiceStatuses = await BuildLearningItemVoiceStatusesAsync(items);
@@ -183,7 +175,23 @@ public class AdminController : Controller
             .Where(g => !skillGroupId.HasValue || g.Id == skillGroupId.Value)
             .ToList();
 
-        var totalDbItems = await _db.LearningItems.AsNoTracking().Select(x => new { x.SkillGroupId, x.InteractionType }).ToListAsync();
+        // Độ phủ dạng bài chỉ cần biết "nhóm kỹ năng này đã có bao nhiêu bài của mỗi dạng".
+        // Trước đây câu truy vấn tải về MỌI bài học trong kho rồi mới quét lại trên bộ nhớ
+        // một lần cho từng nhóm (O số nhóm × số bài). Nay gom nhóm ngay trong SQL nên chỉ
+        // chuyển về tối đa vài chục dòng, và tra cứu theo nhóm là O(1).
+        var activityCountsByGroup = (await _db.LearningItems
+                .AsNoTracking()
+                .GroupBy(x => new { x.SkillGroupId, x.InteractionType })
+                .Select(g => new { g.Key.SkillGroupId, g.Key.InteractionType, Count = g.Count() })
+                .ToListAsync())
+            .GroupBy(x => x.SkillGroupId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyDictionary<string, int>)g
+                    .GroupBy(x => x.InteractionType, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(x => x.Key, x => x.Sum(y => y.Count), StringComparer.OrdinalIgnoreCase));
+
+        var emptyActivityCounts = (IReadOnlyDictionary<string, int>)new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         var itemsByGroupId = items.ToLookup(x => x.SkillGroupId);
 
@@ -205,7 +213,7 @@ public class AdminController : Controller
                 .ToArray();
             var groupActivityTypes = BuildActivityTypeCoverage(
                 expectedGroupActivityTypes,
-                totalDbItems.Where(x => x.SkillGroupId == group.Id).Select(x => x.InteractionType),
+                activityCountsByGroup.GetValueOrDefault(group.Id) ?? emptyActivityCounts,
                 minimumRequired: 1);
             var activityGroups = groupItems
                 .GroupBy(x => x.InteractionType, StringComparer.OrdinalIgnoreCase)
@@ -258,6 +266,27 @@ public class AdminController : Controller
         };
 
         return View(model);
+    }
+
+    /// <summary>
+    /// Dọn các dòng voice thừa còn sót lại từ phiên bản cũ (loại "title" và "instruction").
+    /// Khối này trước đây bị sao chép y nguyên trong ba action GET (Kho bài học, Chi tiết
+    /// voice của bài, Kiểm soát voice), và mỗi lần mở trang đều tải toàn bộ các dòng khớp
+    /// điều kiện lên bộ nhớ dưới dạng thực thể có theo dõi thay đổi chỉ để phát hiện là
+    /// không có gì phải xóa. Nay kiểm tra tồn tại trước, nên trường hợp thường gặp (kho đã
+    /// sạch) chỉ còn một truy vấn rất nhẹ và không phát sinh lệnh ghi nào trong request GET.
+    /// </summary>
+    private async Task RemoveRedundantVoiceRowsAsync()
+    {
+        if (!await _db.TextToSpeechCaches
+            .AnyAsync(x => x.UsageType == "title" || x.UsageType == "instruction"))
+        {
+            return;
+        }
+
+        await _db.TextToSpeechCaches
+            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
+            .ExecuteDeleteAsync();
     }
 
     private async Task<Dictionary<Guid, AdminLearningItemVoiceStatus>> BuildLearningItemVoiceStatusesAsync(
@@ -325,15 +354,16 @@ public class AdminController : Controller
         return result;
     }
 
+    /// <summary>
+    /// Nhận sẵn số lượng bài theo từng dạng (đã gom nhóm trong SQL) thay vì nhận danh sách
+    /// dạng bài của từng bài rồi tự đếm lại trên bộ nhớ.
+    /// </summary>
     private static IReadOnlyList<AdminActivityTypeCoverage> BuildActivityTypeCoverage(
         IEnumerable<string> expectedTypes,
-        IEnumerable<string> actualTypes,
+        IReadOnlyDictionary<string, int> counts,
         int minimumRequired = 1)
     {
         var expected = expectedTypes.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var counts = actualTypes
-            .GroupBy(x => x, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(x => x.Key, x => x.Count(), StringComparer.OrdinalIgnoreCase);
         return expected.Concat(counts.Keys)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(GetInteractionTypeOrder)
@@ -731,15 +761,7 @@ public class AdminController : Controller
             return NotFound(new { error = "Không tìm thấy bài học." });
         }
 
-        // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ) nếu còn sót
-        var redundantVoiceRows = await _db.TextToSpeechCaches
-            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
-            .ToListAsync();
-        if (redundantVoiceRows.Count > 0)
-        {
-            _db.TextToSpeechCaches.RemoveRange(redundantVoiceRows);
-            await _db.SaveChangesAsync();
-        }
+        await RemoveRedundantVoiceRowsAsync();
 
         var question = item.Questions.FirstOrDefault();
         var payload = question != null && !string.IsNullOrWhiteSpace(question.PayloadJson)
@@ -1037,15 +1059,7 @@ public class AdminController : Controller
     [HttpGet("voice-cache")]
     public async Task<IActionResult> VoiceCache(string? status, string? usageType, string? q, Guid? topicId, Guid? learningItemId, int page = 1, int pageSize = 50)
     {
-        // Tự động dọn dẹp các mục voice thừa (tiêu đề và hướng dẫn cũ)
-        var redundantVoiceRows = await _db.TextToSpeechCaches
-            .Where(x => x.UsageType == "title" || x.UsageType == "instruction")
-            .ToListAsync();
-        if (redundantVoiceRows.Count > 0)
-        {
-            _db.TextToSpeechCaches.RemoveRange(redundantVoiceRows);
-            await _db.SaveChangesAsync();
-        }
+        await RemoveRedundantVoiceRowsAsync();
 
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 20, 100);
@@ -1893,7 +1907,7 @@ public class AdminController : Controller
             Questions = new List<Question>()
         };
 
-        item.Status = model.Status == ContentStatus.Published ? ContentStatus.Published : ContentStatus.Draft;
+        ApplyRequestedStatus(item, model.Status, now);
         item.Title = Clean(model.Title);
         item.SkillGroupId = model.SkillGroupId;
         item.TopicId = model.TopicId;
@@ -1930,11 +1944,17 @@ public class AdminController : Controller
             retry = Clean(model.RetryFeedback)
         });
 
-        if (!model.Id.HasValue)
+        var isNewItem = !model.Id.HasValue;
+        if (isNewItem)
         {
             _db.LearningItems.Add(item);
         }
         await _db.SaveChangesAsync();
+        // Lưu xong phải có phản hồi rõ ràng: trước đây trang chỉ tải lại im lặng nên giáo
+        // viên không biết bài đã lưu chưa, cũng không biết bé có thấy bài hay không.
+        TempData["AdminMessage"] = isNewItem
+            ? $"Đã tạo bài học “{item.Title}”. Trạng thái: {ContentStatus.GetDisplayName(item.Status)}."
+            : $"Đã lưu thay đổi cho bài học “{item.Title}”. Trạng thái: {ContentStatus.GetDisplayName(item.Status)}.";
         return RedirectToAction(nameof(CreateChoice), new { editId = item.Id });
     }
 
@@ -2056,7 +2076,7 @@ public class AdminController : Controller
             CreatedAt = now,
             Questions = new List<Question>()
         };
-        item.Status = model.Status == ContentStatus.Published ? ContentStatus.Published : ContentStatus.Draft;
+        ApplyRequestedStatus(item, model.Status, now);
         item.Title = model.Title.Trim();
         item.SkillGroupId = model.SkillGroupId;
         item.TopicId = model.TopicId;
@@ -2090,8 +2110,12 @@ public class AdminController : Controller
             retry = "Mình thử tô lại một nét nhé."
         });
 
-        if (!model.Id.HasValue) _db.LearningItems.Add(item);
+        var isNewTracingItem = !model.Id.HasValue;
+        if (isNewTracingItem) _db.LearningItems.Add(item);
         await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = isNewTracingItem
+            ? $"Đã tạo bài tô nét “{item.Title}”. Trạng thái: {ContentStatus.GetDisplayName(item.Status)}."
+            : $"Đã lưu thay đổi cho bài tô nét “{item.Title}”. Trạng thái: {ContentStatus.GetDisplayName(item.Status)}.";
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
 
@@ -2167,6 +2191,7 @@ public class AdminController : Controller
         }
 
         await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Đã lưu thay đổi cho bài tô nét “{item.Title}”.";
         return RedirectToAction(nameof(CreateTracing), new { editId = item.Id });
     }
 
@@ -2188,6 +2213,7 @@ public class AdminController : Controller
         if (status == ContentStatus.Published && !ActivityTemplateCatalog.IsItemAllowed(item))
         {
             TempData["AdminMessage"] = "Bài học chưa phù hợp với chủ đề. Vui lòng sửa mẫu hoạt động trước khi xuất bản.";
+            TempData["AdminMessageKind"] = "warning";
             return RedirectToEditor(item);
         }
 
@@ -2208,7 +2234,90 @@ public class AdminController : Controller
         }
 
         await _db.SaveChangesAsync();
+        TempData["AdminMessage"] = $"Bài học “{item.Title}” đã chuyển sang trạng thái {ContentStatus.GetDisplayName(item.Status)}.";
         return RedirectToEditor(item);
+    }
+
+    /// <summary>
+    /// Nhân bản một bài học đang có thành bản nháp mới để giáo viên dùng bài cũ làm mẫu
+    /// rồi sửa nhanh, thay vì phải khai báo lại toàn bộ cấu hình từ đầu.
+    /// Bản sao luôn ở trạng thái Nháp để không vô tình đẩy nội dung chưa sửa cho bé thấy.
+    /// </summary>
+    [HttpPost("learning-items/{id:guid}/duplicate")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DuplicateLearningItem(Guid id)
+    {
+        var source = await _db.LearningItems
+            .AsNoTracking()
+            .Include(x => x.Questions.OrderBy(question => question.SortOrder))
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (source is null)
+        {
+            return NotFound();
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var copyTitle = BuildDuplicateTitle(source.Title);
+        var copy = new LearningItem
+        {
+            Id = Guid.NewGuid(),
+            Code = CreateLearningItemCode("ban-sao"),
+            Title = copyTitle,
+            SkillGroupId = source.SkillGroupId,
+            TopicId = source.TopicId,
+            Level = source.Level,
+            SortOrder = await GetNextSortOrderAsync(source.SkillGroupId),
+            InteractionType = source.InteractionType,
+            EstimatedMinutes = source.EstimatedMinutes,
+            InstructionText = source.InstructionText,
+            InstructionAudioAssetId = source.InstructionAudioAssetId,
+            ContentJson = source.ContentJson,
+            Status = ContentStatus.Draft,
+            CreatedAt = now,
+            UpdatedAt = now,
+            Questions = source.Questions
+                .OrderBy(question => question.SortOrder)
+                .Select(question => new Question
+                {
+                    Id = Guid.NewGuid(),
+                    PromptText = question.PromptText,
+                    PromptAudioAssetId = question.PromptAudioAssetId,
+                    QuestionType = question.QuestionType,
+                    PayloadJson = question.PayloadJson,
+                    CorrectAnswerJson = question.CorrectAnswerJson,
+                    HintJson = question.HintJson,
+                    FeedbackJson = question.FeedbackJson,
+                    SortOrder = question.SortOrder
+                })
+                .ToList()
+        };
+
+        _db.LearningItems.Add(copy);
+        await _db.SaveChangesAsync();
+
+        TempData["AdminMessage"] = $"Đã tạo bản sao “{copy.Title}” ở trạng thái Nháp. Bạn hãy sửa lại nội dung rồi xuất bản nhé.";
+        return RedirectToEditor(copy);
+    }
+
+    /// <summary>
+    /// Đặt tên cho bản sao và bảo đảm không vượt quá 200 ký tự của cột Title.
+    /// </summary>
+    private static string BuildDuplicateTitle(string sourceTitle)
+    {
+        const string suffix = " (bản sao)";
+        const int maxLength = 200;
+        var baseTitle = (sourceTitle ?? string.Empty).Trim();
+        if (baseTitle.Length == 0)
+        {
+            return "Bài học (bản sao)";
+        }
+
+        var available = maxLength - suffix.Length;
+        if (baseTitle.Length > available)
+        {
+            baseTitle = baseTitle[..available];
+        }
+        return baseTitle + suffix;
     }
 
     [HttpPost("learning-items/{id:guid}/delete")]
@@ -2363,6 +2472,25 @@ public class AdminController : Controller
             "van-dong-tinh" => "stroke",
             _ => "symbol"
         };
+    }
+
+    /// <summary>
+    /// Áp dụng trạng thái do giáo viên chọn trong trình soạn bài, giữ nguyên trạng thái
+    /// hiện có nếu giá trị gửi lên không nằm trong danh sách hợp lệ.
+    /// Trước đây mọi giá trị khác "published" đều bị quy về "draft", nên một bài đang ở
+    /// "Chờ duyệt" hoặc "Lưu trữ" sẽ bị đổi trạng thái ngoài ý muốn sau mỗi lần lưu.
+    /// </summary>
+    private static void ApplyRequestedStatus(LearningItem item, string? requestedStatus, DateTimeOffset now)
+    {
+        var resolved = !string.IsNullOrWhiteSpace(requestedStatus) && AllowedStatuses.Contains(requestedStatus)
+            ? requestedStatus
+            : string.IsNullOrWhiteSpace(item.Status) ? ContentStatus.Draft : item.Status;
+
+        item.Status = resolved;
+        if (resolved == ContentStatus.Published)
+        {
+            item.PublishedAt ??= now;
+        }
     }
 
     private async Task ValidateActivityTemplateAsync(Guid skillGroupId, string interactionType)
