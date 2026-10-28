@@ -22,116 +22,125 @@
     var numbers = HanhTrangLop1.Application.Voice.BilingualListenCatalog.Numbers;
 
     var totalItems = letters.Length + numbers.Length;
+    var childName = string.IsNullOrWhiteSpace(Model.Nickname) ? "Con" : Model.Nickname.Trim();
 }
 
-<section class="kid-screen bilingual-listen-screen" data-child-id="@Model.Id">
-    <!-- ==================== TOPBAR CHUẨN ĐỒNG NHẤT KHÔNG GIAN BÉ ==================== -->
-    <header class="child-zone-header clay-card">
-        <div class="child-header-left">
-            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </a>
-            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
-                <img src="@ResolveAvatar(Model.AvatarKey)" alt="Ảnh bé" class="child-avatar-img" />
-                <span class="child-avatar-switch-badge" title="Đổi bé">
-                    <span class="material-symbols-outlined">sync_alt</span>
-                </span>
-            </a>
-            <div class="child-header-greeting">
-                <span class="child-hi-eyebrow">Âm Thanh Song Ngữ 🎧</span>
-                <strong class="child-name-display">Bé @(Model.Nickname) Luyện Nghe</strong>
-            </div>
-        </div>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+<link rel="stylesheet" href="~/css/kid-hub.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/kid-extras.css" asp-append-version="true" />
 
-        <div class="child-header-center">
-            <div class="child-star-badge-3d" id="bilingualCounterPill" title="Tiến độ thẻ đã khám phá">
-                <span class="star-3d-icon">⭐</span>
-                <span class="star-number-display" id="counterText">0/@totalItems</span>
-                <span class="star-label-text">đã nghe</span>
-            </div>
-        </div>
+<div class="kh kx-listen kh--with-dock">
+    @* Lớp bilingual-listen-screen + data-child-id: bilingual-listen.js đọc mã bé; site.js + site.css mở cuộn tự do. *@
+    <span class="kh-scroll-marker bilingual-listen-screen" data-child-id="@Model.Id" aria-hidden="true"></span>
 
-        <div class="child-header-right">
-            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh" aria-label="Góc phụ huynh">
-                <span class="material-symbols-outlined lock-icon">lock</span>
-                <span class="lock-label-text">Ba mẹ</span>
-            </button>
+    <div class="kh-sky" aria-hidden="true">
+        <span class="kh-cloud kh-cloud--1"></span>
+        <span class="kh-cloud kh-cloud--2"></span>
+        <span class="kh-cloud kh-cloud--3"></span>
+        <span class="kh-float kh-float--1">🎧</span>
+        <span class="kh-float kh-float--2">🔤</span>
+        <span class="kh-float kh-float--3">🎵</span>
+        <span class="kh-float kh-float--4">🔢</span>
+    </div>
+
+    <header class="kh-topbar">
+        <a class="kh-pill" asp-controller="Kids" asp-action="Home" title="Về trang chủ" aria-label="Trang chủ">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span class="kh-hide-sm">Trang chủ</span>
+        </a>
+        <a class="kh-avatar" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác" aria-label="Đổi bé khác">
+            <img src="@ResolveAvatar(Model.AvatarKey)" alt="Ảnh bé" />
+            <span class="kh-avatar-badge material-symbols-outlined" aria-hidden="true">sync_alt</span>
+        </a>
+        <div class="kh-brand">
+            <span class="kh-brand-mark" aria-hidden="true">🎧</span>
+            <span class="kh-brand-text">
+                <small>Âm thanh song ngữ</small>
+                <strong>Bé Nghe Tiếng Anh</strong>
+            </span>
         </div>
+        <div class="kh-pill kh-pill--stars kx-counter" id="bilingualCounterPill" title="Số thẻ bé đã nghe">
+            <span aria-hidden="true">⭐</span><strong id="counterText">0/@totalItems</strong><small class="kh-hide-sm">đã nghe</small>
+        </div>
+        <button type="button" class="kh-pill kh-pill--lock" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh" aria-label="Góc phụ huynh">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="kh-hide-sm">Ba mẹ</span>
+        </button>
     </header>
 
-    <!-- Thanh Điều Khiển Tinh Gọn (Filter Tabs + Search + Speed + Autoplay) -->
-    <div class="bilingual-controls-bar">
-        <div class="bilingual-tab-bar" role="tablist">
-            <button type="button" class="bilingual-tab-btn clay-button active" data-tab="all" role="tab" aria-selected="true">
-                <span class="material-symbols-outlined">auto_awesome</span>
-                <span>Tất cả</span>
-                <span class="tab-badge">@totalItems</span>
-            </button>
-            <button type="button" class="bilingual-tab-btn clay-button" data-tab="letters" role="tab" aria-selected="false">
-                <span class="material-symbols-outlined">spellcheck</span>
-                <span>Chữ cái A - Z</span>
-                <span class="tab-badge">@letters.Length</span>
-            </button>
-            <button type="button" class="bilingual-tab-btn clay-button" data-tab="numbers" role="tab" aria-selected="false">
-                <span class="material-symbols-outlined">pin</span>
-                <span>Chữ số 0 - 20</span>
-                <span class="tab-badge">@numbers.Length</span>
-            </button>
+    <!-- Sóc Nâu hướng dẫn + bảng điều khiển nghe -->
+    <section class="kh-hero">
+        <div class="kh-guide">
+            <img class="kh-guide-img" src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" />
+            <p class="kh-bubble">@childName ơi, chạm vào một thẻ để nghe cô đọc nhé! 🎧</p>
         </div>
-
-        <div class="bilingual-tools-cluster">
-            <!-- Cấu hình chế độ phát âm: Mặc định bật Chỉ Tiếng Anh (A - Apple) hoặc Song ngữ đầy đủ -->
-            <div class="read-mode-toggle-group-compact" role="group" aria-label="Chế độ phát âm">
-                <button type="button" class="read-mode-btn active" data-mode="en_only" title="Chỉ đọc Tiếng Anh: Chữ cái/Số - Từ mẫu (Ví dụ: A - Apple)">
-                    <span class="mode-icon">🔤</span>
-                    <span class="mode-label-full">Chỉ Tiếng Anh (A - Apple)</span>
-                    <span class="mode-label-short">Chỉ Tiếng Anh</span>
-                </button>
-                <button type="button" class="read-mode-btn" data-mode="bilingual" title="Đọc song ngữ Anh - Việt đầy đủ (A - Chữ A - Apple - Quả táo...)">
-                    <span class="mode-icon">🌐</span>
-                    <span class="mode-label-full">Song ngữ đầy đủ</span>
-                    <span class="mode-label-short">Song ngữ</span>
-                </button>
+        <div class="kh-hero-card kx-listen-controls">
+            <div class="kx-control-row">
+                <span class="kx-control-label">Cô đọc</span>
+                <div class="kx-seg" role="group" aria-label="Chế độ phát âm">
+                    <button type="button" class="kx-seg-btn read-mode-btn active" data-mode="en_only" title="Chỉ đọc tiếng Anh: chữ – từ (ví dụ: A – Apple)">
+                        <span class="kx-seg-emoji" aria-hidden="true">🔤</span>
+                        <span>Tiếng Anh</span>
+                    </button>
+                    <button type="button" class="kx-seg-btn read-mode-btn" data-mode="bilingual" title="Đọc song ngữ Anh – Việt đầy đủ">
+                        <span class="kx-seg-emoji" aria-hidden="true">🌐</span>
+                        <span>Anh – Việt</span>
+                    </button>
+                </div>
             </div>
-
-            <!-- Tốc độ đọc tích hợp siêu gọn -->
-            <div class="speed-toggle-group-compact" role="group" aria-label="Tốc độ đọc">
-                <button type="button" class="speed-toggle-btn active" data-speed="normal" title="Tốc độ nghe bình thường">
-                    <span>⚡ Chuẩn</span>
-                </button>
-                <button type="button" class="speed-toggle-btn" data-speed="slow" title="Tốc độ đọc chậm từng âm">
-                    <span>🐢 Chậm</span>
-                </button>
+            <div class="kx-control-row">
+                <span class="kx-control-label">Tốc độ</span>
+                <div class="kx-seg" role="group" aria-label="Tốc độ đọc">
+                    <button type="button" class="kx-seg-btn speed-toggle-btn active" data-speed="normal" title="Tốc độ nghe bình thường">
+                        <span class="kx-seg-emoji" aria-hidden="true">🐇</span>
+                        <span>Vừa</span>
+                    </button>
+                    <button type="button" class="kx-seg-btn speed-toggle-btn" data-speed="slow" title="Đọc chậm từng âm">
+                        <span class="kx-seg-emoji" aria-hidden="true">🐢</span>
+                        <span>Chậm</span>
+                    </button>
+                </div>
             </div>
-
-            <!-- Nút tự động phát -->
-            <button type="button" class="bilingual-tour-btn-compact" id="autoplayTourBtn" title="Tự động phát lần lượt các thẻ">
-                <span class="material-symbols-outlined tour-icon">play_circle</span>
+            <button type="button" class="kh-big-btn kh-big-btn--violet kx-tour-btn" id="autoplayTourBtn" title="Tự động phát lần lượt các thẻ">
+                <span class="material-symbols-outlined tour-icon" aria-hidden="true">play_circle</span>
                 <span class="tour-label">Tự động phát</span>
             </button>
         </div>
-    </div>
+    </section>
 
-    <!-- Khu vực 1: Bảng Chữ Cái Tiếng Anh -->
-    <div class="bilingual-section-group" data-section="letters">
-        <div class="bilingual-section-header">
-            <div class="section-title-wrap">
-                <div class="section-icon-pill icon-coral">
-                    <span class="material-symbols-outlined">menu_book</span>
-                </div>
-                <div>
-                    <h2>Bảng Chữ Cái Tiếng Anh (A - Z)</h2>
-                    <p>26 chữ cái kèm hình ảnh, từ vựng quen thuộc và phiên âm tiếng Việt dễ nhớ</p>
-                </div>
+    <!-- Thẻ lọc (giữ lớp bilingual-tab-btn + data-tab cho script) -->
+    <nav class="kh-tabs kx-tabs" role="tablist" aria-label="Chọn nhóm thẻ">
+        <button type="button" class="kh-tab kx-tab bilingual-tab-btn active" data-tab="all" role="tab" aria-selected="true">
+            <span class="kx-tab-emoji" aria-hidden="true">🌟</span>
+            <span>Tất cả</span>
+            <span class="kx-tab-count">@totalItems</span>
+        </button>
+        <button type="button" class="kh-tab kx-tab bilingual-tab-btn" data-tab="letters" role="tab" aria-selected="false">
+            <span class="kx-tab-emoji" aria-hidden="true">🔤</span>
+            <span>Chữ cái A – Z</span>
+            <span class="kx-tab-count">@letters.Length</span>
+        </button>
+        <button type="button" class="kh-tab kx-tab bilingual-tab-btn" data-tab="numbers" role="tab" aria-selected="false">
+            <span class="kx-tab-emoji" aria-hidden="true">🔢</span>
+            <span>Số 0 – 20</span>
+            <span class="kx-tab-count">@numbers.Length</span>
+        </button>
+    </nav>
+
+    <!-- Khu vực 1: Bảng chữ cái tiếng Anh -->
+    <section class="kh-panel kx-listen-section kh-tone-coral" data-section="letters" aria-label="Bảng chữ cái tiếng Anh">
+        <div class="kh-panel-head">
+            <span class="kh-panel-emoji kx-panel-emoji" aria-hidden="true">🔤</span>
+            <div class="kh-panel-title">
+                <h2>Chữ cái tiếng Anh A – Z</h2>
+                <p>Mỗi chữ có hình và một từ dễ nhớ</p>
             </div>
-            <span class="section-count-badge">26 thẻ chữ</span>
+            <span class="kh-chip">@letters.Length thẻ</span>
         </div>
 
-        <div class="bilingual-cards-grid">
+        <div class="kx-listen-grid">
             @for (var i = 0; i < letters.Length; i++)
             {
                 var item = letters[i];
-                <button class="bilingual-card letter-card @item.ColorTheme"
+                <button class="kx-listen-card kx-@(item.ColorTheme)"
                         type="button"
                         data-listen-card
                         data-index="@i"
@@ -147,58 +156,40 @@
                         data-speak="@item.Symbol"
                         data-example-speak="@item.Word"
                         aria-label="Chữ cái @item.Symbol - @item.Word">
-                    
-                    <div class="card-status-indicator" title="Đã nghe">
-                        <span class="material-symbols-outlined check-icon">check_circle</span>
-                    </div>
-
-                    <div class="card-symbol-badge">
-                        <span class="symbol-text">@item.Symbol</span>
-                    </div>
-
-                    <div class="card-thumb-wrap">
-                        <img src="@item.Image" alt="@item.Word" class="card-thumb-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-                        <span class="card-emoji-fallback">@item.Emoji</span>
-                    </div>
-
-                    <div class="card-text-col">
-                        <strong class="card-word">@item.Word</strong>
-                        <span class="card-phonetic">/@item.Phonetic/</span>
-                        <span class="card-meaning">@item.MeaningVi</span>
-                    </div>
-
-                    <div class="card-audio-btn" title="Nghe phát âm">
+                    <span class="kx-listen-check" aria-hidden="true">✓</span>
+                    <span class="kx-listen-symbol" aria-hidden="true">@item.Symbol</span>
+                    <span class="kx-listen-thumb" aria-hidden="true">
+                        <img src="@item.Image" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <span class="kx-listen-emoji">@item.Emoji</span>
+                    </span>
+                    <span class="kx-listen-word">@item.Word</span>
+                    <span class="kx-listen-meaning">@item.MeaningVi</span>
+                    <span class="card-audio-btn kx-listen-audio" aria-hidden="true">
                         <span class="material-symbols-outlined audio-icon">volume_up</span>
-                        <div class="card-waves">
-                            <span></span><span></span><span></span>
-                        </div>
-                    </div>
+                        <span class="card-waves"><span></span><span></span><span></span></span>
+                    </span>
                 </button>
             }
         </div>
-    </div>
+    </section>
 
-    <!-- Khu vực 2: Chữ Số 0 - 20 -->
-    <div class="bilingual-section-group" data-section="numbers">
-        <div class="bilingual-section-header">
-            <div class="section-title-wrap">
-                <div class="section-icon-pill icon-mint">
-                    <span class="material-symbols-outlined">calculate</span>
-                </div>
-                <div>
-                    <h2>Chữ Số Từ 0 Đến 20 (Numbers)</h2>
-                    <p>Đếm số bằng tiếng Anh thật vui với hình ảnh minh họa que tính và đồ vật</p>
-                </div>
+    <!-- Khu vực 2: Chữ số 0 - 20 -->
+    <section class="kh-panel kx-listen-section kh-tone-emerald" data-section="numbers" aria-label="Chữ số từ 0 đến 20">
+        <div class="kh-panel-head">
+            <span class="kh-panel-emoji kx-panel-emoji" aria-hidden="true">🔢</span>
+            <div class="kh-panel-title">
+                <h2>Đếm số tiếng Anh 0 – 20</h2>
+                <p>Nghe và đếm theo cô thật vui</p>
             </div>
-            <span class="section-count-badge">21 thẻ số</span>
+            <span class="kh-chip">@numbers.Length thẻ</span>
         </div>
 
-        <div class="bilingual-cards-grid">
+        <div class="kx-listen-grid">
             @for (var i = 0; i < numbers.Length; i++)
             {
                 var item = numbers[i];
                 var globalIndex = letters.Length + i;
-                <button class="bilingual-card number-card @item.ColorTheme"
+                <button class="kx-listen-card kx-@(item.ColorTheme)"
                         type="button"
                         data-listen-card
                         data-index="@globalIndex"
@@ -214,138 +205,105 @@
                         data-speak="@item.Name"
                         data-example-speak="@item.ExampleEn"
                         aria-label="Số @item.Number - @item.Name">
-                    
-                    <div class="card-status-indicator" title="Đã nghe">
-                        <span class="material-symbols-outlined check-icon">check_circle</span>
-                    </div>
-
-                    <div class="card-symbol-badge">
-                        <span class="symbol-text">@item.Number</span>
-                    </div>
-
-                    <div class="card-thumb-wrap">
-                        <img src="@item.Image" alt="@item.Name" class="card-thumb-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-                        <span class="card-emoji-fallback">@item.Emoji</span>
-                    </div>
-
-                    <div class="card-text-col">
-                        <strong class="card-word">@item.Name</strong>
-                        <span class="card-phonetic">/@item.Phonetic/</span>
-                        <span class="card-meaning">@item.MeaningVi</span>
-                    </div>
-
-                    <div class="card-audio-btn" title="Nghe phát âm">
+                    <span class="kx-listen-check" aria-hidden="true">✓</span>
+                    <span class="kx-listen-symbol" aria-hidden="true">@item.Number</span>
+                    <span class="kx-listen-thumb" aria-hidden="true">
+                        <img src="@item.Image" alt="" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <span class="kx-listen-emoji">@item.Emoji</span>
+                    </span>
+                    <span class="kx-listen-word">@item.Name</span>
+                    <span class="kx-listen-meaning">@item.MeaningVi</span>
+                    <span class="card-audio-btn kx-listen-audio" aria-hidden="true">
                         <span class="material-symbols-outlined audio-icon">volume_up</span>
-                        <div class="card-waves">
-                            <span></span><span></span><span></span>
-                        </div>
-                    </div>
+                        <span class="card-waves"><span></span><span></span><span></span></span>
+                    </span>
                 </button>
             }
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Modal / Hộp Thoại Flashcard Song Ngữ Siêu Tương Tác -->
-<div class="flashcard-dialog-backdrop" id="flashcardDialog" role="dialog" aria-modal="true" aria-labelledby="dialogSymbolTitle" hidden>
-    <div class="flashcard-dialog clay-card">
-        <!-- Nút Đóng -->
-        <button type="button" class="dialog-close-btn clay-button" id="dialogCloseBtn" aria-label="Đóng cửa sổ">
-            <span class="material-symbols-outlined">close</span>
+    <!-- Thanh điều hướng dưới của khu bé -->
+    <nav class="kid-bottom-nav kh-dock" aria-label="Điều hướng">
+        <a asp-controller="Kids" asp-action="Home">
+            <span class="material-symbols-outlined" aria-hidden="true">home</span>
+            <span>Trang chủ</span>
+        </a>
+        <a asp-controller="Kids" asp-action="Today">
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>
+            <span>Bài tập</span>
+        </a>
+        <a asp-controller="Kids" asp-action="Rewards">
+            <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
+            <span>Quà tặng</span>
+        </a>
+        <a href="#" onclick="openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            <span>Phụ huynh</span>
+        </a>
+    </nav>
+</div>
+
+<!-- Hộp thẻ to song ngữ (nằm ngoài .kh để giữ position: fixed) -->
+<div class="kx-dialog" id="flashcardDialog" role="dialog" aria-modal="true" aria-labelledby="dialogSymbolTitle" hidden>
+    <div class="kx-dialog-card">
+        <button type="button" class="kx-dialog-close" id="dialogCloseBtn" aria-label="Đóng thẻ">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
 
-        <!-- Thẻ Điều Hướng Lật Trước/Sau Nhanh Cho Trẻ -->
-        <button type="button" class="dialog-nav-btn dialog-nav-prev clay-button" id="dialogPrevBtn" aria-label="Thẻ trước đó" title="Thẻ trước (Mũi tên trái)">
-            <span class="material-symbols-outlined">arrow_back_ios_new</span>
-        </button>
-        <button type="button" class="dialog-nav-btn dialog-nav-next clay-button" id="dialogNextBtn" aria-label="Thẻ tiếp theo" title="Thẻ tiếp theo (Mũi tên phải)">
-            <span class="material-symbols-outlined">arrow_forward_ios</span>
-        </button>
-
-        <!-- Nội Dung Flashcard To Rõ Sinh Động -->
-        <div class="dialog-inner-content">
-            <!-- Cột Hình Ảnh Flashcard -->
-            <div class="dialog-image-col">
-                <div class="dialog-image-wrapper">
-                    <img src="/images/photos/flashcard-apple.jpg" alt="" id="dialogImage" class="dialog-main-image" />
-                </div>
+        <div class="kx-dialog-body">
+            <div class="kx-dialog-art">
+                <img src="/images/photos/flashcard-apple.jpg" alt="" id="dialogImage" class="kx-dialog-img" onerror="this.style.display='none';" />
+                <span class="kx-dialog-emoji" id="dialogEmoji" aria-hidden="true">🍎</span>
             </div>
 
-            <!-- Cột Nội Dung & Phát Âm -->
-            <div class="dialog-info-col">
-                <div class="dialog-badge-row">
-                    <span class="dialog-category-badge" id="dialogCategoryBadge">Chữ cái A</span>
-                </div>
-                <div class="dialog-header-text">
-                    <div class="dialog-symbol-large" id="dialogSymbolTitle">A</div>
-                    <div class="dialog-emoji-badge" id="dialogEmoji">🍎</div>
-                    <div class="dialog-word-block">
-                        <h3 class="dialog-english-word" id="dialogWord">Apple</h3>
-                        <div class="dialog-phonetic-row">
-                            <span class="phonetic-chip" id="dialogPhonetic">/ˈæp.əl/ (ép-pồ)</span>
-                            <span class="dialog-meaning-badge" id="dialogMeaning">Quả táo</span>
+            <div class="kx-dialog-info">
+                <span class="kx-dialog-cat" id="dialogCategoryBadge">Chữ cái A</span>
+                <div class="kx-dialog-head">
+                    <div class="kx-dialog-symbol" id="dialogSymbolTitle">A</div>
+                    <div class="kx-dialog-wordbox">
+                        <h3 class="kx-dialog-word" id="dialogWord">Apple</h3>
+                        <div class="kx-dialog-chips">
+                            <span class="kx-dialog-phonetic" id="dialogPhonetic">/ˈæp.əl/</span>
+                            <span class="kx-dialog-meaning" id="dialogMeaning">Quả táo</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Khung Câu Ví Dụ Song Ngữ Thân Thiện -->
-                <div class="dialog-example-box clay-card">
-                    <div class="example-header">
-                        <span class="material-symbols-outlined example-icon">forum</span>
-                        <strong>Câu ví dụ mẫu:</strong>
-                    </div>
-                    <p class="example-vietnamese" id="dialogExampleVi">Chữ A trong Quả táo. Quả táo đỏ thật ngọt lành.</p>
-                    <p class="example-english" id="dialogExampleEn">A is for Apple. An apple is sweet and red.</p>
+                <div class="kx-dialog-example">
+                    <p class="kx-dialog-example-vi" id="dialogExampleVi">Chữ A trong Quả táo. Quả táo đỏ thật ngọt lành.</p>
+                    <p class="kx-dialog-example-en" id="dialogExampleEn">A is for Apple. An apple is sweet and red.</p>
                 </div>
 
-                <!-- Cụm Duy Nhất 2 Nút Thao Tác: Nghe Song Ngữ Tích Hợp Toàn Bộ & Đọc Chậm -->
-                <div class="dialog-actions-cluster">
-                    <button type="button" class="dialog-action-btn btn-speak-bilingual clay-button" id="dialogSpeakBilingualBtn" title="Nghe âm thanh thẻ">
-                        <span class="material-symbols-outlined btn-icon">headphones</span>
-                        <div class="btn-text-wrap">
+                <div class="kx-dialog-actions">
+                    <button type="button" class="kx-dialog-btn kx-dialog-btn--main" id="dialogSpeakBilingualBtn" title="Nghe âm thanh thẻ">
+                        <span class="material-symbols-outlined" aria-hidden="true">headphones</span>
+                        <span class="kx-dialog-btn-text">
                             <strong id="dialogSpeakModeTitle">Chỉ Tiếng Anh</strong>
                             <small id="dialogSpeakModeSub">Chữ ➔ Từ ví dụ (A - Apple)</small>
-                        </div>
+                        </span>
                     </button>
-
-                    <button type="button" class="dialog-action-btn btn-speak-slow clay-button" id="dialogSpeakSlowBtn" title="Luyện đọc chậm tiếng Anh">
-                        <span class="material-symbols-outlined btn-icon">slow_motion_video</span>
-                        <div class="btn-text-wrap">
-                            <strong>Đọc Chậm</strong>
-                            <small>Bé nhại từng âm</small>
-                        </div>
+                    <button type="button" class="kx-dialog-btn kx-dialog-btn--slow" id="dialogSpeakSlowBtn" title="Nghe chậm từ tiếng Anh">
+                        <span class="kx-dialog-btn-emoji" aria-hidden="true">🐢</span>
+                        <span class="kx-dialog-btn-text">
+                            <strong>Nghe chậm</strong>
+                            <small>Bé đọc theo cô</small>
+                        </span>
                     </button>
-                </div>
-
-                <!-- Chỉ dẫn phím tắt & Đếm số thẻ -->
-                <div class="dialog-footer-hint">
-                    <span id="dialogProgressIndicator">Thẻ 1 / 47</span>
-                    <span class="keyboard-tip">Mẹo: Dùng phím ◀ ▶ để lật thẻ, phím Space để nghe lại</span>
                 </div>
             </div>
         </div>
+
+        <div class="kx-dialog-nav">
+            <button type="button" class="kx-dialog-navbtn" id="dialogPrevBtn" aria-label="Thẻ trước">
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            </button>
+            <span class="kx-dialog-progress" id="dialogProgressIndicator">Thẻ 1 / 47</span>
+            <button type="button" class="kx-dialog-navbtn" id="dialogNextBtn" aria-label="Thẻ tiếp theo">
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </button>
+        </div>
     </div>
 </div>
-
-<!-- Bottom Nav Giữ Nguyên Đồng Bộ Toàn Ứng Dụng -->
-<nav class="kid-bottom-nav">
-    <a class="active" asp-controller="Kids" asp-action="Home">
-        <span class="material-symbols-outlined">home</span>
-        <span>Trang chủ</span>
-    </a>
-    <a asp-controller="Kids" asp-action="Today">
-        <span class="material-symbols-outlined">edit_square</span>
-        <span>Bài tập</span>
-    </a>
-    <a asp-controller="Kids" asp-action="Rewards">
-        <span class="material-symbols-outlined">emoji_events</span>
-        <span>Quà tặng</span>
-    </a>
-    <a asp-controller="Parent" asp-action="Dashboard">
-        <span class="material-symbols-outlined">family_restroom</span>
-        <span>Phụ huynh</span>
-    </a>
-</nav>
 
 @section Scripts {
     <script src="~/js/bilingual-listen.js" asp-append-version="true"></script>

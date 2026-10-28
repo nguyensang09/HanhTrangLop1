@@ -543,7 +543,7 @@
         button.className = className;
         button.dataset.answerValue = String(text ?? "").trim();
         decorateButton(button, text, forceIcon);
-        if (button.matches(".activity-option, .activity-drop-zone, .comparison-group")) {
+        if (button.matches(".activity-option, .activity-drop-zone, .comparison-group, .lw-tile")) {
             const color = activityColors[optionColorIndex % activityColors.length];
             button.style.setProperty("--option-color", color);
             button.style.setProperty("--selection-color", color);
@@ -583,6 +583,172 @@
         .map(([left, right]) => `${left}=>${right}`).join("|");
 
     // ==========================================
+    // Bộ khung chung của bảng làm bài: thẻ nhiệm vụ, thẻ đáp án, kéo thả bằng Pointer Events
+    // ==========================================
+    const el = (tag, className = "", text = "") => {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text) node.textContent = text;
+        return node;
+    };
+
+    const icon = (name, className = "") => {
+        const node = el("span", `material-symbols-outlined ${className}`.trim(), name);
+        node.setAttribute("aria-hidden", "true");
+        return node;
+    };
+
+    const reduceMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+
+    // Chạy lại một hiệu ứng ngắn (nảy, rung...) bằng cách gỡ rồi gắn lại lớp CSS.
+    const flash = (node, className) => {
+        if (!node || reduceMotion()) return;
+        node.classList.remove(className, "is-entering");
+        void node.offsetWidth;
+        node.classList.add(className);
+        window.setTimeout(() => node.classList.remove(className), 700);
+    };
+
+    // Thẻ "nhiệm vụ": một biểu tượng lớn + vài chữ ngắn để bé (và bố mẹ) hiểu ngay phải làm gì.
+    const goalPill = (glyph, text, extra = null) => {
+        const goal = el("div", "lw-goal");
+        goal.append(icon(glyph, "lw-goal-icon"), el("span", "lw-goal-text", text));
+        if (extra) goal.append(extra);
+        return goal;
+    };
+
+    // Thẻ đáp án dạng "kẹo dẻo": hình to + nhãn, có huy hiệu ✓ khi được chọn.
+    const makeTile = (text, extraClass = "", forceIcon = "") => {
+        const tile = createButton(text, `lw-tile ${extraClass}`.trim(), forceIcon);
+        tile.classList.add("is-entering");
+        tile.addEventListener("animationend", (event) => {
+            if (event.target === tile && event.animationName === "lw-tile-in") tile.classList.remove("is-entering");
+        });
+        tile.append(icon("check", "lw-check"));
+        return tile;
+    };
+
+    const ghostHost = () => runtime.closest(".lw") || document.body;
+
+    // Tìm đích gần nhất dưới ngón tay, nới rộng mỗi đích thêm vài điểm ảnh để bé thả "gần đúng" vẫn được.
+    const hitTarget = (x, y, targets, pad = 28) => {
+        let best = null;
+        let bestDistance = Infinity;
+        (targets || []).forEach((target) => {
+            if (!target || !target.isConnected) return;
+            const rect = target.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) return;
+            if (x < rect.left - pad || x > rect.right + pad || y < rect.top - pad || y > rect.bottom + pad) return;
+            const dx = x - (rect.left + rect.width / 2);
+            const dy = y - (rect.top + rect.height / 2);
+            const distance = dx * dx + dy * dy;
+            if (distance < bestDistance) {
+                best = target;
+                bestDistance = distance;
+            }
+        });
+        return best;
+    };
+
+    // Kéo thả bằng Pointer Events (chạy trên iPad Safari, chuột và bút). Chạm nhẹ không kéo là "chạm"
+    // (onTap qua sự kiện click); chỉ khi ngón tay đi quá vài điểm ảnh thẻ mới được nhấc lên thành "bóng"
+    // bay theo tay. Theo dõi trên window để vẫn dọn dẹp được nếu bảng bị khóa giữa chừng.
+    const enableDrag = (source, options) => {
+        const { targets, onStart, onMove, onDrop, onEnd, onTap, ghost: useGhost = true } = options;
+        let pointerId = null;
+        let startX = 0;
+        let startY = 0;
+        let moved = false;
+        let ghost = null;
+        let hovered = null;
+        let suppressClickUntil = 0;
+
+        const setHover = (target) => {
+            if (hovered === target) return;
+            hovered?.classList.remove("is-hover");
+            hovered = target;
+            hovered?.classList.add("is-hover");
+        };
+
+        const cleanup = () => {
+            ghost?.remove();
+            ghost = null;
+            setHover(null);
+            source.classList.remove("is-lifted");
+            document.body.classList.remove("drag-interaction-active");
+            runtime.classList.remove("is-dragging");
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", end);
+            window.removeEventListener("pointercancel", end);
+        };
+
+        function move(event) {
+            if (pointerId !== event.pointerId) return;
+            if (!moved) {
+                if (Math.abs(event.clientX - startX) + Math.abs(event.clientY - startY) < 10) return;
+                moved = true;
+                if (useGhost) {
+                    const rect = source.getBoundingClientRect();
+                    ghost = source.cloneNode(true);
+                    ghost.classList.remove("is-hover", "is-lifted", "is-entering", "is-bounce");
+                    ghost.classList.add("lw-ghost");
+                    ghost.setAttribute("aria-hidden", "true");
+                    ghost.removeAttribute("data-answer-value");
+                    ghost.style.width = `${rect.width}px`;
+                    ghost.style.height = `${rect.height}px`;
+                    ghostHost().append(ghost);
+                }
+                source.classList.add("is-lifted");
+                document.body.classList.add("drag-interaction-active");
+                runtime.classList.add("is-dragging");
+                onStart?.();
+            }
+            if (event.cancelable) event.preventDefault();
+            if (ghost) {
+                ghost.style.left = `${event.clientX}px`;
+                ghost.style.top = `${event.clientY}px`;
+            }
+            const target = hitTarget(event.clientX, event.clientY, targets());
+            setHover(target);
+            onMove?.(event.clientX, event.clientY, target);
+        }
+
+        function end(event) {
+            if (pointerId !== event.pointerId) return;
+            pointerId = null;
+            const wasDragging = moved;
+            moved = false;
+            const target = wasDragging && event.type === "pointerup" ? hitTarget(event.clientX, event.clientY, targets()) : null;
+            cleanup();
+            if (!wasDragging) return; // Chạm nhẹ: sự kiện click sẽ lo.
+            suppressClickUntil = Date.now() + 450;
+            onEnd?.();
+            if (target && !hasSubmitted && !runtime.inert) onDrop?.(target);
+        }
+
+        source.addEventListener("pointerdown", (event) => {
+            if (hasSubmitted || runtime.inert || pointerId !== null) return;
+            if (event.pointerType === "mouse" && event.button !== 0) return;
+            pointerId = event.pointerId;
+            startX = event.clientX;
+            startY = event.clientY;
+            moved = false;
+            try { source.setPointerCapture(pointerId); } catch { /* trình duyệt cũ: vẫn theo dõi trên window */ }
+            window.addEventListener("pointermove", move, { passive: false });
+            window.addEventListener("pointerup", end);
+            window.addEventListener("pointercancel", end);
+        });
+
+        source.addEventListener("click", (event) => {
+            if (Date.now() < suppressClickUntil) {
+                event.preventDefault();
+                return;
+            }
+            onTap?.(event);
+        });
+    };
+
+    // ==========================================
     // Activity Renderers
     // ==========================================
 
@@ -610,8 +776,60 @@
         runtime.append(board);
     };
 
-    const renderChoice = (allowMultiple = false) => {
+    // Hình mẫu của câu hỏi (ví dụ cái bóng cần đoán).
+    const appendFocusVisual = () => {
+        if (!payload.focusVisual) return;
+        const focusVisual = document.createElement("div");
+        focusVisual.className = "activity-focus-visual lw-focus";
+        const focusValue = String(payload.focusVisual);
+        // Kho bài mới: hình mẫu có thể là bóng đen ("shadow:🐘"), chỉ hình ("pic:..."), hình vẽ ("shape:...") hoặc emoji.
+        const isBankVisual = /^(shadow|pic|shape):/.test(focusValue) || focusValue.startsWith("/") || resolveVisual(focusValue) || !/[\p{L}\p{N}]/u.test(focusValue);
+        if (isBankVisual) {
+            focusVisual.classList.add("is-bank-visual");
+            renderVisual(focusVisual, resolveVisual(focusValue) || focusValue, "");
+        } else {
+            decorateButton(focusVisual, payload.focusVisual);
+        }
+        focusVisual.querySelector(".answer-label")?.remove();
+        focusVisual.setAttribute("role", "img");
+        focusVisual.setAttribute("aria-label", focusValue.startsWith("shadow:") ? "Cái bóng cần đoán" : "Hình mẫu");
+        runtime.append(focusVisual);
+    };
+
+    // Lưới thẻ: số cột theo số đáp án (CSS đọc data-count), đáp án chữ dài được xếp ít cột hơn.
+    const tileGrid = (className, values) => {
+        const grid = el("div", `lw-grid ${className}`.trim());
+        const list = Array.isArray(values) ? values : [];
+        grid.dataset.count = String(list.length);
+        if (list.some((value) => String(value ?? "").trim().length > 9)) grid.classList.add("has-long");
+        if (list.length > 0 && list.every((value) => isSingleSymbol(value))) grid.classList.add("is-symbols");
+        return grid;
+    };
+
+    const finishGrid = (grid) => {
+        grid.classList.add(grid.querySelector(".has-answer-visual, .is-quantity-visual") ? "is-visual" : "is-text");
+    };
+
+    // Nút nghe to ngay trên bảng (bài nghe và chọn, bài kể chuyện): đọc lại câu hỏi qua bộ Voice chung.
+    const listenButton = (label, glyph) => {
+        const button = el("button", "lw-listen");
+        button.type = "button";
+        const art = el("span", "lw-listen-art");
+        art.append(icon(glyph));
+        const waves = el("span", "lw-listen-waves");
+        waves.setAttribute("aria-hidden", "true");
+        waves.append(el("i"), el("i"), el("i"));
+        button.append(art, el("span", "lw-listen-label", label), waves);
+        button.addEventListener("click", () => {
+            flash(button, "is-bounce");
+            playPromptAudio();
+        });
+        return button;
+    };
+
+    const renderChoice = (allowMultiple = false, goal = null) => {
         appendEquationVisual();
+        appendFocusVisual();
         const selected = new Set();
         // Số đáp án cần chọn do máy chủ cung cấp (chỉ là số lượng, không tiết lộ đáp án).
         // Nhờ đó dạng "chọn nhiều đáp án" biết lúc nào bé đã trả lời xong để tự chấm.
@@ -619,803 +837,832 @@
         // Nếu không biết số đáp án cần chọn (dữ liệu cũ) thì không chấm ngay khi bé
         // vừa chọn một ô: phải chờ bé chọn xong, nếu không bé luôn bị sai.
         if (allowMultiple && expectedCount <= 0) settleTypes.add(type);
-        // Chọn nhiều: cho bé thấy cần chọn mấy hình và đã chọn được mấy (mỗi chấm là một lựa chọn).
+
+        // Chọn nhiều: mỗi chấm tròn trên thẻ nhiệm vụ là một lựa chọn cần chọn, sáng lên khi bé chọn.
         let counterDots = [];
+        let dots = null;
         if (allowMultiple && expectedCount > 1) {
-            const counter = document.createElement("div");
-            counter.className = "lw-pick-counter";
-            const label = document.createElement("span");
-            label.textContent = `Con chọn đủ ${expectedCount} đáp án nhé`;
-            const dots = document.createElement("span");
-            dots.className = "lw-pick-dots";
+            dots = el("span", "lw-goal-dots");
             counterDots = Array.from({ length: expectedCount }, () => {
-                const dot = document.createElement("i");
+                const dot = el("i");
                 dots.append(dot);
                 return dot;
             });
-            counter.append(label, dots);
-            runtime.append(counter);
         }
         const updateCounter = (count) => counterDots.forEach((dot, index) => dot.classList.toggle("is-on", index < count));
-        const grid = document.createElement("div");
-        grid.className = "activity-option-grid";
-        const hasTextOptions = (payload.choices || []).some((choice) => String(choice ?? "").trim().length > 3);
-        if (hasTextOptions) {
-            grid.classList.add("grid-text-options");
-        }
-        if (payload.focusVisual) {
-            const focusVisual = document.createElement("div");
-            focusVisual.className = "activity-focus-visual";
-            const focusValue = String(payload.focusVisual);
-            // Kho bài mới: hình mẫu có thể là bóng đen ("shadow:🐘"), chỉ hình ("pic:..."), hình vẽ ("shape:...") hoặc emoji.
-            const isBankVisual = /^(shadow|pic|shape):/.test(focusValue) || focusValue.startsWith("/") || resolveVisual(focusValue) || !/[\p{L}\p{N}]/u.test(focusValue);
-            if (isBankVisual) {
-                focusVisual.classList.add("is-bank-visual");
-                renderVisual(focusVisual, resolveVisual(focusValue) || focusValue, "");
-            } else {
-                decorateButton(focusVisual, payload.focusVisual);
-            }
-            focusVisual.querySelector(".answer-label")?.remove();
-            focusVisual.setAttribute("role", "img");
-            focusVisual.setAttribute("aria-label", focusValue.startsWith("shadow:") ? "Cái bóng cần đoán" : "Hình mẫu");
-            runtime.append(focusVisual);
-        }
-        (payload.choices || []).forEach((choice, index) => {
-            const button = createButton(choice);
-            button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
-            button.addEventListener("click", () => {
+
+        const goalIcon = goal?.icon || (allowMultiple ? "checklist" : type === "listen_choose" ? "hearing" : "touch_app");
+        const goalText = goal?.text || (allowMultiple
+            ? (expectedCount > 1 ? `Chọn đủ ${expectedCount} đáp án` : "Chọn tất cả đáp án đúng")
+            : type === "listen_choose" ? "Nghe rồi chạm đáp án đúng" : "Chạm vào đáp án đúng");
+        runtime.append(goalPill(goalIcon, goalText, dots));
+
+        const choices = payload.choices || [];
+        const grid = tileGrid(`lw-choice-grid${allowMultiple ? " is-multi" : ""}`, choices);
+        const tiles = [];
+        const refresh = () => {
+            tiles.forEach(({ tile, choice }) => tile.classList.toggle("is-selected", selected.has(choice)));
+            grid.classList.toggle("has-pick", selected.size > 0);
+        };
+
+        choices.forEach((choice, index) => {
+            const tile = makeTile(choice, allowMultiple ? "lw-tile--check" : "");
+            tile.style.setProperty("--i", String(index));
+            tile.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
+            tiles.push({ tile, choice });
+            tile.addEventListener("click", () => {
+                playAnswerAudio(choice);
                 if (!allowMultiple) {
                     selected.clear();
-                    grid.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                }
-                playAnswerAudio(choice);
-                selected.has(choice) ? selected.delete(choice) : selected.add(choice);
-                button.classList.toggle("selected", selected.has(choice));
-                const answer = allowMultiple ? [...selected].sort().join("|") : [...selected][0] || "";
-                if (!allowMultiple) {
-                    setAnswer(answer, selected.size > 0, true, INSTANT_DELAY);
+                    selected.add(choice);
+                    refresh();
+                    flash(tile, "is-bounce");
+                    setAnswer(choice, true, true, INSTANT_DELAY);
                     return;
+                }
+                if (selected.has(choice)) selected.delete(choice);
+                else {
+                    selected.add(choice);
+                    flash(tile, "is-bounce");
                 }
                 if (expectedCount > 0 && selected.size > expectedCount) {
                     // Chọn quá số cần chọn: bỏ lựa chọn cũ nhất để bé không bị kẹt.
                     const oldest = [...selected].find((value) => value !== choice);
                     selected.delete(oldest);
-                    grid.querySelectorAll("button").forEach((item) => item.classList.toggle("selected", selected.has(item.dataset.answerValue)));
                 }
+                refresh();
                 updateCounter(selected.size);
                 const isComplete = expectedCount > 0
                     ? selected.size === expectedCount
                     : selected.size > 0;
                 setAnswer([...selected].sort().join("|"), isComplete);
             });
-            grid.append(button);
+            grid.append(tile);
         });
-        if (grid.querySelector(".has-answer-visual")) {
-            grid.classList.add("has-visual-options");
-            grid.classList.remove("grid-text-options");
-        }
+        finishGrid(grid);
         runtime.append(grid);
     };
 
     const renderMultiSelect = () => renderChoice(true);
 
+    // Kéo vào ô: một ô đích thật to; chạm vào hình là hình bay vào ô, hoặc kéo hình thả vào ô.
     const renderDragDrop = () => {
         appendEquationVisual();
-        const source = document.createElement("div");
-        source.className = "activity-option-grid drag-source";
-        const target = document.createElement("button");
-        target.type = "button";
-        target.className = "activity-drop-zone clay-card";
-        const targetIcon = document.createElement("span");
-        targetIcon.className = "material-symbols-outlined";
-        targetIcon.textContent = "inbox";
-        const targetVisual = resolveVisual(payload.targetLabel);
-        if (targetVisual && !targetVisual.includes(":") && !targetVisual.startsWith("/")) {
-            targetIcon.className = "answer-emoji drop-zone-emoji";
-            targetIcon.textContent = targetVisual;
-        }
-        targetIcon.setAttribute("aria-hidden", "true");
-        const targetLabel = document.createElement("strong");
-        targetLabel.textContent = payload.targetLabel || "Vùng đích";
-        target.append(targetIcon, targetLabel);
-        let activeValue = "";
-        let dragGhost = null;
+        appendFocusVisual();
+        runtime.append(goalPill("pan_tool_alt", "Kéo hình vào ô"));
+        const choices = payload.choices || [];
+        const stage = el("div", "lw-dnd");
+        const source = tileGrid("lw-dnd-source", choices);
 
-        const dropValue = (value) => {
-            if (!value) return;
-            activeValue = value;
-            playAnswerAudio(value);
-            source.querySelectorAll("button").forEach((btn) => {
-                btn.classList.toggle("selected", btn.dataset.answerValue === value.trim());
+        const zone = el("button", "lw-drop");
+        zone.type = "button";
+        const zoneArt = el("span", "lw-drop-art");
+        zoneArt.setAttribute("aria-hidden", "true");
+        const targetText = String(payload.targetLabel || "").trim();
+        const zoneVisual = resolveVisual(targetText);
+        const zonePictogram = targetText ? resolvePictogram(targetText) : "";
+        if (zoneVisual) {
+            renderVisual(zoneArt, zoneVisual, targetText);
+        } else if (zonePictogram) {
+            const image = el("img", "answer-pictogram");
+            image.src = `${pictogramPath}${zonePictogram}`;
+            image.alt = "";
+            zoneArt.append(image);
+        } else {
+            zoneArt.append(icon("inventory_2", "lw-drop-icon"));
+        }
+        const zoneSlot = el("span", "lw-drop-slot");
+        zoneSlot.append(icon("south", "lw-drop-arrow"));
+        zone.append(zoneArt, zoneSlot);
+        if (targetText) zone.append(el("strong", "lw-drop-label", targetText));
+        zone.setAttribute("aria-label", targetText || "Ô thả hình");
+
+        let current = null;
+        const tiles = [];
+        const put = (choice) => {
+            current = choice;
+            playAnswerAudio(choice);
+            tiles.forEach(({ tile, value }) => tile.classList.toggle("is-used", value === choice));
+            const item = el("span", "lw-drop-item");
+            decorateButton(item, choice);
+            zoneSlot.replaceChildren(item);
+            zone.classList.add("is-filled");
+            flash(zone, "is-gulp");
+            setAnswer(choice, true, true, 1000);
+        };
+
+        choices.forEach((choice, index) => {
+            const tile = makeTile(choice, "lw-tile--drag");
+            tile.style.setProperty("--i", String(index));
+            tiles.push({ tile, value: choice });
+            enableDrag(tile, {
+                targets: () => [zone],
+                onStart: () => zone.classList.add("is-ready"),
+                onEnd: () => zone.classList.remove("is-ready"),
+                onDrop: () => put(choice),
+                onTap: () => put(choice)
             });
-            decorateButton(target, value);
-            target.classList.add("filled");
-            setAnswer(value, true, true, 1000);
-        };
-        const movePointerDrag = (event) => {
-            if (!dragGhost) return;
-            event.preventDefault();
-            dragGhost.style.left = `${event.clientX}px`;
-            dragGhost.style.top = `${event.clientY}px`;
-            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            target.classList.toggle("drop-hover", Boolean(dropTarget?.closest?.(".activity-drop-zone")));
-        };
-        const finishPointerDrag = (event) => {
-            if (!dragGhost) return;
-            event.preventDefault();
-            dragGhost.remove();
-            dragGhost = null;
-            // Giải phóng khóa cuộn khi kéo thả xong
-            document.body.classList.remove("drag-interaction-active");
-            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            target.classList.remove("drop-hover");
-            if (dropTarget?.closest?.(".activity-drop-zone") && activeValue) {
-                dropValue(activeValue);
-            }
-        };
-        const startPointerDrag = (event, choice, button) => {
-            if (event.pointerType === "mouse") return;
-            event.preventDefault();
-            activeValue = choice;
-            source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-            button.classList.add("selected");
-            target.classList.add("ready");
-            dragGhost = button.cloneNode(true);
-            dragGhost.classList.add("drag-ghost");
-            document.body.append(dragGhost);
-            // Khóa cuộn trang khi đang kéo thả – tránh trang bị scroll giữa chừng
-            document.body.classList.add("drag-interaction-active");
-            button.setPointerCapture(event.pointerId);
-            movePointerDrag(event);
-        };
-        (payload.choices || []).forEach((choice) => {
-            const button = createButton(choice, "activity-option draggable-option clay-button");
-            button.draggable = true;
-            button.addEventListener("click", () => {
-                playAnswerAudio(choice);
-                activeValue = choice;
-                source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                button.classList.add("selected");
-                target.classList.add("ready");
-            });
-            button.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/plain", choice));
-            button.addEventListener("pointerdown", (event) => startPointerDrag(event, choice, button));
-            button.addEventListener("pointermove", movePointerDrag);
-            button.addEventListener("pointerup", finishPointerDrag);
-            button.addEventListener("pointercancel", finishPointerDrag);
-            source.append(button);
+            source.append(tile);
         });
-        target.addEventListener("click", () => activeValue && dropValue(activeValue));
-        target.addEventListener("dragover", (event) => event.preventDefault());
-        target.addEventListener("drop", (event) => {
-            event.preventDefault();
-            dropValue(event.dataTransfer.getData("text/plain"));
+        finishGrid(source);
+        // Chạm vào ô đích: đọc lại hình đang nằm trong ô (nếu có).
+        zone.addEventListener("click", () => {
+            if (current !== null) playAnswerAudio(current);
+            else flash(source, "is-nudge");
         });
-        runtime.append(source, target);
+        stage.append(source, zone);
+        runtime.append(stage);
     };
 
+    // Nối cặp: chạm một thẻ bên này rồi chạm thẻ hợp với nó bên kia (hoặc kéo dây nối từ thẻ này sang thẻ kia).
+    // Dây nối màu được vẽ bằng SVG, tính lại khi đổi cỡ màn hình, xoay iPad hoặc ảnh tải xong.
     const renderMatching = () => {
         const pairs = payload.pairs || [];
         const mappings = {};
-        let selectedLeft = "";
-        let isDraggingLine = false;
-        let dragSourceBtn = null;
-        let currentPointerPos = null;
+        let picked = null;
+        let live = null;
 
-        const board = document.createElement("div");
-        board.className = "matching-board";
+        runtime.append(goalPill("link", "Nối hai hình hợp nhau"));
+
+        const board = el("div", "lw-match");
         const isQuantityMatching = pairs.length > 0 && pairs.every((pair) =>
             /^\d+$/.test(String(pair.left || "").trim()) && getRepeatedPictureGroup(pair.right));
-        if (isQuantityMatching) board.classList.add("matching-quantity-board");
-
+        if (isQuantityMatching) board.classList.add("is-quantity");
         const isLetterMatching = pairs.length > 0 && pairs.every((pair) =>
             isSingleSymbol(pair.left) && isSingleSymbol(pair.right));
-        if (isLetterMatching) board.classList.add("matching-letter-board");
-        const lines = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        lines.classList.add("matching-lines");
+        if (isLetterMatching) board.classList.add("is-letters");
+
+        const NS = "http://www.w3.org/2000/svg";
+        const lines = document.createElementNS(NS, "svg");
+        lines.setAttribute("class", "lw-match-lines");
         lines.setAttribute("aria-hidden", "true");
-        const leftColumn = document.createElement("div");
-        leftColumn.className = "matching-column matching-left";
-        const rightColumn = document.createElement("div");
-        rightColumn.className = "matching-column matching-right";
-        const rights = shuffleForDisplay(pairs.map((pair) => pair.right));
+        lines.setAttribute("preserveAspectRatio", "none");
+        const leftColumn = el("div", "lw-match-col is-left");
+        const rightColumn = el("div", "lw-match-col is-right");
+        const leftTiles = new Map();
+        const rightTiles = new Map();
+        const leftColors = new Map();
+        const tileValues = new Map();
+        // Giá trị nối luôn là chuỗi (giống khóa đối tượng trước đây), chuỗi đáp án "trái=>phải" không đổi.
+        const rights = shuffleForDisplay(pairs.map((pair) => String(pair.right ?? "")));
 
-        const drawLines = () => {
-            lines.replaceChildren();
-            const boardRect = board.getBoundingClientRect();
-
-            // 1. Draw established connections
-            Object.entries(mappings).forEach(([left, right], index) => {
-                const leftButton = [...leftColumn.children].find((item) => item.dataset.value === left);
-                const rightButton = [...rightColumn.children].find((item) => item.dataset.value === right);
-                if (!leftButton || !rightButton) return;
-                const leftRect = leftButton.getBoundingClientRect();
-                const rightRect = rightButton.getBoundingClientRect();
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", String(leftRect.right - boardRect.left));
-                line.setAttribute("y1", String(leftRect.top + leftRect.height / 2 - boardRect.top));
-                line.setAttribute("x2", String(rightRect.left - boardRect.left));
-                line.setAttribute("y2", String(rightRect.top + rightRect.height / 2 - boardRect.top));
-                line.setAttribute("stroke", activityColors[index % activityColors.length]);
-                line.setAttribute("stroke-width", "5");
-                line.setAttribute("stroke-dasharray", "8,5");
-
-                const start = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                const end = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                [[start, leftRect.right - boardRect.left, leftRect.top + leftRect.height / 2 - boardRect.top],
-                    [end, rightRect.left - boardRect.left, rightRect.top + rightRect.height / 2 - boardRect.top]]
-                    .forEach(([circle, x, y]) => {
-                        circle.setAttribute("cx", String(x));
-                        circle.setAttribute("cy", String(y));
-                        circle.setAttribute("r", "8");
-                        circle.setAttribute("fill", activityColors[index % activityColors.length]);
-                    });
-                lines.append(line, start, end);
-            });
-
-            // 2. Draw live dragging line following pointer
-            if (isDraggingLine && dragSourceBtn && currentPointerPos) {
-                const srcRect = dragSourceBtn.getBoundingClientRect();
-                const startX = srcRect.right - boardRect.left;
-                const startY = srcRect.top + srcRect.height / 2 - boardRect.top;
-                const endX = currentPointerPos.x - boardRect.left;
-                const endY = currentPointerPos.y - boardRect.top;
-
-                const liveLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                liveLine.setAttribute("x1", String(startX));
-                liveLine.setAttribute("y1", String(startY));
-                liveLine.setAttribute("x2", String(endX));
-                liveLine.setAttribute("y2", String(endY));
-                liveLine.setAttribute("stroke", "#ff7d4d");
-                liveLine.setAttribute("stroke-width", "6");
-                liveLine.setAttribute("stroke-linecap", "round");
-                liveLine.setAttribute("stroke-dasharray", "6,6");
-
-                const liveStart = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                liveStart.setAttribute("cx", String(startX));
-                liveStart.setAttribute("cy", String(startY));
-                liveStart.setAttribute("r", "9");
-                liveStart.setAttribute("fill", "#ff7d4d");
-
-                const liveEnd = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                liveEnd.setAttribute("cx", String(endX));
-                liveEnd.setAttribute("cy", String(endY));
-                liveEnd.setAttribute("r", "8");
-                liveEnd.setAttribute("fill", "#ff7d4d");
-
-                lines.append(liveLine, liveStart, liveEnd);
-            }
+        const pegPoint = (tile) => {
+            const peg = tile.querySelector(".lw-peg") || tile;
+            const rect = peg.getBoundingClientRect();
+            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
         };
 
-        const connectPair = (leftVal, rightVal) => {
-            if (!leftVal || !rightVal) return;
-            playAnswerAudio(rightVal);
-            Object.entries(mappings).forEach(([left, mappedRight]) => {
-                if (mappedRight === rightVal && left !== leftVal) delete mappings[left];
+        const addLine = (from, to, color, live) => {
+            const dx = Math.max(24, Math.abs(to.x - from.x) * 0.45) * (to.x >= from.x ? 1 : -1);
+            const d = `M ${from.x} ${from.y} C ${from.x + dx} ${from.y}, ${to.x - dx} ${to.y}, ${to.x} ${to.y}`;
+            const under = document.createElementNS(NS, "path");
+            under.setAttribute("d", d);
+            under.setAttribute("class", "lw-line-under");
+            const path = document.createElementNS(NS, "path");
+            path.setAttribute("d", d);
+            path.setAttribute("class", live ? "lw-line is-live" : "lw-line");
+            path.style.stroke = color;
+            const dot = document.createElementNS(NS, "circle");
+            dot.setAttribute("cx", String(to.x));
+            dot.setAttribute("cy", String(to.y));
+            dot.setAttribute("r", live ? "11" : "8");
+            dot.style.fill = color;
+            lines.append(under, path, dot);
+        };
+
+        let frame = 0;
+        const onResize = () => scheduleDraw();
+        const draw = () => {
+            frame = 0;
+            if (!board.isConnected) {
+                // Bảng đã được vẽ lại (bé làm lại): gỡ các bộ lắng nghe của bảng cũ.
+                window.removeEventListener("resize", onResize);
+                window.removeEventListener("orientationchange", onResize);
+                resizeObserver?.disconnect();
+                return;
+            }
+            const box = board.getBoundingClientRect();
+            if (box.width === 0 || box.height === 0) return;
+            lines.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+            lines.replaceChildren();
+            const local = (point) => ({ x: point.x - box.left, y: point.y - box.top });
+            Object.entries(mappings).forEach(([left, right]) => {
+                const leftTile = leftTiles.get(left);
+                const rightTile = rightTiles.get(right);
+                if (!leftTile || !rightTile) return;
+                addLine(local(pegPoint(leftTile)), local(pegPoint(rightTile)), leftColors.get(left) || activityColors[0], false);
             });
-            mappings[leftVal] = rightVal;
-            leftColumn.querySelectorAll("button").forEach((item) => {
-                item.classList.toggle("matched", Object.hasOwn(mappings, item.dataset.value));
-                item.classList.remove("selected");
+            if (live) addLine(local(pegPoint(live.tile)), local({ x: live.x, y: live.y }), live.color, true);
+        };
+        function scheduleDraw() {
+            if (!frame) frame = window.requestAnimationFrame(draw);
+        }
+        const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(scheduleDraw) : null;
+
+        const refresh = () => {
+            const owners = new Map(Object.entries(mappings).map(([left, right]) => [right, left]));
+            leftTiles.forEach((tile, value) => {
+                tile.classList.toggle("is-matched", Object.hasOwn(mappings, value));
+                tile.classList.toggle("is-selected", picked?.tile === tile);
             });
-            rightColumn.querySelectorAll("button").forEach((item) => {
-                item.classList.toggle("matched", Object.values(mappings).includes(item.dataset.value));
-                item.classList.remove("target-hover", "target-ready");
+            rightTiles.forEach((tile, value) => {
+                const owner = owners.get(value);
+                tile.classList.toggle("is-matched", owner !== undefined);
+                if (owner !== undefined) tile.style.setProperty("--match-color", leftColors.get(owner) || activityColors[0]);
+                else tile.style.removeProperty("--match-color");
+                tile.classList.toggle("is-selected", picked?.tile === tile);
             });
-            selectedLeft = "";
-            isDraggingLine = false;
-            dragSourceBtn = null;
-            currentPointerPos = null;
+            board.classList.toggle("is-picking", Boolean(picked));
+            board.dataset.pickSide = picked?.side || "";
+            scheduleDraw();
+        };
+
+        // spokenValue: thẻ bé vừa chạm/thả vào — đọc đúng thẻ đó.
+        const connect = (leftValue, rightValue, spokenValue = rightValue) => {
+            if (leftValue === undefined || rightValue === undefined) return;
+            Object.keys(mappings).forEach((left) => {
+                if (mappings[left] === rightValue && left !== leftValue) delete mappings[left];
+            });
+            mappings[leftValue] = rightValue;
+            picked = null;
+            playAnswerAudio(spokenValue);
+            refresh();
+            flash(leftTiles.get(leftValue), "is-bounce");
+            flash(rightTiles.get(rightValue), "is-bounce");
             setAnswer(canonicalMappings(mappings), Object.keys(mappings).length === pairs.length);
-            requestAnimationFrame(drawLines);
+        };
+
+        const pick = (side, value, tile) => {
+            if (picked && picked.side !== side) {
+                connect(side === "left" ? value : picked.value, side === "right" ? value : picked.value, value);
+                return;
+            }
+            if (picked?.tile === tile) {
+                picked = null;
+                refresh();
+                return;
+            }
+            picked = { side, value, tile };
+            playAnswerAudio(value);
+            refresh();
+        };
+
+        const wire = (tile, side, value) => {
+            const peg = el("span", "lw-peg");
+            peg.setAttribute("aria-hidden", "true");
+            tile.append(peg);
+            const opposite = side === "left" ? rightTiles : leftTiles;
+            enableDrag(tile, {
+                ghost: false,
+                targets: () => [...opposite.values()],
+                onStart: () => {
+                    picked = { side, value, tile };
+                    playAnswerAudio(value);
+                    refresh();
+                },
+                onMove: (x, y) => {
+                    live = { tile, x, y, color: side === "left" ? leftColors.get(value) : "#ff7d4d" };
+                    scheduleDraw();
+                },
+                onEnd: () => {
+                    live = null;
+                    scheduleDraw();
+                },
+                onDrop: (target) => {
+                    const targetValue = tileValues.get(target);
+                    if (targetValue === undefined) return;
+                    if (side === "left") connect(value, targetValue, targetValue);
+                    else connect(targetValue, value, targetValue);
+                },
+                onTap: () => pick(side, value, tile)
+            });
         };
 
         pairs.forEach((pair, index) => {
-            const isLeftSymbol = isSingleSymbol(pair.left);
-            const button = createButton(pair.left, `activity-option clay-button matching-item${isLeftSymbol ? " matching-letter-item" : ""}`);
-            button.dataset.value = pair.left;
-            button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
-
-            // Drag to Connect Pointer Handlers
-            button.addEventListener("pointerdown", (event) => {
-                event.preventDefault();
-                playAnswerAudio(pair.left);
-                selectedLeft = pair.left;
-                isDraggingLine = true;
-                dragSourceBtn = button;
-                currentPointerPos = { x: event.clientX, y: event.clientY };
-                leftColumn.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                button.classList.add("selected");
-                rightColumn.querySelectorAll("button").forEach((item) => item.classList.add("target-ready"));
-                // Khóa cuộn trang khi đang kéo nối – tránh trang bị scroll giữa chừng
-                document.body.classList.add("drag-interaction-active");
-                button.setPointerCapture(event.pointerId);
-                requestAnimationFrame(drawLines);
-            });
-
-            button.addEventListener("pointermove", (event) => {
-                if (!isDraggingLine) return;
-                currentPointerPos = { x: event.clientX, y: event.clientY };
-                const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest(".matching-right .matching-item");
-                rightColumn.querySelectorAll("button").forEach((item) => {
-                    item.classList.toggle("target-hover", item === dropTarget);
-                });
-                requestAnimationFrame(drawLines);
-            });
-
-            button.addEventListener("pointerup", (event) => {
-                if (!isDraggingLine) return;
-                // Giải phóng khóa cuộn khi nối xong
-                document.body.classList.remove("drag-interaction-active");
-                const dropTarget = document.elementFromPoint(event.clientX, event.clientY)?.closest(".matching-right .matching-item");
-                if (dropTarget && selectedLeft) {
-                    connectPair(selectedLeft, dropTarget.dataset.value);
-                } else {
-                    isDraggingLine = false;
-                    dragSourceBtn = null;
-                    currentPointerPos = null;
-                    rightColumn.querySelectorAll("button").forEach((item) => item.classList.remove("target-hover"));
-                    requestAnimationFrame(drawLines);
-                }
-            });
-
-            button.addEventListener("pointercancel", () => {
-                isDraggingLine = false;
-                dragSourceBtn = null;
-                currentPointerPos = null;
-                // Đảm bảo khóa được giải phóng khi sự kiện bị hủy
-                document.body.classList.remove("drag-interaction-active");
-                requestAnimationFrame(drawLines);
-            });
-
-            leftColumn.append(button);
+            const left = String(pair.left ?? "");
+            const tile = makeTile(left, "lw-tile--match");
+            const color = activityColors[index % activityColors.length];
+            tile.dataset.value = left;
+            tile.style.setProperty("--option-color", color);
+            tile.style.setProperty("--i", String(index));
+            leftColors.set(left, color);
+            leftTiles.set(left, tile);
+            tileValues.set(tile, left);
+            wire(tile, "left", left);
+            leftColumn.append(tile);
         });
 
         rights.forEach((right, index) => {
             const isSoundText = /^(meo|gâu|cạp|chíp|ò ó|reng|cục)/i.test(right.trim());
-            const isRightSymbol = isSingleSymbol(right);
-            const button = createButton(right, `activity-option clay-button matching-item${isRightSymbol ? " matching-letter-item" : ""}`, isSoundText ? "volume_up" : "");
-            button.dataset.value = right;
-            button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
-
-            button.addEventListener("click", () => {
-                if (!selectedLeft) return;
-                connectPair(selectedLeft, right);
-            });
-            rightColumn.append(button);
+            const tile = makeTile(right, "lw-tile--match", isSoundText ? "volume_up" : "");
+            tile.dataset.value = right;
+            tileValues.set(tile, right);
+            tile.style.setProperty("--option-color", "#8f8aa8");
+            tile.style.setProperty("--i", String(index + pairs.length));
+            rightTiles.set(right, tile);
+            wire(tile, "right", right);
+            rightColumn.append(tile);
         });
 
-        board.append(lines, leftColumn, rightColumn);
+        board.append(lines, leftColumn, el("div", "lw-match-gap"), rightColumn);
         runtime.append(board);
-        window.addEventListener("resize", drawLines, {passive: true});
+        resizeObserver?.observe(board);
+        window.addEventListener("resize", onResize, { passive: true });
+        window.addEventListener("orientationchange", onResize, { passive: true });
+        // Ảnh tải xong hoặc thẻ vừa nhấc/hạ (hiệu ứng) làm dịch vị trí: vẽ lại dây nối.
+        board.addEventListener("load", scheduleDraw, true);
+        board.addEventListener("transitionend", scheduleDraw);
+        board.addEventListener("animationend", scheduleDraw);
+        scheduleDraw();
     };
 
-    // Sắp xếp thứ tự bằng chạm: bé chạm lần lượt từng thẻ theo đúng trình tự, thẻ bay lên hàng
-    // đích (ô 1, 2, 3...). Chạm lại thẻ đã xếp để trả về. Không cần kéo (kéo HTML5 không chạy
-    // trên iPad) và không cần độ chính xác cao. Đáp án vẫn là chuỗi "a|b|c" như trước.
+    // Sắp xếp thứ tự: hàng ô số 1-2-3 ở trên, các thẻ ở dưới. Chạm thẻ là thẻ bay vào ô trống đầu tiên
+    // (chạm lại thẻ đã xếp để trả về), hoặc kéo thẻ thả vào đúng ô (thả vào ô đã có thẻ thì đổi chỗ).
+    // Đáp án vẫn là chuỗi "a|b|c" theo thứ tự ô.
     const renderOrdering = () => {
         const items = [...(payload.items || [])].reverse();
-        const placed = [];
-        const board = document.createElement("div");
-        board.className = "lw-order";
-        const track = document.createElement("div");
-        track.className = "lw-order-track";
+        const slots = new Array(items.length).fill(null);
+
+        runtime.append(goalPill("format_list_numbered", "Xếp theo thứ tự"));
+
+        const board = el("div", "lw-seq");
+        board.dataset.count = String(items.length);
+        const track = el("div", "lw-seq-track");
         track.setAttribute("aria-label", "Thứ tự bé đã xếp");
-        const hint = document.createElement("p");
-        hint.className = "lw-order-hint";
-        const pool = document.createElement("div");
-        pool.className = "lw-order-pool";
-        const reset = document.createElement("button");
+        const pool = el("div", "lw-seq-pool");
+        const reset = el("button", "lw-mini-btn lw-seq-reset");
         reset.type = "button";
-        reset.className = "lw-order-reset";
-        reset.innerHTML = '<span class="material-symbols-outlined">restart_alt</span> Xếp lại';
+        reset.append(icon("restart_alt"), el("span", "", "Xếp lại"));
 
-        const chipContent = (chip, item) => {
-            const itemClean = String(item || "").trim();
-            const isNumeric = /^\d+$/.test(itemClean);
-            const mediaUrl = isNumeric ? "" : resolveItemMedia(itemClean);
-            const pictogram = isNumeric ? "" : resolvePictogram(itemClean);
-            const src = mediaUrl || (pictogram ? `${pictogramPath}${pictogram}` : "");
-            if (src) {
-                const img = document.createElement("img");
-                img.src = src;
-                img.alt = "";
-                img.loading = "lazy";
-                chip.append(img);
-            }
-            const label = document.createElement("span");
-            label.className = "ordering-value";
-            label.dataset.rawItem = item;
-            label.textContent = itemClean;
-            chip.append(label);
-            chip.setAttribute("aria-label", itemClean);
-        };
-
-        const draw = () => {
-            track.replaceChildren();
-            pool.replaceChildren();
-            items.forEach((_, index) => {
-                const slot = document.createElement("div");
-                slot.className = "lw-order-slot";
-                const item = placed[index];
-                if (item !== undefined) {
-                    const chip = document.createElement("button");
-                    chip.type = "button";
-                    chip.className = "lw-order-chip is-placed";
-                    chipContent(chip, item);
-                    chip.addEventListener("click", () => {
-                        placed.splice(index, 1);
-                        draw();
-                    });
-                    const badge = document.createElement("span");
-                    badge.className = "lw-order-badge";
-                    badge.textContent = String(index + 1);
-                    slot.append(badge, chip);
-                } else {
-                    slot.textContent = String(index + 1);
-                    if (index === placed.length) slot.classList.add("is-next");
-                }
-                track.append(slot);
-            });
-
-            const remaining = [...items];
-            placed.forEach((item) => remaining.splice(remaining.indexOf(item), 1));
-            remaining.forEach((item) => {
-                const chip = document.createElement("button");
-                chip.type = "button";
-                chip.className = "lw-order-chip";
-                chipContent(chip, item);
-                chip.addEventListener("click", () => {
-                    placed.push(item);
-                    playAnswerAudio(item);
-                    draw();
-                });
-                pool.append(chip);
-            });
-
-            const done = placed.length === items.length;
-            hint.textContent = done
-                ? "Bé xếp xong rồi! Chạm vào thẻ ở trên nếu muốn đổi."
-                : `Chạm vào thẻ bé chọn làm số ${placed.length + 1} nhé!`;
-            reset.hidden = placed.length === 0;
-            pool.hidden = done;
-            // Chỉ chấm khi đã xếp đủ; xếp dở thì hủy hẹn giờ chấm.
-            setAnswer(placed.join("|"), done);
-        };
-
-        reset.addEventListener("click", () => {
-            placed.length = 0;
-            draw();
+        const slotElements = items.map((_, slotIndex) => {
+            const slot = el("div", "lw-seq-slot");
+            slot.dataset.slot = String(slotIndex);
+            const number = el("span", "lw-seq-num", String(slotIndex + 1));
+            number.setAttribute("aria-hidden", "true");
+            slot.append(number);
+            track.append(slot);
+            return slot;
         });
 
-        board.append(track, hint, pool, reset);
+        const commit = () => {
+            const done = slots.every((value) => value !== null);
+            // Chỉ chấm khi đã xếp đủ; xếp dở thì hủy hẹn giờ chấm.
+            setAnswer(slots.filter((value) => value !== null).map((index) => items[index]).join("|"), done);
+        };
+
+        let tiles = [];
+        const draw = (bounceIndex = -1) => {
+            const firstEmpty = slots.indexOf(null);
+            slotElements.forEach((slot, slotIndex) => {
+                const index = slots[slotIndex];
+                const wanted = index === null ? null : tiles[index];
+                slot.querySelectorAll(".lw-tile").forEach((node) => {
+                    if (node !== wanted) node.remove();
+                });
+                if (wanted && wanted.parentNode !== slot) slot.append(wanted);
+                slot.classList.toggle("is-filled", index !== null);
+                slot.classList.toggle("is-next", slotIndex === firstEmpty);
+            });
+            tiles.forEach((tile, index) => {
+                const isPlaced = slots.includes(index);
+                tile.classList.toggle("is-placed", isPlaced);
+                if (!isPlaced) pool.append(tile);
+            });
+            pool.classList.toggle("is-empty", firstEmpty === -1);
+            reset.hidden = slots.every((value) => value === null);
+            if (bounceIndex >= 0) flash(tiles[bounceIndex], "is-bounce");
+        };
+
+        const placeAt = (index, slotIndex) => {
+            if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= slots.length) return;
+            const from = slots.indexOf(index);
+            if (from === slotIndex) return;
+            const occupant = slots[slotIndex];
+            // Kéo từ ô này sang ô khác: hai thẻ đổi chỗ. Kéo từ dưới lên ô đã có thẻ: thẻ cũ trở về hàng dưới.
+            if (from >= 0) slots[from] = occupant;
+            slots[slotIndex] = index;
+            playAnswerAudio(items[index]);
+            draw(index);
+            commit();
+        };
+
+        const tapTile = (index) => {
+            const from = slots.indexOf(index);
+            if (from >= 0) {
+                slots[from] = null;
+                draw();
+                commit();
+                return;
+            }
+            const free = slots.indexOf(null);
+            if (free < 0) return;
+            slots[free] = index;
+            playAnswerAudio(items[index]);
+            draw(index);
+            commit();
+        };
+
+        tiles = items.map((item, index) => {
+            const tile = makeTile(item, "lw-tile--seq");
+            tile.style.setProperty("--i", String(index));
+            enableDrag(tile, {
+                targets: () => (slots.includes(index) ? [...slotElements, pool] : slotElements),
+                onDrop: (target) => {
+                    if (target === pool) {
+                        const from = slots.indexOf(index);
+                        if (from >= 0) {
+                            slots[from] = null;
+                            draw();
+                            commit();
+                        }
+                        return;
+                    }
+                    placeAt(index, Number(target.dataset.slot));
+                },
+                onTap: () => tapTile(index)
+            });
+            return tile;
+        });
+
+        reset.addEventListener("click", () => {
+            slots.fill(null);
+            draw();
+            commit();
+        });
+
+        board.append(track, pool, reset);
         runtime.append(board);
         draw();
     };
 
+    // Đếm: các hình xếp gọn như bảng mười ô; chạm từng hình để đánh số (hình nảy lên, cô đọc số), rồi chọn số.
     const renderCounting = () => {
-        const objects = document.createElement("div");
-        objects.className = "counting-objects";
-        for (let index = 0; index < Number(payload.targetCount || 0); index += 1) {
-            const button = createButton(payload.objectSymbol || "●", "counting-object clay-button");
-            button.addEventListener("click", () => {
-                button.classList.toggle("counted");
-                [...objects.children].forEach((item) => item.querySelector(".count-order")?.remove());
-                const allCounted = objects.querySelectorAll(".counted");
-                allCounted.forEach((item, countIndex) => {
-                    const badge = document.createElement("span");
-                    badge.className = "count-order";
-                    badge.textContent = String(countIndex + 1);
-                    item.append(badge);
-                });
-                speak(String(allCounted.length));
+        const total = Math.max(0, Number(payload.targetCount || 0));
+        const symbol = payload.objectSymbol || "●";
+        let counted = 0;
+
+        runtime.append(goalPill("touch_app", "Chạm từng hình để đếm"));
+
+        const scene = el("div", "lw-count");
+        const field = el("div", "lw-count-field");
+        field.style.setProperty("--cols", String(total <= 5 ? Math.max(1, total) : Math.min(5, Math.ceil(total / 2))));
+        const tally = el("div", "lw-count-tally");
+        const tallyNumber = el("strong", "lw-count-number", "0");
+        tally.append(icon("front_hand"), tallyNumber);
+        tally.setAttribute("aria-live", "polite");
+        const again = el("button", "lw-mini-btn lw-count-reset");
+        again.type = "button";
+        again.append(icon("restart_alt"), el("span", "", "Đếm lại"));
+        again.hidden = true;
+
+        const objects = [];
+        for (let index = 0; index < total; index += 1) {
+            const object = el("button", "lw-count-obj");
+            object.type = "button";
+            object.style.setProperty("--i", String(index));
+            object.setAttribute("aria-label", `Hình ${index + 1}`);
+            const art = el("span", "lw-count-art");
+            appendRepeatedVisuals(art, symbol, 1);
+            const badge = el("span", "lw-count-badge");
+            badge.setAttribute("aria-hidden", "true");
+            object.append(art, badge);
+            object.addEventListener("click", () => {
+                if (object.dataset.n) {
+                    // Đã đếm rồi: chỉ nhắc lại số của hình đó, không bỏ đếm (tránh bé chạm nhầm hai lần).
+                    speak(object.dataset.n);
+                    flash(object, "is-wiggle");
+                    return;
+                }
+                counted += 1;
+                object.dataset.n = String(counted);
+                badge.textContent = String(counted);
+                object.classList.add("is-counted");
+                flash(object, "is-bounce");
+                tallyNumber.textContent = String(counted);
+                flash(tally, "is-bounce");
+                again.hidden = false;
+                speak(String(counted));
             });
-            objects.append(button);
+            objects.push(object);
+            field.append(object);
         }
-        const choices = document.createElement("div");
-        choices.className = "activity-option-grid";
-        (payload.choices || []).forEach((choice) => {
-            const button = createButton(choice);
-            button.addEventListener("click", () => {
+        again.addEventListener("click", () => {
+            counted = 0;
+            objects.forEach((object) => {
+                delete object.dataset.n;
+                object.classList.remove("is-counted");
+                object.querySelector(".lw-count-badge").textContent = "";
+            });
+            tallyNumber.textContent = "0";
+            again.hidden = true;
+        });
+
+        const tools = el("div", "lw-count-tools");
+        tools.append(tally, again);
+        scene.append(field, tools);
+        runtime.append(scene);
+
+        const choices = payload.choices || [];
+        runtime.append(goalPill("123","Có tất cả mấy hình?"));
+        const grid = tileGrid("lw-num-grid", choices);
+        const tiles = [];
+        choices.forEach((choice, index) => {
+            const tile = makeTile(choice, "lw-tile--num");
+            tile.style.setProperty("--i", String(index));
+            tiles.push(tile);
+            tile.addEventListener("click", () => {
                 playAnswerAudio(choice);
-                choices.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                button.classList.add("selected");
+                tiles.forEach((item) => item.classList.toggle("is-selected", item === tile));
+                grid.classList.add("has-pick");
+                flash(tile, "is-bounce");
                 setAnswer(String(choice), true, true, 1000);
             });
-            choices.append(button);
+            grid.append(tile);
         });
-        runtime.append(objects, choices);
+        finishGrid(grid);
+        runtime.append(grid);
     };
 
+    // Tạo số lượng: đĩa/khay ở giữa, nút − và + thật to hai bên, số đếm lớn. Mỗi lần thêm một hình nảy vào khay.
     const renderQuantityBuilder = () => {
+        const maxItems = Math.max(1, Number(payload.maxItems || 20));
+        const symbol = payload.objectSymbol || "●";
         let count = 0;
-        const target = document.createElement("div");
-        target.className = "quantity-target clay-card";
-        const counter = document.createElement("div");
-        counter.className = "quantity-counter-badge";
-        const objects = document.createElement("div");
-        objects.className = "quantity-objects";
-        const update = () => {
-            counter.textContent = `${payload.targetLabel || "Số lượng đã tạo"}: ${count} / ${payload.targetCount}`;
-            appendRepeatedVisuals(objects, payload.objectSymbol || "●", count);
+
+        runtime.append(goalPill("add_circle", "Thêm cho đủ số lượng"));
+
+        const card = el("div", "lw-build");
+        const flag = el("div", "lw-build-goal");
+        flag.append(icon("flag"), el("strong", "", payload.targetLabel || `Mục tiêu: ${payload.targetCount ?? ""}`));
+
+        const tray = el("div", "lw-build-tray is-empty");
+        tray.setAttribute("aria-hidden", "true");
+        const trayHint = icon("add", "lw-build-hint");
+
+        const controls = el("div", "lw-build-controls");
+        const minus = el("button", "lw-round lw-round--minus");
+        minus.type = "button";
+        minus.setAttribute("aria-label", "Bớt một");
+        minus.append(icon("remove"));
+        const plus = el("button", "lw-round lw-round--plus");
+        plus.type = "button";
+        plus.setAttribute("aria-label", "Thêm một");
+        plus.append(icon("add"));
+        const number = el("output", "lw-build-count", "0");
+        number.setAttribute("aria-live", "polite");
+        controls.append(minus, number, plus);
+
+        const paint = () => {
+            number.textContent = String(count);
+            tray.classList.toggle("is-empty", count === 0);
+            minus.classList.toggle("is-off", count === 0);
+            plus.classList.toggle("is-off", count >= maxItems);
+            flash(number, "is-bounce");
             setAnswer(String(count), count > 0);
         };
 
-        const controls = document.createElement("div");
-        controls.className = "quantity-controls";
-
-        const add = document.createElement("button");
-        add.type = "button";
-        add.className = "quantity-btn quantity-btn-add clay-button";
-        add.innerHTML = '<span class="material-symbols-outlined">add_circle</span><span>Thêm một</span>';
-        add.addEventListener("click", () => {
-            if (count < Number(payload.maxItems || 20)) {
-                count += 1;
-                speak(String(count));
+        plus.addEventListener("click", () => {
+            if (count >= maxItems) {
+                flash(plus, "is-wiggle");
+                return;
             }
-            update();
+            count += 1;
+            const object = el("span", "lw-build-obj");
+            appendRepeatedVisuals(object, symbol, 1);
+            tray.append(object);
+            speak(String(count));
+            paint();
         });
 
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "quantity-btn quantity-btn-remove clay-button";
-        remove.innerHTML = '<span class="material-symbols-outlined">remove_circle</span><span>Bớt một</span>';
-        remove.addEventListener("click", () => {
-            if (count > 0) {
-                count -= 1;
-                speak(String(count));
+        minus.addEventListener("click", () => {
+            if (count <= 0) {
+                flash(minus, "is-wiggle");
+                return;
             }
-            update();
+            count -= 1;
+            const objects = tray.querySelectorAll(".lw-build-obj");
+            objects[objects.length - 1]?.remove();
+            speak(String(count));
+            paint();
         });
 
-        controls.append(add, remove);
-        target.append(counter, objects);
-        runtime.append(target, controls);
-        update();
+        tray.append(trayHint);
+        card.append(flag, tray, controls);
+        runtime.append(card);
+        minus.classList.add("is-off");
     };
 
+    // So sánh: hai thẻ nhóm thật to đặt trên một chiếc bập bênh; chạm nhóm đúng (hoặc dấu "=" ở giữa).
+    // Bập bênh nghiêng theo lựa chọn của bé (không theo đáp án) để bé thấy mình vừa chọn bên nào.
     const renderComparison = () => {
-        const board = document.createElement("div");
         const isShapeComparison = payload.visualMode === "shape";
-        board.className = `comparison-board ${isShapeComparison ? "comparison-shape-board" : "comparison-quantity-board"}`;
-        const selectComparison = (button, value, spokenLabel) => {
+        const mode = String(payload.comparisonMode || "").toLowerCase();
+        const goalText = isShapeComparison
+            ? (mode === "less" ? "Chạm vào hình nhỏ hơn" : mode === "more" ? "Chạm vào hình to hơn" : "So sánh hai hình")
+            : (mode === "less" ? "Chạm vào nhóm ít hơn" : mode === "more" ? "Chạm vào nhóm nhiều hơn" : "So sánh hai nhóm");
+        runtime.append(goalPill("balance", goalText));
+
+        const board = el("div", `lw-cmp ${isShapeComparison ? "is-shape" : "is-quantity"}`);
+        const row = el("div", "lw-cmp-row");
+        const seesaw = el("div", "lw-cmp-seesaw");
+        seesaw.setAttribute("aria-hidden", "true");
+        seesaw.append(el("span", "lw-cmp-plank"), el("span", "lw-cmp-pivot"));
+        const choices = [];
+
+        const tiltFor = (value) => {
+            if (value === "equal") return "level";
+            const other = value === "left" ? "right" : "left";
+            return mode === "less" ? other : value;
+        };
+
+        const select = (button, value, spokenLabel) => {
             playAnswerAudio(spokenLabel);
-            board.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-            button.classList.add("selected");
+            choices.forEach((item) => item.classList.toggle("is-selected", item === button));
+            board.classList.add("has-pick");
+            board.dataset.tilt = tiltFor(value);
+            flash(button, "is-bounce");
             setAnswer(value, true, true, 1000);
         };
+
         const group = (label, count, value, side) => {
-            const button = createButton("", `comparison-group comparison-side-card comparison-side-${side} clay-card`);
-            button.querySelector(".answer-label")?.remove();
-            const title = document.createElement("strong");
-            title.className = "comparison-group-title";
-            title.textContent = label;
-            const objects = document.createElement("span");
-            objects.className = "comparison-objects";
+            const button = el("button", `lw-cmp-card is-${side}`);
+            button.type = "button";
+            button.dataset.answerValue = value;
+            button.setAttribute("aria-label", label);
+            const objects = el("span", "lw-cmp-objects");
+            const amount = Number(count || 0);
             if (isShapeComparison) {
-                const shape = document.createElement("span");
-                shape.className = "comparison-shape";
-                shape.textContent = payload.objectSymbol || "●";
-                shape.style.fontSize = `${Math.max(52, Math.min(150, Number(count)))}px`;
+                const shape = el("span", "lw-cmp-shape", payload.objectSymbol || "●");
+                const size = Math.max(52, Math.min(150, amount));
+                shape.style.fontSize = `min(${size}px, ${Math.round(size / 5)}vw)`;
                 shape.setAttribute("aria-label", payload.shapeName || label);
                 objects.append(shape);
-                button.classList.add("comparison-shape-card");
-            } else appendRepeatedVisuals(objects, payload.objectSymbol || "●", count);
-            button.append(title, objects);
-            button.addEventListener("click", () => selectComparison(button, value, label));
+            } else {
+                objects.style.setProperty("--cols", String(amount <= 3 ? Math.max(1, amount) : amount <= 6 ? 3 : 4));
+                appendRepeatedVisuals(objects, payload.objectSymbol || "●", amount);
+            }
+            button.append(objects, el("span", "lw-cmp-label", label), icon("check", "lw-check"));
+            button.addEventListener("click", () => select(button, value, label));
+            choices.push(button);
             return button;
         };
 
-        const equalButton = createButton("", "comparison-group comparison-equal-card clay-card");
-        equalButton.querySelector(".answer-label")?.remove();
-        const equalIcon = document.createElement("span");
-        equalIcon.className = "material-symbols-outlined comparison-balance-icon";
-        equalIcon.textContent = "balance";
-        const equalSign = document.createElement("strong");
-        equalSign.className = "comparison-equal-sign";
-        equalSign.textContent = "=";
-        const equalLabel = document.createElement("span");
-        equalLabel.className = "comparison-equal-label";
-        equalLabel.textContent = "Bằng nhau";
-        equalButton.append(equalIcon, equalSign, equalLabel);
-        equalButton.setAttribute("aria-label", "Hai nhóm bằng nhau");
-        equalButton.addEventListener("click", () => selectComparison(equalButton, "equal", "Bằng nhau"));
-
-        board.append(
-            group(payload.leftLabel || "Nhóm A", payload.leftCount, "left", "left"),
-            equalButton,
-            group(payload.rightLabel || "Nhóm B", payload.rightCount, "right", "right"));
+        const leftCard = group(payload.leftLabel || "Nhóm A", payload.leftCount, "left", "left");
+        const rightCard = group(payload.rightLabel || "Nhóm B", payload.rightCount, "right", "right");
+        const middle = el("div", "lw-cmp-mid");
+        // So sánh kích thước hình không có đáp án "bằng nhau"; so sánh số lượng thì có.
+        if (!isShapeComparison) {
+            const equalButton = el("button", "lw-cmp-equal");
+            equalButton.type = "button";
+            equalButton.dataset.answerValue = "equal";
+            equalButton.setAttribute("aria-label", "Hai nhóm bằng nhau");
+            equalButton.append(el("strong", "lw-cmp-equal-sign", "="), el("span", "lw-cmp-equal-label", "Bằng nhau"), icon("check", "lw-check"));
+            equalButton.addEventListener("click", () => select(equalButton, "equal", "Bằng nhau"));
+            choices.push(equalButton);
+            middle.append(equalButton);
+        } else {
+            middle.append(el("span", "lw-cmp-vs", "?"));
+        }
+        row.append(leftCard, middle, rightCard);
+        board.dataset.tilt = "level";
+        board.append(row, seesaw);
         runtime.append(board);
     };
 
+    // Phân loại: các hình nằm trên khay, bên dưới là các giỏ có hình đại diện. Chạm hình rồi chạm giỏ,
+    // hoặc kéo hình thả vào giỏ. Chạm hình đã nằm trong giỏ để lấy ra.
     const renderClassification = () => {
         const mappings = payload.mappings || [];
+        const categories = payload.categories || [];
         const answers = {};
-        let selectedItem = "";
-        let dragGhost = null;
+        let selectedItem = null;
 
-        const assignItemToCategory = (itemName, categoryName) => {
-            if (!itemName || !categoryName) return;
-            playAnswerAudio(categoryName);
-            answers[itemName] = categoryName;
+        runtime.append(goalPill("shopping_basket", "Xếp mỗi hình vào đúng giỏ"));
 
-            // Update Source item status
-            const itemButton = [...source.children].find((item) => item.dataset.itemName === itemName);
-            if (itemButton) {
-                itemButton.classList.add("matched");
-                itemButton.classList.remove("selected");
-            }
+        const tray = tileGrid("lw-sort-tray", mappings.map((mapping) => mapping.left));
+        const baskets = el("div", "lw-sort-baskets");
+        baskets.dataset.count = String(categories.length);
+        const tiles = new Map();
+        const basketElements = new Map();
+        const zoneCategories = new Map();
 
-            // Remove from other category trays if previously assigned
-            categories.querySelectorAll(".classification-chip").forEach((chip) => {
-                if (chip.dataset.assignedItem === itemName) chip.remove();
+        const refresh = () => {
+            tiles.forEach((tile, item) => {
+                tile.hidden = Object.hasOwn(answers, item);
+                tile.classList.toggle("is-selected", selectedItem === item);
             });
+            tray.classList.toggle("is-empty", Object.keys(answers).length === mappings.length);
+            basketElements.forEach(({ zone, inner }, category) => {
+                zone.classList.toggle("is-ready", selectedItem !== null);
+                inner.replaceChildren();
+                mappings.forEach((mapping) => {
+                    if (answers[mapping.left] !== category) return;
+                    const chip = el("span", "lw-basket-chip");
+                    chip.dataset.answerValue = String(mapping.left ?? "").trim();
+                    chip.setAttribute("role", "button");
+                    decorateButton(chip, mapping.left);
+                    chip.addEventListener("click", (event) => {
+                        if (selectedItem !== null) return; // Đang cầm hình khác: để giỏ nhận hình đó.
+                        event.stopPropagation();
+                        delete answers[mapping.left];
+                        refresh();
+                        setAnswer(canonicalMappings(answers), false);
+                    });
+                    inner.append(chip);
+                });
+                zone.classList.toggle("has-items", inner.childElementCount > 0);
+            });
+        };
 
-            // Add to this category tray
-            const targetZone = [...categories.children].find((z) => z.dataset.categoryName === categoryName);
-            if (targetZone) {
-                const tray = targetZone.querySelector(".classification-zone-tray");
-                const emptyHint = targetZone.querySelector(".classification-tray-hint");
-                if (emptyHint) emptyHint.style.display = "none";
-                const chip = document.createElement("div");
-                chip.className = "classification-chip clay-card";
-                chip.dataset.assignedItem = itemName;
-                decorateButton(chip, itemName);
-                tray.append(chip);
-            }
-
-            selectedItem = "";
-            source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.remove("ready", "drop-hover"));
+        const assign = (item, category) => {
+            if (item === null || item === undefined || category === undefined) return;
+            playAnswerAudio(category);
+            answers[item] = category;
+            selectedItem = null;
+            refresh();
+            flash(basketElements.get(category)?.zone, "is-gulp");
             setAnswer(canonicalMappings(answers), Object.keys(answers).length === mappings.length);
         };
 
-        const movePointerDrag = (event) => {
-            if (!dragGhost) return;
-            event.preventDefault();
-            dragGhost.style.left = `${event.clientX}px`;
-            dragGhost.style.top = `${event.clientY}px`;
-            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            const zone = dropTarget?.closest?.(".classification-zone");
-            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.toggle("drop-hover", z === zone));
-        };
-
-        const finishPointerDrag = (event) => {
-            if (!dragGhost) return;
-            event.preventDefault();
-            dragGhost.remove();
-            dragGhost = null;
-            const dropTarget = document.elementFromPoint(event.clientX, event.clientY);
-            const zone = dropTarget?.closest?.(".classification-zone");
-            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.remove("drop-hover"));
-            if (zone?.dataset?.categoryName && selectedItem) {
-                assignItemToCategory(selectedItem, zone.dataset.categoryName);
-            }
-        };
-
-        const startPointerDrag = (event, itemText, button) => {
-            if (event.pointerType === "mouse") return;
-            event.preventDefault();
-            selectedItem = itemText;
-            source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-            button.classList.add("selected");
-            categories.querySelectorAll(".classification-zone").forEach((z) => z.classList.add("ready"));
-            dragGhost = button.cloneNode(true);
-            dragGhost.classList.add("drag-ghost");
-            document.body.append(dragGhost);
-            button.setPointerCapture(event.pointerId);
-            movePointerDrag(event);
-        };
-
-        // 1. Source Items Row
-        const source = document.createElement("div");
-        source.className = "activity-option-grid classification-source-grid";
         mappings.forEach((mapping, index) => {
-            const button = createButton(mapping.left, "activity-option classification-source-item draggable-option clay-button");
-            button.dataset.itemName = mapping.left;
-            button.draggable = true;
-            button.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
-            button.addEventListener("click", () => {
-                playAnswerAudio(mapping.left);
-                selectedItem = mapping.left;
-                source.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
-                button.classList.add("selected");
-                categories.querySelectorAll(".classification-zone").forEach((zone) => zone.classList.add("ready"));
+            const item = mapping.left;
+            const tile = makeTile(item, "lw-tile--drag");
+            tile.dataset.itemName = item;
+            tile.style.setProperty("--i", String(index));
+            tile.style.setProperty("--selection-color", activityColors[index % activityColors.length]);
+            tiles.set(item, tile);
+            enableDrag(tile, {
+                targets: () => [...basketElements.values()].map(({ zone }) => zone),
+                onStart: () => {
+                    selectedItem = item;
+                    refresh();
+                },
+                onDrop: (zone) => assign(item, zoneCategories.get(zone)),
+                onTap: () => {
+                    if (selectedItem === item) {
+                        selectedItem = null;
+                        refresh();
+                        return;
+                    }
+                    selectedItem = item;
+                    playAnswerAudio(item);
+                    refresh();
+                    flash(tile, "is-bounce");
+                }
             });
-            button.addEventListener("dragstart", (event) => {
-                selectedItem = mapping.left;
-                event.dataTransfer.setData("text/plain", mapping.left);
-            });
-            button.addEventListener("pointerdown", (event) => startPointerDrag(event, mapping.left, button));
-            button.addEventListener("pointermove", movePointerDrag);
-            button.addEventListener("pointerup", finishPointerDrag);
-            button.addEventListener("pointercancel", finishPointerDrag);
-            source.append(button);
+            tray.append(tile);
         });
+        finishGrid(tray);
 
-        // 2. Categories Drop Bins/Trays
-        const categories = document.createElement("div");
-        categories.className = "classification-zones";
-        
-        (payload.categories || []).forEach((category, categoryIndex) => {
-            const zone = document.createElement("div");
-            zone.className = "classification-zone clay-card";
+        categories.forEach((category, categoryIndex) => {
+            const zone = el("div", "lw-basket");
             zone.dataset.categoryName = category;
-            const categoryColor = activityColors[categoryIndex % activityColors.length];
-            zone.style.setProperty("--category-color", categoryColor);
-
-            // Category Header (Clear Label with Basket Icon)
-            const header = document.createElement("div");
-            header.className = "classification-zone-header";
-            const headerIcon = document.createElement("span");
-            headerIcon.className = "material-symbols-outlined";
-            headerIcon.textContent = "inventory_2";
-            const headerLabel = document.createElement("strong");
-            headerLabel.textContent = `Nhóm ${category}`;
-            header.append(headerIcon, headerLabel);
-
-            // Item drop tray
-            const tray = document.createElement("div");
-            tray.className = "classification-zone-tray";
-            tray.dataset.category = category;
-
-            const emptyHint = document.createElement("span");
-            emptyHint.className = "classification-tray-hint";
-            emptyHint.textContent = "Kéo hoặc chạm vào đây để xếp";
-            tray.append(emptyHint);
-
-            zone.append(header, tray);
-
+            zone.setAttribute("role", "button");
+            zone.setAttribute("aria-label", `Giỏ ${category}`);
+            zone.style.setProperty("--basket-color", activityColors[(categoryIndex + 2) % activityColors.length]);
+            zone.style.setProperty("--i", String(categoryIndex));
+            const head = el("div", "lw-basket-head");
+            decorateButton(head, category);
+            const inner = el("div", "lw-basket-items");
+            const rim = el("span", "lw-basket-rim");
+            rim.setAttribute("aria-hidden", "true");
+            zone.append(head, inner, rim);
             zone.addEventListener("click", () => {
-                if (selectedItem) assignItemToCategory(selectedItem, category);
+                if (selectedItem !== null) assign(selectedItem, category);
+                else {
+                    playAnswerAudio(category);
+                    flash(tray, "is-nudge");
+                }
             });
-            zone.addEventListener("dragover", (event) => {
-                event.preventDefault();
-                zone.classList.add("drop-hover");
-            });
-            zone.addEventListener("dragleave", () => {
-                zone.classList.remove("drop-hover");
-            });
-            zone.addEventListener("drop", (event) => {
-                event.preventDefault();
-                const dropped = event.dataTransfer.getData("text/plain") || selectedItem;
-                assignItemToCategory(dropped, category);
-            });
-
-            categories.append(zone);
+            basketElements.set(category, { zone, inner });
+            zoneCategories.set(zone, category);
+            baskets.append(zone);
         });
 
-        runtime.append(source, categories);
+        runtime.append(tray, baskets);
+        refresh();
     };
 
+    // Kể chuyện: tranh minh họa được trình bày như một trang sách (CSS), nút nghe lại câu chuyện thật to.
     const renderStoryChoice = () => {
         if (payload.audioUrl || payload.speechText) {
-            const storyContainer = document.createElement("div");
-            storyContainer.className = "story-audio-container";
-            
-            const audioButton = document.createElement("button");
-            audioButton.type = "button";
-            audioButton.className = "activity-audio-button clay-button";
-            
-            const speakerIcon = document.createElement("span");
-            speakerIcon.className = "material-symbols-outlined audio-btn-icon";
-            speakerIcon.textContent = "volume_up";
-            
-            const labelSpan = document.createElement("span");
-            labelSpan.className = "audio-btn-label";
-            labelSpan.textContent = "Nghe lại câu chuyện";
-            
-            audioButton.append(speakerIcon, labelSpan);
-            audioButton.addEventListener("click", playPromptAudio);
-            storyContainer.append(audioButton);
+            const storyContainer = el("div", "story-audio-container lw-listen-row");
+            storyContainer.append(listenButton("Nghe lại câu chuyện", "auto_stories"));
             runtime.append(storyContainer);
         }
+        renderChoice(false, { icon: "auto_stories", text: "Chọn câu trả lời đúng" });
+    };
+
+    const renderListenChoose = () => {
+        const row = el("div", "lw-listen-row");
+        row.append(listenButton("Nghe lại", "hearing"));
+        runtime.append(row);
         renderChoice(false);
     };
 
     const renderers = {
         single_choice: () => renderChoice(false),
-        listen_choose: () => renderChoice(false),
+        listen_choose: renderListenChoose,
         multi_select: renderMultiSelect,
         drag_drop: renderDragDrop,
         matching: renderMatching,
@@ -1451,6 +1698,11 @@
         runtime.append(scene);
     };
     const renderActivity = () => {
+        // Vẽ lại từ đầu theo payload (bé làm lại sau khi sai): dọn mọi "bóng" kéo thả còn sót.
+        document.querySelectorAll(".lw-ghost").forEach((node) => node.remove());
+        document.body.classList.remove("drag-interaction-active");
+        runtime.classList.remove("is-dragging");
+        runtime.classList.add("lw-act", `lw-act--${type}`);
         appendScene();
         renderers[type]?.();
     };

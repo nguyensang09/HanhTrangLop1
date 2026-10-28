@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Góc Bé Tập Tô & Luyện Nét";
     var percent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
+    var childName = string.IsNullOrWhiteSpace(Model.ChildProfile?.Nickname) ? "Con" : Model.ChildProfile!.Nickname.Trim();
 
     string ResolveAvatar(string? key)
     {
@@ -17,350 +18,302 @@
             _ => "/images/mascot-squirrel-3d.png"
         };
     }
+
+    string PictureEmoji(string? symbol) => symbol switch
+    {
+        "phong-canh" => "🏞️",
+        "do-dung" => "🎒",
+        "hinh-hoc" => "⭐",
+        "meo-con" => "🐱",
+        "ca-heo" => "🐬",
+        "o-che-mua" => "☂️",
+        "trai-tao" => "🍎",
+        "tau-hoa" => "🚂",
+        "chu-tho" => "🐰",
+        "ong-vang" => "🐝",
+        "may-bay" => "✈️",
+        "thuyen" => "⛵",
+        "cau-vong" => "🌈",
+        "chu-buom" => "🦋",
+        "khung-long" => "🦕",
+        "ten-lua" => "🚀",
+        _ => "🎨"
+    };
+
+    // Hình hiển thị to trên thẻ và tên gọi ngắn gọn cho bé
+    string CardSymbol(KidsTracingItemViewModel x, string kind) => kind switch
+    {
+        "basic" => string.IsNullOrWhiteSpace(x.DisplaySymbol) ? "〰" : x.DisplaySymbol,
+        "picture" => PictureEmoji(x.Symbol),
+        _ => x.Symbol
+    };
+    string CardLabel(KidsTracingItemViewModel x, string kind) => kind switch
+    {
+        "upper" or "lower" => $"Chữ {x.Symbol}",
+        "number" => $"Số {x.Symbol}",
+        _ => x.Title
+    };
+
+    var validTabs = new[] { "all", "basic", "picture", "upper", "lower", "number" };
+    var activeTab = validTabs.Contains(Model.ActiveTab) ? Model.ActiveTab : "all";
+
+    var sections = new[]
+    {
+        (Key: "basic", Title: "Nét cơ bản", Sub: "13 nét nền tảng: thẳng, xiên, móc, cong, khuyết và thắt", Emoji: "✏️", Tone: "kh-tone-amber", Unit: "bài", Compact: false, Items: Model.BasicStrokes),
+        (Key: "picture", Title: "Tô tranh tạo hình", Sub: "Con vật, đồ vật, phong cảnh và hình học", Emoji: "🎨", Tone: "kh-tone-rose", Unit: "tranh", Compact: false, Items: Model.PictureTraces),
+        (Key: "upper", Title: "Chữ in hoa", Sub: "33 chữ cái Việt – Anh viết hoa", Emoji: "🔠", Tone: "kh-tone-sky", Unit: "chữ", Compact: true, Items: Model.UppercaseLetters),
+        (Key: "lower", Title: "Chữ in thường", Sub: "33 chữ cái Việt – Anh viết thường", Emoji: "🔡", Tone: "kh-tone-emerald", Unit: "chữ", Compact: true, Items: Model.LowercaseLetters),
+        (Key: "number", Title: "Chữ số 0 – 20", Sub: "Tập viết các chữ số đầu tiên", Emoji: "🔢", Tone: "kh-tone-purple", Unit: "số", Compact: true, Items: Model.Numbers)
+    };
+
+    // Bài gợi ý tô tiếp: bài đầu tiên chưa tô theo thứ tự nét → chữ hoa → chữ thường → số → tranh
+    var suggestion = new[] { "basic", "upper", "lower", "number", "picture" }
+        .SelectMany(k => sections.First(s => s.Key == k).Items.Select(x => (Kind: k, Entry: x)))
+        .FirstOrDefault(x => !x.Entry.IsCompleted);
+    var nextEntry = suggestion.Entry;
+    var nextKind = suggestion.Kind ?? "";
+    var isAllDone = Model.TotalCount > 0 && Model.CompletedCount == Model.TotalCount;
+
+    var guideText = isAllDone
+        ? $"Giỏi quá {childName} ơi! Con đã tô xong tất cả các bài rồi! 🏆"
+        : Model.CompletedCount == 0
+            ? $"Chào {childName}! Con chọn một nét hoặc một chữ để tập tô nhé! ✏️"
+            : $"{childName} đã tô xong {Model.CompletedCount} bài rồi! Mình tô tiếp nhé! 💪";
+
+    int ShownStars(KidsTracingItemViewModel x) => Math.Clamp(x.StarsEarned <= 0 ? 3 : x.StarsEarned, 1, 3);
 }
 
-<section class="kid-screen tracing-hub-screen">
-    <!-- Topbar chuẩn không gian bé -->
-    <header class="child-zone-header clay-card">
-        <div class="child-header-left">
-            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </a>
-            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác">
-                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
-                <span class="child-avatar-switch-badge" title="Đổi bé">
-                    <span class="material-symbols-outlined">sync_alt</span>
-                </span>
-            </a>
-            <div class="child-header-greeting">
-                <span class="child-hi-eyebrow">Vở Luyện Nét & Chữ</span>
-                <strong class="child-name-display">Góc Bé Tập Tô 🎨</strong>
-            </div>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+<link rel="stylesheet" href="~/css/kid-hub.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/kid-extras.css" asp-append-version="true" />
+
+<div class="kh kx-tracing kh--with-dock">
+    @* Giữ lớp tracing-hub-screen để site.js + site.css mở cuộn tự do cho trang này. *@
+    <span class="kh-scroll-marker tracing-hub-screen" aria-hidden="true"></span>
+
+    <div class="kh-sky" aria-hidden="true">
+        <span class="kh-cloud kh-cloud--1"></span>
+        <span class="kh-cloud kh-cloud--2"></span>
+        <span class="kh-cloud kh-cloud--3"></span>
+        <span class="kh-float kh-float--1">✏️</span>
+        <span class="kh-float kh-float--2">🖍️</span>
+        <span class="kh-float kh-float--3">⭐</span>
+        <span class="kh-float kh-float--4">🎨</span>
+    </div>
+
+    <header class="kh-topbar">
+        <a class="kh-pill" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span class="kh-hide-sm">Trang chủ</span>
+        </a>
+        <a class="kh-avatar" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác" aria-label="Đổi bé khác">
+            <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" />
+            <span class="kh-avatar-badge material-symbols-outlined" aria-hidden="true">sync_alt</span>
+        </a>
+        <div class="kh-brand">
+            <span class="kh-brand-mark" aria-hidden="true">✏️</span>
+            <span class="kh-brand-text">
+                <small>Vở luyện nét & chữ</small>
+                <strong>Góc Bé Tập Tô</strong>
+            </span>
         </div>
-        <div class="child-header-center">
-            <div class="child-star-badge-3d" title="Số chữ đã hoàn thành">
-                <span class="star-3d-icon">⭐</span>
-                <span class="star-number-display">@Model.CompletedCount/@Model.TotalCount</span>
-                <span class="star-label-text">chữ đã tô</span>
-            </div>
+        <div class="kh-pill kh-pill--stars" title="Số bài đã tô xong">
+            <span aria-hidden="true">⭐</span><strong>@Model.CompletedCount/@Model.TotalCount</strong><small class="kh-hide-sm">đã tô</small>
         </div>
-        <div class="child-header-right">
-            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
-                <span class="material-symbols-outlined lock-icon">lock</span>
-                <span class="lock-label-text">Ba mẹ</span>
-            </button>
-        </div>
+        <button type="button" class="kh-pill kh-pill--lock" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="kh-hide-sm">Ba mẹ</span>
+        </button>
     </header>
 
-    <!-- Navigation Filter Tabs (Compact Pill Bar) -->
-    <div class="tracing-tab-bar-wrap">
-        <div class="tracing-tab-bar">
-        <button type="button" class="tracing-tab-btn clay-button active" data-tab="all">
-            <span class="material-symbols-outlined">auto_awesome</span>
+    <!-- Sóc Nâu dẫn đường + tiến độ + nút tô tiếp -->
+    <section class="kh-hero">
+        <div class="kh-guide">
+            <img class="kh-guide-img" src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" />
+            <p class="kh-bubble">@guideText</p>
+        </div>
+        <div class="kh-hero-card">
+            <div class="kh-meter" role="progressbar" aria-valuemin="0" aria-valuemax="@Model.TotalCount" aria-valuenow="@Model.CompletedCount" aria-label="Tiến độ tập tô">
+                <div class="kh-meter-label">
+                    <span>Con đã tô</span>
+                    <strong>@Model.CompletedCount / @Model.TotalCount bài · @percent%</strong>
+                </div>
+                <div class="kh-meter-track"><span style="width:@percent%"></span></div>
+            </div>
+            @if (nextEntry != null)
+            {
+                <a class="kh-continue" asp-controller="Kids" asp-action="Learn" asp-route-id="@nextEntry.Item.Id" asp-route-fromTracing="true">
+                    <span class="kh-continue-orb kx-continue-symbol" aria-hidden="true">@CardSymbol(nextEntry, nextKind)</span>
+                    <span class="kh-continue-text">
+                        <small>@(Model.CompletedCount == 0 ? "Bắt đầu tô nào" : "Tô tiếp nhé")</small>
+                        <strong>@CardLabel(nextEntry, nextKind)</strong>
+                    </span>
+                    <span class="kh-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                </a>
+            }
+            else if (isAllDone)
+            {
+                <a class="kh-continue kh-continue--gold" asp-controller="Kids" asp-action="Rewards">
+                    <span class="kh-continue-orb" aria-hidden="true">🏆</span>
+                    <span class="kh-continue-text">
+                        <small>Con đã tô xong hết rồi!</small>
+                        <strong>Đi xem quà nào</strong>
+                    </span>
+                    <span class="kh-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                </a>
+            }
+            else
+            {
+                <div class="kh-empty">
+                    <span class="kh-empty-icon" aria-hidden="true">📦</span>
+                    <div><strong>Cô đang chuẩn bị bài tô mới. Con quay lại sau nhé!</strong></div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Thẻ chọn nhóm bài (giữ lớp tracing-tab-btn + data-tab cho script) -->
+    <nav class="kh-tabs kx-tabs" aria-label="Chọn nhóm bài tô">
+        <button type="button" class="kh-tab kx-tab tracing-tab-btn @(activeTab == "all" ? "active" : "")" data-tab="all" aria-pressed="@(activeTab == "all" ? "true" : "false")">
+            <span class="kx-tab-emoji" aria-hidden="true">🌟</span>
             <span>Tất cả</span>
-            <span class="tab-badge">@Model.TotalCount</span>
+            <span class="kx-tab-count">@Model.TotalCount</span>
         </button>
-        <button type="button" class="tracing-tab-btn clay-button" data-tab="basic">
-            <span class="material-symbols-outlined">draw</span>
-            <span>Nét cơ bản</span>
-            <span class="tab-badge">@Model.BasicStrokes.Count</span>
-        </button>
-        <button type="button" class="tracing-tab-btn clay-button" data-tab="picture">
-            <span class="material-symbols-outlined">palette</span>
-            <span>Tô tranh tạo hình</span>
-            <span class="tab-badge">@Model.PictureTraces.Count</span>
-        </button>
-        <button type="button" class="tracing-tab-btn clay-button" data-tab="upper">
-            <span class="material-symbols-outlined">match_case</span>
-            <span>Chữ in hoa</span>
-            <span class="tab-badge">@Model.UppercaseLetters.Count</span>
-        </button>
-        <button type="button" class="tracing-tab-btn clay-button" data-tab="lower">
-            <span class="material-symbols-outlined">spellcheck</span>
-            <span>Chữ in thường</span>
-            <span class="tab-badge">@Model.LowercaseLetters.Count</span>
-        </button>
-        <button type="button" class="tracing-tab-btn clay-button" data-tab="number">
-            <span class="material-symbols-outlined">pin</span>
-            <span>Chữ số (0–20)</span>
-            <span class="tab-badge">@Model.Numbers.Count</span>
-        </button>
-    </div>
-    </div>
+        @foreach (var s in sections)
+        {
+            <button type="button" class="kh-tab kx-tab tracing-tab-btn @(activeTab == s.Key ? "active" : "")" data-tab="@s.Key" aria-pressed="@(activeTab == s.Key ? "true" : "false")">
+                <span class="kx-tab-emoji" aria-hidden="true">@s.Emoji</span>
+                <span>@s.Title</span>
+                <span class="kx-tab-count">@s.Items.Count</span>
+            </button>
+        }
+    </nav>
 
-    <!-- 1. Nét cơ bản -->
-    <div class="tracing-section-block" data-section="basic">
-        <div class="tracing-section-header">
-            <div class="section-title-wrap">
-                <span class="material-symbols-outlined section-icon" style="color: #ff7a00;">draw</span>
-                <div>
-                    <h2>Luyện Nét Cơ Bản Lớp 1</h2>
-                    <p>Đủ 13 nét nền tảng: nét thẳng, nét xiên, nét móc, nét cong, nét khuyết và nét thắt.</p>
+    @foreach (var s in sections)
+    {
+        var doneCount = s.Items.Count(x => x.IsCompleted);
+        var isVisible = activeTab == "all" || activeTab == s.Key;
+        <section class="kh-panel kx-trace-section @s.Tone" data-section="@s.Key" aria-label="@s.Title" hidden="@(isVisible ? null : "hidden")">
+            <div class="kh-panel-head">
+                <span class="kh-panel-emoji kx-panel-emoji" aria-hidden="true">@s.Emoji</span>
+                <div class="kh-panel-title">
+                    <h2>@s.Title</h2>
+                    <p>@s.Sub</p>
                 </div>
-            </div>
-            <span class="section-count-badge">@Model.BasicStrokes.Count(x => x.IsCompleted)/@Model.BasicStrokes.Count bài</span>
-        </div>
-        <div class="tracing-card-grid">
-            @foreach (var stroke in Model.BasicStrokes)
-            {
-                <a class="tracing-card clay-card @(stroke.IsCompleted ? "is-completed" : "")"
-                   asp-controller="Kids"
-                   asp-action="Learn"
-                   asp-route-id="@stroke.Item.Id"
-                   asp-route-fromTracing="true"
-                   title="@stroke.Title">
-                    <div class="tracing-symbol-box stroke-box">
-                        <span class="tracing-symbol-char">@stroke.DisplaySymbol</span>
-                    </div>
-                    <div class="tracing-card-info">
-                        <strong>@stroke.Title</strong>
-                        @if (stroke.IsCompleted)
-                        {
-                            <span class="tracing-star-badge">
-                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
-                                <span>Đã tô xong</span>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="tracing-action-hint">
-                                <span class="material-symbols-outlined">edit</span>
-                                <span>Bé tập tô</span>
-                            </span>
-                        }
-                    </div>
-                </a>
-            }
-        </div>
-    </div>
-
-    <!-- 2. Tô tranh tạo hình & Nghệ thuật -->
-    <div class="tracing-section-block" data-section="picture">
-        <div class="tracing-section-header">
-            <div class="section-title-wrap">
-                <span class="material-symbols-outlined section-icon" style="color: #db2777;">palette</span>
-                <div>
-                    <h2>Tô Tranh & Tạo Hình Nghệ Thuật</h2>
-                    <p>Khám phá thế giới phong cảnh, con vật, đồ dùng và hình học qua nét vẽ</p>
-                </div>
-            </div>
-            <span class="section-count-badge">@Model.PictureTraces.Count(x => x.IsCompleted)/@Model.PictureTraces.Count tranh</span>
-        </div>
-        <div class="tracing-card-grid">
-            @foreach (var picture in Model.PictureTraces)
-            {
-                var iconEmoji = picture.Symbol switch
+                @if (s.Items.Count > 0 && doneCount == s.Items.Count)
                 {
-                    "phong-canh" => "🏞️",
-                    "do-dung" => "🎒",
-                    "hinh-hoc" => "⭐",
-                    "meo-con" => "🐱",
-                    "ca-heo" => "🐬",
-                    "o-che-mua" => "☂️",
-                    "trai-tao" => "🍎",
-                    "tau-hoa" => "🚂",
-                    "chu-tho" => "🐰",
-                    "ong-vang" => "🐝",
-                    "may-bay" => "✈️",
-                    "thuyen" => "⛵",
-                    "cau-vong" => "🌈",
-                    "chu-buom" => "🦋",
-                    "khung-long" => "🦕",
-                    "ten-lua" => "🚀",
-                    _ => "🎨"
-                };
-                <a class="tracing-card clay-card @(picture.IsCompleted ? "is-completed" : "")"
-                   asp-controller="Kids"
-                   asp-action="Learn"
-                   asp-route-id="@picture.Item.Id"
-                   asp-route-fromTracing="true"
-                   title="@picture.Title">
-                    <div class="tracing-symbol-box stroke-box" style="background: linear-gradient(135deg, #fdf2f8, #fce7f3);">
-                        <span class="tracing-symbol-char" style="font-size: 2.2rem;">@iconEmoji</span>
-                    </div>
-                    <div class="tracing-card-info">
-                        <strong>@picture.Title</strong>
-                        @if (picture.IsCompleted)
-                        {
-                            <span class="tracing-star-badge">
-                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
-                                <span>Đã hoàn thành</span>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="tracing-action-hint">
-                                <span class="material-symbols-outlined">brush</span>
-                                <span>Bé tô tranh</span>
-                            </span>
-                        }
-                    </div>
-                </a>
-            }
-        </div>
-    </div>
-
-    <!-- 2. Chữ cái in hoa -->
-    <div class="tracing-section-block" data-section="upper">
-        <div class="tracing-section-header">
-            <div class="section-title-wrap">
-                <span class="material-symbols-outlined section-icon" style="color: #0284c7;">match_case</span>
-                <div>
-                    <h2>Bảng 33 Chữ Cái Việt–Anh In Hoa</h2>
-                    <p>Đủ 33 chữ khác nhau sau khi gộp bảng chữ cái tiếng Việt và tiếng Anh</p>
-                </div>
+                    <span class="kh-chip kh-chip--good">🏆 Xong hết rồi!</span>
+                }
+                else
+                {
+                    <span class="kh-chip">@doneCount/@s.Items.Count @s.Unit</span>
+                }
             </div>
-            <span class="section-count-badge">@Model.UppercaseLetters.Count(x => x.IsCompleted)/@Model.UppercaseLetters.Count chữ</span>
-        </div>
-        <div class="tracing-card-grid letter-grid">
-            @foreach (var letter in Model.UppercaseLetters)
-            {
-                <a class="tracing-card letter-card clay-card @(letter.IsCompleted ? "is-completed" : "")"
-                   asp-controller="Kids"
-                   asp-action="Learn"
-                   asp-route-id="@letter.Item.Id"
-                   asp-route-fromTracing="true"
-                   title="@letter.Title">
-                    <div class="tracing-symbol-box letter-box">
-                        <span class="tracing-symbol-char">@letter.Symbol</span>
-                    </div>
-                    <div class="tracing-card-info">
-                        <strong>Chữ @letter.Symbol</strong>
-                        @if (letter.IsCompleted)
-                        {
-                            <span class="tracing-star-badge">
-                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
-                                <span>Đã tô</span>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="tracing-action-hint">
-                                <span class="material-symbols-outlined">play_circle</span>
-                                <span>Tập tô</span>
-                            </span>
-                        }
-                    </div>
-                </a>
-            }
-        </div>
-    </div>
 
-    <!-- 3. Chữ cái in thường -->
-    <div class="tracing-section-block" data-section="lower">
-        <div class="tracing-section-header">
-            <div class="section-title-wrap">
-                <span class="material-symbols-outlined section-icon" style="color: #10b981;">spellcheck</span>
-                <div>
-                    <h2>Bảng 33 Chữ Cái Việt–Anh In Thường</h2>
-                    <p>Luyện đầy đủ 33 chữ thường, không lặp các chữ dùng chung giữa hai ngôn ngữ</p>
-                </div>
-            </div>
-            <span class="section-count-badge">@Model.LowercaseLetters.Count(x => x.IsCompleted)/@Model.LowercaseLetters.Count chữ</span>
-        </div>
-        <div class="tracing-card-grid letter-grid">
-            @foreach (var letter in Model.LowercaseLetters)
+            @if (s.Items.Count == 0)
             {
-                <a class="tracing-card letter-card clay-card @(letter.IsCompleted ? "is-completed" : "")"
-                   asp-controller="Kids"
-                   asp-action="Learn"
-                   asp-route-id="@letter.Item.Id"
-                   asp-route-fromTracing="true"
-                   title="@letter.Title">
-                    <div class="tracing-symbol-box letter-box lower-box">
-                        <span class="tracing-symbol-char">@letter.Symbol</span>
-                    </div>
-                    <div class="tracing-card-info">
-                        <strong>Chữ @letter.Symbol</strong>
-                        @if (letter.IsCompleted)
-                        {
-                            <span class="tracing-star-badge">
-                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
-                                <span>Đã tô</span>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="tracing-action-hint">
-                                <span class="material-symbols-outlined">play_circle</span>
-                                <span>Tập tô</span>
-                            </span>
-                        }
-                    </div>
-                </a>
+                <div class="kh-empty">
+                    <span class="kh-empty-icon" aria-hidden="true">📦</span>
+                    <div><strong>Cô đang chuẩn bị bài mới cho con nhé!</strong></div>
+                </div>
             }
-        </div>
-    </div>
+            else
+            {
+                <div class="kx-trace-grid @(s.Compact ? "kx-trace-grid--compact" : "")">
+                    @foreach (var entry in s.Items)
+                    {
+                        var label = CardLabel(entry, s.Key);
+                        var isNext = nextEntry != null && entry.Item.Id == nextEntry.Item.Id;
+                        var shown = ShownStars(entry);
+                        <a class="kx-trace-card kx-trace-card--@s.Key @(entry.IsCompleted ? "is-done" : "") @(isNext ? "is-next" : "")"
+                           asp-controller="Kids"
+                           asp-action="Learn"
+                           asp-route-id="@entry.Item.Id"
+                           asp-route-fromTracing="true"
+                           title="@entry.Title"
+                           aria-label="@label – @(entry.IsCompleted ? $"đã tô xong, {shown} sao" : "chưa tô")">
+                            @if (isNext)
+                            {
+                                <span class="kx-trace-flag" aria-hidden="true">Tô tiếp nhé!</span>
+                            }
+                            @if (entry.IsCompleted)
+                            {
+                                <span class="kx-trace-check" aria-hidden="true">✓</span>
+                            }
+                            <span class="kx-trace-symbol @(s.Key == "picture" ? "kx-trace-symbol--emoji" : s.Key == "basic" ? "kx-trace-symbol--stroke" : "")" aria-hidden="true">@CardSymbol(entry, s.Key)</span>
+                            <span class="kx-trace-name">@label</span>
+                            @if (entry.IsCompleted)
+                            {
+                                <span class="kx-stars" aria-hidden="true">@(new string('★', shown))<span class="is-empty">@(new string('★', 3 - shown))</span></span>
+                                <span class="kx-trace-cta kx-trace-cta--done" aria-hidden="true">
+                                    <span class="material-symbols-outlined">replay</span><span>Tô lại</span>
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="kx-trace-cta" aria-hidden="true">
+                                    <span class="material-symbols-outlined">edit</span><span>Tô nào</span>
+                                </span>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+    }
 
-    <!-- 4. Chữ số 0 - 9 -->
-    <div class="tracing-section-block" data-section="number">
-        <div class="tracing-section-header">
-            <div class="section-title-wrap">
-                <span class="material-symbols-outlined section-icon" style="color: #8b5cf6;">pin</span>
-                <div>
-                    <h2>Tập Viết Chữ Số (0 – 20)</h2>
-                    <p>Làm quen các chữ số toán học đầu tiên</p>
-                </div>
-            </div>
-            <span class="section-count-badge">@Model.Numbers.Count(x => x.IsCompleted)/@Model.Numbers.Count số</span>
-        </div>
-        <div class="tracing-card-grid number-grid">
-            @foreach (var number in Model.Numbers)
-            {
-                <a class="tracing-card number-card clay-card @(number.IsCompleted ? "is-completed" : "")"
-                   asp-controller="Kids"
-                   asp-action="Learn"
-                   asp-route-id="@number.Item.Id"
-                   asp-route-fromTracing="true"
-                   title="@number.Title">
-                    <div class="tracing-symbol-box number-box">
-                        <span class="tracing-symbol-char">@number.Symbol</span>
-                    </div>
-                    <div class="tracing-card-info">
-                        <strong>Số @number.Symbol</strong>
-                        @if (number.IsCompleted)
-                        {
-                            <span class="tracing-star-badge">
-                                <span class="material-symbols-outlined star-icon" style="font-variation-settings: 'FILL' 1;">star</span>
-                                <span>Đã tô</span>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="tracing-action-hint">
-                                <span class="material-symbols-outlined">play_circle</span>
-                                <span>Tập tô</span>
-                            </span>
-                        }
-                    </div>
-                </a>
-            }
-        </div>
-    </div>
-</section>
+    <!-- Thanh điều hướng dưới của khu bé -->
+    <nav class="kid-bottom-nav kh-dock" aria-label="Điều hướng">
+        <a asp-controller="Kids" asp-action="Home">
+            <span class="material-symbols-outlined" aria-hidden="true">home</span>
+            <span>Trang chủ</span>
+        </a>
+        <a asp-controller="Kids" asp-action="Today">
+            <span class="material-symbols-outlined" aria-hidden="true">map</span>
+            <span>Bài tập</span>
+        </a>
+        <a asp-controller="Kids" asp-action="Rewards">
+            <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
+            <span>Quà tặng</span>
+        </a>
+        <a href="#" onclick="openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            <span>Phụ huynh</span>
+        </a>
+    </nav>
+</div>
 
 @section Scripts {
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const tabButtons = document.querySelectorAll(".tracing-tab-btn");
-    const sections = document.querySelectorAll(".tracing-section-block");
+(function () {
+    var tabButtons = Array.prototype.slice.call(document.querySelectorAll(".tracing-tab-btn"));
+    var sections = Array.prototype.slice.call(document.querySelectorAll(".kx-trace-section[data-section]"));
+    if (!tabButtons.length) return;
 
-    tabButtons.forEach(btn => {
+    function applyTab(selectedTab) {
+        tabButtons.forEach(function (btn) {
+            var on = btn.getAttribute("data-tab") === selectedTab;
+            btn.classList.toggle("active", on);
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        sections.forEach(function (sec) {
+            sec.hidden = !(selectedTab === "all" || sec.getAttribute("data-section") === selectedTab);
+        });
+        // Ghi nhớ nhóm đang chọn vào ?tab= để khi bé quay lại vẫn đúng nhóm
+        try {
+            var url = new URL(window.location.href);
+            if (selectedTab === "all") {
+                url.searchParams.delete("tab");
+            } else {
+                url.searchParams.set("tab", selectedTab);
+            }
+            window.history.replaceState(window.history.state, "", url.toString());
+        } catch (e) { }
+    }
+
+    tabButtons.forEach(function (btn) {
         btn.addEventListener("click", function () {
-            tabButtons.forEach(b => b.classList.remove("active"));
-            this.classList.add("active");
-
-            const selectedTab = this.getAttribute("data-tab");
-            sections.forEach(sec => {
-                const secType = sec.getAttribute("data-section");
-                if (selectedTab === "all" || secType === selectedTab) {
-                    sec.style.display = "";
-                } else {
-                    sec.style.display = "none";
-                }
-            });
+            applyTab(btn.getAttribute("data-tab") || "all");
         });
     });
-});
+})();
 </script>
 }
