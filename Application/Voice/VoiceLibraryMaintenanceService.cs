@@ -683,6 +683,9 @@ public sealed class VoiceLibraryMaintenanceService
 
     private static bool IsLessonFullySynced(LearningItem item)
     {
+        // Bài Đảo Toán Học lấy Voice từ MathVoiceCatalog, không gắn link vào payload.
+        if (item.InteractionType == InteractionTypes.MathPlay) return true;
+
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
         if (question is null) return true;
 
