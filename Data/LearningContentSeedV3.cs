@@ -19,7 +19,8 @@ public static class LearningContentSeed
         if (await db.LearningItems.AnyAsync()) return 0;
 
         var groups = await db.SkillGroups.AsNoTracking().ToDictionaryAsync(x => x.Code, StringComparer.OrdinalIgnoreCase);
-        var definitions = BuildDefinitions(); ValidateDefinitions(definitions, groups.Keys);
+        // Đảo Toán Học có seed và bộ kiểm tra riêng (MathContentSeeder), không thuộc kho bài nền này.
+        var definitions = BuildDefinitions(); ValidateDefinitions(definitions, groups.Keys.Where(x => x != HanhTrangLop1.Application.MathWorld.MathCurriculum.SkillGroupCode));
         var created = 0; var now = DateTimeOffset.UtcNow;
         foreach (var d in definitions)
         {
@@ -305,7 +306,7 @@ public static class LearningContentSeed
     private static LessonDefinition New(string slug,string group,string type,string title,string instruction,string prompt,object payload,string answer,string symbol="",int strokes=1) => new(CurrentPrefix+slug,group,type,title,instruction,prompt,JsonSerializer.Serialize(payload),answer,"Con nhìn kỹ hình và nghe lại yêu cầu nhé.",symbol,strokes);
     private static object Merge(object basis, object? extra) { var o=JsonSerializer.SerializeToNode(basis)!.AsObject(); if(extra is not null) foreach(var p in JsonSerializer.SerializeToNode(extra)!.AsObject()) o[p.Key]=p.Value?.DeepClone(); return o; }
     private static string[] NumberChoices(int n) => new[]{Math.Max(0,n-1).ToString(),n.ToString(),Math.Min(20,n+1).ToString()}.Distinct().ToArray();
-    private static string Repeat(string x,int n)=>string.Join(' ',Enumerable.Repeat(x,n)); private static string Canonical(IEnumerable<string> x)=>string.Join('|',x.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(v=>v,StringComparer.OrdinalIgnoreCase)); private static string CanonicalMappings(IEnumerable<(string Left,string Right)> x)=>string.Join('|',x.OrderBy(v=>v.Left,StringComparer.OrdinalIgnoreCase).Select(v=>$"{v.Left}=>{v.Right}"));
+    private static string Repeat(string x,int n)=>string.Join(' ',Enumerable.Repeat(x,n)); private static string Canonical(IEnumerable<string> x)=>string.Join('|',x.Distinct(StringComparer.Ordinal).OrderBy(v=>v,StringComparer.OrdinalIgnoreCase)); private static string CanonicalMappings(IEnumerable<(string Left,string Right)> x)=>string.Join('|',x.OrderBy(v=>v.Left,StringComparer.OrdinalIgnoreCase).Select(v=>$"{v.Left}=>{v.Right}"));
     private static string LetterImage(string x) { var lower=x.ToLower(new System.Globalization.CultureInfo("vi-VN")); return $"/images/photos/flashcard-letter-{lower}.{("ăâđêôơư".Contains(lower)?"svg":"jpg")}"; } private static string NumberImage(int n)=>n==0?"/images/photos/flashcard-number-0.svg":$"/images/photos/flashcard-number-{n}.jpg";
     public static string ResolveLetterFlashcardUrl(string symbol)=>LegacyLearningContentSeed.ResolveLetterFlashcardUrl(symbol); public static string ResolveTracingFlashcardUrl(string symbol)=>LegacyLearningContentSeed.ResolveTracingFlashcardUrl(symbol); private static Guid StableGuid(string value)=>new(System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(value)));
 

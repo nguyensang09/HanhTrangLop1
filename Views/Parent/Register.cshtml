@@ -3,41 +3,120 @@
     ViewData["Title"] = "Tạo tài khoản phụ huynh";
 }
 
-<section class="auth-panel">
-    <div class="soft-card form-card">
-        <h1>Tạo tài khoản phụ huynh</h1>
-        <p class="text-muted" style="font-size:0.95rem; margin-bottom:1.25rem;">
-            Đăng ký nhanh chóng để lưu tiến độ và hành trình học tập cho bé.
-        </p>
-
-        <form asp-action="Register" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <label asp-for="Username">Tên tài khoản</label>
-            <input asp-for="Username" class="form-control" placeholder="Ví dụ: phuhuynh_nam, sdt, hoặc email..." autocomplete="username" />
-            <span asp-validation-for="Username" class="text-danger"></span>
-
-            <label asp-for="DisplayName">Tên phụ huynh (tùy chọn)</label>
-            <input asp-for="DisplayName" class="form-control" placeholder="Ví dụ: Bố Tuấn, Mẹ Lan..." />
-            <span asp-validation-for="DisplayName" class="text-danger"></span>
-
-            <label asp-for="Password">Mật khẩu</label>
-            <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu (từ 3 ký tự)..." autocomplete="new-password" />
-            <span asp-validation-for="Password" class="text-danger"></span>
-
-            <label asp-for="ChildNickname">Tên bé (hồ sơ đầu tiên)</label>
-            <input asp-for="ChildNickname" class="form-control" placeholder="Ví dụ: Bé Bống, Bé Bo..." />
-            <span asp-validation-for="ChildNickname" class="text-danger"></span>
-
-            <button class="app-btn app-btn-wide mt-3" type="submit">Đăng ký & Bắt đầu</button>
-            <div class="mt-3 text-center">
-                <span>Đã có tài khoản? </span>
-                <a asp-action="Login" style="font-weight:600;">Đăng nhập tại đây</a>
-            </div>
-        </form>
+<div class="en en--auth">
+    <div class="en-sky" aria-hidden="true">
+        <span class="en-cloud en-cloud--1"></span><span class="en-cloud en-cloud--2"></span><span class="en-cloud en-cloud--3"></span>
     </div>
-</section>
+
+    <div class="en-auth-shell">
+        <aside class="en-auth-side en-auth-side--compact-sm">
+            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" />
+            <h2>Chỉ 1 phút là xong!</h2>
+            <p>Tạo tài khoản miễn phí và hồ sơ đầu tiên cho bé. Sóc Nâu sẽ dẫn bé đi từng bước.</p>
+            <ul class="en-checklist">
+                <li><span class="material-symbols-outlined" aria-hidden="true">savings</span>Hoàn toàn miễn phí, không quảng cáo</li>
+                <li><span class="material-symbols-outlined" aria-hidden="true">group_add</span>Thêm nhiều bé trong một tài khoản</li>
+                <li><span class="material-symbols-outlined" aria-hidden="true">lock</span>Cổng phụ huynh bảo vệ phần cài đặt</li>
+            </ul>
+        </aside>
+
+        <section class="en-card en-auth-card">
+            <div class="en-auth-head">
+                <span class="en-auth-badge" aria-hidden="true"><span class="material-symbols-outlined">person_add</span></span>
+                <h1>Tạo tài khoản phụ huynh</h1>
+                <p>Đăng ký nhanh để lưu tiến độ và hành trình học tập cho bé.</p>
+            </div>
+
+            <form asp-action="Register" method="post" class="en-form">
+                <div asp-validation-summary="ModelOnly" class="en-alert" role="alert"></div>
+
+                <fieldset class="en-fieldset">
+                    <legend class="en-legend"><span class="material-symbols-outlined" aria-hidden="true">badge</span>Tài khoản của ba mẹ</legend>
+
+                    <div class="en-field">
+                        <label asp-for="Username" class="en-label">Tên tài khoản</label>
+                        <div class="en-input-wrap">
+                            <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                            <input asp-for="Username" class="en-input" placeholder="Ví dụ: phuhuynh_nam, số điện thoại hoặc email" autocomplete="username"
+                                   autocapitalize="none" autocorrect="off" spellcheck="false" />
+                        </div>
+                        <span asp-validation-for="Username" class="en-error"></span>
+                    </div>
+
+                    <div class="en-field">
+                        <label asp-for="DisplayName" class="en-label">Tên phụ huynh <small>(không bắt buộc)</small></label>
+                        <div class="en-input-wrap">
+                            <span class="material-symbols-outlined" aria-hidden="true">face</span>
+                            <input asp-for="DisplayName" class="en-input" placeholder="Ví dụ: Bố Tuấn, Mẹ Lan" autocomplete="name" />
+                        </div>
+                        <span asp-validation-for="DisplayName" class="en-error"></span>
+                    </div>
+
+                    <div class="en-field">
+                        <label asp-for="Password" class="en-label">Mật khẩu</label>
+                        <div class="en-input-wrap">
+                            <span class="material-symbols-outlined" aria-hidden="true">key</span>
+                            <input asp-for="Password" class="en-input en-input--with-toggle" placeholder="Từ 3 ký tự trở lên" autocomplete="new-password" />
+                            <button type="button" class="en-eye" data-en-toggle-password="Password" aria-controls="Password" aria-pressed="false" aria-label="Hiện mật khẩu">
+                                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="en-error"></span>
+                    </div>
+                </fieldset>
+
+                <fieldset class="en-fieldset">
+                    <legend class="en-legend"><span class="material-symbols-outlined" aria-hidden="true">child_care</span>Hồ sơ bé đầu tiên</legend>
+
+                    <div class="en-field">
+                        <label asp-for="ChildNickname" class="en-label">Tên bé</label>
+                        <div class="en-input-wrap">
+                            <span class="material-symbols-outlined" aria-hidden="true">mood</span>
+                            <input asp-for="ChildNickname" class="en-input" placeholder="Ví dụ: Bé Bống, Bé Bo" autocomplete="off" />
+                        </div>
+                        <span class="en-hint">Có thể thêm bé khác sau trong Góc phụ huynh.</span>
+                        <span asp-validation-for="ChildNickname" class="en-error"></span>
+                    </div>
+                </fieldset>
+
+                <button class="en-btn en-btn--primary en-btn--lg en-btn--block" type="submit">
+                    <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+                    <span>Đăng ký &amp; bắt đầu</span>
+                </button>
+            </form>
+
+            <div class="en-auth-foot">
+                <p>Đã có tài khoản?</p>
+                <a class="en-btn en-btn--ghost en-btn--block" asp-action="Login">
+                    <span class="material-symbols-outlined" aria-hidden="true">login</span>
+                    <span>Đăng nhập tại đây</span>
+                </a>
+                <a class="en-link" asp-controller="Home" asp-action="Index">
+                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                    <span>Về trang chủ</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            // Nút hiện / ẩn mật khẩu (dễ gõ đúng trên iPad)
+            document.querySelectorAll('[data-en-toggle-password]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var input = document.getElementById(btn.getAttribute('data-en-toggle-password'));
+                    if (!input) return;
+                    var show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+                    btn.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+                    var icon = btn.querySelector('.material-symbols-outlined');
+                    if (icon) icon.textContent = show ? 'visibility_off' : 'visibility';
+                });
+            });
+        })();
+    </script>
 }

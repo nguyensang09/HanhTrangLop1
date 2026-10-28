@@ -1,40 +1,97 @@
 @model LoginViewModel
 @{
     ViewData["Title"] = "Đăng nhập phụ huynh";
+    var isParentSignedIn = User.Identity?.IsAuthenticated == true;
+    var returnUrl = Context.Request.Query["ReturnUrl"].ToString();
 }
 
-<section class="auth-panel">
-    <div class="soft-card form-card">
-        <h1>Góc phụ huynh</h1>
-        <p class="text-muted" style="font-size:0.95rem; margin-bottom:1.25rem;">
-            Đăng nhập để theo dõi và cùng bé học tập mỗi ngày.
-        </p>
-
-        <form asp-action="Login" method="post" id="loginForm">
-            <input type="hidden" name="deviceType" id="deviceTypeInput" value="pc" />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <label asp-for="Username">Tên tài khoản</label>
-            <input asp-for="Username" class="form-control" placeholder="Nhập tên tài khoản hoặc email..." autocomplete="username" />
-            <span asp-validation-for="Username" class="text-danger"></span>
-
-            <label asp-for="Password">Mật khẩu</label>
-            <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu..." autocomplete="current-password" />
-            <span asp-validation-for="Password" class="text-danger"></span>
-
-            <label class="check-row">
-                <input asp-for="RememberMe" />
-                Ghi nhớ đăng nhập
-            </label>
-
-            <button class="app-btn app-btn-wide" type="submit">Đăng nhập</button>
-            <div class="mt-3 text-center">
-                <span>Chưa có tài khoản? </span>
-                <a asp-action="Register" style="font-weight:600;">Tạo tài khoản mới</a>
-            </div>
-        </form>
+<div class="en en--auth">
+    <div class="en-sky" aria-hidden="true">
+        <span class="en-cloud en-cloud--1"></span><span class="en-cloud en-cloud--2"></span><span class="en-cloud en-cloud--3"></span>
     </div>
-</section>
+
+    <div class="en-auth-shell">
+        <aside class="en-auth-side en-auth-side--compact-sm">
+            <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" />
+            <h2>Chào ba mẹ!</h2>
+            <p>Sóc Nâu đã giữ chỗ cho bé rồi. Đăng nhập để tiếp tục hành trình học tập mỗi ngày.</p>
+            <ul class="en-checklist">
+                <li><span class="material-symbols-outlined" aria-hidden="true">insights</span>Theo dõi tiến độ từng bé</li>
+                <li><span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>Lưu sao, huy hiệu và bài đã học</li>
+                <li><span class="material-symbols-outlined" aria-hidden="true">timer</span>Tùy chỉnh thời lượng học mỗi ngày</li>
+            </ul>
+        </aside>
+
+        <section class="en-card en-auth-card">
+            <div class="en-auth-head">
+                <span class="en-auth-badge" aria-hidden="true"><span class="material-symbols-outlined">lock_person</span></span>
+                <h1>Đăng nhập phụ huynh</h1>
+                <p>Đăng nhập để theo dõi và cùng bé học tập mỗi ngày.</p>
+            </div>
+
+            @if (isParentSignedIn)
+            {
+                <div class="en-note" role="status">
+                    <span class="material-symbols-outlined" aria-hidden="true">info</span>
+                    <span>Ba mẹ đang đăng nhập với tài khoản <strong>@(User.Identity?.Name)</strong>. Đăng nhập tài khoản khác bên dưới để <strong>đổi tài khoản</strong>.</span>
+                </div>
+            }
+
+            <form asp-action="Login" method="post" id="loginForm" class="en-form">
+                <input type="hidden" name="deviceType" id="deviceTypeInput" value="pc" />
+                @if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                }
+                <div asp-validation-summary="ModelOnly" class="en-alert" role="alert"></div>
+
+                <div class="en-field">
+                    <label asp-for="Username" class="en-label">Tên tài khoản</label>
+                    <div class="en-input-wrap">
+                        <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                        <input asp-for="Username" class="en-input" placeholder="Tên tài khoản hoặc email" autocomplete="username"
+                               autocapitalize="none" autocorrect="off" spellcheck="false" />
+                    </div>
+                    <span asp-validation-for="Username" class="en-error"></span>
+                </div>
+
+                <div class="en-field">
+                    <label asp-for="Password" class="en-label">Mật khẩu</label>
+                    <div class="en-input-wrap">
+                        <span class="material-symbols-outlined" aria-hidden="true">key</span>
+                        <input asp-for="Password" class="en-input en-input--with-toggle" placeholder="Nhập mật khẩu" autocomplete="current-password" />
+                        <button type="button" class="en-eye" data-en-toggle-password="Password" aria-controls="Password" aria-pressed="false" aria-label="Hiện mật khẩu">
+                            <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="en-error"></span>
+                </div>
+
+                <label class="en-check">
+                    <input asp-for="RememberMe" />
+                    <span>Ghi nhớ đăng nhập trên thiết bị này</span>
+                </label>
+
+                <button class="en-btn en-btn--violet en-btn--lg en-btn--block" type="submit">
+                    <span class="material-symbols-outlined" aria-hidden="true">login</span>
+                    <span>Đăng nhập</span>
+                </button>
+            </form>
+
+            <div class="en-auth-foot">
+                <p>Chưa có tài khoản?</p>
+                <a class="en-btn en-btn--ghost en-btn--block" asp-action="Register">
+                    <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                    <span>Tạo tài khoản mới</span>
+                </a>
+                <a class="en-link" asp-controller="Home" asp-action="Index">
+                    <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                    <span>Về trang chủ</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
@@ -59,6 +116,20 @@
             if (el) {
                 el.value = detectDeviceType();
             }
+
+            // Nút hiện / ẩn mật khẩu (dễ gõ đúng trên iPad)
+            document.querySelectorAll('[data-en-toggle-password]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var input = document.getElementById(btn.getAttribute('data-en-toggle-password'));
+                    if (!input) return;
+                    var show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+                    btn.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+                    var icon = btn.querySelector('.material-symbols-outlined');
+                    if (icon) icon.textContent = show ? 'visibility_off' : 'visibility';
+                });
+            });
         })();
     </script>
 }

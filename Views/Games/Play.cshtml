@@ -20,7 +20,9 @@
      data-game-key="@Model.GameKey"
      data-initial-level="@Model.InitialLevel"
      data-total-stars="@Model.TotalStars"
-     data-sound-enabled="@(Model.SoundEnabled ? "true" : "false")">
+     data-sound-enabled="@(Model.SoundEnabled ? "true" : "false")"
+     data-english-voice="@(Model.EnglishVoice ? "true" : "false")"
+     data-level-stars="@System.Text.Json.JsonSerializer.Serialize(Model.LevelStars)">
 
     <!-- 3D Illustrated Game World Background -->
     <img src="@bgImage" alt="Hình nền trò chơi @Model.GameTitle" class="stitch-stage-bg" asp-append-version="true" />
@@ -34,7 +36,7 @@
                 <span>SẢNH CHÍNH</span>
             </a>
             <div class="stitch-level-tag">
-                <span>Cấp độ: <strong>5 Tuổi • Mầm Non</strong></span>
+                <span>Màn <strong id="shellLevelText">@Model.InitialLevel</strong>/@(Model.GameKey == "gold-miner" ? 39 : Model.GameKey == "bubble" ? 50 : 40)</span>
             </div>
         </div>
 
@@ -44,7 +46,7 @@
                 <span class="material-symbols-outlined" style="font-size: 1.5rem;">volume_up</span>
             </button>
             <div class="mission-text-block">
-                <span class="mission-eyebrow">Nhiệm vụ của bé</span>
+                <span class="mission-eyebrow">Nhiệm vụ của con</span>
                 <div class="mission-title-target">
                     <span id="missionActionText">BẮN CHỮ</span>
                     <span class="target-char-pill" id="targetCharBadge">A</span>
@@ -62,7 +64,7 @@
 
         <!-- Status Indicators Right -->
         <div class="stitch-topbar-right">
-            <div class="stitch-star-pill" id="shellStarCounter" title="Tổng số sao bé tích lũy được">
+            <div class="stitch-star-pill" id="shellStarCounter" title="Tổng số sao con tích lũy được">
                 ⭐ @Model.TotalStars
             </div>
             <div class="stitch-hearts-pill" title="3 lượt thử vui vẻ">
@@ -81,7 +83,7 @@
     <div class="stitch-floating-speech" id="floatingSpeech">
         <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu Đồng Hành" class="stitch-speech-avatar" id="guideMascotImg" />
         <p class="stitch-speech-text" id="guidePromptText">
-            "Bé ơi, tìm và ngắm bắn đúng bong bóng chữ cái nhé!"
+            "Con ơi, tìm và bắn đúng bong bóng chữ cái nhé!"
         </p>
     </div>
 
@@ -102,7 +104,7 @@
 
         <div style="background: rgba(15,23,42,0.6); backdrop-filter: blur(6px); border-radius: 999px; padding: 6px 16px; color: #fef08a; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
             <span>💡</span>
-            <span id="guideSubHint">Mẹo cho bé: Chạm vào mục tiêu để ghi điểm nhé!</span>
+            <span id="guideSubHint">Mẹo nhỏ: chạm vào mục tiêu để ghi điểm nhé!</span>
         </div>
 
         <div style="display: flex; gap: 8px;">

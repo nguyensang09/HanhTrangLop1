@@ -22196,7 +22196,7 @@ body.audio-is-speaking .sound-wave-badge {
 /* Responsive cho iPad dọc & Mobile */
 @media (max-width: 989px) and (min-width: 680px) {
   .ipad-unified-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
   }
 }
@@ -22208,7 +22208,7 @@ body.audio-is-speaking .sound-wave-badge {
     gap: 10px;
   }
   .ipad-unified-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
   .ipad-card-tile {

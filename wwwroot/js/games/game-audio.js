@@ -13,6 +13,68 @@ class GameAudioEngine {
         this.audioCache = new Map();
         this.activeAudio = null;
         this.initVoiceSynthesis();
+        // Ngôn ngữ giọng đọc theo cài đặt của bé (GameShell gọi configureLanguage). Mặc định tiếng Việt.
+        this.english = false;
+        this.viToEn = new Map();
+        this.enToVi = new Map();
+    }
+
+    /**
+     * Nạp cặp câu hướng dẫn Việt – Anh viết sẵn của mọi màn chơi để đọc đúng ngôn ngữ đã cài:
+     * bé dùng giọng tiếng Việt nghe câu tiếng Việt, bé dùng giọng tiếng Anh nghe câu tiếng Anh tương ứng.
+     */
+    configureLanguage(english, catalog) {
+        this.english = !!english;
+        Object.values(catalog || {}).forEach((levels) => {
+            (levels || []).forEach((level) => {
+                const vi = String(level.instruction || '').trim();
+                const en = String(level.instructionEn || '').trim();
+                if (!vi || !en) return;
+                this.viToEn.set(vi, en);
+                this.enToVi.set(en, vi);
+            });
+        });
+    }
+
+    /** Phát câu tiếng Anh viết sẵn (máy chủ sinh và lưu file theo câu tiếng Việt gốc); lỗi thì dùng giọng của máy. */
+    async playAuthoredEnglish(vi, en, onEnded = null) {
+        if (!this.soundEnabled || !en) {
+            if (onEnded) onEnded();
+            return;
+        }
+        this.stopVoice();
+        const cacheKey = `en:${en}`;
+        let audioUrl = this.audioCache.get(cacheKey) || null;
+        if (!audioUrl) {
+            try {
+                const resp = await fetch(`/kids/games/voice?lang=en&text=${encodeURIComponent(en)}&vi=${encodeURIComponent(vi)}`);
+                const data = resp.ok ? await resp.json() : null;
+                if (data && data.success && data.audioUrl) {
+                    audioUrl = data.audioUrl;
+                    this.audioCache.set(cacheKey, audioUrl);
+                }
+            } catch (e) {
+                audioUrl = null;
+            }
+        }
+        if (audioUrl) {
+            try {
+                this.activeAudio = new Audio(audioUrl);
+                this.isSpeaking = true;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(true);
+                this.activeAudio.onended = () => {
+                    this.isSpeaking = false;
+                    if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+                    if (onEnded) onEnded();
+                };
+                await this.activeAudio.play();
+                return;
+            } catch (err) {
+                this.isSpeaking = false;
+                if (this.onSpeakingStateChange) this.onSpeakingStateChange(false);
+            }
+        }
+        this.speakEnglishDirect(en, onEnded);
     }
 
     getAudioContext() {
@@ -123,6 +185,9 @@ class GameAudioEngine {
             '20': 'số 20'
         };
 
+        // Cô đọc chữ theo âm như lớp 1 (bờ, cờ, dờ...) để khớp với bài học.
+        const sounds = { 'A': 'a', 'Ă': 'á', 'Â': 'ớ', 'B': 'bờ', 'C': 'cờ', 'D': 'dờ', 'Đ': 'đờ', 'E': 'e', 'Ê': 'ê', 'G': 'gờ', 'H': 'hờ', 'I': 'i', 'K': 'ca', 'L': 'lờ', 'M': 'mờ', 'N': 'nờ', 'O': 'o', 'Ô': 'ô', 'Ơ': 'ơ', 'P': 'pờ', 'Q': 'quờ', 'R': 'rờ', 'S': 'sờ', 'T': 'tờ', 'U': 'u', 'Ư': 'ư', 'V': 'vờ', 'X': 'xờ', 'Y': 'i dài' };
+        if (sounds[upper]) return `chữ ${sounds[upper]}`;
         if (letterMap[upper]) return letterMap[upper];
         if (numberMap[ch]) return numberMap[ch];
         return ch;
@@ -157,6 +222,12 @@ class GameAudioEngine {
      * Phát voice từ hệ thống chung, nếu chưa có thì fallback sang TTS mầm non
      */
     async playSystemVoiceOrSpeak(text, onEnded = null) {
+        const key = String(text || '').trim();
+        if (this.english && this.viToEn.has(key)) return this.playAuthoredEnglish(key, this.viToEn.get(key), onEnded);
+        return this.playVietnameseVoice(text, onEnded);
+    }
+
+    async playVietnameseVoice(text, onEnded = null) {
         if (!this.soundEnabled || !text) {
             if (onEnded) onEnded();
             return;
@@ -207,7 +278,7 @@ class GameAudioEngine {
         this.stopVoice();
 
         // 1. Ưu tiên tìm kiếm trực tiếp theo ký tự riêng biệt (như 'A', 'Â', '1')
-        let audioUrl = await this.resolveSystemVoice(rawChar);
+        let audioUrl = await this.resolveSystemVoice(this.getPhonicText(rawChar));
         
         // 2. Nếu chưa có, thử tìm tiếp theo dạng phonic ('chữ A', 'số 1')
         if (!audioUrl) {
@@ -336,6 +407,7 @@ class GameAudioEngine {
      * Đọc ký tự chữ cái hoặc số bằng GIỌNG NỮ TIẾNG ANH CHUẨN CÓ SẴN TRONG HỆ THỐNG
      */
     async speakLetterEnglish(char, onEnded = null) {
+        if (!this.english) return this.speakLetter(char, onEnded);
         if (!this.soundEnabled || !char) {
             if (onEnded) onEnded();
             return;
@@ -397,6 +469,13 @@ class GameAudioEngine {
      * Đọc văn bản bằng giọng tiếng Anh chuẩn GIỌNG NỮ (Web Speech API en-US)
      */
     speakEnglish(text, onEnded = null, customRate = 0.85) {
+        const key = String(text || '').trim();
+        const vi = this.enToVi.get(key);
+        if (vi) return this.english ? this.playAuthoredEnglish(vi, key, onEnded) : this.playVietnameseVoice(vi, onEnded);
+        return this.speakEnglishDirect(text, onEnded, customRate);
+    }
+
+    speakEnglishDirect(text, onEnded = null, customRate = 0.85) {
         if (!this.soundEnabled || !text) {
             if (onEnded) onEnded();
             return;
@@ -876,6 +955,7 @@ class GameAudioEngine {
      * Đọc từ vựng tiếng Anh kèm kiểm tra cache hệ thống
      */
     async speakWordEnglish(word, onEnded = null) {
+        if (!this.english) return this.playVietnameseVoice(String(word || '').toLowerCase(), onEnded);
         if (!this.soundEnabled || !word) {
             if (onEnded) onEnded();
             return;

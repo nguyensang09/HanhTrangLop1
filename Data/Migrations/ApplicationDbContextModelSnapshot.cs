@@ -121,6 +121,46 @@ namespace HanhTrangLop1.Data.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("HanhTrangLop1.Models.ChildGameProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BestStars")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ChildProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("FirstCompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("GameKey")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTimeOffset>("LastPlayedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlayCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProgressEpoch")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildProfileId", "ProgressEpoch", "GameKey", "Level")
+                        .IsUnique();
+
+                    b.ToTable("ChildGameProgresses");
+                });
+
             modelBuilder.Entity("HanhTrangLop1.Models.ChildInventoryItem", b =>
                 {
                     b.Property<Guid>("Id")
@@ -176,6 +216,9 @@ namespace HanhTrangLop1.Data.Migrations
 
                     b.Property<Guid>("LearningItemId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("PathCompletedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("ProgressEpoch")
                         .HasColumnType("int");
@@ -1139,6 +1182,17 @@ namespace HanhTrangLop1.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("HanhTrangLop1.Models.ChildGameProgress", b =>
+                {
+                    b.HasOne("HanhTrangLop1.Models.ChildProfile", "ChildProfile")
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChildProfile");
                 });
 
             modelBuilder.Entity("HanhTrangLop1.Models.ChildInventoryItem", b =>

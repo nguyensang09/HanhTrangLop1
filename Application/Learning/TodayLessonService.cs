@@ -111,7 +111,8 @@ public class TodayLessonService
         {
             progressByItemId.TryGetValue(item.Id, out var progress);
 
-            if (progress?.FirstCompletedAt is not null)
+            // Trạng thái theo lộ trình hiện tại: bài bé vừa chọn học lại (và các bài sau) không còn tính là đã xong.
+            if (progress?.PathCompletedAt is not null)
             {
                 return new TodayLessonStepViewModel
                 {

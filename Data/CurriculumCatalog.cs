@@ -69,7 +69,15 @@ public static class CurriculumCatalog
             Topic("aaaaaaaa-1010-1010-1010-101010101011", "con-vat", "Con vật", 1),
             Topic("aaaaaaaa-1010-1010-1010-101010101012", "cay-co", "Cây cối", 2),
             Topic("aaaaaaaa-1010-1010-1010-101010101013", "thoi-tiet", "Thời tiết và trang phục", 3),
-            Topic("aaaaaaaa-1010-1010-1010-101010101014", "giao-thong", "Phương tiện giao thông", 4))
+            Topic("aaaaaaaa-1010-1010-1010-101010101014", "giao-thong", "Phương tiện giao thông", 4)),
+
+        // Đảo Toán Học: nhóm học toán độc lập, chạy bằng trình chơi riêng tại /kids/math.
+        // Mỗi chủ đề là một phép toán; phép nhân và phép chia đã có chỗ sẵn để mở rộng sau.
+        Group("12121212-1212-1212-1212-121212121212", "toan-hoc", "Đảo Toán Học", "Cộng, trừ trong phạm vi 10 qua trò chơi khám phá trên đảo.", "calculate", "#7c5cff", 11,
+            Topic("aaaaaaaa-1212-1212-1212-121212121211", "phep-cong", "Phép cộng", 1),
+            Topic("aaaaaaaa-1212-1212-1212-121212121212", "phep-tru", "Phép trừ", 2),
+            Topic("aaaaaaaa-1212-1212-1212-121212121213", "phep-nhan", "Phép nhân", 3),
+            Topic("aaaaaaaa-1212-1212-1212-121212121214", "phep-chia", "Phép chia", 4))
     ];
 
     private static CurriculumGroupDefinition Group(

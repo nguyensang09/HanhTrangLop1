@@ -8,7 +8,10 @@ public class SkillLearningListViewModel
     public Guid? LastPracticedItemId { get; set; }
     public Guid? CurrentItemId { get; set; }
     public IReadOnlyList<SkillMilestoneViewModel> Milestones { get; set; } = [];
-    public int CompletedCount => Items.Count(x => x.EverCompleted);
+    /// <summary>Số bài đã xong trên lộ trình hiện tại (sau khi học lại một bài cũ, các bài phía sau không còn tính).</summary>
+    public int CompletedCount => Items.Count(x => x.IsPathCompleted);
+    /// <summary>Số bài từng hoàn thành (lịch sử) — dùng cho rương quà, không bị giảm khi học lại.</summary>
+    public int EverCompletedCount => Items.Count(x => x.EverCompleted);
 }
 
 public class SkillLearningItemViewModel
@@ -17,6 +20,8 @@ public class SkillLearningItemViewModel
     public string? LatestStatus { get; set; }
     public int StarsEarned { get; set; }
     public bool EverCompleted { get; set; }
+    /// <summary>Đã xong trên lộ trình hiện tại (quyết định trạng thái xong / đang học / khóa trên bản đồ).</summary>
+    public bool IsPathCompleted { get; set; }
 }
 
 public class SkillMilestoneViewModel

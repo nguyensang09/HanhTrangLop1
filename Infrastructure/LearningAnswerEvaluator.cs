@@ -30,7 +30,10 @@ public static class LearningAnswerEvaluator
 
         if (UnorderedTypes.Contains(interactionType, StringComparer.OrdinalIgnoreCase))
         {
-            return AsSet(submitted).SetEquals(AsSet(expected));
+            // Đáp án có hai giá trị chỉ khác hoa/thường (ví dụ "Ă|ă") thì phải chấm phân biệt
+            // hoa/thường, nếu không bé chọn một chữ cũng được tính là đủ cả hai.
+            var comparer = HasCaseVariants(expected) ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+            return AsSet(submitted, comparer).SetEquals(AsSet(expected, comparer));
         }
 
         // Dạng có thứ tự (ordering...) so sánh theo đúng trình tự nhưng đã được chuẩn hóa
@@ -53,6 +56,12 @@ public static class LearningAnswerEvaluator
         .Select(segment => MappingArrow.Replace(WhitespaceRuns.Replace(segment, " "), "=>").Trim())
         .ToList();
 
-    private static HashSet<string> AsSet(string value) =>
-        AsList(value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    private static HashSet<string> AsSet(string value, StringComparer comparer) =>
+        AsList(value).ToHashSet(comparer);
+
+    private static bool HasCaseVariants(string value)
+    {
+        var values = AsList(value);
+        return values.Distinct(StringComparer.Ordinal).Count() != values.Distinct(StringComparer.OrdinalIgnoreCase).Count();
+    }
 }

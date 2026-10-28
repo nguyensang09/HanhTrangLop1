@@ -102,7 +102,7 @@ class GoldMinerGame {
 
                         <div class="miner-target-body">
                             <span class="miner-target-sublabel">MỤC TIÊU: ${targetType.toUpperCase()}</span>
-                            <div class="miner-target-big-badge" id="hudTargetChar" title="Bé chạm vào đây để nghe phát âm nhé!">
+                            <div class="miner-target-big-badge" id="hudTargetChar" title="Con chạm vào đây để nghe phát âm nhé!">
                                 ${target}
                             </div>
                         </div>
@@ -826,7 +826,7 @@ class GoldMinerGame {
 
         const msgEl = document.getElementById('victoryMessage');
         if (msgEl) {
-            msgEl.innerHTML = `Bé đã xuất sắc gắp đủ <strong>${this.totalRequired} khối ${targetType} ${target}</strong>!`;
+            msgEl.innerHTML = `Con đã gắp đủ <strong>${this.totalRequired} khối ${targetType} ${target}</strong>!`;
         }
 
         const toastEl = document.getElementById('victoryToast');
@@ -841,8 +841,7 @@ class GoldMinerGame {
 
         // Lưu thành tích hoàn thành màn chơi
         const levelNum = this.currentLevelData?.level || 1;
-        this.shell?.saveProgressLocal('gold-miner', levelNum, 1);
-        this.shell?.saveProgressServer('gold-miner', levelNum, 1);
+        this.shell?.markLevelDone?.(levelNum, 1);
 
         // Lưu tiếp level kế tiếp để mặc định lần sau vào sẽ chơi tiếp
         const nextLvl = levelNum + 1;
@@ -914,12 +913,8 @@ class GoldMinerGame {
         const allLevels = (window.GAME_LEVELS && window.GAME_LEVELS['gold-miner']) || [];
         const currentTarget = this.currentLevelData?.target || 'A';
 
-        // Lấy danh sách level đã hoàn thành từ localStorage
-        let completedLevels = [];
-        try {
-            const saved = JSON.parse(localStorage.getItem('htl1_games_progress') || '{}');
-            completedLevels = saved['gold-miner']?.completedLevels || [];
-        } catch (e) {}
+        // Màn đã qua lấy từ tiến độ lưu theo bé trên máy chủ (GameShell).
+        const completedLevels = allLevels.map(l => l.level).filter(level => window.gameShell?.isLevelDone?.(level));
 
         const filtered = allLevels.filter(lvl => {
             if (type === 'letters') return lvl.targetType === 'letter' || lvl.level <= 29;

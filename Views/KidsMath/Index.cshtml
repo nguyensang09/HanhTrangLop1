@@ -1,0 +1,212 @@
+@model MathHubViewModel
+@{
+    ViewData["Title"] = "Đảo Toán Học";
+    var childName = Model.ChildProfile.Nickname;
+    var percent = Model.TotalLessons == 0 ? 0 : Model.CompletedLessons * 100 / Model.TotalLessons;
+    string StarText(int n) => new string('★', Math.Clamp(n, 0, 3)) + new string('☆', 3 - Math.Clamp(n, 0, 3));
+    string Greeting() => Model.CompletedLessons switch
+    {
+        0 => $"Chào {childName}! Cô cùng con khám phá Đảo Toán Học nhé!",
+        var n when n == Model.TotalLessons => $"Wow {childName}! Con đã chinh phục cả hòn đảo rồi. Chơi lại để lấy đủ 3 sao nhé!",
+        _ => $"{childName} ơi, mình đi tiếp hành trình nào!"
+    };
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+<link rel="stylesheet" href="~/css/math-world.css" asp-append-version="true" />
+
+<div class="mw mw-hub" data-op="@Model.SelectedOperation">
+    <div class="mw-sky" aria-hidden="true">
+        <span class="mw-cloud mw-cloud--1"></span><span class="mw-cloud mw-cloud--2"></span><span class="mw-cloud mw-cloud--3"></span>
+        <span class="mw-float-sym" style="--x:8%;--d:0s">+</span>
+        <span class="mw-float-sym" style="--x:82%;--d:-3s">−</span>
+        <span class="mw-float-sym" style="--x:62%;--d:-6s">×</span>
+        <span class="mw-float-sym" style="--x:30%;--d:-9s">÷</span>
+    </div>
+
+    <header class="mw-topbar">
+        <a class="mw-pill mw-pill--back" asp-controller="Kids" asp-action="Home" aria-label="Về góc của bé">
+            <span class="material-symbols-outlined">home</span><span class="mw-hide-sm">Góc của bé</span>
+        </a>
+        <div class="mw-brand">
+            <span class="mw-brand-mark" aria-hidden="true">🏝️</span>
+            <span class="mw-brand-text">Đảo Toán Học</span>
+        </div>
+        <div class="mw-pill mw-pill--stars" title="Sao kiếm được trên Đảo Toán Học">
+            <span aria-hidden="true">⭐</span><strong>@Model.TotalStars</strong>
+        </div>
+    </header>
+
+    <section class="mw-hero">
+        <div class="mw-hero-guide">
+            <partial name="_MathBip" model='"mw-bip--wave"' />
+            <p class="mw-bubble">@Greeting()</p>
+        </div>
+        <div class="mw-hero-card">
+            <div class="mw-meter" role="progressbar" aria-valuemin="0" aria-valuemax="@Model.TotalLessons" aria-valuenow="@Model.CompletedLessons">
+                <div class="mw-meter-label"><span>Hành trình của con</span><strong>@Model.CompletedLessons / @Model.TotalLessons bài</strong></div>
+                <div class="mw-meter-track"><span style="width:@percent%"></span></div>
+            </div>
+            @if (Model.ContinueLesson is { } next)
+            {
+                <a class="mw-continue" asp-action="Play" asp-route-id="@next.Id" data-sfx="tap">
+                    <span class="mw-continue-orb" aria-hidden="true">@next.StyleEmoji</span>
+                    <span class="mw-continue-text">
+                        <small>@(Model.CompletedLessons == 0 ? "Bắt đầu nào" : "Chơi tiếp") · @next.StyleName</small>
+                        <strong>@next.Title</strong>
+                    </span>
+                    <span class="mw-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                </a>
+            }
+            else
+            {
+                <p class="mw-hero-done">🏆 Con đã hoàn thành mọi bài! Chạm vào bài bất kỳ để luyện thêm nhé.</p>
+            }
+        </div>
+    </section>
+
+    <nav class="mw-islands" aria-label="Chọn phép toán">
+        @foreach (var op in Model.Operations)
+        {
+            var isOpen = op.Definition.IsAvailable && op.HasLessons;
+            <button type="button"
+                    class="mw-island @(op.Definition.Key == Model.SelectedOperation ? "is-active" : "") @(isOpen ? "" : "is-soon")"
+                    style="--island:@op.Definition.Color"
+                    data-op-tab="@op.Definition.Key"
+                    @(isOpen ? "" : "disabled")
+                    aria-pressed="@(op.Definition.Key == Model.SelectedOperation ? "true" : "false")">
+                <span class="mw-island-symbol" aria-hidden="true">@op.Definition.DisplaySymbol</span>
+                <span class="mw-island-name">@op.Definition.Name</span>
+                @if (isOpen)
+                {
+                    <span class="mw-island-meta">@op.CompletedLessons/@op.TotalLessons bài · ⭐ @op.Stars</span>
+                }
+                else
+                {
+                    <span class="mw-island-meta"><span class="material-symbols-outlined">lock</span> Sắp ra mắt</span>
+                }
+            </button>
+        }
+    </nav>
+
+    @foreach (var op in Model.Operations.Where(x => x.Definition.IsAvailable && x.HasLessons))
+    {
+        <section class="mw-journey" data-op-panel="@op.Definition.Key" style="--island:@op.Definition.Color" @(op.Definition.Key == Model.SelectedOperation ? "" : "hidden")>
+            <h2 class="mw-journey-title">
+                <span class="mw-journey-symbol" aria-hidden="true">@op.Definition.DisplaySymbol</span>
+                Hành trình @op.Definition.Name.ToLower() <small>@op.Definition.Tagline</small>
+            </h2>
+
+            @foreach (var stage in op.Stages)
+            {
+                <div class="mw-stage @(stage.IsUnlocked ? "" : "is-locked")">
+                    <div class="mw-stage-head">
+                        <span class="mw-stage-emoji" aria-hidden="true">@stage.Emoji</span>
+                        <div>
+                            <span class="mw-stage-kicker">Chặng @stage.Order</span>
+                            <h3>@stage.Title</h3>
+                            <p>@stage.Subtitle</p>
+                        </div>
+                        <span class="mw-stage-count">
+                            @if (stage.IsUnlocked)
+                            {
+                                @($"{stage.Lessons.Count(x => x.IsCompleted)}/{stage.Lessons.Count}")
+                            }
+                            else
+                            {
+                                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                                @($"Xong thêm {stage.LessonsNeededToUnlock} bài để mở")
+                            }
+                        </span>
+                    </div>
+                    <ol class="mw-path">
+                        @foreach (var lesson in stage.Lessons)
+                        {
+                            var state = lesson.IsCompleted ? "is-done" : lesson.IsCurrent ? "is-current" : lesson.IsLocked ? "is-locked" : "is-open";
+                            <li>
+                                @if (lesson.IsLocked)
+                                {
+                                    <span class="mw-stone @state" aria-disabled="true" title="Chưa mở khóa">
+                                        <span class="mw-stone-orb" aria-hidden="true">🔒</span>
+                                        <span class="mw-stone-title">@lesson.Title</span>
+                                        <span class="mw-stone-style">@lesson.StyleName</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <a class="mw-stone @state" asp-action="Play" asp-route-id="@lesson.Id" data-sfx="tap"
+                                       aria-label="@lesson.Title, @lesson.StyleName, @lesson.Stars trên 3 sao">
+                                        @if (lesson.IsCurrent)
+                                        {
+                                            <span class="mw-stone-flag">Bài tiếp theo</span>
+                                        }
+                                        <span class="mw-stone-orb" aria-hidden="true">@lesson.StyleEmoji</span>
+                                        <span class="mw-stone-title">@lesson.Title</span>
+                                        <span class="mw-stone-style">@lesson.StyleName · @lesson.QuestionCount câu</span>
+                                        <span class="mw-stone-stars" aria-hidden="true">@StarText(lesson.Stars)</span>
+                                    </a>
+                                }
+                            </li>
+                        }
+                    </ol>
+                </div>
+            }
+        </section>
+    }
+
+    <section class="mw-panel mw-styles">
+        <h2>9 cách chơi trên đảo</h2>
+        <ul>
+            @foreach (var style in Model.Styles)
+            {
+                <li><span aria-hidden="true">@style.Emoji</span><strong>@style.Name</strong><small>@style.Description</small></li>
+            }
+        </ul>
+    </section>
+
+    @if (Model.Badges.Count > 0)
+    {
+        <section class="mw-panel mw-badges">
+            <h2>Huy hiệu Đảo Toán Học</h2>
+            <ul>
+                @foreach (var badge in Model.Badges)
+                {
+                    <li class="@(badge.IsEarned ? "is-earned" : "")">
+                        <span class="material-symbols-outlined" aria-hidden="true">@badge.IconKey</span>
+                        <span><strong>@badge.Name</strong><small>@(badge.IsEarned ? "Đã đạt được!" : badge.Rule)</small></span>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var root = document.querySelector('.mw-hub');
+            var tabs = root.querySelectorAll('[data-op-tab]');
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    var op = tab.getAttribute('data-op-tab');
+                    root.setAttribute('data-op', op);
+                    tabs.forEach(function (t) {
+                        var active = t === tab;
+                        t.classList.toggle('is-active', active);
+                        t.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    });
+                    root.querySelectorAll('[data-op-panel]').forEach(function (panel) {
+                        panel.hidden = panel.getAttribute('data-op-panel') !== op;
+                    });
+                    try { history.replaceState(null, '', '?op=' + op); } catch (e) { }
+                    if (window.MathWorldSfx) window.MathWorldSfx('tap');
+                });
+            });
+            var current = root.querySelector('[data-op-panel]:not([hidden]) .mw-stone.is-current');
+            if (current && current.scrollIntoView && window.innerHeight < 900) {
+                setTimeout(function () { current.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 400);
+            }
+        })();
+    </script>
+    <script src="~/js/math-world.js" asp-append-version="true"></script>
+}

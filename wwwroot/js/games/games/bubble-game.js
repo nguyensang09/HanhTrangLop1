@@ -312,7 +312,7 @@ class BubbleGame {
         container.innerHTML = levels.map(lvl => {
             const isCurrent = lvl.level === curLevel;
             return `
-                <button type="button" class="alphabet-item-btn ${isCurrent ? 'is-active' : ''}" data-jump-level="${lvl.level}">
+                <button type="button" class="alphabet-item-btn ${isCurrent ? 'is-active' : ''} ${window.gameShell?.isLevelDone?.(lvl.level) ? 'is-done' : ''}" data-stars="${'⭐'.repeat(window.gameShell?.starsFor?.(lvl.level) || 0)}" data-jump-level="${lvl.level}">
                     <span class="alphabet-char">${lvl.target}</span>
                     <span class="alphabet-sub">Màn ${lvl.level}</span>
                 </button>
@@ -775,8 +775,7 @@ class BubbleGame {
         }
 
         const levelNum = this.currentLevelData?.level || 1;
-        this.shell?.saveProgressLocal('bubble', levelNum, 1);
-        this.shell?.saveProgressServer('bubble', levelNum, 1);
+        this.shell?.markLevelDone?.(levelNum, 1);
 
         const nextLvl = levelNum + 1;
         this.saveCurrentLevelProgress(nextLvl);

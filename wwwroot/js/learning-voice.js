@@ -1,13 +1,30 @@
 (() => {
+    // Bộ điều khiển Voice duy nhất của trang làm bài. Mọi âm thanh hướng dẫn (câu hỏi, đáp án bé chọn, lời phản hồi)
+    // đều đi qua đây để tại mỗi thời điểm chỉ có MỘT Voice phát:
+    //   - Một thẻ <audio> dùng chung (Safari trên iPad chỉ cho thẻ đã từng phát sau một lần chạm được tự phát tiếp).
+    //   - Mỗi lượt phát mang một "token"; lượt mới tăng token, dừng ngay Voice cũ và mọi câu còn xếp hàng của nó.
+    //   - Promise của một lượt chỉ kết thúc khi file đọc XONG (không phải lúc bắt đầu), nên thứ tự
+    //     câu hỏi → đáp án → phản hồi luôn đúng và không chồng lên nhau.
+    const noop = {
+        playQuestion: () => Promise.resolve(),
+        playOption: () => Promise.resolve(false),
+        playFeedback: () => Promise.resolve(),
+        stop: () => {}
+    };
     const host = document.querySelector("[data-learning-voice]");
-    if (!host) return;
+    if (!host) {
+        window.learningVoice = noop;
+        return;
+    }
 
     if (host.dataset.soundEnabled !== "true") {
         host.querySelectorAll("[data-learning-replay]").forEach((button) => button.hidden = true);
+        window.learningVoice = noop;
         return;
     }
 
     const isEnglishVoice = host.dataset.englishVoice === "true";
+    const speechLang = isEnglishVoice ? "en-US" : "vi-VN";
     const activityType = host.dataset.activityType || "";
 
     let payload = {};
@@ -17,232 +34,343 @@
         payload = {};
     }
 
-    const titleText = host.dataset.titleText || "";
-    const titleAudioUrl = payload.titleAudioUrl || host.dataset.titleAudioUrl || "";
-    const titleAudioUrlEn = payload.titleAudioUrlEn || host.dataset.titleAudioUrlEn || "";
+    // Kho bài mới có bảng lời đọc viết sẵn: chữ hiển thị → [lời tiếng Việt, lời tiếng Anh].
+    const speechMap = payload.speech && typeof payload.speech === "object" ? payload.speech : {};
+    const authoredText = (text) => {
+        const pair = speechMap[text] || speechMap[String(text || "").trim()];
+        if (!Array.isArray(pair)) return isEnglishVoice ? "" : String(text || "");
+        return String((isEnglishVoice ? pair[1] : pair[0]) || "");
+    };
 
-    const instruction = payload.instructionSpeechText || host.dataset.instructionText || "";
-    const instructionAudioUrl = payload.instructionAudioUrl || host.dataset.instructionAudioUrl || "";
-    const instructionAudioUrlEn = payload.instructionAudioUrlEn || host.dataset.instructionAudioUrlEn || "";
-
-    const question = payload.questionSpeechText || host.dataset.questionText || "";
-    const questionAudioUrl = payload.questionAudioUrl || host.dataset.questionAudioUrl || "";
-    const questionAudioUrlEn = payload.questionAudioUrlEn || host.dataset.questionAudioUrlEn || "";
-
-    const contentText = payload.speechText || "";
-    const contentAudioUrl = payload.audioUrl || "";
-    const contentAudioUrlEn = payload.audioUrlEn || "";
-
-    const correctAudioUrl = payload.correctAudioUrl || host.dataset.correctAudioUrl || "";
-    const correctAudioUrlEn = payload.correctAudioUrlEn || host.dataset.correctAudioUrlEn || "";
-
-    const retryAudioUrl = payload.retryAudioUrl || host.dataset.retryAudioUrl || "";
-    const retryAudioUrlEn = payload.retryAudioUrlEn || host.dataset.retryAudioUrlEn || "";
-
-    const optionAudio = payload.optionAudio || {};
-    const optionAudioEn = payload.optionAudioEn || {};
-
-    const feedback = host.dataset.result === "correct"
-        ? payload.correctSpeechText || host.dataset.feedbackText || "Giỏi lắm"
-        : host.dataset.result === "retry"
-            ? payload.retrySpeechText || host.dataset.feedbackText || "Con thử lại nhé"
-            : "";
-
-    // Ưu tiên phát Voice EN nếu bật English Voice, tự động fallback sang Voice VI nếu thiếu file EN
-    const activeTitleAudio = isEnglishVoice ? (titleAudioUrlEn || titleAudioUrl) : titleAudioUrl;
-    const activeInstructionAudio = isEnglishVoice ? (instructionAudioUrlEn || instructionAudioUrl) : instructionAudioUrl;
-    const activeQuestionAudio = isEnglishVoice ? (questionAudioUrlEn || questionAudioUrl) : questionAudioUrl;
-    const activeContentAudio = isEnglishVoice ? (contentAudioUrlEn || contentAudioUrl) : contentAudioUrl;
-    const activeCorrectAudio = isEnglishVoice ? (correctAudioUrlEn || correctAudioUrl) : correctAudioUrl;
-    const activeRetryAudio = isEnglishVoice ? (retryAudioUrlEn || retryAudioUrl) : retryAudioUrl;
-
-    const feedbackAudioUrl = host.dataset.result === "correct"
-        ? activeCorrectAudio
-        : host.dataset.result === "retry"
-            ? activeRetryAudio
-            : "";
-
-    let activeAudio = null;
-
-    const loadVoices = () => new Promise((resolve) => {
-        const voices = window.speechSynthesis?.getVoices?.() || [];
-        if (voices.length) {
-            resolve(voices);
-            return;
-        }
-
-        const timeout = window.setTimeout(() => {
-            window.speechSynthesis?.removeEventListener?.("voiceschanged", onVoicesChanged);
-            resolve(window.speechSynthesis?.getVoices?.() || []);
-        }, 800);
-        function onVoicesChanged() {
-            window.clearTimeout(timeout);
-            resolve(window.speechSynthesis?.getVoices?.() || []);
-        }
-        window.speechSynthesis?.addEventListener?.("voiceschanged", onVoicesChanged, {once: true});
+    // Đường dẫn file theo đúng ngôn ngữ phụ huynh chọn; không bao giờ phát nhầm sang ngôn ngữ kia.
+    const pickLang = (vi, en) => (isEnglishVoice ? en : vi) || "";
+    const voiceUrls = {};
+    let optionAudio = payload.optionAudio || {};
+    let optionAudioEn = payload.optionAudioEn || {};
+    const setUrls = (source) => {
+        voiceUrls.question = pickLang(source.questionAudioUrl ?? voiceUrls.questionVi, source.questionAudioUrlEn ?? voiceUrls.questionEn);
+        voiceUrls.questionVi = source.questionAudioUrl ?? voiceUrls.questionVi;
+        voiceUrls.questionEn = source.questionAudioUrlEn ?? voiceUrls.questionEn;
+        voiceUrls.contentVi = source.audioUrl ?? voiceUrls.contentVi;
+        voiceUrls.contentEn = source.audioUrlEn ?? voiceUrls.contentEn;
+        voiceUrls.content = pickLang(voiceUrls.contentVi, voiceUrls.contentEn);
+        voiceUrls.correctVi = source.correctAudioUrl ?? voiceUrls.correctVi;
+        voiceUrls.correctEn = source.correctAudioUrlEn ?? voiceUrls.correctEn;
+        voiceUrls.correct = pickLang(voiceUrls.correctVi, voiceUrls.correctEn);
+        voiceUrls.retryVi = source.retryAudioUrl ?? voiceUrls.retryVi;
+        voiceUrls.retryEn = source.retryAudioUrlEn ?? voiceUrls.retryEn;
+        voiceUrls.retry = pickLang(voiceUrls.retryVi, voiceUrls.retryEn);
+    };
+    setUrls({
+        questionAudioUrl: payload.questionAudioUrl || host.dataset.questionAudioUrl || "",
+        questionAudioUrlEn: payload.questionAudioUrlEn || host.dataset.questionAudioUrlEn || "",
+        audioUrl: payload.audioUrl || "",
+        audioUrlEn: payload.audioUrlEn || "",
+        correctAudioUrl: payload.correctAudioUrl || host.dataset.correctAudioUrl || "",
+        correctAudioUrlEn: payload.correctAudioUrlEn || host.dataset.correctAudioUrlEn || "",
+        retryAudioUrl: payload.retryAudioUrl || host.dataset.retryAudioUrl || "",
+        retryAudioUrlEn: payload.retryAudioUrlEn || host.dataset.retryAudioUrlEn || ""
     });
 
-    const setMascotSpeaking = (speaking) => {
-        const mascot = host.querySelector(".mascot-speaking, .retry-mascot-img, .learning-success-mascot");
-        if (mascot) {
-            mascot.classList.toggle("is-speaking", speaking);
-        }
-        const replayBtns = host.querySelectorAll("[data-learning-replay]");
-        replayBtns.forEach((btn) => btn.classList.toggle("is-playing", speaking));
+    const questionText = host.dataset.questionText || payload.questionSpeechText || "";
+    const contentText = payload.speechText || "";
+    const standardText = isEnglishVoice
+        ? { correct: "Correct!", retry: "Let's try again." }
+        : { correct: "Chính xác!", retry: "Con thử lại nhé" };
+
+    // ------------------------------------------------------------------ Phát Voice
+    const player = new Audio();
+    player.preload = "auto";
+    player.setAttribute("playsinline", "");
+    let token = 0;
+    let cutCurrent = null;
+    let current = Promise.resolve();
+    let currentKind = "";
+    let autoplayBlocked = false;
+
+    const setSpeaking = (speaking) => {
+        host.querySelector(".mascot-speaking, .retry-mascot-img, .learning-success-mascot")?.classList.toggle("is-speaking", speaking);
+        host.querySelectorAll("[data-learning-replay]").forEach((btn) => btn.classList.toggle("is-playing", speaking));
     };
 
-    const isVietnameseText = (str) => /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ]/i.test(str || "");
-
-    const speak = async (text) => {
-        return;
+    let browserVoice = null;
+    const pickBrowserVoice = () => {
+        const prefix = isEnglishVoice ? "en" : "vi";
+        const voices = (window.speechSynthesis?.getVoices?.() || []).filter((v) => (v.lang || "").toLowerCase().startsWith(prefix));
+        browserVoice = voices.find((v) => /female|nữ|samantha|linh|hoaimy|jenny|aria/i.test(v.name)) || voices[0] || null;
     };
+    if ("speechSynthesis" in window) {
+        pickBrowserVoice();
+        window.speechSynthesis.addEventListener?.("voiceschanged", pickBrowserVoice);
+    }
 
-    const playFile = (url) => new Promise((resolve, reject) => {
-        if (!url) {
-            reject(new Error("No URL"));
-            return;
-        }
+    // Đọc bằng giọng của thiết bị khi file Voice chưa có (đang được máy chủ sinh bổ sung). Chỉ dùng giọng ĐÚNG
+    // ngôn ngữ cấu hình; thiết bị không có giọng đó thì im lặng còn hơn đọc sai ngôn ngữ.
+    const speakText = (text, myToken) => new Promise((resolve) => {
+        if (!text || myToken !== token || !("speechSynthesis" in window)) { resolve(false); return; }
+        if (!browserVoice) pickBrowserVoice();
+        if (!browserVoice) { resolve(false); return; }
+        let done = false;
+        const finish = (ok) => {
+            if (done) return;
+            done = true;
+            if (cutCurrent === cut) cutCurrent = null;
+            resolve(ok);
+        };
+        const cut = () => { window.speechSynthesis.cancel(); finish(false); };
+        cutCurrent = cut;
         try {
-            activeAudio?.pause();
-            activeAudio = new Audio(url);
-            activeAudio.onended = resolve;
-            activeAudio.onerror = (e) => reject(e);
-            const promise = activeAudio.play();
-            if (promise !== undefined) {
-                promise.then(resolve).catch((err) => {
-                    const resumeOnGesture = () => {
-                        document.removeEventListener("pointerdown", resumeOnGesture);
-                        document.removeEventListener("keydown", resumeOnGesture);
-                        activeAudio?.play().then(resolve).catch(reject);
-                    };
-                    document.addEventListener("pointerdown", resumeOnGesture, { once: true });
-                    document.addEventListener("keydown", resumeOnGesture, { once: true });
-                    reject(err);
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = speechLang;
+            utterance.voice = browserVoice;
+            utterance.rate = isEnglishVoice ? 0.9 : 0.95;
+            utterance.onend = () => finish(true);
+            utterance.onerror = () => finish(false);
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+            window.setTimeout(() => finish(true), 12000);
+        } catch {
+            finish(false);
+        }
+    });
+
+    // Kết thúc khi file đọc xong. Trả về false nếu lỗi hoặc trình duyệt chặn tự phát (chưa có lần chạm nào).
+    const playFile = (url, myToken) => new Promise((resolve) => {
+        if (!url || myToken !== token) { resolve(false); return; }
+        let done = false;
+        let guard = 0;
+        const finish = (ok) => {
+            if (done) return;
+            done = true;
+            window.clearTimeout(guard);
+            player.onended = player.onerror = player.onloadedmetadata = null;
+            if (cutCurrent === cut) cutCurrent = null;
+            resolve(ok);
+        };
+        const cut = () => { try { player.pause(); } catch { } finish(false); };
+        cutCurrent = cut;
+        player.onended = () => finish(true);
+        player.onerror = () => finish(false);
+        // Phòng khi "ended" không đến (thỉnh thoảng gặp trên Safari): tự kết thúc theo độ dài file.
+        player.onloadedmetadata = () => {
+            const seconds = Number.isFinite(player.duration) ? player.duration : 10;
+            window.clearTimeout(guard);
+            guard = window.setTimeout(() => finish(true), (seconds + 1.5) * 1000);
+        };
+        guard = window.setTimeout(() => finish(true), 15000);
+        try {
+            player.src = url;
+            const started = player.play();
+            if (started?.catch) {
+                started.then(() => { autoplayBlocked = false; }).catch((err) => {
+                    if (err?.name === "NotAllowedError") autoplayBlocked = true;
+                    finish(false);
                 });
             }
-        } catch (e) {
-            reject(e);
+        } catch {
+            finish(false);
         }
     });
 
-    const speakOrPlay = async (text, audioUrl) => {
-        setMascotSpeaking(true);
-        try {
-            if (audioUrl) {
-                try {
-                    await playFile(audioUrl);
-                    return;
-                } catch (e) {
-                    console.warn("[Voice] playFile was blocked by browser or delayed. Waiting for user tap instead of robotic speech.", e);
-                    // TUYỆT ĐỐI KHÔNG rơi xuống giọng robotic khi đã có file âm thanh chuẩn!
-                    return;
-                }
-            }
-        } finally {
-            setMascotSpeaking(false);
+    // Một câu cần đọc: { url, text }. Có file thì phát file; file lỗi/thiếu thì đọc văn bản bằng giọng thiết bị.
+    const playClip = async (clip, myToken) => {
+        if (!clip || myToken !== token) return false;
+        if (clip.url && await playFile(clip.url, myToken)) return true;
+        if (myToken !== token || autoplayBlocked) return false;
+        return speakText(clip.text, myToken);
+    };
+
+    const stop = () => {
+        token += 1;
+        if (cutCurrent) cutCurrent();
+        cutCurrent = null;
+        try { player.pause(); } catch { }
+        window.speechSynthesis?.cancel?.();
+        setSpeaking(false);
+    };
+
+    // Phát lần lượt các câu; gọi mới sẽ cắt ngay lượt đang phát để Voice luôn khớp với thao tác mới nhất.
+    const play = (clips, kind = "") => {
+        stop();
+        currentKind = kind;
+        const myToken = token;
+        const list = clips.filter((clip) => clip && (clip.url || clip.text));
+        if (!list.length) return Promise.resolve(false);
+        setSpeaking(true);
+        let played = false;
+        current = list.reduce((chain, clip) => chain.then(async () => {
+            if (myToken !== token) return;
+            if (await playClip(clip, myToken)) played = true;
+        }), Promise.resolve()).then(() => {
+            if (myToken === token) setSpeaking(false);
+            return played;
+        });
+        return current;
+    };
+
+    // ------------------------------------------------------------------ Sinh bổ sung Voice còn thiếu
+    let voicesRequest = null;
+    const ensureVoices = () => {
+        const url = host.dataset.voiceUrl;
+        const antiForgery = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        if (!url || !antiForgery) return Promise.resolve(false);
+        if (!voicesRequest) {
+            voicesRequest = fetch(url, { method: "POST", credentials: "same-origin", headers: { RequestVerificationToken: antiForgery } })
+                .then((res) => res.ok ? res.json() : null)
+                .then((data) => {
+                    if (!data) return false;
+                    const keep = (value, fallback) => value || fallback || "";
+                    setUrls({
+                        questionAudioUrl: keep(data.questionAudioUrl, voiceUrls.questionVi),
+                        questionAudioUrlEn: keep(data.questionAudioUrlEn, voiceUrls.questionEn),
+                        audioUrl: keep(data.audioUrl, voiceUrls.contentVi),
+                        audioUrlEn: keep(data.audioUrlEn, voiceUrls.contentEn),
+                        correctAudioUrl: keep(data.correctAudioUrl, voiceUrls.correctVi),
+                        correctAudioUrlEn: keep(data.correctAudioUrlEn, voiceUrls.correctEn),
+                        retryAudioUrl: keep(data.retryAudioUrl, voiceUrls.retryVi),
+                        retryAudioUrlEn: keep(data.retryAudioUrlEn, voiceUrls.retryEn)
+                    });
+                    if (data.optionAudio) optionAudio = { ...optionAudio, ...data.optionAudio };
+                    if (data.optionAudioEn) optionAudioEn = { ...optionAudioEn, ...data.optionAudioEn };
+                    prefetchAll();
+                    return true;
+                })
+                .catch(() => false);
         }
+        return voicesRequest;
+    };
+    const activeOptionMap = () => isEnglishVoice ? optionAudioEn : optionAudio;
+    const hasMissingVoice = () => !voiceUrls.question ||
+        !voiceUrls.correct || !voiceUrls.retry ||
+        Object.values(activeOptionMap()).some((x) => !x);
+
+    // Tải sẵn các file sẽ cần (đáp án, phản hồi) để lúc bé chạm là đọc ngay.
+    const prefetched = new Set();
+    const prefetchAll = () => {
+        [voiceUrls.correct, voiceUrls.retry, ...Object.values(activeOptionMap())].forEach((url) => {
+            if (!url || prefetched.has(url)) return;
+            prefetched.add(url);
+            const link = document.createElement("link");
+            link.rel = "prefetch";
+            link.as = "audio";
+            link.href = url;
+            document.head.append(link);
+        });
     };
 
-    const playTitle = async () => {
-        window.speechSynthesis?.cancel();
-        await speakOrPlay(titleText || instruction || question, activeTitleAudio || activeInstructionAudio || activeQuestionAudio);
+    // ------------------------------------------------------------------ Các lượt đọc của bài
+    const normalizeKey = (value) => String(value || "").trim().toLocaleLowerCase("vi-VN");
+    const optionUrl = (label) => {
+        const map = activeOptionMap();
+        const clean = String(label || "").trim();
+        if (map[clean]) return String(map[clean]);
+        const match = Object.entries(map).find(([key]) => normalizeKey(key) === normalizeKey(clean));
+        return match?.[1] ? String(match[1]) : "";
+    };
+    const optionText = (label) => {
+        const authored = authoredText(label);
+        if (authored) return authored;
+        // Giọng tiếng Anh: chỉ tự đọc con số/chữ cái đơn (giống nhau ở mọi ngôn ngữ), không đọc chữ tiếng Việt.
+        return /^[\p{L}\p{N}]{1,2}$/u.test(String(label || "").trim()) ? String(label).trim() : "";
     };
 
-    const playQuestion = async () => {
-        window.speechSynthesis?.cancel();
-        if (feedback) {
-            await speakOrPlay(feedback, feedbackAudioUrl || activeRetryAudio || activeCorrectAudio);
-            return;
+    const questionClips = () => {
+        const clips = [];
+        if (activityType === "story_choice" && voiceUrls.content && voiceUrls.content !== voiceUrls.question) {
+            clips.push({ url: voiceUrls.content, text: authoredText(contentText) });
         }
-
-        const text = question || instruction || titleText;
-        const audioUrl = activeQuestionAudio || activeInstructionAudio || activeTitleAudio;
-        await speakOrPlay(text, audioUrl);
+        clips.push({ url: voiceUrls.question, text: authoredText(questionText) });
+        return clips;
     };
 
-    const playInitialLessonAudio = async () => {
-        // Bài nghe ngắn đọc đúng câu hỏi. Bài nghe truyện phát thẳng nội dung truyện
-        // khi vào bài; nút trong nội dung chỉ dùng để nghe lại.
-        if (activityType === "story_choice" && (contentText || activeContentAudio)) {
-            await speakOrPlay(contentText, activeContentAudio);
-            return;
-        }
-        await playQuestion();
+    const playQuestion = () => play(questionClips(), "question");
+
+    const playOption = (label) => {
+        if (!label) return Promise.resolve(false);
+        return play([{ url: optionUrl(label), text: optionText(label) }], "option");
     };
 
-    const labelFromElement = (element) => {
-        const explicit = element.dataset.speakOption || element.dataset.value;
-        if (explicit) return explicit.trim();
-        return element.querySelector(".answer-label")?.textContent?.trim() ||
-            element.textContent?.trim() ||
-            "";
+    // Phản hồi của MỘT lần chấm: chữ và Voice cùng lấy từ kết quả máy chủ trả về (result.audioUrl đã được chọn
+    // theo đúng đúng/sai và đúng ngôn ngữ). Chờ Voice đáp án bé vừa chọn đọc xong rồi mới đọc phản hồi.
+    const playFeedback = async (result) => {
+        const correct = typeof result === "object" ? !!result?.correct : !!result;
+        const url = (typeof result === "object" && result?.audioUrl) || (correct ? voiceUrls.correct : voiceUrls.retry);
+        const myToken = token;
+        // Chỉ chờ Voice đáp án; câu hỏi còn đang đọc thì cắt luôn để đọc kết quả.
+        if (currentKind === "option") await Promise.race([current, new Promise((resolve) => window.setTimeout(resolve, 2500))]);
+        if (myToken !== token) return false; // Bé đã thao tác khác trong lúc chờ: không đọc phản hồi cũ.
+        const text = !isEnglishVoice && typeof result === "object" && result?.message
+            ? result.message
+            : correct ? standardText.correct : standardText.retry;
+        return play([{ url, text }], "feedback");
     };
 
-    const playOption = async (label) => {
-        if (!label) return false;
-        const cleanLabel = label.trim();
-        let audioUrl = "";
-        if (isEnglishVoice) {
-            audioUrl = optionAudioEn[cleanLabel] || optionAudioEn[label] || optionAudio[cleanLabel] || optionAudio[label];
-        } else {
-            audioUrl = optionAudio[cleanLabel] || optionAudio[label];
-        }
-        await speakOrPlay(cleanLabel, audioUrl);
-        return true;
-    };
+    window.learningVoice = { playQuestion, playOption, playFeedback, stop };
 
     host.querySelectorAll("[data-learning-replay]").forEach((button) => {
         button.addEventListener("click", () => {
-            const mode = button.dataset.learningReplay || "question";
-            if (mode === "title") {
-                void playTitle();
-                return;
-            }
+            introPending = false;
             void playQuestion();
         });
     });
 
+    // Bài dạng nút gửi biểu mẫu (dữ liệu cũ): đọc đáp án bé chọn xong rồi mới gửi.
     host.querySelectorAll("[data-speak-option]").forEach((button) => {
         button.addEventListener("click", async (event) => {
-            if (button.dataset.voiceSubmitting === "true") {
-                return;
-            }
-
-            const label = labelFromElement(button);
-            if (!label) {
-                return;
-            }
-
+            if (button.dataset.voiceSubmitting === "true") return;
+            const label = (button.dataset.speakOption || button.dataset.value || button.textContent || "").trim();
+            if (!label) return;
             event.preventDefault();
-            await playOption(label);
+            introPending = false;
+            await Promise.race([playOption(label), new Promise((resolve) => window.setTimeout(resolve, 2500))]);
             button.dataset.voiceSubmitting = "true";
             button.form?.requestSubmit(button);
-        }, {capture: true});
+        }, { capture: true });
     });
 
-    let hasPlayedInitialVoice = false;
+    // ------------------------------------------------------------------ Đọc câu hỏi khi mở bài
+    // Trang kết quả (nộp không qua fetch): đọc lời phản hồi; trang làm bài: đọc câu hỏi.
+    const resultState = host.dataset.result;
+    const intro = () => resultState === "correct" || resultState === "retry"
+        ? playFeedback({ correct: resultState === "correct", message: host.dataset.feedbackText })
+        : playQuestion();
 
-    const tryPlayInitialVoice = () => {
-        if (hasPlayedInitialVoice) return;
-        playInitialLessonAudio()
-            .then(() => { hasPlayedInitialVoice = true; })
-            .catch(() => {});
-    };
-
-    // Try autoplay on page ready
-    window.setTimeout(tryPlayInitialVoice, 150);
-    window.setTimeout(tryPlayInitialVoice, 500);
-
-    // If browser autoplay policy blocked audio before user gesture, play immediately on first tap/click anywhere!
-    const onUserInteraction = () => {
-        if (!hasPlayedInitialVoice) {
-            tryPlayInitialVoice();
+    let introPending = true;
+    const startIntro = async () => {
+        if (!introPending) return;
+        if (!voiceUrls.question && !resultState) {
+            // Chưa có file câu hỏi: chờ máy chủ sinh tối đa 3 giây, quá thì đọc bằng giọng thiết bị để bé không phải đợi.
+            await Promise.race([ensureVoices(), new Promise((resolve) => window.setTimeout(resolve, 3000))]);
+            if (!introPending) return;
         }
-        document.removeEventListener("pointerdown", onUserInteraction, true);
-        document.removeEventListener("touchstart", onUserInteraction, true);
-        document.removeEventListener("keydown", onUserInteraction, true);
+        introPending = false;
+        const played = await intro();
+        // Trình duyệt chặn tự phát: chờ lần chạm đầu tiên của bé.
+        if (!played && autoplayBlocked) introPending = true;
     };
-    document.addEventListener("pointerdown", onUserInteraction, true);
-    document.addEventListener("touchstart", onUserInteraction, true);
-    document.addEventListener("keydown", onUserInteraction, true);
+
+    // Lần chạm đầu tiên (khi tự phát bị chặn) sẽ đọc câu hỏi — trừ khi bé chạm vào đáp án hay nút điều khiển:
+    // khi đó đọc đáp án, KHÔNG đọc lại câu hỏi chồng lên.
+    const interactiveSelector = "button, a, input, label, [role='button'], [data-answer-value], .activity-option, .activity-drop-zone, .classification-chip, canvas";
+    const onFirstGesture = (event) => {
+        if (!introPending) return;
+        if (event.target?.closest?.(interactiveSelector)) {
+            introPending = false;
+            return;
+        }
+        void startIntro();
+    };
+    document.addEventListener("click", onFirstGesture, true);
+    document.addEventListener("touchend", onFirstGesture, true);
+    document.addEventListener("keydown", (event) => {
+        if (introPending && (event.key === "Enter" || event.key === " ")) void startIntro();
+    }, true);
+
+    // Rời trang (sang câu tiếp, quay lại bản đồ): dừng ngay mọi Voice của câu này.
+    window.addEventListener("pagehide", stop);
+
+    if (hasMissingVoice()) void ensureVoices();
+    prefetchAll();
+    // Đọc câu hỏi ngay khi trang làm bài sẵn sàng (không chờ tải hết hình ảnh).
+    window.setTimeout(() => void startIntro(), 0);
 })();

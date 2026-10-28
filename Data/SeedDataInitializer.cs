@@ -1,6 +1,7 @@
 using HanhTrangLop1.Models;
 using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.MathWorld;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,42 @@ public static class SeedDataInitializer
         if (createdLessons > 0)
         {
             logger.LogInformation("Đã khởi tạo {LessonCount} bài học nền còn thiếu.", createdLessons);
+        }
+
+        // Đảo Toán Học có seed riêng, chạy lại an toàn (Id tất định theo mã bài). Bắt buộc chạy
+        // sau LearningContentSeed vì seed nền chỉ chạy khi bảng bài học còn trống.
+        var mathSeed = await MathContentSeeder.SeedAsync(db);
+        if (mathSeed.Created > 0 || mathSeed.Updated > 0)
+        {
+            logger.LogInformation(
+                "Đảo Toán Học: tạo mới {Created} bài, cập nhật {Updated} bài, giữ nguyên {Kept} bài ({Questions} câu hỏi).",
+                mathSeed.Created, mathSeed.Updated, mathSeed.Kept, mathSeed.QuestionsTotal);
+        }
+
+        // Kho bài học các nhóm còn lại: làm mới bài cũ theo mã (giữ tiến độ), thêm bài mới, lưu trữ bài nền đã bỏ.
+        var bankSeed = await HanhTrangLop1.Application.Lessons.LessonBankSeeder.SeedAsync(db);
+        if (bankSeed.Created > 0 || bankSeed.Updated > 0 || bankSeed.Archived > 0)
+        {
+            logger.LogInformation(
+                "Kho bài học: tạo mới {Created}, làm mới {Updated}, giữ nguyên {Kept}, lưu trữ {Archived} bài nền cũ (kho có {Total} bài).",
+                bankSeed.Created, bankSeed.Updated, bankSeed.Kept, bankSeed.Archived, bankSeed.Total);
+        }
+
+        // Liên kết mọi câu cần đọc của Đảo Toán Học với kho Voice chung (VI + EN viết sẵn). File mp3 được
+        // MathVoiceWarmupService sinh nền sau khi khởi động, nên lỗi ở đây không được chặn ứng dụng.
+        try
+        {
+            var mathVoices = await scope.ServiceProvider.GetRequiredService<MathVoiceService>().EnsureCatalogRowsAsync();
+            if (mathVoices.RowsCreated > 0 || mathVoices.RowsUpdated > 0)
+            {
+                logger.LogInformation(
+                    "Đảo Toán Học: thêm {Created} câu Voice, cập nhật {Updated} bản tiếng Anh (tổng {Total} câu).",
+                    mathVoices.RowsCreated, mathVoices.RowsUpdated, mathVoices.Total);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Chưa liên kết được Voice cho Đảo Toán Học khi khởi động.");
         }
 
         var rewardProgression = scope.ServiceProvider.GetRequiredService<RewardProgressionService>();
@@ -204,6 +241,8 @@ public static class SeedDataInitializer
             ("badge-number-explorer", "Nhà Thám Hiểm Con Số", "badge", "pin", "Hoàn thành hành trình Chữ số"),
             ("badge-focus-star", "Siêu Sao Tập Trung", "badge", "psychology", "Hoàn thành hành trình Ghi nhớ và tập trung"),
             ("badge-world-explorer", "Nhà Khám Phá Nhí", "badge", "rocket_launch", "Hoàn thành hành trình Khám phá thế giới"),
+            ("badge-math-plus", "Siêu Sao Phép Cộng", "badge", "add_circle", "Hoàn thành tất cả bài Phép cộng trên Đảo Toán Học"),
+            ("badge-math-minus", "Siêu Sao Phép Trừ", "badge", "do_not_disturb_on", "Hoàn thành tất cả bài Phép trừ trên Đảo Toán Học"),
 
             // Vật phẩm trang trí khu vườn của bé
             ("item-golden-acorn", "Quả Sồi Hoàng Gia", "item", "nature", "Vật phẩm quý giá nhận khi chăm chỉ học tập"),

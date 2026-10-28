@@ -172,9 +172,14 @@ public static class LearningJsonReader
         }
     }
 
+    /// <summary>
+    /// Lời phản hồi sau khi chấm: trả lời đúng luôn là câu khen ngắn chuẩn (bỏ qua lời khen dài soạn trong bài),
+    /// trả lời chưa đúng dùng lời nhắc riêng của câu hỏi.
+    /// </summary>
     public static string ReadFeedback(string feedbackJson, bool isCorrect)
     {
-        var defaultFeedback = isCorrect ? "Giỏi lắm" : "Con thử lại nhé";
+        if (isCorrect) return LearningFeedback.CorrectVi;
+        var defaultFeedback = LearningFeedback.RetryVi;
         if (string.IsNullOrWhiteSpace(feedbackJson))
         {
             return defaultFeedback;
@@ -183,9 +188,9 @@ public static class LearningJsonReader
         try
         {
             using var document = JsonDocument.Parse(feedbackJson);
-            var propertyName = isCorrect ? "correct" : "retry";
-            return document.RootElement.TryGetProperty(propertyName, out var value)
-                ? value.GetString() ?? defaultFeedback
+            return document.RootElement.TryGetProperty("retry", out var value) && value.ValueKind == JsonValueKind.String &&
+                   !string.IsNullOrWhiteSpace(value.GetString())
+                ? value.GetString()!.Trim()
                 : defaultFeedback;
         }
         catch (JsonException)

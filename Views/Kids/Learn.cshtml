@@ -81,9 +81,32 @@
     // riêng trường hợp này màn chúc mừng dừng lại chờ bé bấm thay vì tự chuyển bài.
     var milestoneMessage = TempData["MilestoneMessage"] as string;
     var hasMilestone = !string.IsNullOrWhiteSpace(milestoneMessage);
+
+    // Mỗi nhóm bài có nhân vật dẫn đường, màu và cảnh nền riêng (xem learn-world.css) để các nhóm
+    // không giống hệt nhau nhưng vẫn chung một chất lượng hình ảnh.
+    var groupCode = Model.Item.SkillGroup?.Code ?? "default";
+    var (guideName, guideImage, sceneDeco) = groupCode switch
+    {
+        "chu-cai" => ("Thỏ Ngọc", "/images/avatars/avatar-bunny.png", new[] { "🔤", "✏️", "📖", "🅰️" }),
+        "chu-so" => ("Gấu Vàng", "/images/avatars/avatar-bear.png", new[] { "🔢", "1️⃣", "2️⃣", "3️⃣" }),
+        "so-luong-toan" => ("Sóc Nâu", "/images/mascot-squirrel-3d.png", new[] { "🧮", "🌰", "➕", "🍎" }),
+        "tu-duy-logic" => ("Mèo Thông Thái", "/images/avatars/avatar-cat.png", new[] { "💡", "🧩", "🔍", "⭐" }),
+        "ky-nang-song" => ("Cún Con", "/images/avatars/avatar-dog.png", new[] { "💖", "🌈", "🤝", "🌻" }),
+        "ngon-ngu" => ("Thỏ Ngọc", "/images/avatars/avatar-bunny.png", new[] { "📚", "💬", "🎵", "🌟" }),
+        "hinh-dang-khong-gian" => ("Gấu Vàng", "/images/avatars/avatar-bear.png", new[] { "🔺", "🟦", "🟡", "⭐" }),
+        "ghi-nho-tap-trung" => ("Mèo Thông Thái", "/images/avatars/avatar-cat.png", new[] { "🧠", "🃏", "✨", "🎯" }),
+        "van-dong-tinh" => ("Sóc Nâu", "/images/mascot-squirrel-3d.png", new[] { "🖍️", "✂️", "🎨", "✏️" }),
+        "kham-pha" => ("Cún Con", "/images/avatars/avatar-dog.png", new[] { "🌍", "🐠", "🌳", "⛵" }),
+        _ => ("Sóc Nâu", "/images/mascot-squirrel-3d.png", new[] { "⭐", "🌈", "🎈", "🌸" })
+    };
 }
 
-<section class="learn-screen learning-focus-shell"
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap" />
+<link rel="stylesheet" href="~/css/learn-world.css" asp-append-version="true" />
+
+<section class="learn-screen learning-focus-shell lw"
+         data-group="@groupCode"
+         data-voice-url="@Url.Action("LearnVoice", "Kids", new { id = Model.Item.Id })"
          data-learning-voice
          data-activity-type="@Model.Item.InteractionType"
          data-sound-enabled="@(Model.ChildProfile?.SoundEnabled != false ? "true" : "false")"
@@ -107,6 +130,15 @@
          data-result="@(Model.IsCorrect == true ? "correct" : Model.IsCorrect == false ? "retry" : string.Empty)">
     <textarea class="activity-payload" data-activity-payload hidden>@Model.PayloadJson</textarea>
 
+    <div class="lw-scene" aria-hidden="true">
+        <span class="lw-hill lw-hill--back"></span>
+        <span class="lw-hill lw-hill--front"></span>
+        @for (var d = 0; d < sceneDeco.Length; d++)
+        {
+            <span class="lw-deco lw-deco--@d">@sceneDeco[d]</span>
+        }
+    </div>
+
     <!-- Topbar Focus Mode (1 Tiêu đề chính + Nút nghe / Nút xem mẫu góc phải) -->
     <header class="learning-common-zone">
         <div class="learning-focus-topbar">
@@ -122,6 +154,7 @@
             {
                 <a class="icon-link learning-back-btn clay-button" asp-controller="Kids" asp-action="Today" title="Quay lại"><span class="material-symbols-outlined">arrow_back</span></a>
             }
+            <img class="lw-guide" src="@guideImage" alt="@guideName" title="@guideName đồng hành cùng bé" />
             <h1>@(Model.CurrentQuestion?.PromptText ?? Model.Item.Title)</h1>
             <div class="learning-topbar-actions">
                 @if (Model.Item.InteractionType == InteractionTypes.Tracing && !isPictureTracing)
@@ -139,40 +172,10 @@
 
     @if (Model.IsCorrect == true)
     {
-        <div class="learning-success-overlay" data-learning-success-popup data-destination="@successDestination" data-hold="@(hasMilestone ? "true" : "false")" role="dialog" aria-modal="true" aria-labelledby="learning-success-title">
-            <div class="learning-success-popup" role="document">
-                <button class="learning-success-close clay-button" type="button" data-success-close aria-label="Đóng và chuyển bài">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-                <div class="learning-success-decorations" aria-hidden="true">
-                    @for (var index = 0; index < 8; index++)
-                    {
-                        <span data-success-decoration></span>
-                    }
-                </div>
-                <div class="learning-success-mascot-wrap">
-                    <img src="~/images/avatars/avatar-squirrel.png" alt="Nhân vật chúc mừng" class="learning-success-mascot" data-success-mascot />
-                    <span class="learning-success-badge material-symbols-outlined" aria-hidden="true">stars</span>
-                </div>
-                <h2 id="learning-success-title" data-success-title>Xuất sắc quá! 🎉</h2>
-                <p data-success-message data-vary-message="@(hasTeacherFeedback ? "false" : "true")">@(hasTeacherFeedback ? successFeedback : "Giỏi lắm")</p>
-                @if (hasMilestone)
-                {
-                    <a class="learning-success-milestone" asp-controller="Kids" asp-action="Rewards">
-                        <span class="material-symbols-outlined">redeem</span>
-                        <strong>@milestoneMessage</strong>
-                        <span class="learning-success-milestone-cta">Mở quà</span>
-                    </a>
-                }
-                <a class="app-btn clay-button learning-success-continue" href="@successDestination" data-success-continue>
-                    <span>@successActionText</span>
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                </a>
-                @if (!hasMilestone)
-                {
-                    <div class="learning-success-timer" aria-hidden="true"><span></span></div>
-                }
-            </div>
+        @* Bài đã xong: không còn popup riêng, kết quả hiện trên thanh kết quả ở cuối màn hình. *@
+        <div class="lw-done" aria-hidden="true">
+            <img class="lw-done-guide" src="@guideImage" alt="" />
+            <span class="lw-done-stars">⭐⭐⭐</span>
         </div>
     }
 
@@ -233,12 +236,6 @@
                     <div class="lesson-answer-content">
                         <div class="activity-runtime" data-activity-runtime data-activity-type="@Model.Item.InteractionType"></div>
                     </div>
-                    @* Bé trả lời xong là hệ thống tự kiểm tra; vùng này chỉ báo trạng thái, không cần bé bấm thêm. *@
-                    <div class="activity-autocheck" data-activity-autocheck-status role="status" aria-live="polite" hidden>
-                        <span class="material-symbols-outlined activity-autocheck-icon">auto_awesome</span>
-                        <span class="activity-autocheck-text" data-activity-autocheck-text>Cô đang kiểm tra bài của bé nhé...</span>
-                        <span class="activity-autocheck-bar" aria-hidden="true"><span data-activity-autocheck-progress></span></span>
-                    </div>
                 </div>
             }
             else
@@ -258,6 +255,33 @@
             }
         </form>
     }
+
+    @* Thanh kết quả duy nhất của bài: bé trả lời xong thì báo "cô đang xem bài", có kết quả thì đổi ngay
+       thành đúng / chưa đúng kèm lời khen hoặc gợi ý và nút đi tiếp (thay cho popup chúc mừng trước đây). *@
+    <div class="activity-autocheck lw-result @(Model.IsCorrect == true ? "is-correct" : Model.IsCorrect == false ? "is-retry" : "")"
+         data-activity-autocheck-status data-lw-result role="status" aria-live="polite"
+         data-destination="@successDestination" data-hold="@(hasMilestone ? "true" : "false")"
+         hidden="@(Model.IsCorrect is null)">
+        <span class="material-symbols-outlined activity-autocheck-icon lw-result-icon" data-lw-result-icon aria-hidden="true">@(Model.IsCorrect == true ? "celebration" : Model.IsCorrect == false ? "replay" : "auto_awesome")</span>
+        <span class="lw-result-body">
+            <strong class="activity-autocheck-text" data-activity-autocheck-text>@(Model.IsCorrect == true ? (hasTeacherFeedback ? successFeedback : HanhTrangLop1.Infrastructure.LearningFeedback.CorrectVi) : Model.IsCorrect == false ? (Model.FeedbackMessage ?? HanhTrangLop1.Infrastructure.LearningFeedback.RetryVi) : "Cô đang xem bài của con nhé...")</strong>
+            @if (hasMilestone)
+            {
+                <small class="lw-result-sub">@milestoneMessage</small>
+            }
+        </span>
+        <span class="lw-result-actions" data-lw-result-actions>
+            @if (Model.IsCorrect == true)
+            {
+                if (hasMilestone)
+                {
+                    <a class="lw-result-btn lw-result-btn--gift" asp-controller="Kids" asp-action="Rewards"><span class="material-symbols-outlined">redeem</span><span>Mở quà</span></a>
+                }
+                <a class="lw-result-btn" href="@successDestination" data-success-continue><span>@successActionText</span><span class="material-symbols-outlined">arrow_forward</span></a>
+            }
+        </span>
+        <span class="activity-autocheck-bar lw-result-bar" aria-hidden="true"><span data-activity-autocheck-progress></span></span>
+    </div>
 </section>
 
 @section Scripts {

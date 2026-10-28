@@ -14,3 +14,6 @@ obj/
 
 # Local release and generated database scripts
 artifacts/
+
+# Local backups made before data cleanup
+App_Data/backups/

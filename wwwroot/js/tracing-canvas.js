@@ -540,7 +540,9 @@
     const hostVoiceEl = document.querySelector("[data-learning-voice]") || host;
     const isEnglishVoice = hostVoiceEl?.dataset?.englishVoice === "true";
     const audioUrl = isEnglishVoice ? (host.dataset.tracingAudioUrlEn || host.dataset.tracingAudioUrl) : host.dataset.tracingAudioUrl;
-    if (audioUrl) new Audio(audioUrl).play();
+    // Đi qua bộ điều khiển Voice chung để không đọc chồng lên Voice khác của trang.
+    if (window.learningVoice?.playQuestion) { void window.learningVoice.playQuestion(); return; }
+    if (audioUrl) new Audio(audioUrl).play().catch(() => {});
   });
 
   form.addEventListener("submit", function (event) {

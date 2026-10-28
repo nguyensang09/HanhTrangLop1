@@ -83,7 +83,7 @@ public static class ActivityTemplateCatalog
         {
             ["chu-cai"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.Matching),
             ["chu-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.Matching),
-            ["so-luong-toan"] = Rule(InteractionTypes.Counting, InteractionTypes.QuantityBuilder, InteractionTypes.Comparison, InteractionTypes.SingleChoice, InteractionTypes.DragDrop),
+            ["so-luong-toan"] = Rule(InteractionTypes.Counting, InteractionTypes.QuantityBuilder, InteractionTypes.Comparison, InteractionTypes.SingleChoice, InteractionTypes.DragDrop, InteractionTypes.MultiSelect),
             ["tu-duy-logic"] = Rule(InteractionTypes.Classification, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.MultiSelect, InteractionTypes.SingleChoice),
             ["ky-nang-song"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification, InteractionTypes.Matching),
             ["ngon-ngu"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification),
@@ -96,10 +96,12 @@ public static class ActivityTemplateCatalog
     public static ActivityTemplateDefinition? Find(string interactionType) =>
         Templates.FirstOrDefault(x => x.InteractionType == interactionType);
 
-    public static string GetDisplayName(string? interactionType) =>
-        interactionType == InteractionTypes.Tracing
-            ? "Tô theo nét"
-            : Templates.FirstOrDefault(x => x.InteractionType == interactionType)?.Name ?? "Không xác định";
+    public static string GetDisplayName(string? interactionType) => interactionType switch
+    {
+        InteractionTypes.Tracing => "Tô theo nét",
+        InteractionTypes.MathPlay => "Đảo Toán Học (trình chơi riêng)",
+        _ => Templates.FirstOrDefault(x => x.InteractionType == interactionType)?.Name ?? "Không xác định"
+    };
 
     public static TopicActivityRule ForTopic(string? topicCode) =>
         topicCode is not null && TopicRules.TryGetValue(topicCode, out var rule) ? rule : Rule();

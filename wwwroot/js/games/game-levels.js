@@ -892,3 +892,41 @@ window.GAME_LEVELS = {
         { level: 39, target: "9", targetType: "number", instruction: "Con hãy tìm số 9 có chiếc đuôi uốn cong xinh xắn!", instructionEn: "Mine number 9!" }
     ]
 };
+
+// Chuẩn hóa lời dặn của mọi màn: cô nói với con ("Con hãy..."), và màn "tìm toa còn thiếu" hỏi bằng vị trí
+// của toa trống thay vì đọc sẵn số đáp án (trước đây có màn nói "Tìm toa số 3" khiến bé không cần nghĩ).
+(function normalizeGameInstructions() {
+    const toChild = (text) => String(text || '')
+        .replace(/^Bé ơi,?\s*/u, 'Con ơi, ')
+        .replace(/^Bé /u, 'Con ')
+        .replace(/ (cho|nhờ|giúp) bé /gu, ' $1 con ')
+        .replace(/ cho bé([!.?])/gu, ' cho con$1');
+    // Lời tiếng Anh kiểu cô nói với con (thay cho câu cụt như "Mine letter Ă!").
+    const isNumber = (value) => /^\d+$/.test(String(value));
+    const thing = (value) => isNumber(value) ? `the number ${value}` : `the letter ${value}`;
+    const englishFor = {
+        bubble: (l) => l.target ? `Pop the bubbles with ${thing(l.target)}!` : l.instructionEn,
+        'gold-miner': (l) => l.target ? `Use the hook to dig up the gold with ${thing(l.target)}!` : l.instructionEn,
+        'balloon-word': (l) => l.targetWord ? `Tap the clouds to build the word ${l.targetWord}!` : l.instructionEn
+    };
+    Object.entries(window.GAME_LEVELS).forEach(([game, levels]) => levels.forEach((level) => {
+        level.instruction = toChild(level.instruction);
+        if (englishFor[game] && !level.mode) level.instructionEn = englishFor[game](level) || level.instructionEn;
+        if (level.type !== 'missing-wagon' || !Array.isArray(level.trainSequence)) return;
+        const seq = level.trainSequence;
+        const gap = seq.indexOf(null);
+        if (gap < 0) return;
+        const before = seq[gap - 1];
+        const after = seq[gap + 1];
+        if (before != null && after != null) {
+            level.instruction = `Toa nào còn thiếu giữa toa ${before} và toa ${after}?`;
+            level.instructionEn = `Which wagon is missing between ${before} and ${after}?`;
+        } else if (before != null) {
+            level.instruction = `Toa nào chạy ngay sau toa số ${before}?`;
+            level.instructionEn = `Which wagon comes right after ${before}?`;
+        } else if (after != null) {
+            level.instruction = `Toa nào đứng ngay trước toa số ${after}?`;
+            level.instructionEn = `Which wagon comes right before ${after}?`;
+        }
+    }));
+})();

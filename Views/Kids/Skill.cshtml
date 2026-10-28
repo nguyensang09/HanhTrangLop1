@@ -1,803 +1,800 @@
 @model SkillLearningListViewModel
 @{
     ViewData["Title"] = Model.SkillGroup.Name;
-    var totalItems = Model.Items.Count;
-    var completedCount = Model.CompletedCount;
-    var progressPercent = totalItems > 0 ? (int)Math.Round((double)completedCount / totalItems * 100) : 0;
 
-    // Trạm hiện tại luôn là bài đầu tiên chưa từng hoàn thành.
-    var currentItemIndex = Model.CurrentItemId.HasValue
-        ? Model.Items.ToList().FindIndex(x => x.Item.Id == Model.CurrentItemId.Value)
+    // Mỗi nhóm kỹ năng có một "thế giới" riêng: bố cục, màu, nhân vật dẫn đường và lời cô dặn khác nhau.
+    var world = ResolveWorld(Model.SkillGroup.Code);
+    var items = Model.Items;
+    var totalItems = items.Count;
+    // Tiến độ theo lộ trình hiện tại (học lại một bài cũ thì các bài phía sau không còn tính); rương quà tính theo
+    // số bài từng hoàn thành nên không bị mất khi bé học lại.
+    var completedCount = Model.CompletedCount;
+    var chestCount = Model.EverCompletedCount;
+    var progressPercent = totalItems > 0 ? (int)Math.Round(completedCount * 100.0 / totalItems) : 0;
+    var childName = string.IsNullOrWhiteSpace(Model.ChildProfile?.Nickname) ? "Con" : Model.ChildProfile!.Nickname.Trim();
+    var perMilestone = HanhTrangLop1.Application.Learning.RewardProgressionService.LessonsPerMilestone;
+
+    // Thông tin hiển thị của từng bài (tính một lần, dùng lại ở bản đồ và ở nút "Học tiếp").
+    var icons = new string[totalItems];
+    var hasMapIcon = new bool[totalItems];
+    var stageNames = new string?[totalItems];
+    var styleLabels = new string[totalItems];
+    var stars = new int[totalItems];
+    var currentIndex = -1;
+    var totalStars = 0;
+    for (var i = 0; i < totalItems; i++)
+    {
+        var row = items[i];
+        var play = PlayStyle(row.Item.InteractionType);
+        var (mapIcon, stageName) = ReadMapMeta(row.Item.ContentJson);
+        hasMapIcon[i] = mapIcon is not null;
+        // Tên chặng: ưu tiên "stage" trong ContentJson, sau đó tới tên Chủ đề.
+        stageNames[i] = stageName
+            ?? (string.IsNullOrWhiteSpace(row.Item.Topic?.Name) ? null : row.Item.Topic!.Name.Trim());
+        icons[i] = mapIcon ?? play.Emoji;
+        styleLabels[i] = play.Label;
+        // Giữ quy ước cũ: bài đã hoàn thành nhưng chưa ghi nhận sao thì hiển thị đủ 3 sao.
+        stars[i] = row.IsPathCompleted ? (row.StarsEarned > 0 ? Math.Min(row.StarsEarned, 3) : 3) : 0;
+        totalStars += stars[i];
+        if (Model.CurrentItemId.HasValue && row.Item.Id == Model.CurrentItemId.Value)
+        {
+            currentIndex = i;
+        }
+    }
+
+    // Chia chặng: các bài liền nhau cùng "stage" (ContentJson) hoặc cùng Chủ đề gộp thành một chặng;
+    // bài không có thông tin chặng thì cứ 10 bài một chặng.
+    var stages = new List<SwStage>();
+    for (var i = 0; i < totalItems; i++)
+    {
+        var key = stageNames[i];
+        var startNew = stages.Count == 0
+            || !string.Equals(stages[^1].Key, key, StringComparison.Ordinal)
+            || (key is null && stages[^1].Indexes.Count >= perMilestone);
+        if (startNew)
+        {
+            stages.Add(new SwStage
+            {
+                Number = stages.Count + 1,
+                Key = key,
+                Title = key ?? string.Empty
+            });
+        }
+        stages[^1].Indexes.Add(i);
+    }
+    foreach (var stage in stages)
+    {
+        var first = stage.Indexes[0];
+        var last = stage.Indexes[^1];
+        if (string.IsNullOrEmpty(stage.Title))
+        {
+            stage.Title = first == last ? $"Bài {first + 1}" : $"Bài {first + 1} – {last + 1}";
+        }
+        stage.Emoji = hasMapIcon[first] ? icons[first] : world.StageEmojis[(stage.Number - 1) % world.StageEmojis.Length];
+        stage.Done = stage.Indexes.Count(ix => items[ix].IsPathCompleted);
+        stage.Stars = stage.Indexes.Sum(ix => stars[ix]);
+        stage.HasCurrent = currentIndex >= 0 && stage.Indexes.Contains(currentIndex);
+        stage.State = stage.Done == stage.Indexes.Count ? "is-done"
+            : stage.HasCurrent ? "is-current"
+            : stage.Done > 0 ? "is-partial"
+            : "is-upcoming";
+        stage.Open = totalItems <= 12 || stage.HasCurrent || (currentIndex < 0 && ReferenceEquals(stage, stages[^1]));
+    }
+
+    var milestoneByValue = Model.Milestones
+        .GroupBy(m => m.MilestoneValue)
+        .ToDictionary(g => g.Key, g => g.First());
+    var claimableCount = Model.Milestones.Count(m => m.State == RewardGrantStates.Claimable && m.GrantId.HasValue);
+    var nextChest = Model.Milestones
+        .OrderBy(m => m.MilestoneValue)
+        .FirstOrDefault(m => m.State != RewardGrantStates.Claimable && m.State != RewardGrantStates.Claimed);
+    var lessonsToChest = nextChest is null ? 0 : Math.Max(0, nextChest.MilestoneValue - chestCount);
+
+    var bubble = totalItems == 0
+        ? "{name} ơi, cô đang chuẩn bị bài mới cho con. Con quay lại sau nhé!"
+        : completedCount == 0 ? world.Intro
+        : currentIndex < 0 ? world.Done
+        : world.Middle;
+    bubble = bubble.Replace("{name}", childName);
+
+    var currentUrl = currentIndex >= 0
+        ? Url.Action("Learn", "Kids", new { id = items[currentIndex].Item.Id, skillGroupId = Model.SkillGroup.Id })
+        : null;
+    var reviewIndex = Model.LastPracticedItemId.HasValue
+        ? items.ToList().FindIndex(x => x.Item.Id == Model.LastPracticedItemId.Value)
         : -1;
 
-    static string GetStageSymbol(LearningItem item, int index)
-    {
-        var title = item.Title.Trim();
-        var match = System.Text.RegularExpressions.Regex.Match(title, @"(?:chữ cái|chữ|nét|số|chữ số)\s+([A-ZÀ-Ỹ0-9a-zĂÂĐÊÔƠƯăâđêôơư]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (match.Success)
-        {
-            return match.Groups[1].Value.ToUpperInvariant();
-        }
-        return (index + 1).ToString();
-    }
-
-    static (string Label, string Icon) GetInteractionMeta(string? type)
-    {
-        return (type ?? string.Empty).ToLowerInvariant() switch
-        {
-            "tracing" => ("Tập tô nét & vẽ hình", "draw"),
-            "single_choice" or "singlechoice" => ("Trắc nghiệm chọn đáp án", "touch_app"),
-            "listen_and_choose" or "listentochoose" or "listenthoose" => ("Luyện nghe & chọn đúng", "volume_up"),
-            "counting" => ("Đếm số lượng đồ vật", "pin"),
-            "matching" => ("Nối cặp hình tương ứng", "join"),
-            "classification" => ("Phân loại theo nhóm", "category"),
-            "comparison" => ("So sánh lớn - nhỏ - bằng", "balance"),
-            "drag_drop" or "dragdrop" => ("Kéo thả vào vị trí đúng", "drag_indicator"),
-            "story_choice" or "storychoice" => ("Đọc truyện tương tác", "auto_stories"),
-            "quantity_builder" or "quantitybuilder" => ("Xếp số lượng tương ứng", "grid_view"),
-            _ => ("Bài tập tương tác chuẩn", "school")
-        };
-    }
-
-    string ResolveAvatar(string? key)
-    {
-        if (string.IsNullOrWhiteSpace(key)) return "/images/mascot-squirrel-3d.png";
-        if (key.StartsWith("/")) return key;
-        return key switch
-        {
-            "avatar-cat" or "meo-con" => "/images/avatars/avatar-cat.png",
-            "avatar-dog" or "cun-con" => "/images/avatars/avatar-dog.png",
-            "avatar-bunny" or "tho-trang" => "/images/avatars/avatar-bunny.png",
-            "avatar-bear" or "gau-vang" => "/images/avatars/avatar-bear.png",
-            "avatar-squirrel" or "soc-nau" => "/images/mascot-squirrel-3d.png",
-            _ => "/images/mascot-squirrel-3d.png"
-        };
-    }
-
-    // 6 Theme màu sắc rực rỡ luân phiên để mỗi trạm bắt mắt khác biệt
-    var stationThemes = new[] { "theme-amber", "theme-emerald", "theme-sky", "theme-purple", "theme-pink", "theme-teal" };
-
-    // Dải ziczac 12 điểm lượn sóng rộng trải đều hai bên map
-    var zigPositions = new[] {
-        "pos-center",
-        "pos-semi-right",
-        "pos-mid-right",
-        "pos-far-right",
-        "pos-mid-right",
-        "pos-semi-right",
-        "pos-center",
-        "pos-semi-left",
-        "pos-mid-left",
-        "pos-far-left",
-        "pos-mid-left",
-        "pos-semi-left"
-    };
-
-    // Danh mục các nhân vật & tiểu cảnh phong phú phân bổ theo 4 Tầng Địa Hình (Biomes)
-    var meadowLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
-    {
-        ("/images/avatars/avatar-bunny.png", "favorite", "Thỏ Trắng", "Nhảy múa rộn ràng 🥕", "deco-bunny", "Bé học siêu quá! 🥕"),
-        ("/images/avatars/avatar-dog.png", "pets", "Cún Con", "Tiến bước rộn ràng 🐾", "deco-dog", "Gâu gâu, cố lên! 🐾"),
-        ("", "spa", "Thung Lũng Nấm", "Nấm đốm xinh xắn 🍄", "deco-mushroom", "Vườn nấm rực rỡ 🍄"),
-        ("", "forest", "Vườn Táo Ngọt", "Trái chín trĩu cành 🍎", "deco-nature", "Hái táo cùng bé 🍎"),
-        ("/images/avatars/avatar-bear.png", "star", "Gấu Vàng", "Bé học chăm ngoan 🍯", "deco-bear", "Học vui mỗi ngày! 🍯")
-    };
-
-    var forestLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
-    {
-        ("/images/decorations/dinosaur.svg", "pets", "Khủng Long Xanh", "Cố lên bạn nhỏ! 🦕", "deco-dino", "Bé dũng cảm quá! 🦕"),
-        ("/images/decorations/cute-car.svg", "directions_car", "Xe Đua Vượt Núi", "Vút bay về đích! 🚗", "deco-car", "Bé chạy thật nhanh! 🏁"),
-        ("", "campground", "Trạm Cắm Trại", "Nghỉ chân bên suối ⛺", "deco-camp", "Trạm tiếp năng lượng ⛺"),
-        ("/images/avatars/avatar-cat.png", "auto_stories", "Mèo Con", "Cùng nhau đọc sách 📖", "deco-cat", "Meo meo, thật giỏi! 📖")
-    };
-
-    var skyLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
-    {
-        ("/images/decorations/robot.svg", "smart_toy", "Robot Tí Hon", "Nạp năng lượng trí tuệ 🤖", "deco-robot", "Chào bạn nhỏ! ⚡"),
-        ("/images/decorations/cute-plane.svg", "flight", "Máy Bay Nhỏ", "Lướt trên mây trắng ✈️", "deco-plane", "Khám phá bầu trời! ☁️"),
-        ("", "cloud", "Xứ Sở Mây Bông", "Bồng bềnh diệu kỳ ⛅", "deco-nature", "Mây trắng mỉm cười ⛅"),
-        ("", "visibility", "Đài Thiên Văn", "Ngắm ngàn vì sao 🔭", "deco-robot", "Khám phá vũ trụ! 🔭")
-    };
-
-    var cosmicLandmarks = new (string Avatar, string Icon, string Title, string Subtitle, string AccentClass, string Bubble)[]
-    {
-        ("/images/decorations/rocket.svg", "rocket_launch", "Tên Lửa Vũ Trụ", "Vươn tới các vì sao 🚀", "deco-rocket", "Bay cao ước mơ! 🌟"),
-        ("/images/avatars/avatar-cat.png", "pets", "Mèo Phi Hành Gia", "Khám phá ngân hà 🌌", "deco-cat", "Tới đích rồi bé ơi! 🌠"),
-        ("", "emoji_events", "Cột Mốc Vàng", "Sắp đến đích rồi 🏆", "deco-trophy", "Chiến thắng vinh quang 🏆"),
-        ("", "military_tech", "Vương Miện Tri Thức", "Đỉnh cao lâu đài 👑", "deco-trophy", "Bé là nhà vô địch! 👑")
-    };
-
-    // Danh mục tiểu cảnh thiên nhiên lấp đầy bên sườn đối diện
-    var natureClusters = new (string Art, string Tag, string Cheer)[]
-    {
-        ("🌻 🌸", "Hoa Hướng Dương", "Hoa nở chào đón bé! 🌸"),
-        ("🍄 ✨", "Nấm Đốm Đỏ", "Bụi nấm cổ tích phát sáng! 🍄"),
-        ("🌾 🏡", "Cối Xay Gió", "Gió mát thổi bay khó khăn! 🌾"),
-        ("🦋 🌼", "Cánh Bướm Bay", "Bướm lượn bên trang sách! 🦋"),
-        ("⛺ 🔥", "Lửa Trại Nhỏ", "Ấm áp tình bạn nhỏ! ⛺"),
-        ("🌲 🌰", "Cây Thông Xanh", "Vươn cao đón ánh nắng! 🌲"),
-        ("🌈 ☁️", "Cầu Vồng Mây", "Lung linh bảy sắc thần tiên! 🌈"),
-        ("🎈 ✨", "Khinh Khí Cầu", "Bay cao tới ước mơ! 🎈"),
-        ("🕊️ ⛅", "Chim Bồ Câu", "Hót vang khúc ca vui! 🕊️"),
-        ("✨ 🌠", "Mưa Sao Băng", "Một điều ước cho bé giỏi! 🌠"),
-        ("👑 🌟", "Cúp Vinh Quang", "Bé chinh phục bài học! 🏆"),
-        ("💎 🔮", "Pha Lê Tri Thức", "Trí tuệ bé tỏa sáng! 💎")
-    };
-
-    var sprinkles = new string[] { "🦋", "🌸", "🍄", "✨", "🍀", "🌼", "🐞", "⭐", "🌿", "🌈" };
-
-    var defaultSelectedItem = currentItemIndex >= 0 ? Model.Items[currentItemIndex] : Model.Items.LastOrDefault();
-    var (defaultMetaLabel, defaultMetaIcon) = GetInteractionMeta(defaultSelectedItem?.Item.InteractionType);
+    int[] wave = { 0, 1, 2, 1, 0, -1, -2, -1 };
+    const int snakeCols = 3;
 }
 
-<section class="kid-screen skill-adventure-page ipad-adventure-layout">
-    <!-- ==================== TOPBAR HỢP NHẤT TIẾN ĐỘ & ĐIỀU HƯỚNG BÉ ==================== -->
-    <header class="child-zone-header clay-card skill-unified-header">
-        <div class="child-header-left">
-            <a class="child-back-home-btn" asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" aria-label="Trang chủ" onclick="playAudioChime('tap')">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </a>
-            <a class="child-avatar-touch" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi bé khác" onclick="playAudioChime('tap')">
-                <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="Avatar bé" class="child-avatar-img" />
-                <span class="child-avatar-switch-badge" title="Đổi bé">
-                    <span class="material-symbols-outlined">sync_alt</span>
-                </span>
-            </a>
-            <div class="child-header-greeting">
-                <span class="child-hi-eyebrow">Hành trình khám phá</span>
-                <strong class="child-name-display">@Model.SkillGroup.Name</strong>
-            </div>
-        </div>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+<link rel="stylesheet" href="~/css/skill-worlds.css" asp-append-version="true" />
 
-        <div class="child-header-center">
-            <div class="header-merged-progress-chip" title="Tiến độ bài học: @completedCount/@totalItems bài (@progressPercent%)">
-                <div class="progress-chip-header">
-                    <span class="chip-flag-icon">🚩</span>
-                    <strong class="chip-count-text">Trạm @completedCount/@totalItems</strong>
-                    <span class="chip-percent-text">(@progressPercent%)</span>
-                </div>
-                <div class="chip-progress-track">
-                    <div class="chip-progress-fill" style="width: @progressPercent%;"></div>
-                </div>
-            </div>
-        </div>
+<div class="sw sw--@world.Key" id="skillWorld" data-flash="@(TempData["SkillMessage"] as string)">
+    <div class="sw-scene" aria-hidden="true">
+        <span class="sw-cloud sw-cloud--1"></span>
+        <span class="sw-cloud sw-cloud--2"></span>
+        <span class="sw-cloud sw-cloud--3"></span>
+        @for (var s = 0; s < world.Scene.Length; s++)
+        {
+            <span class="sw-float sw-float--@(s + 1)">@(world.Scene[s])</span>
+        }
+        @if (!string.IsNullOrEmpty(world.DecoImage))
+        {
+            <img class="sw-deco-img" src="@world.DecoImage" alt="" />
+        }
+    </div>
 
-        <div class="child-header-right">
-            <button type="button" class="child-header-action-btn btn-jump-active" onclick="scrollToActiveStation()" title="Nhảy đến trạm bài đang học dở">
-                <span class="material-symbols-outlined">my_location</span>
-                <span class="btn-label-text">Bài đang học</span>
-            </button>
-            <button type="button" class="child-header-action-btn" id="headerToggleViewBtn" onclick="toggleSkillView(this)" data-current-view="map" title="Chuyển đổi Bản đồ / Danh sách">
-                <span class="material-symbols-outlined" id="headerToggleViewIcon">format_list_bulleted</span>
-                <span class="btn-label-text" id="headerToggleViewText">Danh sách</span>
-            </button>
-            <button type="button" class="child-lock-gate-btn" onclick="openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh" aria-label="Góc phụ huynh">
-                <span class="material-symbols-outlined lock-icon">lock</span>
-                <span class="lock-label-text">Ba mẹ</span>
-            </button>
+    <header class="sw-topbar">
+        <a class="sw-pill sw-pill--back" asp-controller="Kids" asp-action="Home" aria-label="Về trang chủ" data-sfx="tap">
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span class="sw-hide-sm">Trang chủ</span>
+        </a>
+        <a class="sw-avatar" asp-controller="Profiles" asp-action="Index" aria-label="Đổi bé khác" title="Bấm để đổi bé khác" data-sfx="tap">
+            <img src="@ResolveAvatar(Model.ChildProfile?.AvatarKey)" alt="" />
+            <span class="sw-avatar-badge material-symbols-outlined" aria-hidden="true">sync_alt</span>
+        </a>
+        <div class="sw-brand">
+            <span class="sw-brand-mark" aria-hidden="true">@world.Emoji</span>
+            <span class="sw-brand-text">
+                <small>@world.Title</small>
+                <strong>@Model.SkillGroup.Name</strong>
+            </span>
         </div>
+        <a class="sw-pill sw-pill--stars" asp-controller="Kids" asp-action="Rewards" title="Sao con đã nhận ở nhóm này · Bấm để xem kho quà" data-sfx="tap">
+            <span aria-hidden="true">⭐</span><strong>@totalStars</strong>
+        </a>
+        <button type="button" class="sw-pill sw-pill--lock" onclick="openParentGate('/parent/dashboard')" aria-label="Góc phụ huynh" title="Góc phụ huynh">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="sw-hide-sm">Ba mẹ</span>
+        </button>
     </header>
 
-    @if (totalItems == 0)
-    {
-        <div class="soft-card clay-card empty-state mt-4">
-            <span class="material-symbols-outlined empty-icon">menu_book</span>
-            <h2>Nhóm này đang chuẩn bị bài mới</h2>
-            <p>Bé quay lại sau nhé.</p>
+    <section class="sw-hero">
+        <div class="sw-guide">
+            <div class="sw-guide-figure">
+                <img class="sw-guide-img" src="@world.Guide" alt="@world.GuideName" />
+                <span class="sw-guide-name">@world.GuideName</span>
+            </div>
+            <p class="sw-bubble">@bubble</p>
         </div>
-    }
-    else
-    {
-        <!-- ==================== BẢN ĐỒ PHIÊU LƯU TRẢI RỘNG CÂN ĐỐI (1 CỘT RỘNG RÃI) ==================== -->
-        <div class="skill-map-workspace" id="skillAdventureMapView">
-            <div class="skill-map-trail-col clay-card" id="mapTrailScrollContainer">
-                <!-- Nền thiên nhiên sinh động và mây trời nhẹ nhàng -->
-                <div class="adventure-scenic-overlay" aria-hidden="true">
-                    <div class="ambient-pastel-rainbow"></div>
-                    <div class="ambient-hot-air-balloon">
-                        <span class="balloon-emoji">🎈</span>
-                        <span class="balloon-label">Bay cao tri thức</span>
+
+        <div class="sw-hero-card">
+            @if (totalItems > 0)
+            {
+                <div class="sw-meter" role="progressbar" aria-valuemin="0" aria-valuemax="@totalItems" aria-valuenow="@completedCount" aria-label="Tiến độ của con">
+                    <div class="sw-meter-label">
+                        <span>Hành trình của con</span>
+                        <strong>@(completedCount) / @(totalItems) bài · @(progressPercent)%</strong>
                     </div>
-                    <div class="ambient-rocket-float">
-                        <img src="~/images/decorations/rocket.svg" alt="" class="ambient-rocket-img" />
-                    </div>
-                    <div class="ambient-plane-float">
-                        <img src="~/images/decorations/cute-plane.svg" alt="" class="ambient-plane-img" />
-                    </div>
-                    <div class="ambient-butterfly bfly-1">🦋</div>
-                    <div class="ambient-butterfly bfly-2">🦋</div>
-                    <div class="ambient-cloud cloud-1"></div>
-                    <div class="ambient-cloud cloud-2"></div>
-                    <div class="ambient-cloud cloud-3"></div>
-                    <div class="ambient-cloud cloud-4"></div>
-                    <div class="ambient-cloud cloud-5"></div>
+                    <div class="sw-meter-track"><span style="width:@(progressPercent)%"></span></div>
                 </div>
 
-                <!-- SVG Đường mòn kết nối mềm mại nối từ dưới lên -->
-                <svg class="adventure-svg-road" id="adventure-svg-road" aria-hidden="true">
-                    <path class="road-bg-path" d="" fill="none" />
-                    <path class="road-done-path" d="" fill="none" />
-                    <path class="road-dash-path" d="" fill="none" />
-                </svg>
-
-                <div class="adventure-trail-vertical" id="adventure-trail">
-                    <!-- 1. ĐỈNH BẢN ĐỒ (TOP): LÂU ĐÀI BÍ MẬT / VỀ ĐÍCH -->
-                    <div class="map-summit-node">
-                        <div class="castle-summit-card clay-card" onclick="playAudioChime('celebrate')" title="Lâu Đài Bí Mật">
-                            <span class="castle-icon">🏰</span>
-                            <span class="castle-sub-tag">🔒 Đích đến</span>
-                            <strong class="castle-title">Trạm @(totalItems + 1): Lâu Đài Bí Mật</strong>
-                        </div>
-                    </div>
-
-                    <!-- 2. CÁC TRẠM HỌC TỪ TRÊN XUỐNG DƯỚI (VẼ TỪ BÀI CUỐI ĐẾN BÀI 1 ĐỂ BÀI 1 NẰM Ở ĐÁY) -->
-                    @for (var i = totalItems - 1; i >= 0; i--)
+                @if (currentIndex >= 0)
+                {
+                    <a class="sw-continue" href="@currentUrl" data-sfx="start">
+                        <span class="sw-continue-orb @(GlyphClass(icons[currentIndex]))" aria-hidden="true">@(icons[currentIndex])</span>
+                        <span class="sw-continue-text">
+                            <small>@(completedCount == 0 ? "Bắt đầu nào" : "Con học tiếp bài này nhé") · Bài @(currentIndex + 1)</small>
+                            <strong>@(items[currentIndex].Item.Title)</strong>
+                        </span>
+                        <span class="sw-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                    </a>
+                }
+                else
+                {
+                    <p class="sw-hero-done">🏆 Con đã học xong tất cả các bài! Con chạm vào bài bất kỳ để luyện thêm nhé.</p>
+                    @if (reviewIndex >= 0)
                     {
-                        var row = Model.Items[i];
-                        var stepNumber = i + 1;
-                        var isCurrent = Model.CurrentItemId == row.Item.Id;
-                        var isCompleted = row.EverCompleted;
-                        var isLocked = !isCompleted && !isCurrent;
-                        var posClass = zigPositions[i % zigPositions.Length];
-                        var themeClass = stationThemes[i % stationThemes.Length];
-                        var symbol = GetStageSymbol(row.Item, i);
-                        var (metaLabel, metaIcon) = GetInteractionMeta(row.Item.InteractionType);
-                        var learnUrl = Url.Action("Learn", "Kids", new { id = row.Item.Id, skillGroupId = Model.SkillGroup.Id });
+                        <a class="sw-continue sw-continue--review" href="@Url.Action("Learn", "Kids", new { id = items[reviewIndex].Item.Id, skillGroupId = Model.SkillGroup.Id })" data-sfx="start"
+                           data-sw-replay="@Url.Action("Replay", "Kids", new { id = Model.SkillGroup.Id, itemId = items[reviewIndex].Item.Id })"
+                           data-replay-title="Bài @(reviewIndex + 1): @(items[reviewIndex].Item.Title)"
+                           data-replay-locks="@(totalItems - reviewIndex - 1)">
+                            <span class="sw-continue-orb @(GlyphClass(icons[reviewIndex]))" aria-hidden="true">@(icons[reviewIndex])</span>
+                            <span class="sw-continue-text">
+                                <small>Ôn lại bài con vừa học</small>
+                                <strong>@(items[reviewIndex].Item.Title)</strong>
+                            </span>
+                            <span class="sw-continue-play material-symbols-outlined" aria-hidden="true">replay</span>
+                        </a>
+                    }
+                }
 
-                        // Phân chia theo 4 tầng Biome
-                        var ratio = (double)stepNumber / totalItems;
-                        var isBiomeMeadow = ratio <= 0.28;
-                        var isBiomeForest = ratio > 0.28 && ratio <= 0.55;
-                        var isBiomeSky = ratio > 0.55 && ratio <= 0.80;
-                        var isBiomeCosmic = ratio > 0.80;
+                @if (claimableCount > 0)
+                {
+                    <button type="button" class="sw-chest-call" data-sw-goto-chest>
+                        <span aria-hidden="true">🎁</span>
+                        <span>Con có @claimableCount rương quà đang chờ mở! Chạm để tới rương nhé.</span>
+                    </button>
+                }
+                else if (nextChest is not null && lessonsToChest > 0)
+                {
+                    <p class="sw-chest-hint"><span aria-hidden="true">🎁</span> Con học thêm <strong>@lessonsToChest bài</strong> nữa là mở được rương quà!</p>
+                }
+            }
+            else
+            {
+                <div class="sw-empty">
+                    <span class="sw-empty-icon" aria-hidden="true">📦</span>
+                    <strong>Nhóm này đang chuẩn bị bài mới</strong>
+                    <span>Con quay lại sau nhé, cô sẽ thêm bài thật vui!</span>
+                    <a class="sw-continue" asp-controller="Kids" asp-action="Home" data-sfx="tap">
+                        <span class="sw-continue-orb" aria-hidden="true">🏠</span>
+                        <span class="sw-continue-text"><small>Quay về</small><strong>Trang chủ của con</strong></span>
+                        <span class="sw-continue-play material-symbols-outlined" aria-hidden="true">home</span>
+                    </a>
+                </div>
+            }
+        </div>
+    </section>
 
-                        var charItem = isBiomeMeadow ? meadowLandmarks[i % meadowLandmarks.Length] :
-                                       isBiomeForest ? forestLandmarks[i % forestLandmarks.Length] :
-                                       isBiomeSky    ? skyLandmarks[i % skyLandmarks.Length] :
-                                                       cosmicLandmarks[i % cosmicLandmarks.Length];
+    @if (totalItems > 0)
+    {
+        <p class="sw-world-hint"><span aria-hidden="true">💡</span> @world.Hint</p>
 
-                        var natureItem = natureClusters[i % natureClusters.Length];
-
-                        var milestone = stepNumber % 10 == 0
-                            ? Model.Milestones.FirstOrDefault(x => x.MilestoneValue == stepNumber)
-                            : null;
-
-                        // Randomization & Organic Placement:
-                        // Tính toán vị trí ngẫu nhiên giả lập (deterministic seed) theo stepNumber
-                        var seed = (stepNumber * 47 + 23) % 100;
-                        var isNodeRight = posClass.Contains("right");
-                        var isNodeLeft = posClass.Contains("left");
-
-                        // Luôn đặt trang trí ở phía đối diện của trạm học để đảm bảo TUYỆT ĐỐI không đè vào vùng click trạm
-                        var decoSide = isNodeRight ? "left" : isNodeLeft ? "right" : ((seed % 2 == 0) ? "left" : "right");
-                        var sideClass = decoSide == "left" ? "side-left" : "side-right";
-
-                        // Dao động ngẫu nhiên: lề ngang 4% - 20%, độ lệch dọc -16px đến +16px, góc nghiêng -6deg đến +6deg
-                        var hOffset = 4 + (seed % 16);
-                        var vJitter = ((seed % 9) - 4) * 4;
-                        var tiltDeg = ((seed % 7) - 3) * 2;
-
-                        // Nhịp điệu xuất hiện tự nhiên (Rhythm):
-                        // Cứ mỗi 3 bước: 1 bước Nhân vật, 1 bước Cụm tiểu cảnh, 1 bước Hạt mầm thiên nhiên/khoảng thở thoáng đãng
-                        var rowPattern = stepNumber % 3;
-
-                        // Cổng mốc phân tầng chuyển cảnh (Biome Gateway)
-                        var gateThreshold = (int)Math.Round(totalItems * 0.75);
-                        var gateThresholdMid = (int)Math.Round(totalItems * 0.50);
-                        var gateThresholdLow = (int)Math.Round(totalItems * 0.25);
-
-                        @if (milestone is not null)
-                        {
-                            <div class="adventure-step-row reward-milestone-row">
-                                <div class="adventure-station-node pos-center reward-milestone-node">
-                                    @if (milestone.State == RewardGrantStates.Claimable && milestone.GrantId.HasValue)
-                                    {
-                                        <form asp-action="ClaimReward" asp-route-grantId="@milestone.GrantId" method="post" class="chest-node-badge is-claimable">
-                                            <button type="submit" class="chest-circle-icon" title="Mở rương thưởng mốc @stepNumber bài">
-                                                <span class="chest-emoji-art">🎁</span>
-                                            </button>
-                                            <span class="station-label-pill chest-pill">Mở quà mốc @stepNumber</span>
-                                        </form>
-                                    }
-                                    else if (milestone.State == RewardGrantStates.Claimed)
-                                    {
-                                        <div class="chest-node-badge is-claimed" title="@milestone.RewardName">
-                                            <div class="chest-circle-icon"><span class="material-symbols-outlined">@milestone.RewardIconKey</span></div>
-                                            <div class="station-label-pill completed-pill">Đã nhận • Mốc @stepNumber</div>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        var completedTowardMilestone = Math.Clamp(completedCount - (stepNumber - 10), 0, 10);
-                                        <div class="chest-node-badge is-locked" onclick="handleLockedStation(this, @stepNumber)" title="Rương mốc @stepNumber">
-                                            <div class="chest-circle-icon">
-                                                <span class="material-symbols-outlined lock-tag">lock</span>
-                                                <span class="chest-emoji-art">🎁</span>
-                                            </div>
-                                            <div class="station-label-pill chest-pill">@completedTowardMilestone/10 • Rương mốc @stepNumber</div>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                        else if (stepNumber == gateThreshold)
-                        {
-                            <div class="biome-checkpoint-row">
-                                <div class="biome-gate-banner gate-cosmic" onclick="interactFlankDeco(this, 'Bé vừa tiến vào Xứ Sở Ánh Sao! 🌌')">
-                                    <span>🚀</span>
-                                    <span>Cổng 3: Xứ Sở Ánh Sao & Lâu Đài</span>
-                                    <span>⭐</span>
-                                </div>
-                            </div>
-                        }
-                        else if (stepNumber == gateThresholdMid)
-                        {
-                            <div class="biome-checkpoint-row">
-                                <div class="biome-gate-banner gate-sky" onclick="interactFlankDeco(this, 'Chào mừng bé đến Vương Quốc Mây Trời! ☁️')">
-                                    <span>☁️</span>
-                                    <span>Cổng 2: Vương Quốc Bầu Trời & Mây Trắng</span>
-                                    <span>🎈</span>
-                                </div>
-                            </div>
-                        }
-                        else if (stepNumber == gateThresholdLow)
-                        {
-                            <div class="biome-checkpoint-row">
-                                <div class="biome-gate-banner gate-forest" onclick="interactFlankDeco(this, 'Bé tiến vào Rừng Rậm & Đồi Khủng Long! 🦕')">
-                                    <span>🦕</span>
-                                    <span>Cổng 1: Rừng Rậm & Đồi Khủng Long</span>
-                                    <span>🌲</span>
-                                </div>
-                            </div>
-                        }
-
-                        <div class="adventure-step-row">
-                            <!-- 1. CÁC PHẦN TRANG TRÍ XUẤT HIỆN RANDOM TỰ NHIÊN, KHÔNG ĐÈ LÊN VÙNG BÀI HỌC -->
-                            @if (rowPattern == 0)
+        <div class="sw-map">
+            @foreach (var stage in stages)
+            {
+                var stageCount = stage.Indexes.Count;
+                <details class="sw-stage @stage.State" id="sw-stage-@stage.Number" open="@stage.Open">
+                    <summary class="sw-stage-head">
+                        <span class="sw-stage-emoji @(GlyphClass(stage.Emoji))" aria-hidden="true">@stage.Emoji</span>
+                        <span class="sw-stage-text">
+                            <small>@world.StageWord @stage.Number</small>
+                            <strong>@stage.Title</strong>
+                        </span>
+                        <span class="sw-stage-meta">
+                            @if (stage.State == "is-done")
                             {
-                                <!-- A. NHÂN VẬT HOẠT HÌNH CÓ BÓNG THOẠI & ÂM THANH VUI NHỘN -->
-                                <div class="flank-landmark-deco @sideClass @charItem.AccentClass"
-                                     style="@(decoSide): @(hOffset)%; top: calc(50% + @(vJitter)px); transform: translateY(-50%) rotate(@(tiltDeg)deg);"
-                                     onclick="interactFlankDeco(this, '@charItem.Bubble')"
-                                     title="Bấm vào để chơi cùng @charItem.Title!">
-                                    <div class="flank-vignette-scenery">
-                                        <div class="flank-avatar-wrap">
-                                            @if (!string.IsNullOrEmpty(charItem.Avatar))
-                                            {
-                                                <img src="@charItem.Avatar" alt="" class="flank-avatar-img" />
-                                            }
-                                            else
-                                            {
-                                                <span class="material-symbols-outlined flank-icon">@charItem.Icon</span>
-                                            }
-                                        </div>
-                                        <div class="flank-speech-cloud">
-                                            <span class="flank-bubble-text">@charItem.Bubble</span>
-                                        </div>
-                                    </div>
-                                    <div class="flank-info-chip">
-                                        <span class="flank-title">@charItem.Title</span>
-                                        <span class="flank-sub">@charItem.Subtitle</span>
-                                    </div>
-                                    <div class="flank-ground-patch">
-                                        <span class="patch-grass">🌱</span>
-                                        <span class="patch-flower">🌸</span>
-                                    </div>
-                                </div>
+                                <span class="sw-stage-chip sw-stage-chip--done">🏆 Xong · ⭐ @stage.Stars</span>
                             }
-                            else if (rowPattern == 1)
+                            else if (stage.State == "is-upcoming")
                             {
-                                <!-- B. TIỂU CẢNH THIÊN NHIÊN (HOA, CỐI XAY GIÓ, KHINH KHÍ CẦU, NẤM THẦN) -->
-                                <div class="flank-scenery-cluster @sideClass"
-                                     style="@(decoSide): @(hOffset)%; top: calc(50% + @(vJitter)px); transform: translateY(-50%) rotate(@(tiltDeg)deg);"
-                                     onclick="interactFlankDeco(this, '@natureItem.Cheer')"
-                                     title="@natureItem.Tag • Bấm vào xem phép thuật!">
-                                    <span class="scenery-emoji-art">@natureItem.Art</span>
-                                    <span class="scenery-tag-pill">@natureItem.Tag</span>
-                                </div>
+                                <span class="sw-stage-chip sw-stage-chip--soon">🔒 @(stageCount) bài</span>
                             }
                             else
                             {
-                                <!-- C. HẠT THIÊN NHIÊN VI MÔ (BƯỚM LƯỢN / HOA CỎ / SAO NHỎ) TẠO KHOẢNG THỞ SINH ĐỘNG -->
-                                var sprinkleEmoji = sprinkles[seed % sprinkles.Length];
-                                var sprinkleOffset = 5 + ((seed * 3) % 15);
-                                <div class="micro-nature-sprinkle"
-                                     style="@(decoSide): @(sprinkleOffset)%; top: calc(50% + @(vJitter)px);"
-                                     title="Thiên nhiên tươi đẹp">
-                                    <span>@sprinkleEmoji</span>
-                                </div>
+                                <span class="sw-stage-chip">@(stage.Done)/@(stageCount) bài · ⭐ @stage.Stars</span>
                             }
+                        </span>
+                        <span class="sw-stage-chev material-symbols-outlined" aria-hidden="true">expand_more</span>
+                    </summary>
 
-                            <!-- 3. TRẠM BÀI HỌC Ở GIỮA / ZICZAC -->
-                            <div class="adventure-station-node @posClass @(isCurrent ? "node-active-station" : "")"
-                                 id="@(isCurrent ? "active-learning-station" : $"station-node-{stepNumber}")"
-                                 data-step-num="@stepNumber"
-                                 data-title="@row.Item.Title">
-
-                                @if (isCurrent)
-                                {
-                                    <!-- Mascot Sóc Nâu đứng bên cạnh trạm đang học dở vẫy tay mời bé vào học -->
-                                    <a href="@learnUrl" class="squirrel-chat-guide" title="Bé bấm để vào học ngay cùng Sóc Nâu!" onclick="playAudioChime('start')">
-                                        <div class="squirrel-speech-pill pulse-bounce">
-                                            <span>Vào học ngay bé ơi! ▶</span>
-                                        </div>
-                                        <div class="squirrel-avatar-bubble pulse-animation">
-                                            <img src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" class="squirrel-bubble-img" />
-                                        </div>
-                                    </a>
-
-                                    <!-- Trạm Đang Học (Nổi Bật Nhất, Bấm Là Vào Học Luôn) -->
-                                    <a href="@learnUrl"
-                                       class="station-circle-btn station-current clay-station"
-                                       title="Trạm @stepNumber: @row.Item.Title • Bấm vào học ngay! ▶"
-                                       onclick="playAudioChime('tap')">
-                                        <div class="station-core">
-                                            <span class="station-symbol-hero">@symbol</span>
-                                            <span class="station-pulse-ring"></span>
-                                            <span class="station-mini-tag material-symbols-outlined">@metaIcon</span>
-                                        </div>
-                                    </a>
-                                    <div class="station-label-pill current-pill">
-                                        <span>▶ Trạm @stepNumber: @row.Item.Title</span>
-                                    </div>
-                                }
-                                else if (isCompleted)
-                                {
-                                    <!-- Trạm Đã Hoàn Thành (Theme màu sắc, 3 Sao Vàng) -->
-                                    <a href="@learnUrl"
-                                       class="station-circle-btn station-completed @themeClass clay-station"
-                                       title="Trạm @stepNumber: @row.Item.Title • Bấm để luyện tập lại"
-                                       onclick="playAudioChime('tap')">
-                                        <div class="station-core">
-                                            <div class="station-stars-crown">⭐⭐⭐</div>
-                                            <span class="station-symbol-char">@symbol</span>
-                                            <span class="station-check-badge material-symbols-outlined">check_circle</span>
-                                        </div>
-                                    </a>
-                                    <div class="station-label-pill completed-pill">
-                                        <span class="check-prefix">✔</span>
-                                        <span>Trạm @stepNumber: @row.Item.Title</span>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <!-- Trạm Khóa -->
-                                    <div class="station-circle-btn station-locked clay-station"
-                                         onclick="handleLockedStation(this, @stepNumber)"
-                                         title="Trạm @stepNumber: @row.Item.Title (Chưa mở khóa)">
-                                        <div class="station-core">
-                                            <span class="material-symbols-outlined lock-icon">lock</span>
-                                            <span class="station-locked-symbol">@symbol</span>
-                                        </div>
-                                    </div>
-                                    <div class="station-label-pill locked-pill">
-                                        <span>Trạm @stepNumber: @row.Item.Title</span>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                    @{
+                        // Danh sách ô trên bản đồ của chặng: bài học, và rương quà ngay sau mỗi bài thứ 10.
+                        var slots = new List<(int Index, SkillMilestoneViewModel? Chest)>();
+                        foreach (var ix in stage.Indexes)
+                        {
+                            slots.Add((ix, null));
+                            if ((ix + 1) % perMilestone == 0 && milestoneByValue.TryGetValue(ix + 1, out var ms))
+                            {
+                                slots.Add((ix, ms));
+                            }
+                        }
                     }
 
-                    <!-- 3. ĐÁY BẢN ĐỒ (BOTTOM): CỔNG KHỞI HÀNH -->
-                    <div class="map-start-node">
-                        <div class="start-gate-card clay-card" onclick="playAudioChime('celebrate')">
-                            <span class="material-symbols-outlined flag-icon">flag</span>
-                            <span>Khởi đầu cuộc phiêu lưu từ Trạm 1</span>
-                            <span class="start-gate-decor">🌱</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== 2. CHẾ ĐỘ DANH SÁCH LƯỚI BÀI HỌC (GRID VIEW) ==================== -->
-        <div id="skillCompactGridView" class="skill-view-container" style="display: none;">
-            <div class="skill-grid-wrap">
-                <div class="skill-grid-group">
-                    <div class="skill-group-heading">
-                        <span class="group-tag-pill">Tất cả bài học</span>
-                        <h3 class="group-title">@Model.SkillGroup.Name</h3>
-                        <span class="group-stats">@completedCount/@totalItems bài hoàn thành</span>
-                    </div>
-                    <div class="skill-items-cards-grid">
-                        @for (var idx = 0; idx < Model.Items.Count; idx++)
+                    <ol class="sw-track">
+                        @for (var k = 0; k < slots.Count; k++)
                         {
-                            var itemRow = Model.Items[idx];
-                            var isCurrent = Model.CurrentItemId == itemRow.Item.Id;
-                            var isCompleted = itemRow.EverCompleted;
-                            var isLocked = !isCompleted && !isCurrent;
-                            var symbol = GetStageSymbol(itemRow.Item, idx);
+                            var slot = slots[k];
+                            var slotStyle = $"--k:{k};--w:{wave[k % wave.Length]}";
+                            string? link = null;
+                            if (world.Key == "kham-pha")
+                            {
+                                var rowNo = k / snakeCols;
+                                var colInRow = k % snakeCols;
+                                var col = rowNo % 2 == 0 ? colInRow : snakeCols - 1 - colInRow;
+                                slotStyle += $";--r:{rowNo + 1};--c:{col + 1}";
+                                link = k == slots.Count - 1 ? null
+                                    : colInRow < snakeCols - 1 ? (rowNo % 2 == 0 ? "r" : "l")
+                                    : "d";
+                            }
 
-                            <a class="skill-grid-card clay-card @(isCompleted ? "is-completed" : isCurrent ? "is-current" : "is-locked")"
-                               href="@(!isLocked ? Url.Action("Learn", "Kids", new { id = itemRow.Item.Id, skillGroupId = Model.SkillGroup.Id }) : "javascript:void(0)")"
-                               onclick="playAudioChime('tap')"
-                               title="@itemRow.Item.Title">
-                                <div class="grid-card-top">
-                                    <span class="grid-card-num">Bài @(idx + 1)</span>
-                                    @if (isCompleted)
+                            if (slot.Chest is { } chest)
+                            {
+                                var value = chest.MilestoneValue;
+                                var isClaimable = chest.State == RewardGrantStates.Claimable && chest.GrantId.HasValue;
+                                var isClaimed = chest.State == RewardGrantStates.Claimed;
+                                <li class="sw-slot sw-slot--chest @(isClaimable ? "is-claimable" : isClaimed ? "is-claimed" : "is-locked")" style="@slotStyle" data-link="@link">
+                                    @if (isClaimable)
                                     {
-                                        <span class="grid-card-badge is-done">
-                                            <span class="material-symbols-outlined">check_circle</span>
-                                            <span>Đạt</span>
-                                        </span>
+                                        <form asp-controller="Kids" asp-action="ClaimReward" asp-route-grantId="@chest.GrantId" method="post" class="sw-chest-form">
+                                            <button type="submit" class="sw-chest" data-sfx="celebrate" aria-label="Mở rương quà mốc @value bài">
+                                                <span class="sw-chest-icon" aria-hidden="true">🎁</span>
+                                                <span class="sw-chest-label">Mở quà nào!</span>
+                                                <span class="sw-chest-sub">Mốc @value bài</span>
+                                            </button>
+                                        </form>
                                     }
-                                    else if (isCurrent)
+                                    else if (isClaimed)
                                     {
-                                        <span class="grid-card-badge is-learning">
-                                            <span class="material-symbols-outlined">play_arrow</span>
-                                            <span>Đang học</span>
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="grid-card-badge is-lock">
-                                            <span class="material-symbols-outlined">lock</span>
-                                        </span>
-                                    }
-                                </div>
-                                <div class="grid-card-body">
-                                    <div class="grid-symbol-avatar">@symbol</div>
-                                    <strong class="grid-item-title">@itemRow.Item.Title</strong>
-                                </div>
-                                <div class="grid-card-footer">
-                                    @if (isCompleted)
-                                    {
-                                        <span class="grid-stars-earned">⭐ +@(itemRow.StarsEarned > 0 ? itemRow.StarsEarned : 3) sao</span>
-                                    }
-                                    else if (isCurrent)
-                                    {
-                                        <span class="grid-action-prompt">Vào học ngay ▶</span>
+                                        <div class="sw-chest" title="@chest.RewardName">
+                                            <span class="sw-chest-icon sw-chest-icon--claimed material-symbols-outlined" aria-hidden="true">@chest.RewardIconKey</span>
+                                            <span class="sw-chest-label">Con đã nhận quà</span>
+                                            <span class="sw-chest-sub">@(string.IsNullOrWhiteSpace(chest.RewardName) ? $"Mốc {value} bài" : chest.RewardName)</span>
+                                        </div>
                                     }
                                     else
                                     {
-                                        <span class="grid-locked-text">Chưa mở khóa</span>
+                                        var toward = Math.Clamp(chestCount - (value - perMilestone), 0, perMilestone);
+                                        var remain = value - chestCount;
+                                        var chestMsg = remain > 0
+                                            ? $"Con học thêm {remain} bài nữa để mở rương quà này nhé! 🎁"
+                                            : "Rương quà sắp mở rồi, con học tiếp nhé! 🎁";
+                                        <button type="button" class="sw-chest" data-sw-locked data-msg="@chestMsg" aria-label="Rương quà mốc @value bài, chưa mở">
+                                            <span class="sw-chest-icon" aria-hidden="true">🎁<i class="sw-chest-lock">🔒</i></span>
+                                            <span class="sw-chest-label">@(toward)/@(perMilestone) bài</span>
+                                            <span class="sw-chest-sub">Rương mốc @value</span>
+                                        </button>
                                     }
-                                </div>
-                            </a>
+                                </li>
+                            }
+                            else
+                            {
+                                var ix = slot.Index;
+                                var row = items[ix];
+                                var isCurrent = ix == currentIndex;
+                                // Mọi bài sau bài đang học đều khóa, kể cả bài từng hoàn thành trước khi bé chọn học lại.
+                                var isLocked = !isCurrent && (!row.IsPathCompleted || (currentIndex >= 0 && ix > currentIndex));
+                                var isDone = row.IsPathCompleted && !isLocked;
+                                var state = isCurrent ? "is-current" : isDone ? "is-done" : "is-locked";
+                                var href = isLocked ? null : Url.Action("Learn", "Kids", new { id = row.Item.Id, skillGroupId = Model.SkillGroup.Id });
+                                // Học lại bài đã xong = đưa lộ trình về bài này (POST); số bài đang mở phía sau sẽ bị khóa lại.
+                                var replayUrl = isDone ? Url.Action("Replay", "Kids", new { id = Model.SkillGroup.Id, itemId = row.Item.Id }) : null;
+                                var relockCount = isDone ? (currentIndex < 0 ? totalItems : currentIndex + 1) - (ix + 1) : 0;
+                                var label = isLocked
+                                    ? $"Bài {ix + 1}: {row.Item.Title}. Chưa mở"
+                                    : isDone ? $"Bài {ix + 1}: {row.Item.Title}. {stars[ix]} trên 3 sao. Chạm để học lại"
+                                    : $"Bài {ix + 1}: {row.Item.Title}. Bài con đang học";
+                                var sideEmoji = world.Side.Length > 0 && k % 2 == 0 ? world.Side[(k / 2) % world.Side.Length] : null;
+                                <li class="sw-slot sw-slot--lesson @state" style="@slotStyle" data-link="@link">
+                                    <a class="sw-node"
+                                       href="@href"
+                                       id="@(isCurrent ? "sw-current" : null)"
+                                       role="@(isLocked ? "button" : null)"
+                                       tabindex="@(isLocked ? "0" : null)"
+                                       aria-disabled="@(isLocked ? "true" : null)"
+                                       aria-label="@label"
+                                       data-sw-locked="@(isLocked ? "true" : null)"
+                                       data-msg="@(isLocked ? "Con học xong các bài trước để mở bài này nhé! 💛" : null)"
+                                       data-sw-replay="@replayUrl"
+                                       data-replay-title="@(isDone ? $"Bài {ix + 1}: {row.Item.Title}" : null)"
+                                       data-replay-locks="@(isDone ? relockCount.ToString() : null)"
+                                       data-sfx="@(isLocked ? null : isCurrent ? "start" : "tap")">
+                                        @if (isCurrent)
+                                        {
+                                            <span class="sw-flag" aria-hidden="true">Con học bài này nhé!</span>
+                                        }
+                                        <span class="sw-deco" aria-hidden="true"></span>
+                                        <span class="sw-orb" aria-hidden="true">
+                                            <span class="sw-orb-icon @(GlyphClass(icons[ix]))">@(icons[ix])</span>
+                                            @if (isLocked)
+                                            {
+                                                <i class="sw-lock">🔒</i>
+                                            }
+                                            else if (isDone)
+                                            {
+                                                <i class="sw-check">✔</i>
+                                            }
+                                        </span>
+                                        <span class="sw-info" aria-hidden="true">
+                                            <span class="sw-num">@(ix + 1)</span>
+                                            <span class="sw-title">@row.Item.Title</span>
+                                            <span class="sw-style">@(styleLabels[ix])</span>
+                                            @if (isDone)
+                                            {
+                                                <span class="sw-stars">@StarText(stars[ix])</span>
+                                            }
+                                        </span>
+                                    </a>
+                                    @if (sideEmoji is not null)
+                                    {
+                                        <span class="sw-side @(wave[k % wave.Length] > 0 ? "sw-side--l" : "sw-side--r")" aria-hidden="true">@sideEmoji</span>
+                                    }
+                                </li>
+                            }
                         }
-                    </div>
-                </div>
+                    </ol>
+                </details>
+            }
+
+            <div class="sw-finish">
+                <span class="sw-finish-icon" aria-hidden="true">🏆</span>
+                <span>@(currentIndex < 0 ? "Con đã về đích rồi! Cô thưởng con một tràng pháo tay 👏" : "Cô chờ con ở đích nhé! Mỗi bài con học là một bước tới gần hơn.")</span>
             </div>
         </div>
+
+        @if (currentIndex >= 0)
+        {
+            <button type="button" class="sw-fab" data-sw-goto-current aria-label="Tới bài con đang học">
+                <span class="material-symbols-outlined" aria-hidden="true">my_location</span>
+                <span class="sw-fab-text">Bài đang học</span>
+            </button>
+        }
     }
 
-    <!-- ==================== FLOATING NAVIGATION DOCK TIỆN ÍCH CHO MAP ==================== -->
-    <nav class="kid-bottom-nav skill-floating-dock" aria-label="Thanh điều hướng học tập">
-        <a asp-controller="Kids" asp-action="Home" title="Về trang chủ bé học" onclick="playAudioChime('tap')">
-            <span class="material-symbols-outlined">home</span>
-            <span>Trang chủ</span>
-        </a>
-        <a href="javascript:void(0)" class="active" id="dockBtnMap" onclick="toggleSkillView('map')" title="Bản đồ phiêu lưu">
-            <span class="material-symbols-outlined">explore</span>
-            <span>Bản đồ</span>
-        </a>
-        <a href="javascript:void(0)" id="dockBtnGrid" onclick="toggleSkillView('grid')" title="Danh sách bài học">
-            <span class="material-symbols-outlined">format_list_bulleted</span>
-            <span>Danh sách</span>
-        </a>
-        <a href="javascript:void(0)" onclick="scrollToActiveStation()" title="Đến trạm bài đang học" class="dock-btn-target">
-            <span class="material-symbols-outlined">my_location</span>
-            <span>Đang học</span>
-        </a>
-        <a asp-controller="Kids" asp-action="Rewards" title="Kho quà tặng & thành tích" onclick="playAudioChime('celebrate')">
-            <span class="material-symbols-outlined">emoji_events</span>
-            <span>Quà tặng</span>
-        </a>
-    </nav>
-</section>
+    @* Học lại bài cũ: hỏi lại một lần vì các bài phía sau sẽ khóa lại; bé xác nhận thì gửi POST đưa lộ trình về bài đó. *@
+    <form id="swReplayForm" method="post" hidden>@Html.AntiForgeryToken()</form>
+    <div class="sw-sheet" id="swReplaySheet" hidden role="dialog" aria-modal="true" aria-labelledby="swReplayTitle">
+        <div class="sw-sheet-card">
+            <span class="sw-sheet-icon" aria-hidden="true">🔁</span>
+            <h2 class="sw-sheet-title" id="swReplayTitle">Con học lại bài này nhé?</h2>
+            <p class="sw-sheet-lesson" data-replay-name></p>
+            <p class="sw-sheet-note" data-replay-note></p>
+            <div class="sw-sheet-actions">
+                <button type="button" class="sw-sheet-btn sw-sheet-btn--go" data-replay-confirm>
+                    <span class="material-symbols-outlined" aria-hidden="true">replay</span><span>Học lại bài này</span>
+                </button>
+                <button type="button" class="sw-sheet-btn" data-replay-cancel>Để sau</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
-        let audioCtx = null;
+        (function () {
+            var root = document.getElementById('skillWorld');
+            if (!root) return;
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // Bộ âm thanh Web Audio API sinh động cho trẻ em
-        window.playAudioChime = function (type) {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'start') {
-                    const notes = [523.25, 659.25, 783.99, 1046.50];
-                    notes.forEach((freq, idx) => {
-                        const o = audioCtx.createOscillator();
-                        const g = audioCtx.createGain();
-                        o.connect(g);
-                        g.connect(audioCtx.destination);
-                        o.type = 'triangle';
-                        o.frequency.setValueAtTime(freq, now + idx * 0.08);
-                        g.gain.setValueAtTime(0.15, now + idx * 0.08);
-                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.22);
-                        o.start(now + idx * 0.08);
-                        o.stop(now + idx * 0.08 + 0.22);
+            // Âm thanh nhỏ khi chạm (Web Audio, không cần tệp âm thanh).
+            var audioCtx = null;
+            function chime(type) {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    var now = audioCtx.currentTime;
+                    var notes = type === 'start' ? [523.25, 659.25, 783.99, 1046.5]
+                        : type === 'celebrate' ? [659.25, 783.99, 1046.5, 1318.5]
+                        : type === 'locked' ? [392, 330]
+                        : [587.33, 880];
+                    notes.forEach(function (freq, idx) {
+                        var o = audioCtx.createOscillator();
+                        var g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type = type === 'locked' ? 'sine' : 'triangle';
+                        var t = now + idx * 0.07;
+                        o.frequency.setValueAtTime(freq, t);
+                        g.gain.setValueAtTime(0.14, t);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+                        o.start(t); o.stop(t + 0.22);
                     });
+                } catch (e) { /* bỏ qua lỗi âm thanh */ }
+            }
+
+            var toast = null, toastTimer = 0;
+            function showToast(msg) {
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.className = 'sw-toast';
+                    toast.setAttribute('role', 'status');
+                    root.appendChild(toast);
+                }
+                toast.textContent = msg;
+                toast.classList.remove('is-show');
+                void toast.offsetWidth;
+                toast.classList.add('is-show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function () { toast.classList.remove('is-show'); }, 2600);
+            }
+
+            function shake(el) {
+                el.classList.remove('is-shake');
+                void el.offsetWidth;
+                el.classList.add('is-shake');
+                setTimeout(function () { el.classList.remove('is-shake'); }, 600);
+            }
+
+            // Đưa một ô vào giữa tầm nhìn: cuộn ngang trong đoàn tàu (nếu có) rồi cuộn trang khi cần.
+            function bringIntoView(el, smooth, force) {
+                var stage = el.closest('details');
+                if (stage && !stage.open) stage.open = true;
+                var track = el.closest('.sw-track');
+                if (track && track.scrollWidth > track.clientWidth + 4) {
+                    var slot = el.closest('.sw-slot') || el;
+                    var left = slot.offsetLeft - (track.clientWidth - slot.offsetWidth) / 2;
+                    track.scrollTo({ left: Math.max(0, left), behavior: smooth && !reduceMotion ? 'smooth' : 'auto' });
+                }
+                var rect = el.getBoundingClientRect();
+                var vh = window.innerHeight || document.documentElement.clientHeight;
+                if (force || rect.top < 70 || rect.bottom > vh - 20) {
+                    el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: smooth && !reduceMotion ? 'smooth' : 'auto' });
+                }
+            }
+
+            function spotlight(el) {
+                el.classList.remove('is-spot');
+                void el.offsetWidth;
+                el.classList.add('is-spot');
+                setTimeout(function () { el.classList.remove('is-spot'); }, 2600);
+            }
+
+            // Học lại bài đã xong: bài đó thành bài đang học, các bài đang mở phía sau khóa lại.
+            var replaySheet = document.getElementById('swReplaySheet');
+            var replayForm = document.getElementById('swReplayForm');
+            var pendingReplay = null;
+            function submitReplay(url) {
+                if (!replayForm || !url) return;
+                replayForm.action = url;
+                replayForm.submit();
+            }
+            function openReplay(node) {
+                var url = node.getAttribute('data-sw-replay');
+                var locks = parseInt(node.getAttribute('data-replay-locks') || '0', 10);
+                if (!replaySheet || !(locks > 0)) { submitReplay(url); return; }
+                pendingReplay = url;
+                replaySheet.querySelector('[data-replay-name]').textContent = node.getAttribute('data-replay-title') || '';
+                replaySheet.querySelector('[data-replay-note]').textContent =
+                    'Con sẽ học lại từ bài này. ' + locks + ' bài phía sau sẽ khóa lại, con học lần lượt để mở lại nhé!';
+                replaySheet.hidden = false;
+                requestAnimationFrame(function () { replaySheet.classList.add('is-open'); });
+                var go = replaySheet.querySelector('[data-replay-confirm]');
+                if (go) go.focus();
+            }
+            function closeReplay() {
+                if (!replaySheet) return;
+                pendingReplay = null;
+                replaySheet.classList.remove('is-open');
+                replaySheet.hidden = true;
+            }
+            if (replaySheet) {
+                replaySheet.addEventListener('click', function (ev) {
+                    if (ev.target.closest('[data-replay-confirm]')) { chime('start'); submitReplay(pendingReplay); return; }
+                    if (ev.target.closest('[data-replay-cancel]') || ev.target === replaySheet) { chime('tap'); closeReplay(); }
+                });
+                document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !replaySheet.hidden) closeReplay(); });
+            }
+
+            root.addEventListener('click', function (ev) {
+                if (replaySheet && replaySheet.contains(ev.target)) return;
+                var replay = ev.target.closest('[data-sw-replay]');
+                if (replay && root.contains(replay)) {
+                    ev.preventDefault();
+                    chime('tap');
+                    openReplay(replay);
                     return;
                 }
-
-                if (type === 'celebrate') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(523.25, now);
-                    osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-                    osc.start(now);
-                    osc.stop(now + 0.35);
-                } else {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(587.33, now);
-                    osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.1);
-                    gain.gain.setValueAtTime(0.18, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                    osc.start(now);
-                    osc.stop(now + 0.18);
+                var locked = ev.target.closest('[data-sw-locked]');
+                if (locked && root.contains(locked)) {
+                    ev.preventDefault();
+                    chime('locked');
+                    shake(locked);
+                    showToast(locked.getAttribute('data-msg') || 'Con học xong các bài trước nhé! 💛');
+                    return;
                 }
-            } catch (e) {
-                // Audio context error ignore
-            }
-        };
-
-        // Tương tác khi chạm vào nhân vật hoặc tiểu cảnh thiên nhiên trên map
-        window.interactFlankDeco = function (elem, cheerMsg) {
-            playAudioChime('celebrate');
-            elem.classList.remove("deco-clicked-bounce");
-            void elem.offsetWidth; // Trigger reflow
-            elem.classList.add("deco-clicked-bounce");
-
-            let toast = document.getElementById("flankDecoToast");
-            if (!toast) {
-                toast = document.createElement("div");
-                toast.id = "flankDecoToast";
-                toast.className = "locked-station-toast clay-card";
-                document.body.appendChild(toast);
-            }
-            toast.innerHTML = `<span class="material-symbols-outlined">sentiment_satisfied</span><span>${cheerMsg || "Bé giỏi quá! ✨"}</span>`;
-            toast.classList.add("show");
-            clearTimeout(window._decoToastTimeout);
-            window._decoToastTimeout = setTimeout(() => toast.classList.remove("show"), 2200);
-        };
-
-        // Vẽ đường nối cong SVG mềm mại chạy từ trạm dưới lên trạm trên
-        function drawAdventureRoad() {
-            const svg = document.getElementById("adventure-svg-road");
-            const container = document.getElementById("adventure-trail");
-            if (!svg || !container) return;
-
-            const nodes = container.querySelectorAll(".adventure-station-node .station-circle-btn, .adventure-station-node .chest-circle-icon");
-            if (nodes.length < 2) return;
-
-            const containerRect = container.getBoundingClientRect();
-            svg.setAttribute("width", containerRect.width);
-            svg.setAttribute("height", containerRect.height);
-
-            // Thu thập tọa độ tâm các trạm theo thứ tự từ dưới lên trên
-            const points = [];
-            for (let i = nodes.length - 1; i >= 0; i--) {
-                const node = nodes[i];
-                const rect = node.getBoundingClientRect();
-                const x = rect.left + rect.width / 2 - containerRect.left;
-                const y = rect.top + rect.height / 2 - containerRect.top;
-                points.push({ x, y });
-            }
-
-            if (points.length < 2) return;
-
-            let d = `M ${points[0].x} ${points[0].y}`;
-            for (let i = 0; i < points.length - 1; i++) {
-                const p0 = points[i];
-                const p1 = points[i + 1];
-                const cx1 = p0.x;
-                const cy1 = (p0.y + p1.y) / 2;
-                const cx2 = p1.x;
-                const cy2 = (p0.y + p1.y) / 2;
-                d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${p1.x} ${p1.y}`;
-            }
-
-            const pathBg = svg.querySelector(".road-bg-path");
-            const pathDash = svg.querySelector(".road-dash-path");
-            if (pathBg) pathBg.setAttribute("d", d);
-            if (pathDash) pathDash.setAttribute("d", d);
-        }
-
-        // Xử lý khi bé bấm vào trạm chưa mở khóa (Khóa 🔒)
-        function handleLockedStation(btn, stepNum) {
-            playAudioChime('tap');
-            btn.classList.add("station-shake-anim");
-            setTimeout(() => btn.classList.remove("station-shake-anim"), 600);
-
-            let toast = document.getElementById("lockedStationToast");
-            if (!toast) {
-                toast = document.createElement("div");
-                toast.id = "lockedStationToast";
-                toast.className = "locked-station-toast clay-card";
-                document.body.appendChild(toast);
-            }
-            toast.innerHTML = `<span class="material-symbols-outlined">lock</span><span>Bé hãy hoàn thành các trạm trước để mở khóa Trạm ${stepNum} nhé! 💛</span>`;
-            toast.classList.add("show");
-            clearTimeout(window._toastTimeout);
-            window._toastTimeout = setTimeout(() => toast.classList.remove("show"), 2600);
-        }
-
-        // Chuyển đổi giữa Bản đồ và Danh sách bài
-        function toggleSkillView(modeOrCaller) {
-            const mapView = document.getElementById("skillAdventureMapView");
-            const gridView = document.getElementById("skillCompactGridView");
-            const headerIcon = document.getElementById("headerToggleViewIcon");
-            const headerText = document.getElementById("headerToggleViewText");
-            const dockMap = document.getElementById("dockBtnMap");
-            const dockGrid = document.getElementById("dockBtnGrid");
-
-            let targetMode = modeOrCaller;
-            if (typeof modeOrCaller !== 'string') {
-                const isCurrentlyMap = mapView && mapView.style.display !== 'none';
-                targetMode = isCurrentlyMap ? 'grid' : 'map';
-            }
-
-            if (targetMode === 'grid') {
-                if (mapView) mapView.style.display = 'none';
-                if (gridView) gridView.style.display = 'block';
-                if (headerIcon) headerIcon.textContent = 'explore';
-                if (headerText) headerText.textContent = 'Bản đồ';
-                if (dockMap) dockMap.classList.remove('active');
-                if (dockGrid) dockGrid.classList.add('active');
-            } else {
-                if (gridView) gridView.style.display = 'none';
-                if (mapView) mapView.style.display = 'block';
-                if (headerIcon) headerIcon.textContent = 'format_list_bulleted';
-                if (headerText) headerText.textContent = 'Danh sách';
-                if (dockGrid) dockGrid.classList.remove('active');
-                if (dockMap) dockMap.classList.add('active');
-                setTimeout(() => {
-                    drawAdventureRoad();
-                    scrollToActiveStation(false);
-                }, 60);
-            }
-        }
-
-        // Cuộn mượt đến trạm đang học dở bên trong container bản đồ
-        function scrollToActiveStation(smooth = true) {
-            const mapView = document.getElementById("skillAdventureMapView");
-            if (mapView && mapView.style.display === 'none') {
-                toggleSkillView('map');
-            }
-            setTimeout(() => {
-                const activeStation = document.getElementById("active-learning-station");
-                const scrollContainer = document.getElementById("mapTrailScrollContainer");
-                if (activeStation && scrollContainer) {
-                    const containerRect = scrollContainer.getBoundingClientRect();
-                    const stationRect = activeStation.getBoundingClientRect();
-                    const targetScrollTop = scrollContainer.scrollTop + (stationRect.top - containerRect.top) - (containerRect.height / 2) + (stationRect.height / 2);
-
-                    scrollContainer.scrollTo({
-                        top: Math.max(0, targetScrollTop),
-                        behavior: smooth ? "smooth" : "auto"
-                    });
-
-                    activeStation.classList.add("highlight-station-pulse");
-                    setTimeout(() => activeStation.classList.remove("highlight-station-pulse"), 2800);
+                if (ev.target.closest('[data-sw-goto-current]')) {
+                    var cur = document.getElementById('sw-current');
+                    if (cur) { chime('tap'); bringIntoView(cur, true, true); spotlight(cur); }
+                    return;
                 }
-            }, 80);
-        }
+                if (ev.target.closest('[data-sw-goto-chest]')) {
+                    var chest = root.querySelector('.sw-slot--chest.is-claimable .sw-chest');
+                    if (chest) { chime('celebrate'); bringIntoView(chest, true, true); spotlight(chest); }
+                    return;
+                }
+                var sfx = ev.target.closest('[data-sfx]');
+                if (sfx) chime(sfx.getAttribute('data-sfx'));
+            });
 
-        document.addEventListener("DOMContentLoaded", () => {
-            drawAdventureRoad();
-            setTimeout(drawAdventureRoad, 100);
-            setTimeout(drawAdventureRoad, 300);
+            // Bàn phím: trạm đang khóa có role="button" nên Enter/Space cũng báo nhắc nhở.
+            root.addEventListener('keydown', function (ev) {
+                if (ev.key !== 'Enter' && ev.key !== ' ') return;
+                var locked = ev.target.closest && ev.target.closest('a[data-sw-locked]');
+                if (locked) { ev.preventDefault(); locked.click(); }
+            });
 
-            // Tự động nhảy ngay đến trạm đang học dở dang khi vào trang
-            setTimeout(() => {
-                scrollToActiveStation(true);
-            }, 250);
-        });
+            root.querySelectorAll('details.sw-stage').forEach(function (d) {
+                d.addEventListener('toggle', function () { if (d.open) chime('tap'); });
+            });
 
-        window.addEventListener("resize", drawAdventureRoad, { passive: true });
+            // Lời nhắc từ máy chủ (ví dụ bé mở một bài đang khóa bằng đường dẫn cũ).
+            var flash = root.getAttribute('data-flash');
+            if (flash) setTimeout(function () { showToast(flash); }, 400);
+
+            function jumpToCurrent() {
+                var cur = document.getElementById('sw-current');
+                if (!cur) return;
+                bringIntoView(cur, true, false);
+                spotlight(cur);
+            }
+            if (document.readyState === 'complete') setTimeout(jumpToCurrent, 300);
+            else window.addEventListener('load', function () { setTimeout(jumpToCurrent, 300); });
+        })();
     </script>
+}
+
+@functions {
+    private sealed record SwWorld(
+        string Key,
+        string Title,
+        string Emoji,
+        string Guide,
+        string GuideName,
+        string StageWord,
+        string[] StageEmojis,
+        string[] Scene,
+        string[] Side,
+        string? DecoImage,
+        string Intro,
+        string Middle,
+        string Done,
+        string Hint);
+
+    private sealed class SwStage
+    {
+        public int Number { get; init; }
+        public string? Key { get; init; }
+        public string Title { get; set; } = string.Empty;
+        public string Emoji { get; set; } = string.Empty;
+        public List<int> Indexes { get; } = new();
+        public int Done { get; set; }
+        public int Stars { get; set; }
+        public bool HasCurrent { get; set; }
+        public bool Open { get; set; }
+        public string State { get; set; } = "is-upcoming";
+    }
+
+    private const string Bunny = "/images/avatars/avatar-bunny.png";
+    private const string Bear = "/images/avatars/avatar-bear.png";
+    private const string Squirrel = "/images/mascot-squirrel-3d.png";
+    private const string Cat = "/images/avatars/avatar-cat.png";
+    private const string Dog = "/images/avatars/avatar-dog.png";
+
+    private static SwWorld ResolveWorld(string? code) => (code ?? string.Empty).Trim().ToLowerInvariant() switch
+    {
+        "chu-cai" => new SwWorld("chu-cai", "Tàu Chữ Cái", "🚂", Bunny, "Thỏ Ngọc", "Ga",
+            new[] { "🚉", "🔤", "🚃", "🅰️" },
+            new[] { "🌼", "🦋", "🌷", "🐦", "🌈" }, Array.Empty<string>(), null,
+            "Chào {name}! Cô cùng con lên Tàu Chữ Cái nhé. Mỗi toa tàu là một bài học đó!",
+            "{name} ơi, tàu sắp chạy rồi! Con học tiếp toa này nhé, cô chờ con ở ga sau!",
+            "Giỏi quá {name}! Con đã đi hết đoàn tàu chữ cái. Con chơi lại để lấy đủ 3 sao nhé!",
+            "Mỗi toa tàu là một bài học. Con vuốt ngang để xem cả đoàn tàu nhé!"),
+        "chu-so" => new SwWorld("chu-so", "Thành Phố Chữ Số", "🏙️", Bear, "Gấu Vàng", "Tòa nhà",
+            new[] { "🏢", "🏬", "🏫", "🏨" },
+            new[] { "🎈", "🐦", "☀️", "🎈", "🚁" }, Array.Empty<string>(), "/images/decorations/cute-car.svg",
+            "Chào {name}! Mỗi ô cửa sổ là một bài học. Cô cùng con thắp sáng cả thành phố nhé!",
+            "{name} ơi, ô cửa này đang chờ con bật đèn đó! Con học tiếp nhé!",
+            "Cả thành phố sáng rực rồi! {name} giỏi quá. Con chơi lại để lấy đủ 3 sao nhé!",
+            "Ô cửa sáng đèn là bài con đã học xong. Số to trên cửa là số con sẽ học."),
+        "so-luong-toan" => new SwWorld("so-luong-toan", "Rừng Hạt Dẻ", "🌰", Squirrel, "Sóc Nâu", "Khu rừng",
+            new[] { "🌳", "🍄", "🌲", "🍂" },
+            new[] { "🍃", "🍂", "🦋", "🍃", "🐝" }, new[] { "🌲", "🍄", "🌳", "🌰", "🦔", "🌼" }, "/images/decorations/dinosaur.svg",
+            "Chào {name}! Con nhảy qua từng khúc gỗ để nhặt hạt dẻ cùng cô nhé!",
+            "{name} ơi, khúc gỗ tiếp theo đây rồi! Con nhảy tới bài này nhé!",
+            "Con đã nhặt đầy giỏ hạt dẻ rồi, {name} giỏi quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Mỗi khúc gỗ trên đường mòn là một bài học. Con đi từ trên xuống dưới nhé!"),
+        "tu-duy-logic" => new SwWorld("tu-duy-logic", "Bảng Ghép Hình", "🧩", Cat, "Mèo Thông Thái", "Bảng",
+            new[] { "🧩", "🔍", "💡", "🧠" },
+            new[] { "❓", "💡", "⭐", "🔺", "🟦" }, Array.Empty<string>(), "/images/decorations/robot.svg",
+            "Chào {name}! Mỗi bài con học xong là một mảnh ghép. Mình ghép đầy bảng nhé!",
+            "{name} ơi, mảnh ghép này đang chờ con! Con suy nghĩ thật giỏi nhé!",
+            "Bảng ghép hình đã đầy rồi, {name} thông minh quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Mảnh có màu là bài con đã ghép xong. Mảnh trắng đang chờ con đó!"),
+        "ky-nang-song" => new SwWorld("ky-nang-song", "Phố Nhỏ Yêu Thương", "🏡", Dog, "Cún Con", "Con phố",
+            new[] { "🏠", "🏫", "🌳", "🏥" },
+            new[] { "☀️", "🐦", "🌸", "🎈", "🦋" }, Array.Empty<string>(), "/images/decorations/cute-car.svg",
+            "Chào {name}! Cô cùng con dạo phố nhỏ và gõ cửa từng ngôi nhà nhé!",
+            "{name} ơi, ngôi nhà này đang mở cửa chờ con! Con vào học nhé!",
+            "Con đã thăm hết các ngôi nhà rồi, {name} ngoan quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Mỗi ngôi nhà là một bài học. Nhà sáng đèn là bài con đã học xong."),
+        "ngon-ngu" => new SwWorld("ngon-ngu", "Kệ Sách Diệu Kỳ", "📚", Bunny, "Thỏ Ngọc", "Ngăn sách",
+            new[] { "📕", "📗", "📘", "📙" },
+            new[] { "✨", "🦉", "⭐", "🪶", "✨" }, Array.Empty<string>(), null,
+            "Chào {name}! Mỗi cuốn sách là một bài học. Cô cùng con mở sách nhé!",
+            "{name} ơi, cuốn sách này đang chờ con mở ra đó! Con học tiếp nhé!",
+            "Con đã đọc hết cả kệ sách rồi, {name} giỏi quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Sách có dải ruy băng vàng là bài con đã học xong."),
+        "hinh-dang-khong-gian" => new SwWorld("hinh-dang-khong-gian", "Vũ Trụ Hình Khối", "🪐", Bear, "Gấu Vàng", "Thiên hà",
+            new[] { "🪐", "🌙", "☄️", "🌌" },
+            new[] { "✨", "⭐", "🌟", "☄️", "🛸" }, Array.Empty<string>(), "/images/decorations/rocket.svg",
+            "Chào {name}! Cô cùng con bay tới từng hành tinh hình khối nhé!",
+            "{name} ơi, hành tinh này đang chờ con hạ cánh! Con bay tiếp nhé!",
+            "Con đã thăm hết các hành tinh rồi, {name} giỏi quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Mỗi hành tinh có một hình dạng khác nhau: tròn, vuông, tam giác... Con nhận ra không?"),
+        "ghi-nho-tap-trung" => new SwWorld("ghi-nho-tap-trung", "Bàn Thẻ Bài Bí Mật", "🃏", Cat, "Mèo Thông Thái", "Ván bài",
+            new[] { "🃏", "🎴", "🔮", "🎯" },
+            new[] { "✨", "⭐", "🌙", "💫", "✨" }, Array.Empty<string>(), null,
+            "Chào {name}! Mỗi lá bài úp là một bài học bí mật. Con lật từng lá cùng cô nhé!",
+            "{name} ơi, lá bài này đang chờ con lật! Con nhớ thật giỏi nhé!",
+            "Con đã lật hết các lá bài rồi, {name} nhớ giỏi quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Lá bài đã lật là bài con đã học xong. Lá bài úp đang giữ bí mật đó!"),
+        "van-dong-tinh" => new SwWorld("van-dong-tinh", "Xưởng Vẽ Bút Sáp", "🖍️", Squirrel, "Sóc Nâu", "Trang vẽ",
+            new[] { "🎨", "🖍️", "✏️", "🖌️" },
+            new[] { "🖍️", "✏️", "⭐", "🌈", "🖌️" }, Array.Empty<string>(), null,
+            "Chào {name}! Mỗi giọt màu là một bài học. Cô cùng con tô màu cả trang giấy nhé!",
+            "{name} ơi, giọt màu này đang chờ con! Con cầm bút lên nhé!",
+            "Trang giấy đầy màu sắc rồi, {name} khéo tay quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Giọt màu tươi là bài con đã tô xong. Giọt màu nhạt đang chờ con đó!"),
+        "kham-pha" => new SwWorld("kham-pha", "Đại Dương Thám Hiểm", "🧭", Dog, "Cún Con", "Vùng biển",
+            new[] { "🏝️", "🐠", "🐳", "🗺️" },
+            new[] { "🐟", "🐬", "🐚", "🐙", "⛵" }, Array.Empty<string>(), "/images/decorations/cute-plane.svg",
+            "Chào {name}! Cô cùng con lái thuyền ghé thăm từng hòn đảo nhé!",
+            "{name} ơi, hòn đảo này đang chờ con cập bến! Con khám phá tiếp nhé!",
+            "Con đã thám hiểm hết các hòn đảo rồi, {name} dũng cảm quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Thuyền đi theo đường chấm chấm, từ đảo này sang đảo kia."),
+        _ => new SwWorld("default", "Đồi Khinh Khí Cầu", "🎈", Squirrel, "Sóc Nâu", "Chặng",
+            new[] { "🎈", "🌈", "☁️", "⭐" },
+            new[] { "🐦", "🌈", "☀️", "🎈", "🦋" }, Array.Empty<string>(), "/images/decorations/cute-plane.svg",
+            "Chào {name}! Mỗi khinh khí cầu là một bài học. Cô cùng con bay lên nhé!",
+            "{name} ơi, khinh khí cầu này đang chờ con! Con học tiếp nhé!",
+            "Con đã bay hết các khinh khí cầu rồi, {name} giỏi quá! Con chơi lại để lấy đủ 3 sao nhé!",
+            "Khinh khí cầu có ngôi sao là bài con đã học xong.")
+    };
+
+    private static (string Emoji, string Label) PlayStyle(string? type) => (type ?? string.Empty).Trim().ToLowerInvariant() switch
+    {
+        "single_choice" or "singlechoice" => ("👆", "Chọn đáp án"),
+        "listen_choose" or "listen_and_choose" or "listentochoose" => ("🎧", "Nghe và chọn"),
+        "multi_select" or "multiselect" => ("✅", "Chọn nhiều"),
+        "drag_drop" or "dragdrop" => ("✋", "Kéo và thả"),
+        "matching" => ("🔗", "Nối cặp"),
+        "ordering" => ("🔢", "Xếp thứ tự"),
+        "counting" => ("🧮", "Đếm số"),
+        "quantity_builder" or "quantitybuilder" => ("🧱", "Xếp số lượng"),
+        "comparison" => ("⚖️", "So sánh"),
+        "classification" => ("🗂️", "Phân loại"),
+        "story_choice" or "storychoice" => ("📖", "Nghe truyện"),
+        "tracing" => ("✏️", "Tập tô"),
+        _ => ("⭐", "Trò chơi")
+    };
+
+    // Đọc ContentJson một lần cho mỗi bài: "mapIcon" (emoji hoặc một chữ/số) và "stage" (tên chặng).
+    private static (string? MapIcon, string? Stage) ReadMapMeta(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)
+            || (!json.Contains("mapIcon", StringComparison.Ordinal) && !json.Contains("\"stage\"", StringComparison.Ordinal)))
+        {
+            return (null, null);
+        }
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return (null, null);
+            }
+            string? icon = null, stage = null;
+            if (doc.RootElement.TryGetProperty("mapIcon", out var iconEl) && iconEl.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                var value = iconEl.GetString()?.Trim();
+                icon = string.IsNullOrEmpty(value) || value.Length > 16 ? null : value;
+            }
+            if (doc.RootElement.TryGetProperty("stage", out var stageEl) && stageEl.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                var value = stageEl.GetString()?.Trim();
+                stage = string.IsNullOrEmpty(value) ? null : value;
+            }
+            return (icon, stage);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return (null, null);
+        }
+    }
+
+    // mapIcon là chữ cái/chữ số (ví dụ "B", "7") thì hiển thị bằng phông chữ tròn đậm thay cho emoji.
+    private static bool IsGlyph(string icon) => icon.Length <= 3 && icon.All(char.IsLetterOrDigit);
+
+    private static string GlyphClass(string icon) => IsGlyph(icon) ? "is-glyph" : "is-emoji";
+
+    private static string StarText(int n)
+    {
+        var filled = Math.Clamp(n, 0, 3);
+        return new string('★', filled) + new string('☆', 3 - filled);
+    }
+
+    private static string ResolveAvatar(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return Squirrel;
+        if (key.StartsWith('/')) return key;
+        return key switch
+        {
+            "avatar-cat" or "meo-con" => Cat,
+            "avatar-dog" or "cun-con" => Dog,
+            "avatar-bunny" or "tho-trang" => Bunny,
+            "avatar-bear" or "gau-vang" => Bear,
+            "avatar-squirrel" or "soc-nau" => Squirrel,
+            _ => Squirrel
+        };
+    }
 }

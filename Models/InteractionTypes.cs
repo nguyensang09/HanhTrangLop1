@@ -14,4 +14,7 @@ public static class InteractionTypes
     public const string Classification = "classification";
     public const string StoryChoice = "story_choice";
     public const string Tracing = "tracing";
+
+    // Bài học Đảo Toán Học: một bài gồm nhiều phép tính, chạy bằng trình chơi riêng tại /kids/math.
+    public const string MathPlay = "math_play";
 }

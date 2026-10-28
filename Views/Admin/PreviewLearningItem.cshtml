@@ -63,7 +63,12 @@
     </div>
 </div>
 
-<section class="learn-screen learning-focus-shell"
+@* Cùng lớp giao diện Learn World với màn của bé để xem thử đúng như bé thấy. *@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap" />
+<link rel="stylesheet" href="~/css/learn-world.css" asp-append-version="true" />
+
+<section class="learn-screen learning-focus-shell lw"
+         data-group="@(Model.Item.SkillGroup?.Code ?? "default")"
          data-learning-voice
          data-activity-type="@Model.Item.InteractionType"
          data-sound-enabled="true"

@@ -62,10 +62,10 @@ class NumberTrainGame {
         } else if (type === 'wagon-sort') {
             targetBadgeContent = '1, 2, 3';
         } else {
-            targetBadgeContent = this.currentLevelData.answer ? `Toa ${this.currentLevelData.answer}` : 'Toa ?';
+            targetBadgeContent = 'Toa ?'; // Không hiện đáp án: con phải tự tìm toa còn thiếu.
         }
 
-        const instructionText = this.currentLevelData?.instruction || 'Bé hãy tìm toa số thích hợp nối vào đoàn tàu!';
+        const instructionText = this.currentLevelData?.instruction || 'Con hãy tìm toa số thích hợp nối vào đoàn tàu!';
 
         this.container.innerHTML = `
             <div class="train-stage-container" id="trainStage">
@@ -334,7 +334,7 @@ class NumberTrainGame {
         container.innerHTML = levels.map(lvl => {
             const isCurrent = lvl.level === curLevel;
             return `
-                <button type="button" class="alphabet-item-btn ${isCurrent ? 'is-active' : ''}" data-jump-level="${lvl.level}">
+                <button type="button" class="alphabet-item-btn ${isCurrent ? 'is-active' : ''} ${window.gameShell?.isLevelDone?.(lvl.level) ? 'is-done' : ''}" data-stars="${'⭐'.repeat(window.gameShell?.starsFor?.(lvl.level) || 0)}" data-jump-level="${lvl.level}">
                     <span class="alphabet-char">${lvl.level}</span>
                     <span class="alphabet-sub">Màn ${lvl.level}</span>
                 </button>
@@ -741,8 +741,7 @@ class NumberTrainGame {
             }
 
             const levelNum = this.currentLevelData?.level || 1;
-            this.shell?.saveProgressLocal('number-train', levelNum, 1);
-            this.shell?.saveProgressServer('number-train', levelNum, 1);
+            this.shell?.markLevelDone?.(levelNum, 1);
 
             const nextLvl = levelNum + 1;
             this.saveCurrentLevelProgress(nextLvl);

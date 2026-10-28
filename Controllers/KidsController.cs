@@ -1,4 +1,5 @@
 using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.MathWorld;
 using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
@@ -21,19 +22,28 @@ public class KidsController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly VoiceLibraryMaintenanceService _voiceLibraryService;
     private readonly RewardProgressionService _rewardProgressionService;
+    private readonly LessonPathService _lessonPath;
+    private readonly IHostApplicationLifetime _lifetime;
+    private readonly ILogger<KidsController> _logger;
 
     public KidsController(
         ApplicationDbContext db,
         TodayLessonService todayLessonService,
         UserManager<ApplicationUser> userManager,
         VoiceLibraryMaintenanceService voiceLibraryService,
-        RewardProgressionService rewardProgressionService)
+        RewardProgressionService rewardProgressionService,
+        LessonPathService lessonPath,
+        IHostApplicationLifetime lifetime,
+        ILogger<KidsController> logger)
     {
         _db = db;
         _todayLessonService = todayLessonService;
         _userManager = userManager;
         _voiceLibraryService = voiceLibraryService;
         _rewardProgressionService = rewardProgressionService;
+        _lessonPath = lessonPath;
+        _lifetime = lifetime;
+        _logger = logger;
     }
 
     [HttpGet("")]
@@ -85,7 +95,7 @@ public class KidsController : Controller
         var currentDay = await _todayLessonService.GetCurrentDayNumberAsync(child);
         var todayTheme = TodayLessonService.DayThemes.FirstOrDefault(x => x.Day == currentDay);
         var completedLessonsCount = await _db.ChildLessonProgresses
-            .CountAsync(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.FirstCompletedAt != null);
+            .CountAsync(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.PathCompletedAt != null);
 
         var model = new KidsHomeViewModel
         {
@@ -150,40 +160,24 @@ public class KidsController : Controller
             return NotFound();
         }
 
+        // Đảo Toán Học có bản đồ và trình chơi riêng; mọi liên kết tới nhóm này (ví dụ từ Kho quà) đều dẫn về đó.
+        if (skillGroup.Code == MathCurriculum.SkillGroupCode)
+        {
+            return RedirectToAction("Index", "KidsMath");
+        }
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {
             return RedirectToAction("Index", "Profiles");
         }
 
-        var items = await _db.LearningItems
-            .AsNoTracking()
-            .Include(x => x.SkillGroup)
-            .Include(x => x.Topic)
-            .Include(x => x.Questions)
-            .Where(x => x.SkillGroupId == id && x.Status == ContentStatus.Published)
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Level)
-            .ThenBy(x => x.Title)
-            .ToListAsync();
-
-        // Theo Phương án 1: Tách hoàn toàn bài Tập tô (Tracing) ra khỏi Lộ trình Kỹ năng /kids/skills/
-        // Các bài tập tô chữ và số được học tập trung chuyên biệt tại phân hệ /kids/tracing (Bé Tập Tô Nét)
-        if (skillGroup.Code != "van-dong-tinh")
-        {
-            items = items.Where(x => x.InteractionType != InteractionTypes.Tracing).ToList();
-        }
-        items = items.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
-
-        var itemIds = items.Select(x => x.Id).ToList();
-        var lessonProgress = itemIds.Count == 0
-            ? []
-            : await _db.ChildLessonProgresses
-                .AsNoTracking()
-                .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && itemIds.Contains(x.LearningItemId))
-                .ToListAsync();
-        var progressByItemId = lessonProgress.ToDictionary(x => x.LearningItemId);
-        var currentItem = items.FirstOrDefault(x => !progressByItemId.TryGetValue(x.Id, out var p) || p.FirstCompletedAt is null);
+        // Thứ tự bài, bài đang học và khóa/mở do LessonPathService quyết định (dùng chung với trang làm bài).
+        var path = await _lessonPath.GetStateAsync(child, skillGroup);
+        var items = path.Items.ToList();
+        var lessonProgress = path.Progress.Values.ToList();
+        var progressByItemId = path.Progress;
+        var currentItem = path.CurrentIndex >= 0 ? items[path.CurrentIndex] : null;
         var grants = await _db.RewardGrants.AsNoTracking()
             .Include(x => x.RewardDefinition)
             .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.SkillGroupId == id)
@@ -218,12 +212,37 @@ public class KidsController : Controller
                     Item = item,
                     LatestStatus = progress?.LatestStatus,
                     StarsEarned = progress?.BestStars ?? 0,
-                    EverCompleted = progress?.FirstCompletedAt is not null
+                    EverCompleted = progress?.FirstCompletedAt is not null,
+                    IsPathCompleted = progress?.PathCompletedAt is not null
                 };
             }).ToList()
         };
 
         return View(model);
+    }
+
+    /// <summary>
+    /// Bé chạm vào một bài đã học trên bản đồ để học lại: đưa tiến trình về đúng bài đó (bài này thành bài đang học,
+    /// các bài phía sau khóa lại) rồi mở bài. Dùng POST vì thao tác thay đổi tiến độ, không để nút Back hay việc
+    /// tải trước liên kết vô tình kéo lùi lộ trình của bé.
+    /// </summary>
+    [HttpPost("skills/{id:guid}/replay/{itemId:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Replay(Guid id, Guid itemId)
+    {
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null) return RedirectToAction("Index", "Profiles");
+
+        var path = await _lessonPath.GetStateAsync(child, id);
+        if (path is null) return NotFound();
+
+        if (!await _lessonPath.RewindToAsync(child, path, itemId))
+        {
+            TempData["SkillMessage"] = "Con học xong các bài trước để mở bài này nhé! 💛";
+            return RedirectToAction(nameof(Skill), new { id });
+        }
+
+        return RedirectToAction(nameof(Learn), new { id = itemId, skillGroupId = id });
     }
 
     [HttpGet("tracing")]
@@ -449,6 +468,13 @@ public class KidsController : Controller
             return NotFound();
         }
 
+        // Bài đang khóa trên lộ trình (nằm sau bài đang học) không mở được bằng đường dẫn trực tiếp: bé phải học lần lượt.
+        if (skillGroupId.HasValue && !completed && await IsLockedOnPathAsync(child, skillGroupId.Value, item.Id))
+        {
+            TempData["SkillMessage"] = "Con học xong các bài trước để mở bài này nhé! 💛";
+            return RedirectToAction(nameof(Skill), new { id = skillGroupId.Value });
+        }
+
         var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
         if (!skillGroupId.HasValue && !fromTracing)
         {
@@ -470,6 +496,52 @@ public class KidsController : Controller
             completionFeedback,
             completed ? true : null,
             fromTracing: fromTracing));
+    }
+
+    /// <summary>
+    /// Trang làm bài gọi khi thiếu file Voice của ngôn ngữ bé đang dùng: sinh bổ sung, lưu vào kho Voice
+    /// chung để lần sau dùng lại, rồi trả về các URL đã liên kết (câu hỏi, phản hồi, đáp án).
+    /// </summary>
+    [HttpPost("learn/{id:guid}/voice")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LearnVoice(Guid id)
+    {
+        var child = await GetSelectedChildProfileAsync();
+        if (child is null) return Unauthorized();
+
+        var english = child.EnglishVoice;
+        // Không gắn việc sinh Voice vào HttpContext.RequestAborted: bé chọn đáp án hay sang câu khác thì trình duyệt
+        // hủy yêu cầu này, trước đây làm tiến trình TTS bị hủy giữa chừng (OperationCanceledException trong
+        // RunEdgeTextToSpeechAsync) và file bỏ dở, lần mở sau lại phải chờ sinh từ đầu. Nay file được sinh nốt và lưu
+        // vào kho để dùng lại; chỉ khi máy chủ dừng thì mới hủy.
+        JsonObject? payload;
+        try
+        {
+            payload = await _voiceLibraryService.EnsureLessonVoiceAsync(id, english, TimeSpan.FromSeconds(25), _lifetime.ApplicationStopping);
+        }
+        catch (OperationCanceledException) when (_lifetime.ApplicationStopping.IsCancellationRequested)
+        {
+            _logger.LogInformation("Dừng sinh Voice bài {LessonId} vì máy chủ đang tắt.", id);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+        if (payload is null) return NotFound();
+        if (HttpContext.RequestAborted.IsCancellationRequested) return new EmptyResult();
+
+        string Read(string key) => payload[key]?.GetValueKind() == System.Text.Json.JsonValueKind.String ? payload[key]!.GetValue<string>() : string.Empty;
+        return Json(new
+        {
+            lang = english ? "en" : "vi",
+            questionAudioUrl = Read("questionAudioUrl"),
+            questionAudioUrlEn = Read("questionAudioUrlEn"),
+            correctAudioUrl = Read("correctAudioUrl"),
+            correctAudioUrlEn = Read("correctAudioUrlEn"),
+            retryAudioUrl = Read("retryAudioUrl"),
+            retryAudioUrlEn = Read("retryAudioUrlEn"),
+            audioUrl = Read("audioUrl"),
+            audioUrlEn = Read("audioUrlEn"),
+            optionAudio = payload["optionAudio"],
+            optionAudioEn = payload["optionAudioEn"]
+        });
     }
 
     [HttpPost("learn/{id:guid}/answer")]
@@ -495,6 +567,15 @@ public class KidsController : Controller
         if (item is null || question is null || !ActivityTemplateCatalog.IsItemAllowed(item))
         {
             return NotFound();
+        }
+
+        // Không ghi nhận bài đang khóa (ví dụ trang cũ còn mở sau khi bé học lại một bài phía trước).
+        if (skillGroupId.HasValue && await IsLockedOnPathAsync(child, skillGroupId.Value, item.Id))
+        {
+            var skillUrl = Url.Action(nameof(Skill), new { id = skillGroupId.Value });
+            if (WantsJson()) return Conflict(new { locked = true, redirectUrl = skillUrl });
+            TempData["SkillMessage"] = "Con học xong các bài trước để mở bài này nhé! 💛";
+            return Redirect(skillUrl ?? "/kids/skills");
         }
 
         var correctAnswer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
@@ -536,9 +617,35 @@ public class KidsController : Controller
         await _db.SaveChangesAsync();
         await completionTransaction.CommitAsync();
         if (rewardProgress.NewlyUnlockedGrant is not null)
-            TempData["MilestoneMessage"] = $"Bé đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!";
+            TempData["MilestoneMessage"] = $"Con đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!";
 
         var feedback = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
+        if (WantsJson())
+        {
+            var (_, feedbackAudioUrl) = await BuildAnswerFeedbackAsync(question, isCorrect, child.EnglishVoice);
+            // Trang làm bài nộp bằng fetch: kết quả hiện ngay trên thanh kiểm tra, không tải lại trang
+            // và không cần popup chúc mừng riêng.
+            var milestone = rewardProgress.NewlyUnlockedGrant is not null
+                ? $"Con đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!"
+                : null;
+            if (milestone is not null) TempData.Remove("MilestoneMessage");
+            var (nextUrl, nextLabel) = isCorrect
+                ? await BuildContinueTargetAsync(item, skillGroupId, fromTracing)
+                : (string.Empty, string.Empty);
+            return Json(new
+            {
+                correct = isCorrect,
+                message = feedback,
+                audioUrl = feedbackAudioUrl,
+                answer = answer.AnswerValue,
+                questionId = question.Id,
+                nextUrl,
+                nextLabel,
+                milestone,
+                rewardsUrl = milestone is null ? null : Url.Action(nameof(Rewards))
+            });
+        }
+
         if (isCorrect)
         {
             // Giữ nguyên ngữ cảnh điều hướng (vào bài từ Góc tập tô hay từ bản đồ kỹ năng)
@@ -622,7 +729,7 @@ public class KidsController : Controller
         await _db.SaveChangesAsync();
         await completionTransaction.CommitAsync();
         if (rewardProgress.NewlyUnlockedGrant is not null)
-            TempData["MilestoneMessage"] = $"Bé đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!";
+            TempData["MilestoneMessage"] = $"Con đã mở khóa rương {rewardProgress.UniqueCompletedInSkill} bài!";
 
         return RedirectToAction(nameof(Learn), new { id = item.Id, skillGroupId, fromTracing, completed = true });
     }
@@ -1153,17 +1260,18 @@ public class KidsController : Controller
             questionImageUrl = ResolveQuestionImageFromItemMedia(question);
         }
 
-        var promptText = question?.PromptText;
-        var speechText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "speechText", string.Empty);
-        var correctFeedbackText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.FeedbackJson, "correct", string.Empty);
-        if (string.IsNullOrWhiteSpace(correctFeedbackText)) correctFeedbackText = "Giỏi lắm";
+        // Voice luôn tra theo đúng lời đọc của nội dung đang hiển thị (bảng "speech" của bài nếu có), không mượn
+        // Voice của tên bài hay câu khác: thiếu thì để trống cho trang xin sinh bổ sung đúng câu.
+        var sourcePayload = ParsePayload(question?.PayloadJson);
+        var promptText = question is null ? null : VoiceLibraryMaintenanceService.SpokenText(sourcePayload, question.PromptText);
+        var speechText = question is null ? string.Empty : VoiceLibraryMaintenanceService.SpokenText(sourcePayload, LearningJsonReader.ReadStringProperty(question.PayloadJson, "speechText", string.Empty));
+        var correctFeedbackText = LearningFeedback.CorrectVi;
         var retryFeedbackText = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.FeedbackJson, "retry", string.Empty);
-        if (string.IsNullOrWhiteSpace(retryFeedbackText)) retryFeedbackText = "Con thử lại nhé";
+        if (string.IsNullOrWhiteSpace(retryFeedbackText)) retryFeedbackText = LearningFeedback.RetryVi;
+        retryFeedbackText = VoiceLibraryMaintenanceService.SpokenText(sourcePayload, retryFeedbackText);
 
         var questionAudioUrl = await ResolveActiveVoiceUrlAsync(promptText);
-        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveVoiceUrlAsync(item.Title);
         var questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(promptText);
-        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(item.Title);
         var contentAudioUrl = item.InteractionType == InteractionTypes.StoryChoice
             ? await ResolveActiveVoiceUrlAsync(speechText)
             : string.Empty;
@@ -1179,7 +1287,9 @@ public class KidsController : Controller
         var correctFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync(correctFeedbackText);
         var correctFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(correctFeedbackText);
         var retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync(retryFeedbackText);
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveVoiceUrlAsync(LearningFeedback.RetryVi);
         var retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(retryFeedbackText);
+        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveVoiceUrlEnAsync(LearningFeedback.RetryVi);
 
         // Payload hiển thị chỉ dùng cho giao diện (đường dẫn audio, số đáp án cần chọn...).
         // Không ghi đè vào entity Question để tránh làm thay đổi dữ liệu soạn bài trong CSDL
@@ -1269,6 +1379,45 @@ public class KidsController : Controller
         return url ?? string.Empty;
     }
 
+    private static JsonObject ParsePayload(string? payloadJson)
+    {
+        if (string.IsNullOrWhiteSpace(payloadJson)) return new JsonObject();
+        try
+        {
+            return JsonNode.Parse(payloadJson) as JsonObject ?? new JsonObject();
+        }
+        catch (JsonException)
+        {
+            return new JsonObject();
+        }
+    }
+
+    /// <summary>
+    /// Lời phản hồi và Voice tương ứng của MỘT lần chấm: cùng một kết quả đúng/sai quyết định cả chữ hiển thị lẫn
+    /// file được đọc, nên không thể có chuyện màn hình báo sai mà Voice khen đúng.
+    /// </summary>
+    private async Task<(string Message, string AudioUrl)> BuildAnswerFeedbackAsync(Question question, bool isCorrect, bool english)
+    {
+        var message = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
+        if (isCorrect)
+        {
+            var correctUrl = english
+                ? await ResolveActiveVoiceUrlEnAsync(LearningFeedback.CorrectVi)
+                : await ResolveActiveVoiceUrlAsync(LearningFeedback.CorrectVi);
+            return (message, correctUrl);
+        }
+
+        var spoken = VoiceLibraryMaintenanceService.SpokenText(ParsePayload(question.PayloadJson), message);
+        var url = english ? await ResolveActiveVoiceUrlEnAsync(spoken) : await ResolveActiveVoiceUrlAsync(spoken);
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            url = english
+                ? await ResolveActiveVoiceUrlEnAsync(LearningFeedback.RetryVi)
+                : await ResolveActiveVoiceUrlAsync(LearningFeedback.RetryVi);
+        }
+        return (message, url);
+    }
+
     private async Task<string> EnrichPayloadOptionAudioAsync(string? payloadJson)
     {
         if (string.IsNullOrWhiteSpace(payloadJson)) return "{}";
@@ -1284,7 +1433,8 @@ public class KidsController : Controller
             foreach (var label in labels)
             {
                 var cleanLabel = label.Trim();
-                var url = await ResolveActiveVoiceUrlAsync(label);
+                var spoken = VoiceLibraryMaintenanceService.SpokenText(payload, label);
+                var url = await ResolveActiveVoiceUrlAsync(spoken);
                 if (!string.IsNullOrWhiteSpace(url))
                 {
                     audioMap[cleanLabel] = url;
@@ -1294,7 +1444,7 @@ public class KidsController : Controller
                     }
                 }
 
-                var urlEn = await ResolveActiveVoiceUrlEnAsync(label);
+                var urlEn = await ResolveActiveVoiceUrlEnAsync(spoken);
                 if (!string.IsNullOrWhiteSpace(urlEn))
                 {
                     audioMapEn[cleanLabel] = urlEn;
@@ -1469,6 +1619,25 @@ public class KidsController : Controller
         }
     }
 
+    private bool WantsJson() =>
+        Request.Headers.Accept.Any(x => x?.Contains("application/json", StringComparison.OrdinalIgnoreCase) == true);
+
+    /// <summary>Bài tiếp theo sau khi làm đúng; luôn có đích đến (về bản đồ khi đã hết bài).</summary>
+    private async Task<(string Url, string Label)> BuildContinueTargetAsync(LearningItem item, Guid? skillGroupId, bool fromTracing)
+    {
+        var nextId = fromTracing ? await FindNextTracingItemIdAsync(item.Id) : await FindNextItemIdAsync(item, skillGroupId);
+        if (nextId.HasValue)
+        {
+            var url = fromTracing
+                ? Url.Action(nameof(Learn), new { id = nextId.Value, fromTracing = true })
+                : Url.Action(nameof(Learn), new { id = nextId.Value, skillGroupId });
+            return (url ?? "/kids/today", "Sang bài tiếp theo");
+        }
+        if (fromTracing) return (Url.Action(nameof(Tracing)) ?? "/kids/tracing", "Về góc tập tô");
+        if (skillGroupId.HasValue) return (Url.Action(nameof(Skill), new { id = skillGroupId.Value }) ?? "/kids/today", "Về bản đồ bài học");
+        return (Url.Action(nameof(Today)) ?? "/kids/today", "Về bản đồ bài học");
+    }
+
     private async Task<Guid?> FindNextItemIdAsync(LearningItem currentItem, Guid? skillGroupId)
     {
         if (!skillGroupId.HasValue)
@@ -1479,27 +1648,18 @@ public class KidsController : Controller
         var skillGroup = await _db.SkillGroups
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == skillGroupId.Value);
+        if (skillGroup is null) return null;
 
-        var items = await _db.LearningItems
-            .AsNoTracking()
-            .Include(x => x.SkillGroup)
-            .Include(x => x.Topic)
-            .Where(x => x.SkillGroupId == skillGroupId.Value && x.Status == ContentStatus.Published)
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Level)
-            .ThenBy(x => x.Title)
-            .ToListAsync();
-
-        if (skillGroup?.Code != "van-dong-tinh")
-        {
-            items = items.Where(x => x.InteractionType != InteractionTypes.Tracing).ToList();
-        }
-
-        var itemIds = items.Where(ActivityTemplateCatalog.IsItemAllowed).Select(x => x.Id).ToList();
-
+        var itemIds = (await _lessonPath.LoadPathItemsAsync(skillGroup)).Select(x => x.Id).ToList();
         var currentIndex = itemIds.IndexOf(currentItem.Id);
         return currentIndex >= 0 && currentIndex + 1 < itemIds.Count
             ? itemIds[currentIndex + 1]
             : null;
+    }
+
+    private async Task<bool> IsLockedOnPathAsync(ChildProfile child, Guid skillGroupId, Guid itemId)
+    {
+        var path = await _lessonPath.GetStateAsync(child, skillGroupId);
+        return path is not null && path.IsLocked(itemId);
     }
 }

@@ -6,6 +6,7 @@
     // Tính toán sớm để dùng trong attribute của <body>
     var _ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     var _isKidsZone = string.Equals(_ctrl, "Kids", StringComparison.OrdinalIgnoreCase) ||
+                      string.Equals(_ctrl, "KidsMath", StringComparison.OrdinalIgnoreCase) ||
                       string.Equals(_ctrl, "Games", StringComparison.OrdinalIgnoreCase);
     var _isFocusMode = ViewData["FocusMode"] as bool? == true;
 }
@@ -23,6 +24,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HanhTrangLop1.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/entry.css" asp-append-version="true" />
     <script>
         (function() {
             var ua = navigator.userAgent || '';
@@ -94,38 +96,39 @@
 
     @if (showSiteNavigation)
     {
-    <header class="app-site-header">
-        <nav class="navbar navbar-expand-lg app-navbar">
-            <div class="container">
-                <!-- Brand Logo -->
-                <a class="navbar-brand app-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="brand-avatar" />
-                    <div class="brand-text-col">
-                        <span class="brand-title">Sóc Nâu Đồng Hành</span>
-                        <span class="brand-subtitle">Hành Trang Lớp 1</span>
-                    </div>
+    <header class="app-site-header en-header">
+        <nav class="navbar navbar-expand-xl app-navbar en-nav" aria-label="Điều hướng chính">
+            <div class="container en-nav-inner">
+                <!-- Logo -->
+                <a class="navbar-brand en-brand" asp-area="" asp-controller="Home" asp-action="Index" title="Về trang chủ">
+                    <img src="~/images/soc-nau-mascot.png" alt="" class="en-brand-avatar" />
+                    <span class="en-brand-text">
+                        <span class="en-brand-title">Hành Trang Lớp 1</span>
+                        <span class="en-brand-sub">Sóc Nâu Đồng Hành</span>
+                    </span>
                 </a>
 
-                <!-- Mobile Hamburger Button -->
-                <button class="navbar-toggler border-0 shadow-none p-2" type="button" data-bs-toggle="collapse" data-bs-target="#appMainNavbar" aria-controls="appMainNavbar"
+                <!-- Nút mở menu (điện thoại, iPad) -->
+                <button class="navbar-toggler en-menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#appMainNavbar" aria-controls="appMainNavbar"
                         aria-expanded="false" aria-label="Mở bảng điều hướng">
-                    <span class="material-symbols-outlined fs-2 text-dark">menu</span>
+                    <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+                    <span>Menu</span>
                 </button>
 
-                <!-- Navigation Links & User Controls -->
-                <div class="navbar-collapse collapse justify-content-end" id="appMainNavbar">
-                    <ul class="navbar-nav align-items-lg-center gap-lg-2 my-2 my-lg-0">
+                <!-- Liên kết điều hướng & tài khoản -->
+                <div class="navbar-collapse collapse" id="appMainNavbar">
+                    <ul class="navbar-nav en-nav-links">
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Kids" ? "active" : "")" asp-controller="Kids" asp-action="Home" title="Chuyển sang màn hình học cho bé">
-                                <span class="material-symbols-outlined nav-icon" style="color:#ea580c;">school</span>
+                            <a class="nav-link en-nav-link @(currentController == "Kids" ? "active" : "")" asp-controller="Kids" asp-action="Home" title="Chuyển sang màn hình học cho bé">
+                                <span class="material-symbols-outlined en-nav-icon" aria-hidden="true">school</span>
                                 <span>Góc của bé</span>
                             </a>
                         </li>
                         @if (currentController != "Parent")
                         {
                             <li class="nav-item">
-                                <a class="nav-link @(currentController == "Parent" ? "active" : "")" asp-controller="Parent" asp-action="Dashboard">
-                                    <span class="material-symbols-outlined nav-icon">family_restroom</span>
+                                <a class="nav-link en-nav-link" asp-controller="Parent" asp-action="Dashboard">
+                                    <span class="material-symbols-outlined en-nav-icon en-nav-icon--violet" aria-hidden="true">family_restroom</span>
                                     <span>Góc phụ huynh</span>
                                 </a>
                             </li>
@@ -133,43 +136,51 @@
                         @if (User.IsInRole("Admin") || string.Equals(User.Identity?.Name, "admin", StringComparison.OrdinalIgnoreCase))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Index" style="font-weight:700; color:#0f172a;" title="Vào hệ thống Quản trị CMS">
-                                    <span class="material-symbols-outlined nav-icon" style="color:#ea580c;">admin_panel_settings</span>
+                                <a class="nav-link en-nav-link" asp-controller="Admin" asp-action="Index" title="Vào hệ thống Quản trị CMS">
+                                    <span class="material-symbols-outlined en-nav-icon en-nav-icon--ink" aria-hidden="true">admin_panel_settings</span>
                                     <span>Quản trị CMS</span>
                                 </a>
                             </li>
                         }
+                    </ul>
 
-                        <!-- Chip thông tin bé đang chọn -->
-                        <li class="nav-item ms-lg-2 py-1 py-lg-0">
-                            <a class="active-child-chip" asp-controller="Profiles" asp-action="Index" title="Bấm để đổi hồ sơ bé khác">
-                                <img src="@ResolveAvatar(activeChild?.AvatarKey)" alt="Bé" class="active-child-avatar" />
-                                <span class="active-child-name">@(activeChild?.Nickname ?? "Bạn nhỏ")</span>
-                                <span class="material-symbols-outlined ms-1" style="font-size:1.1rem; color:#f97316;">sync_alt</span>
-                            </a>
-                        </li>
+                    <!-- Cụm bé & tài khoản: Đổi bé · Đổi tài khoản · Đăng xuất -->
+                    <div class="en-account">
+                        <a class="en-chip en-chip--child" asp-controller="Profiles" asp-action="Index" title="Chọn bạn nhỏ khác để học">
+                            <img src="@ResolveAvatar(activeChild?.AvatarKey)" alt="" class="en-chip-avatar" />
+                            <span class="en-chip-text">
+                                <strong>@(activeChild?.Nickname ?? "Bạn nhỏ")</strong>
+                                <small><span class="material-symbols-outlined" aria-hidden="true">sync_alt</span>Đổi bé</small>
+                            </span>
+                        </a>
 
-                        <!-- Auth section -->
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item py-1 py-lg-0">
-                                <div class="user-profile-badge" title="Tài khoản đang đăng nhập">
-                                    <span class="user-avatar-icon material-symbols-outlined">person</span>
-                                    <span>@(User.Identity.Name)</span>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Parent" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn app-btn app-btn-small app-btn-muted" title="Đăng xuất khỏi hệ thống">Đăng xuất</button>
-                                </form>
-                            </li>
+                            <a class="en-chip en-chip--account" asp-controller="Parent" asp-action="Login" title="Đăng nhập bằng tài khoản phụ huynh khác">
+                                <span class="material-symbols-outlined en-chip-icon" aria-hidden="true">account_circle</span>
+                                <span class="en-chip-text">
+                                    <strong>@(User.Identity.Name)</strong>
+                                    <small><span class="material-symbols-outlined" aria-hidden="true">switch_account</span>Đổi tài khoản</small>
+                                </span>
+                            </a>
+                            <form asp-controller="Parent" asp-action="Logout" method="post" class="en-logout-form">
+                                <button type="submit" class="en-btn en-btn--sm en-btn--logout" title="Đăng xuất khỏi tài khoản phụ huynh">
+                                    <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                                    <span>Đăng xuất</span>
+                                </button>
+                            </form>
                         }
                         else
                         {
-                            <li class="nav-item ms-lg-1"><a class="btn app-btn app-btn-small" asp-controller="Parent" asp-action="Login">Đăng nhập</a></li>
-                            <li class="nav-item"><a class="btn app-btn app-btn-small app-btn-muted" asp-controller="Parent" asp-action="Register">Đăng ký</a></li>
+                            <div class="en-account-auth">
+                                <a class="en-btn en-btn--sm en-btn--violet" asp-controller="Parent" asp-action="Login">
+                                    <span class="material-symbols-outlined" aria-hidden="true">login</span>
+                                    <span>Đăng nhập</span>
+                                </a>
+                                <a class="en-btn en-btn--sm en-btn--ghost" asp-controller="Parent" asp-action="Register">Đăng ký</a>
+                            </div>
                         }
-                    </ul>
+                    </div>
                 </div>
             </div>
         </nav>

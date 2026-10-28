@@ -1,0 +1,78 @@
+@model MathPlayViewModel
+@{
+    ViewData["Title"] = $"{Model.Lesson.Title} - Đảo Toán Học";
+    ViewData["FocusMode"] = true;
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+<link rel="stylesheet" href="~/css/math-world.css" asp-append-version="true" />
+
+<div class="mw mw-play" id="mathPlay" data-op="@Model.Lesson.OperationKey" data-style="@Model.Lesson.Style">
+    @Html.AntiForgeryToken()
+
+    <header class="mw-play-top">
+        <a class="mw-icon-btn" asp-action="Index" asp-route-op="@Model.Lesson.OperationKey" aria-label="Về Đảo Toán Học" data-sfx="tap">
+            <span class="material-symbols-outlined">close</span>
+        </a>
+        <div class="mw-play-heading">
+            <span class="mw-play-chip"><span aria-hidden="true">@Model.Lesson.StyleEmoji</span> @Model.Lesson.StyleName · @Model.OperationName</span>
+            <h1>@Model.Lesson.Title</h1>
+        </div>
+        <button type="button" class="mw-icon-btn" id="mwSoundToggle" aria-pressed="true" aria-label="Bật/tắt âm thanh">
+            <span class="material-symbols-outlined">volume_up</span>
+        </button>
+    </header>
+
+    <ol class="mw-progress" id="mwProgress" aria-label="Tiến độ bài học"></ol>
+
+    <section class="mw-arena" id="mwStage" aria-live="polite">
+        <noscript><p class="mw-bubble">Con cần bật JavaScript để chơi Đảo Toán Học.</p></noscript>
+    </section>
+
+    <footer class="mw-guide" id="mwGuide">
+        <partial name="_MathBip" model='"mw-bip--small"' />
+        <p class="mw-bubble" id="mwGuideText">@Model.Instruction</p>
+        <div class="mw-guide-actions">
+            <button type="button" class="mw-round-btn" id="mwSpeak" aria-label="Nghe lại câu hỏi">
+                <span class="material-symbols-outlined">volume_up</span>
+            </button>
+            <button type="button" class="mw-round-btn mw-round-btn--hint" id="mwHint" aria-label="Gợi ý">
+                <span class="material-symbols-outlined">lightbulb</span>
+            </button>
+        </div>
+    </footer>
+
+    <div class="mw-start" id="mwStart" hidden>
+        <div class="mw-start-card">
+            <partial name="_MathBip" model='"mw-bip--wave"' />
+            <p class="mw-start-chip"><span aria-hidden="true">@Model.Lesson.StyleEmoji</span> @Model.Lesson.StyleName</p>
+            <h2>@Model.Lesson.Title</h2>
+            <button type="button" class="mw-start-btn" data-sfx="tap">
+                <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                Bắt đầu
+            </button>
+            <p class="mw-start-voice">
+                <span class="material-symbols-outlined" aria-hidden="true">volume_up</span>
+                @(Model.ChildProfile.EnglishVoice ? "Cô sẽ đọc bằng tiếng Anh" : "Cô sẽ đọc bằng tiếng Việt")
+            </p>
+        </div>
+    </div>
+
+    <div class="mw-finish" id="mwFinish" hidden>
+        <div class="mw-confetti" id="mwConfetti" aria-hidden="true"></div>
+        <div class="mw-finish-card" role="dialog" aria-modal="true" aria-labelledby="mwFinishTitle">
+            <partial name="_MathBip" model='"mw-bip--cheer"' />
+            <h2 id="mwFinishTitle">Hoàn thành!</h2>
+            <div class="mw-finish-stars" id="mwFinishStars" aria-label="Số sao"></div>
+            <p class="mw-finish-stats" id="mwFinishStats"></p>
+            <ul class="mw-finish-rewards" id="mwFinishRewards"></ul>
+            <div class="mw-finish-actions" id="mwFinishActions"></div>
+        </div>
+    </div>
+
+    <script type="application/json" id="mathPlayConfig">@Html.Raw(Model.ClientConfigJson)</script>
+</div>
+
+@section Scripts {
+    <script src="~/js/math-world.js" asp-append-version="true"></script>
+}

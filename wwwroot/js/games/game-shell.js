@@ -16,17 +16,14 @@ class GameShell {
         this.currentGame = null;
         this.currentLevelData = null;
 
-        // Nếu người dùng không chọn màn thủ công qua URL -> Mặc định theo tiến độ đã lưu lần trước
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.has('level')) {
-            try {
-                const saved = JSON.parse(localStorage.getItem('htl1_games_progress') || '{}');
-                const savedProgress = saved[this.gameKey];
-                if (savedProgress && savedProgress.currentLevel) {
-                    this.currentLevel = Math.max(1, Math.min(this.levels.length || 39, savedProgress.currentLevel));
-                }
-            } catch (e) {}
-        }
+        // Tiến độ lưu theo bé trên máy chủ (màn → số sao tốt nhất); màn mở đầu do máy chủ chọn (màn chưa qua đầu tiên).
+        this.levelStars = {};
+        try {
+            this.levelStars = JSON.parse(this.host.dataset.levelStars || '{}') || {};
+        } catch (e) {}
+        // Giọng đọc theo cài đặt của phụ huynh: tiếng Anh hoặc tiếng Việt, không tự trộn hai thứ tiếng.
+        this.englishVoice = this.host.dataset.englishVoice === 'true';
+        window.gameAudio?.configureLanguage?.(this.englishVoice, window.GAME_LEVELS || {});
 
         this.initDOM();
         this.initAudio();
@@ -119,13 +116,17 @@ class GameShell {
         }
 
         if (this.targetCharBadge) {
-            const target = this.currentLevelData.mathFormula ||
-                           this.currentLevelData.countIcons ||
-                           this.currentLevelData.target ||
-                           this.currentLevelData.targetWord ||
-                           this.currentLevelData.answer || '★';
+            // Đoàn tàu: nhiệm vụ là tìm toa còn thiếu nên không bao giờ hiện sẵn đáp án lên nhãn.
+            const target = this.gameKey === 'number-train'
+                ? (this.currentLevelData.countIcons || '?')
+                : this.currentLevelData.mathFormula ||
+                  this.currentLevelData.countIcons ||
+                  this.currentLevelData.target ||
+                  this.currentLevelData.targetWord || '★';
             this.targetCharBadge.textContent = target;
         }
+        const levelText = document.getElementById('shellLevelText');
+        if (levelText) levelText.textContent = String(this.currentLevel);
 
         // Cập nhật Progress Dots
         if (this.progressDots) {
@@ -165,9 +166,9 @@ class GameShell {
 
         if (this.subHint) {
             if (this.gameKey === 'gold-miner') {
-                this.subHint.textContent = `Mẹo cho bé: Màn ${this.currentLevel} - Chạm trực tiếp vào khối chữ hoặc số để đào nhé!`;
+                this.subHint.textContent = `Mẹo nhỏ: chạm thẳng vào khối chữ hoặc số để đào nhé!`;
             } else {
-                this.subHint.textContent = `Mẹo cho bé: Màn ${this.currentLevel} - Chạm vào mục tiêu để ghi điểm nhé!`;
+                this.subHint.textContent = `Mẹo nhỏ: chạm vào mục tiêu để ghi điểm nhé!`;
             }
         }
 
@@ -196,6 +197,7 @@ class GameShell {
 
     replayInstruction() {
         if (this.currentLevelData && this.currentLevelData.instruction) {
+            // playSystemVoiceOrSpeak tự đổi sang câu tiếng Anh viết sẵn khi bé dùng giọng tiếng Anh.
             window.gameAudio?.playSystemVoiceOrSpeak(this.currentLevelData.instruction);
         }
     }
@@ -207,8 +209,24 @@ class GameShell {
             this.starCounter.innerHTML = `⭐ ${this.totalStars}`;
         }
 
-        this.saveProgressLocal(this.gameKey, this.currentLevel, rewardStars);
+        const best = Math.max(Number(this.levelStars[this.currentLevel] || 0), Math.min(3, Math.max(1, rewardStars)));
+        this.levelStars[this.currentLevel] = best;
         this.saveProgressServer(this.gameKey, this.currentLevel, rewardStars);
+    }
+
+    /** Trò chơi báo đã qua màn: ghi nhận ngay ở bảng chọn màn và lưu lên máy chủ theo bé. */
+    markLevelDone(level, stars = 1) {
+        const value = Math.min(3, Math.max(1, Number(stars) || 1));
+        this.levelStars[level] = Math.max(Number(this.levelStars[level] || 0), value);
+        this.saveProgressServer(this.gameKey, level, value);
+    }
+
+    isLevelDone(level) {
+        return Number(this.levelStars[level] || 0) > 0;
+    }
+
+    starsFor(level) {
+        return Number(this.levelStars[level] || 0);
     }
 
     showLevelCompleteModal(starsWon) {
@@ -219,8 +237,8 @@ class GameShell {
         modalOverlay.innerHTML = `
             <div class="game-modal-card">
                 <div class="modal-confetti-art">${isFinalLevel ? '🏆' : '🎉'}</div>
-                <h2 class="modal-title">${isFinalLevel ? 'Chúc Mừng Bé Xuất Sắc!' : 'Hoàn Thành Màn Chơi!'}</h2>
-                <p class="modal-desc">Bé đã hoàn thành xuất sắc màn ${this.currentLevel}!</p>
+                <h2 class="modal-title">${isFinalLevel ? 'Con giỏi quá, xong hết rồi!' : 'Hoàn Thành Màn Chơi!'}</h2>
+                <p class="modal-desc">Con đã hoàn thành màn ${this.currentLevel}! ${"⭐".repeat(Math.max(1, Math.min(3, starsWon || 1)))}</p>
                 <div class="modal-actions-row">
                     <a href="/kids/games" class="modal-btn modal-btn-secondary">
                         <span class="material-symbols-outlined">home</span> Về Sảnh
@@ -256,7 +274,7 @@ class GameShell {
             <div class="game-modal-card">
                 <div class="modal-confetti-art">⏸️</div>
                 <h2 class="modal-title">Tạm Dừng Trò Chơi</h2>
-                <p class="modal-desc">Bé nghỉ tay một chút nhé!</p>
+                <p class="modal-desc">Con nghỉ tay một chút nhé!</p>
                 <div class="modal-actions-row">
                     <a href="/kids/games" class="modal-btn modal-btn-secondary">
                         <span class="material-symbols-outlined">home</span> Về Sảnh
@@ -273,22 +291,6 @@ class GameShell {
         modalOverlay.querySelector('#resumeBtn')?.addEventListener('click', () => {
             modalOverlay.remove();
         });
-    }
-
-    saveProgressLocal(gameKey, level, stars) {
-        try {
-            const raw = localStorage.getItem('htl1_games_progress') || '{}';
-            const data = JSON.parse(raw);
-            if (!data[gameKey]) {
-                data[gameKey] = { completedLevels: [], totalStars: 0, currentLevel: 1 };
-            }
-            if (!data[gameKey].completedLevels.includes(level)) {
-                data[gameKey].completedLevels.push(level);
-            }
-            data[gameKey].totalStars = (data[gameKey].totalStars || 0) + stars;
-            data[gameKey].currentLevel = level + 1;
-            localStorage.setItem('htl1_games_progress', JSON.stringify(data));
-        } catch (e) {}
     }
 
     saveProgressServer(gameKey, level, stars) {

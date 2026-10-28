@@ -1,11 +1,54 @@
 @{
     ViewData["Title"] = "Không có quyền truy cập";
+    var isParentSignedIn = User.Identity?.IsAuthenticated == true;
 }
 
-<section class="auth-panel">
-    <div class="soft-card form-card">
-        <h1>Chưa đủ quyền truy cập</h1>
-        <p>Khu vực này cần tài khoản phù hợp. Vui lòng đăng nhập lại bằng tài khoản có quyền.</p>
-        <a class="app-btn" asp-controller="Parent" asp-action="Login">Đăng nhập</a>
+<div class="en en--auth">
+    <div class="en-sky" aria-hidden="true">
+        <span class="en-cloud en-cloud--1"></span><span class="en-cloud en-cloud--2"></span><span class="en-cloud en-cloud--3"></span>
     </div>
-</section>
+
+    <div class="en-auth-shell en-auth-shell--single">
+        <section class="en-card en-auth-card">
+            <div class="en-auth-head en-auth-head--center">
+                <span class="en-auth-badge en-auth-badge--warn" aria-hidden="true"><span class="material-symbols-outlined">lock</span></span>
+                <h1>Chưa đủ quyền truy cập</h1>
+                <p>Khu vực này cần tài khoản phù hợp. Ba mẹ vui lòng đăng nhập bằng tài khoản có quyền nhé.</p>
+            </div>
+
+            @if (isParentSignedIn)
+            {
+                <div class="en-note" role="status">
+                    <span class="material-symbols-outlined" aria-hidden="true">info</span>
+                    <span>Đang đăng nhập với tài khoản <strong>@(User.Identity?.Name)</strong>.</span>
+                </div>
+            }
+
+            <div class="en-actions-stack">
+                <a class="en-btn en-btn--violet en-btn--lg en-btn--block" asp-controller="Parent" asp-action="Login">
+                    <span class="material-symbols-outlined" aria-hidden="true">@(isParentSignedIn ? "switch_account" : "login")</span>
+                    <span>@(isParentSignedIn ? "Đăng nhập tài khoản khác" : "Đăng nhập")</span>
+                </a>
+                <div class="en-actions-stack en-actions-stack--2">
+                    <a class="en-btn en-btn--ghost en-btn--block" asp-controller="Kids" asp-action="Home">
+                        <span class="material-symbols-outlined" aria-hidden="true">school</span>
+                        <span>Về Góc của bé</span>
+                    </a>
+                    <a class="en-btn en-btn--ghost en-btn--block" asp-controller="Home" asp-action="Index">
+                        <span class="material-symbols-outlined" aria-hidden="true">home</span>
+                        <span>Về trang chủ</span>
+                    </a>
+                </div>
+                @if (isParentSignedIn)
+                {
+                    <form asp-controller="Parent" asp-action="Logout" method="post" class="en-logout-form">
+                        <button type="submit" class="en-btn en-btn--logout en-btn--block">
+                            <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </form>
+                }
+            </div>
+        </section>
+    </div>
+</div>

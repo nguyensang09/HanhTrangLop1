@@ -27,6 +27,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ChildReward> ChildRewards => Set<ChildReward>();
     public DbSet<GardenItem> GardenItems => Set<GardenItem>();
     public DbSet<ChildLessonProgress> ChildLessonProgresses => Set<ChildLessonProgress>();
+    public DbSet<ChildGameProgress> ChildGameProgresses => Set<ChildGameProgress>();
     public DbSet<RewardGrant> RewardGrants => Set<RewardGrant>();
     public DbSet<ChildInventoryItem> ChildInventoryItems => Set<ChildInventoryItem>();
     public DbSet<ContentReview> ContentReviews => Set<ContentReview>();
@@ -73,6 +74,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<SkillProgress>()
             .Property(x => x.MasteryLevel)
             .HasPrecision(5, 2);
+
+        builder.Entity<ChildGameProgress>()
+            .HasIndex(x => new { x.ChildProfileId, x.ProgressEpoch, x.GameKey, x.Level })
+            .IsUnique();
+        builder.Entity<ChildGameProgress>().Property(x => x.GameKey).HasMaxLength(40);
 
         builder.Entity<ChildLessonProgress>()
             .HasIndex(x => new { x.ChildProfileId, x.LearningItemId })

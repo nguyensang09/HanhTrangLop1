@@ -1,0 +1,64 @@
+/* =========================================================================
+   QUẢN TRỊ — đồng bộ nhận diện với toàn hệ thống (cùng màu, cùng phông với Đảo Toán Học)
+   nhưng giữ phong cách gọn gàng, nghiêm túc cho công việc quản lý. Chỉ ghi đè các lớp
+   admin-* có sẵn trong site.css, không đổi bố cục hay chức năng.
+   ========================================================================= */
+
+.admin-layout {
+    --ad-ink: #1f1b4d;
+    --ad-ink-soft: #5b5793;
+    --ad-violet: #7c5cff;
+    --ad-violet-deep: #5b45d6;
+    --ad-violet-soft: #efeaff;
+    --ad-line: rgba(31, 27, 77, .10);
+    --ad-display: 'Baloo 2', 'Be Vietnam Pro', system-ui, sans-serif;
+}
+
+/* Thanh bên */
+.admin-side {
+    background: linear-gradient(180deg, #f7f5ff 0%, #f8fafc 60%);
+    border-right-color: var(--ad-line);
+}
+.admin-brand-name { font-family: var(--ad-display); color: var(--ad-ink); font-size: 1.15rem; }
+.admin-brand-role { color: var(--ad-ink-soft); }
+.admin-side a {
+    min-height: 44px;
+    color: var(--ad-ink);
+}
+.admin-side a.active {
+    background: var(--ad-violet);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--ad-violet-deep), 0 8px 18px rgba(124, 92, 255, .25);
+}
+@media (hover: hover) {
+    .admin-side a:hover { background: var(--ad-violet-soft); color: var(--ad-violet-deep); }
+    .admin-side a.active:hover { background: var(--ad-violet); color: #fff; }
+}
+
+/* Thanh trên */
+.admin-heading-title {
+    font-family: var(--ad-display);
+    color: var(--ad-ink);
+    letter-spacing: 0;
+}
+.admin-subheading { color: var(--ad-violet-deep); }
+.admin-switch-btn,
+.admin-logout-btn,
+.admin-mobile-hamburger-btn {
+    min-height: 44px;
+}
+
+/* Tiêu điểm bàn phím rõ ràng trên mọi nút và liên kết quản trị */
+.admin-layout :focus-visible {
+    outline: 3px solid var(--ad-violet);
+    outline-offset: 2px;
+}
+
+/* Bảng dữ liệu dài không làm tràn trang trên iPad dọc */
+.admin-main .table-responsive,
+.admin-main table { max-width: 100%; }
+.admin-main { min-width: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-layout, .admin-side, .admin-side a { transition: none; }
+}

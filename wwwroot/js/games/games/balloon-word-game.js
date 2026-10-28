@@ -106,7 +106,7 @@ class BalloonWordGame {
 
                         <div class="miner-target-body">
                             <span class="miner-target-sublabel">MỤC TIÊU: GHÉP TỪ</span>
-                            <div class="miner-target-big-badge" id="hudTargetChar" title="Bé chạm vào đây để nghe phát âm nhé!" style="width: auto; padding: 0 18px; font-size: 2.2rem; gap: 8px;">
+                            <div class="miner-target-big-badge" id="hudTargetChar" title="Con chạm vào đây để nghe phát âm nhé!" style="width: auto; padding: 0 18px; font-size: 2.2rem; gap: 8px;">
                                 <span>${targetWord}</span>
                                 ${emoji ? `<span style="font-size: 1.8rem;">${emoji}</span>` : ''}
                             </div>
@@ -241,7 +241,7 @@ class BalloonWordGame {
         container.innerHTML = levels.map(lvl => {
             const isCurrent = lvl.level === curLevel;
             return `
-                <button type="button" class="alphabet-item-btn ${isCurrent ? 'is-active' : ''}" data-jump-level="${lvl.level}">
+                <button type="button" class="alphabet-item-btn ${isCurrent ? 'is-active' : ''} ${window.gameShell?.isLevelDone?.(lvl.level) ? 'is-done' : ''}" data-stars="${'⭐'.repeat(window.gameShell?.starsFor?.(lvl.level) || 0)}" data-jump-level="${lvl.level}">
                     <span class="alphabet-char">${lvl.targetWord}</span>
                     <span class="alphabet-sub">${lvl.emoji || `Màn ${lvl.level}`}</span>
                 </button>
@@ -441,8 +441,7 @@ class BalloonWordGame {
             }
 
             const levelNum = this.currentLevelData?.level || 1;
-            this.shell?.saveProgressLocal('balloon-word', levelNum, 1);
-            this.shell?.saveProgressServer('balloon-word', levelNum, 1);
+            this.shell?.markLevelDone?.(levelNum, 1);
 
             const nextLvl = levelNum + 1;
             this.saveCurrentLevelProgress(nextLvl);

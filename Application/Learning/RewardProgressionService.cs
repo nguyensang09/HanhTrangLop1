@@ -54,6 +54,8 @@ public sealed class RewardProgressionService
         progress.LatestStatus = latestStatus;
         progress.BestStars = Math.Max(progress.BestStars, isCompleted ? Math.Clamp(stars, 0, 3) : 0);
         if (isFirstCompletion) progress.FirstCompletedAt = now;
+        // Hoàn thành (kể cả khi học lại) là xong bài này trên lộ trình hiện tại, mở bài kế tiếp.
+        if (isCompleted) progress.PathCompletedAt ??= now;
 
         var completedBefore = await _db.ChildLessonProgresses
             .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch &&

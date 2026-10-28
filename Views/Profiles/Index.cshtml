@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Chọn hồ sơ của bé";
     ViewData["FocusMode"] = true; // Ẩn navbar người lớn khi chọn bé vào học
+    var isParentSignedIn = User.Identity?.IsAuthenticated == true;
 
     string ResolveAvatar(string? key)
     {
@@ -19,111 +20,153 @@
     }
 }
 
-<section class="kid-screen kid-profiles-screen profile-picker-shell">
-    <!-- Topbar điều hướng sinh động -->
-    <div class="kid-topbar profile-picker-header">
-        <a class="learning-back-btn clay-button" asp-controller="Kids" asp-action="Home" title="Về Góc của bé">
-            <span class="material-symbols-outlined">arrow_back</span>
+<div class="en en--picker">
+    <div class="en-sky" aria-hidden="true">
+        <span class="en-cloud en-cloud--1"></span><span class="en-cloud en-cloud--2"></span><span class="en-cloud en-cloud--3"></span>
+    </div>
+
+    <header class="en-topbar">
+        <a class="en-pill" asp-controller="Kids" asp-action="Home" aria-label="Về Góc của bé" title="Về Góc của bé">
+            <span class="material-symbols-outlined" aria-hidden="true">home</span><span class="en-hide-sm">Góc của bé</span>
         </a>
-        <div class="kid-topbar-title-wrap">
-            <p class="eyebrow" style="color:#ea580c; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Ai sẽ học hôm nay?</p>
-            <h1 style="font-size:26px; font-weight:900; color:#0f172a; margin:0;">Chọn bạn nhỏ vào học 👦👧</h1>
+        <div class="en-topbar-brand">
+            <span aria-hidden="true">🎒</span>
+            <span>Hành Trang Lớp 1</span>
         </div>
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (isParentSignedIn)
         {
-            <a class="app-btn clay-button add-child-btn" asp-controller="Parent" asp-action="CreateProfile" title="Thêm hồ sơ bé mới">
-                <span class="material-symbols-outlined">person_add</span>
-                <span class="d-none d-sm-inline">Thêm bé</span>
+            <a class="en-pill en-pill--violet" asp-controller="Parent" asp-action="CreateProfile" aria-label="Thêm hồ sơ bé mới" title="Thêm hồ sơ bé mới">
+                <span class="material-symbols-outlined" aria-hidden="true">person_add</span><span class="en-hide-sm">Thêm bé</span>
             </a>
         }
         else
         {
-            <div></div>
+            <span class="en-topbar-spacer" aria-hidden="true"></span>
         }
-    </div>
+    </header>
 
-    @if (User.Identity?.IsAuthenticated != true)
-    {
-        <div class="soft-card guest-notice-card mt-3">
-            <div class="guest-notice-body">
-                <div class="guest-icon-wrap">
-                    <span class="material-symbols-outlined guest-icon">family_restroom</span>
-                </div>
-                <div>
-                    <h2>Góc học tập cá nhân hóa cho bé</h2>
-                    <p>Phụ huynh đăng nhập hoặc đăng ký tài khoản miễn phí để lưu lại tiến độ học tập, huy hiệu và tùy chỉnh thời lượng học cho từng bé.</p>
-                </div>
-            </div>
-            <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
-                <a class="app-btn clay-button" asp-controller="Parent" asp-action="Register">Đăng ký tài khoản</a>
-                <a class="app-btn app-btn-muted clay-button" asp-controller="Parent" asp-action="Login">Đăng nhập</a>
-            </div>
+    <section class="en-picker-hero">
+        <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" />
+        <div class="en-bubble">
+            <small>Ai sẽ học hôm nay?</small>
+            <h1>Chạm vào bạn nhỏ để vào học nhé!</h1>
         </div>
+    </section>
+
+    @if (!isParentSignedIn)
+    {
+        <section class="en-card en-notice" aria-labelledby="enGuestTitle">
+            <span class="en-parent-strip-icon" aria-hidden="true"><span class="material-symbols-outlined">family_restroom</span></span>
+            <div>
+                <h2 id="enGuestTitle">Dành cho ba mẹ</h2>
+                <p>Đăng nhập hoặc đăng ký miễn phí để lưu tiến độ, huy hiệu và chỉnh thời lượng học cho từng bé.</p>
+            </div>
+            <div class="en-notice-actions">
+                <a class="en-btn en-btn--violet" asp-controller="Parent" asp-action="Login">
+                    <span class="material-symbols-outlined" aria-hidden="true">login</span>
+                    <span>Đăng nhập</span>
+                </a>
+                <a class="en-btn en-btn--ghost" asp-controller="Parent" asp-action="Register">
+                    <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                    <span>Đăng ký</span>
+                </a>
+            </div>
+        </section>
     }
 
     @if (!Model.Children.Any())
     {
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <div class="soft-card clay-card empty-state text-center p-5 mt-4">
-                <img src="~/images/soc-nau-mascot.png" alt="Sóc Nâu" class="empty-mascot-img mb-3" style="width:120px; height:120px; object-fit:contain;" />
-                <h2 style="font-size:24px; font-weight:800; color:#0f172a;">Chưa có hồ sơ bé nào</h2>
-                <p style="color:#64748b; font-size:16px;">Tạo hồ sơ cho bé để Sóc Nâu sắp xếp lộ trình bài học phù hợp mỗi ngày.</p>
-                <a class="dash-btn dash-btn-primary mt-3" asp-controller="Parent" asp-action="CreateProfile" style="display:inline-flex; align-items:center; gap:8px; padding:12px 24px; font-size:16px;">
-                    <span class="material-symbols-outlined">add_circle</span>
+        <section class="en-card en-empty">
+            <img src="~/images/mascot-squirrel-3d.png" alt="" />
+            <h2>Chưa có hồ sơ bé nào</h2>
+            @if (isParentSignedIn)
+            {
+                <p>Tạo hồ sơ cho bé để Sóc Nâu sắp xếp lộ trình bài học phù hợp mỗi ngày.</p>
+                <a class="en-btn en-btn--primary en-btn--lg" asp-controller="Parent" asp-action="CreateProfile">
+                    <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
                     <span>Tạo hồ sơ bé đầu tiên</span>
                 </a>
-            </div>
-        }
+            }
+            else
+            {
+                <p>Ba mẹ đăng ký tài khoản để tạo hồ sơ riêng cho bé nhé.</p>
+                <a class="en-btn en-btn--primary en-btn--lg" asp-controller="Kids" asp-action="Home">
+                    <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                    <span>Vào học thử</span>
+                </a>
+            }
+        </section>
     }
     else
     {
-        <!-- Danh sách thẻ hồ sơ các bé với Avatar 3D to rõ -->
-        <div class="profile-picker-grid mt-4">
+        <div class="en-kid-grid">
             @foreach (var child in Model.Children)
             {
                 var isSelected = Model.SelectedChildProfileId == child.Id;
-                <form asp-action="Select" method="post" class="profile-picker-form">
+                <form asp-action="Select" method="post" class="en-kid-form">
                     <input type="hidden" name="childProfileId" value="@child.Id" />
-                    <button type="submit" class="profile-picker-card @(isSelected ? "is-selected" : "")" title="Chọn bé @child.Nickname để vào học">
+                    <button type="submit" class="en-kid-card @(isSelected ? "is-selected" : "")" title="Chọn bé @child.Nickname để vào học">
                         @if (isSelected)
                         {
-                            <span class="profile-badge-active">
-                                <span class="material-symbols-outlined">check_circle</span>
+                            <span class="en-kid-badge">
+                                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                                 <span>Đang học</span>
                             </span>
                         }
-
-                        <div class="profile-avatar-frame">
-                            <img src="@ResolveAvatar(child.AvatarKey)" alt="@child.Nickname" class="profile-avatar-3d-img" />
-                        </div>
-
-                        <div class="profile-card-details">
-                            <strong class="profile-child-name">@child.Nickname</strong>
-                            <div class="profile-meta-chips">
-                                <span class="meta-chip-item">
-                                    <span class="material-symbols-outlined">timer</span>
-                                    @(child.DailyLearningMinutes)p/ngày
-                                </span>
-                                @if (child.BirthYear.HasValue)
-                                {
-                                    <span class="meta-chip-item">
-                                        <span class="material-symbols-outlined">cake</span>
-                                        @child.BirthYear
-                                    </span>
-                                }
-                            </div>
-                        </div>
-
-                        <div class="profile-cta-footer">
-                            <span class="profile-action-text @(isSelected ? "text-active" : "")">
-                                <span class="material-symbols-outlined">play_circle</span>
-                                @(isSelected ? "Tiếp tục học ngay" : "Chọn bạn nhỏ này")
-                            </span>
-                        </div>
+                        <span class="en-kid-avatar">
+                            <img src="@ResolveAvatar(child.AvatarKey)" alt="" />
+                        </span>
+                        <span class="en-kid-name">@child.Nickname</span>
+                        <span class="en-kid-meta">
+                            <span><span class="material-symbols-outlined" aria-hidden="true">timer</span>@(child.DailyLearningMinutes) phút/ngày</span>
+                            @if (child.BirthYear.HasValue)
+                            {
+                                <span><span class="material-symbols-outlined" aria-hidden="true">cake</span>@child.BirthYear</span>
+                            }
+                        </span>
+                        <span class="en-kid-go">
+                            <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                            @(isSelected ? "Học tiếp" : "Vào học")
+                        </span>
                     </button>
                 </form>
             }
+
+            @if (isParentSignedIn)
+            {
+                <a class="en-kid-card en-kid-card--add" asp-controller="Parent" asp-action="CreateProfile" title="Thêm hồ sơ bé mới">
+                    <span class="en-kid-add-orb" aria-hidden="true"><span class="material-symbols-outlined">add</span></span>
+                    <span class="en-kid-name">Thêm bé</span>
+                    <small>Dành cho ba mẹ</small>
+                </a>
+            }
         </div>
     }
-</section>
+
+    @if (isParentSignedIn)
+    {
+        <section class="en-parent-bar" aria-label="Tài khoản phụ huynh">
+            <div class="en-parent-bar-who">
+                <span class="en-chip-icon material-symbols-outlined" aria-hidden="true">account_circle</span>
+                <span>Tài khoản: <strong>@(User.Identity?.Name)</strong></span>
+            </div>
+            <div class="en-parent-bar-actions">
+                <a class="en-btn en-btn--sm en-btn--ghost" asp-controller="Parent" asp-action="Dashboard">
+                    <span class="material-symbols-outlined" aria-hidden="true">family_restroom</span>
+                    <span>Góc phụ huynh</span>
+                </a>
+                <a class="en-btn en-btn--sm en-btn--ghost" asp-controller="Parent" asp-action="Login" title="Đăng nhập bằng tài khoản phụ huynh khác">
+                    <span class="material-symbols-outlined" aria-hidden="true">switch_account</span>
+                    <span>Đổi tài khoản</span>
+                </a>
+                <form asp-controller="Parent" asp-action="Logout" method="post" class="en-logout-form"
+                      onsubmit="return confirm('Ba mẹ muốn đăng xuất khỏi tài khoản này?');">
+                    <button type="submit" class="en-btn en-btn--sm en-btn--logout en-btn--block">
+                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+    }
+</div>
