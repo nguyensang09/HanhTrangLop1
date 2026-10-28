@@ -602,6 +602,7 @@
     cursor: pointer;
     box-shadow: 0 6px 0 var(--sw-accent-deep), 0 14px 28px rgba(31, 27, 77, .25);
 }
+.sw-fab, .sw-fab:visited, .sw-fab:hover { color: #fff; text-decoration: none; }
 .sw-fab:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--sw-accent-deep); }
 
 .sw-toast {

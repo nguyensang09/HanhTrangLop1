@@ -320,7 +320,7 @@
                                         var chestMsg = remain > 0
                                             ? $"Con học thêm {remain} bài nữa để mở rương quà này nhé! 🎁"
                                             : "Rương quà sắp mở rồi, con học tiếp nhé! 🎁";
-                                        <button type="button" class="sw-chest" data-sw-locked data-msg="@chestMsg" aria-label="Rương quà mốc @value bài, chưa mở">
+                                        <button type="button" class="sw-chest" data-sw-locked="true" data-msg="@chestMsg" aria-label="Rương quà mốc @value bài, chưa mở">
                                             <span class="sw-chest-icon" aria-hidden="true">🎁<i class="sw-chest-lock">🔒</i></span>
                                             <span class="sw-chest-label">@(toward)/@(perMilestone) bài</span>
                                             <span class="sw-chest-sub">Rương mốc @value</span>
@@ -405,10 +405,11 @@
 
         @if (currentIndex >= 0)
         {
-            <button type="button" class="sw-fab" data-sw-goto-current aria-label="Tới bài con đang học">
-                <span class="material-symbols-outlined" aria-hidden="true">my_location</span>
+            @* Nút nổi luôn mở thẳng bài đang học (bé chạm là học, không chỉ cuộn tới bài). *@
+            <a class="sw-fab" href="@currentUrl" data-sfx="start" aria-label="Học bài con đang học: @(items[currentIndex].Item.Title)">
+                <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
                 <span class="sw-fab-text">Bài đang học</span>
-            </button>
+            </a>
         }
     }
 
@@ -547,24 +548,19 @@
 
             root.addEventListener('click', function (ev) {
                 if (replaySheet && replaySheet.contains(ev.target)) return;
-                var replay = ev.target.closest('[data-sw-replay]');
+                var replay = ev.target.closest('[data-sw-replay]:not([data-sw-replay=""])');
                 if (replay && root.contains(replay)) {
                     ev.preventDefault();
                     chime('tap');
                     openReplay(replay);
                     return;
                 }
-                var locked = ev.target.closest('[data-sw-locked]');
+                var locked = ev.target.closest('[data-sw-locked="true"]');
                 if (locked && root.contains(locked)) {
                     ev.preventDefault();
                     chime('locked');
                     shake(locked);
                     showToast(locked.getAttribute('data-msg') || 'Con học xong các bài trước nhé! 💛');
-                    return;
-                }
-                if (ev.target.closest('[data-sw-goto-current]')) {
-                    var cur = document.getElementById('sw-current');
-                    if (cur) { chime('tap'); bringIntoView(cur, true, true); spotlight(cur); }
                     return;
                 }
                 if (ev.target.closest('[data-sw-goto-chest]')) {
@@ -579,7 +575,7 @@
             // Bàn phím: trạm đang khóa có role="button" nên Enter/Space cũng báo nhắc nhở.
             root.addEventListener('keydown', function (ev) {
                 if (ev.key !== 'Enter' && ev.key !== ' ') return;
-                var locked = ev.target.closest && ev.target.closest('a[data-sw-locked]');
+                var locked = ev.target.closest && ev.target.closest('a[data-sw-locked="true"]');
                 if (locked) { ev.preventDefault(); locked.click(); }
             });
 
