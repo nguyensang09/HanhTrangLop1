@@ -24,7 +24,6 @@
     }
 
     const isEnglishVoice = host.dataset.englishVoice === "true";
-    const speechLang = isEnglishVoice ? "en-US" : "vi-VN";
     const activityType = host.dataset.activityType || "";
 
     let payload = {};
@@ -93,47 +92,6 @@
         host.querySelectorAll("[data-learning-replay]").forEach((btn) => btn.classList.toggle("is-playing", speaking));
     };
 
-    let browserVoice = null;
-    const pickBrowserVoice = () => {
-        const prefix = isEnglishVoice ? "en" : "vi";
-        const voices = (window.speechSynthesis?.getVoices?.() || []).filter((v) => (v.lang || "").toLowerCase().startsWith(prefix));
-        browserVoice = voices.find((v) => /female|nữ|samantha|linh|hoaimy|jenny|aria/i.test(v.name)) || voices[0] || null;
-    };
-    if ("speechSynthesis" in window) {
-        pickBrowserVoice();
-        window.speechSynthesis.addEventListener?.("voiceschanged", pickBrowserVoice);
-    }
-
-    // Đọc bằng giọng của thiết bị khi file Voice chưa có (đang được máy chủ sinh bổ sung). Chỉ dùng giọng ĐÚNG
-    // ngôn ngữ cấu hình; thiết bị không có giọng đó thì im lặng còn hơn đọc sai ngôn ngữ.
-    const speakText = (text, myToken) => new Promise((resolve) => {
-        if (!text || myToken !== token || !("speechSynthesis" in window)) { resolve(false); return; }
-        if (!browserVoice) pickBrowserVoice();
-        if (!browserVoice) { resolve(false); return; }
-        let done = false;
-        const finish = (ok) => {
-            if (done) return;
-            done = true;
-            if (cutCurrent === cut) cutCurrent = null;
-            resolve(ok);
-        };
-        const cut = () => { window.speechSynthesis.cancel(); finish(false); };
-        cutCurrent = cut;
-        try {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = speechLang;
-            utterance.voice = browserVoice;
-            utterance.rate = isEnglishVoice ? 0.9 : 0.95;
-            utterance.onend = () => finish(true);
-            utterance.onerror = () => finish(false);
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-            window.setTimeout(() => finish(true), 12000);
-        } catch {
-            finish(false);
-        }
-    });
-
     // Kết thúc khi file đọc xong. Trả về false nếu lỗi hoặc trình duyệt chặn tự phát (chưa có lần chạm nào).
     const playFile = (url, myToken) => new Promise((resolve) => {
         if (!url || myToken !== token) { resolve(false); return; }
@@ -172,12 +130,11 @@
         }
     });
 
-    // Một câu cần đọc: { url, text }. Có file thì phát file; file lỗi/thiếu thì đọc văn bản bằng giọng thiết bị.
+    // Chỉ phát file trong kho Voice chung để mọi bài cùng một giọng; câu chưa có file thì im lặng và chờ máy chủ sinh,
+    // không đọc bằng giọng máy của thiết bị.
     const playClip = async (clip, myToken) => {
-        if (!clip || myToken !== token) return false;
-        if (clip.url && await playFile(clip.url, myToken)) return true;
-        if (myToken !== token || autoplayBlocked) return false;
-        return speakText(clip.text, myToken);
+        if (!clip?.url || myToken !== token) return false;
+        return playFile(clip.url, myToken);
     };
 
     const stop = () => {
@@ -185,7 +142,6 @@
         if (cutCurrent) cutCurrent();
         cutCurrent = null;
         try { player.pause(); } catch { }
-        window.speechSynthesis?.cancel?.();
         setSpeaking(false);
     };
 
@@ -194,7 +150,7 @@
         stop();
         currentKind = kind;
         const myToken = token;
-        const list = clips.filter((clip) => clip && (clip.url || clip.text));
+        const list = clips.filter((clip) => clip?.url);
         if (!list.length) return Promise.resolve(false);
         setSpeaking(true);
         let played = false;
@@ -297,7 +253,7 @@
         const url = (typeof result === "object" && result?.audioUrl) || (correct ? voiceUrls.correct : voiceUrls.retry);
         const myToken = token;
         // Chỉ chờ Voice đáp án; câu hỏi còn đang đọc thì cắt luôn để đọc kết quả.
-        if (currentKind === "option") await Promise.race([current, new Promise((resolve) => window.setTimeout(resolve, 2500))]);
+        if (currentKind === "option") await Promise.race([current, new Promise((resolve) => window.setTimeout(resolve, 1000))]);
         if (myToken !== token) return false; // Bé đã thao tác khác trong lúc chờ: không đọc phản hồi cũ.
         const text = !isEnglishVoice && typeof result === "object" && result?.message
             ? result.message
@@ -339,8 +295,8 @@
     const startIntro = async () => {
         if (!introPending) return;
         if (!voiceUrls.question && !resultState) {
-            // Chưa có file câu hỏi: chờ máy chủ sinh tối đa 3 giây, quá thì đọc bằng giọng thiết bị để bé không phải đợi.
-            await Promise.race([ensureVoices(), new Promise((resolve) => window.setTimeout(resolve, 3000))]);
+            // Chưa có file câu hỏi: chờ máy chủ sinh rồi đọc đúng giọng chung; quá lâu thì bé vẫn làm bài được, chạm nút nghe sau.
+            await Promise.race([ensureVoices(), new Promise((resolve) => window.setTimeout(resolve, 8000))]);
             if (!introPending) return;
         }
         introPending = false;

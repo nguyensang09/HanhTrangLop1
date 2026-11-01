@@ -1,4 +1,6 @@
 @model KidsRewardsViewModel
+@using HanhTrangLop1.Application.Learning
+@inject KidsModuleService Modules
 @{
     ViewData["Title"] = "Kho Quà & Thành Tích Của Bé";
     var earnedCount = Model.Badges.Count(x => x.IsEarned);
@@ -408,14 +410,20 @@
             <span class="material-symbols-outlined" aria-hidden="true">home</span>
             <span>Trang chủ</span>
         </a>
-        <a asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')">
-            <span class="material-symbols-outlined" aria-hidden="true">map</span>
-            <span>Bài tập</span>
-        </a>
-        <a class="active" asp-controller="Kids" asp-action="Rewards" aria-current="page">
-            <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
-            <span>Quà tặng</span>
-        </a>
+        @if (await Modules.IsVisibleAsync(KidsModuleKeys.Today))
+        {
+            <a asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')">
+                <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                <span>Bài tập</span>
+            </a>
+        }
+        @if (await Modules.IsVisibleAsync(KidsModuleKeys.Rewards))
+        {
+            <a class="active" asp-controller="Kids" asp-action="Rewards" aria-current="page">
+                <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
+                <span>Quà tặng</span>
+            </a>
+        }
         <a href="#" onclick="openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
             <span class="material-symbols-outlined" aria-hidden="true">lock</span>
             <span>Phụ huynh</span>

@@ -58,7 +58,7 @@ public static class LessonBankSeeder
                 continue;
             }
 
-            if (ReadBankVersion(item.ContentJson) >= LessonBank.Version)
+            if (ReadBankVersion(item.ContentJson) >= (lesson.Payload["bankVersion"]?.GetValue<int>() ?? LessonBank.Version))
             {
                 kept++;
                 continue;

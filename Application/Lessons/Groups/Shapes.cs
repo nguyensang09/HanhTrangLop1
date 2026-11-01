@@ -103,7 +103,7 @@ public static partial class LessonBank
         {
             var low = x.Item3.ToLowerInvariant();
             g.CompareShapes($"shape-{x.Item1}-large", $"{x.Item3} nào to hơn?",
-                new Say($"Con chạm vào {low} to hơn nhé!", $"Tap the bigger {x.Item4}!"), "🔍", x.Item2, x.Item3, 132, 72, "more");
+                new Say($"Con chạm vào {low} to hơn nhé!", $"Tap the bigger {x.Item4}!"), "🔍", x.Item2, x.Item3, 72, 132, "more");
             g.CompareShapes($"shape-{x.Item1}-small", $"{x.Item3} nào nhỏ hơn?",
                 new Say($"Còn bây giờ, con chạm vào {low} nhỏ hơn nhé!", $"Now tap the smaller {x.Item4}!"), "🔎", x.Item2, x.Item3, 80, 138, "less");
         }
@@ -181,7 +181,7 @@ public static partial class Lexicon
         Không tròn | 🔷 | not round
         Ba góc | 🔺 | three corners
         Bốn góc | 🟧 | four corners
-        Mái nhà | 🏠 | the roof
+        Mái nhà | 🧱 | the roof
         Bánh xe ô tô | 🛞 | the car wheels
         Cửa sổ | 🪟 | the window
         """;

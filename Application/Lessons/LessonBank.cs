@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using HanhTrangLop1.Application.MathWorld;
+using HanhTrangLop1.Data;
 using HanhTrangLop1.Models;
 
 namespace HanhTrangLop1.Application.Lessons;
@@ -40,8 +41,11 @@ public static partial class LessonBank
 {
     public const string CodePrefix = "curriculum-v4-";
 
-    /// <summary>Tăng khi nội dung kho thay đổi; bài có phiên bản cũ hơn sẽ được nâng cấp khi khởi động.</summary>
+    /// <summary>Phiên bản gốc của kho. Nhóm nào đổi nội dung thì đặt <see cref="LessonGroupBuilder.Version"/> cao hơn: chỉ bài của nhóm đó được nâng cấp khi khởi động.</summary>
     public const int Version = 1;
+
+    /// <summary>Lần sửa nội dung gần nhất áp dụng cho toàn kho: tăng khi sửa dữ liệu ở nhiều nhóm một lúc.</summary>
+    public const int ContentRevision = 5;
 
     private static readonly Lazy<IReadOnlyList<BankLesson>> LazyAll = new(Build);
     public static IReadOnlyList<BankLesson> All => LazyAll.Value;
@@ -49,16 +53,25 @@ public static partial class LessonBank
     private static IReadOnlyList<BankLesson> Build()
     {
         var lessons = new List<BankLesson>();
-        AddLetters(new LessonGroupBuilder("chu-cai", lessons));
-        AddNumbers(new LessonGroupBuilder("chu-so", lessons));
-        AddQuantity(new LessonGroupBuilder("so-luong-toan", lessons));
-        AddLogic(new LessonGroupBuilder("tu-duy-logic", lessons));
-        AddLifeSkills(new LessonGroupBuilder("ky-nang-song", lessons));
-        AddLanguage(new LessonGroupBuilder("ngon-ngu", lessons));
-        AddShapes(new LessonGroupBuilder("hinh-dang-khong-gian", lessons));
-        AddMemory(new LessonGroupBuilder("ghi-nho-tap-trung", lessons));
-        AddMotor(new LessonGroupBuilder("van-dong-tinh", lessons));
-        AddWorld(new LessonGroupBuilder("kham-pha", lessons));
+        // Bài ôn tập luôn thêm sau bài cũ của nhóm để không đổi thứ tự đường học của bé.
+        void Group(string code, Action<LessonGroupBuilder> add, Action<LessonGroupBuilder> practice)
+        {
+            var builder = new LessonGroupBuilder(code, lessons);
+            add(builder);
+            builder.Version = ContentRevision;
+            practice(builder);
+        }
+
+        Group("chu-cai", AddLetters, AddLetterPractice);
+        Group("chu-so", AddNumbers, AddNumberPractice);
+        Group("so-luong-toan", AddQuantity, AddQuantityPractice);
+        Group("tu-duy-logic", AddLogic, AddLogicPractice);
+        Group("ky-nang-song", AddLifeSkills, AddLifePractice);
+        Group("ngon-ngu", AddLanguage, AddLanguagePractice);
+        Group("hinh-dang-khong-gian", AddShapes, AddShapePractice);
+        Group("ghi-nho-tap-trung", AddMemory, AddMemoryPractice);
+        Group("van-dong-tinh", AddMotor, AddMotorPractice);
+        Group("kham-pha", AddWorld, AddWorldPractice);
         Validate(lessons);
         return lessons;
     }
@@ -67,6 +80,10 @@ public static partial class LessonBank
     {
         var duplicates = lessons.GroupBy(x => x.Code).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
         if (duplicates.Count > 0) throw new InvalidOperationException($"Kho bài học bị trùng mã: {string.Join(", ", duplicates)}");
+
+        // Bài có dạng không được phép trong nhóm sẽ không hiện với bé: báo ngay khi khởi động thay vì để bài mất tích.
+        var blocked = lessons.Where(x => !ActivityTemplateCatalog.IsAllowedForSkillGroup(x.Group, x.Type)).Select(x => $"{x.Code} ({x.Type})").ToList();
+        if (blocked.Count > 0) throw new InvalidOperationException($"Dạng bài chưa được phép trong nhóm: {string.Join(", ", blocked.Take(20))}");
 
         // Cùng một câu tiếng Việt phải luôn có cùng một bản đọc tiếng Anh, vì kho Voice dùng chung theo câu tiếng Việt.
         var speech = new Dictionary<string, (string En, string Code)>(StringComparer.OrdinalIgnoreCase);
@@ -114,6 +131,8 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
     public string? Topic { get; set; }
     /// <summary>Tên chặng hiển thị trên bản đồ cho các bài thêm sau đó.</summary>
     public string Stage { get; set; } = string.Empty;
+    /// <summary>Phiên bản nội dung ghi vào các bài thêm sau đó.</summary>
+    public int Version { get; set; } = LessonBank.ContentRevision;
 
     private static readonly Say[] DefaultRetry =
     [
@@ -123,17 +142,39 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
     ];
 
     public void Pick(string slug, string title, Say prompt, string icon, string[] choices, string answer,
-        string[]? scene = null, string? focus = null, Say? retry = null, string? image = null, string type = InteractionTypes.SingleChoice, Say? spoken = null)
+        string[]? scene = null, string? focus = null, Say? retry = null, string? image = null, string type = InteractionTypes.SingleChoice, Say? spoken = null, string? target = null)
     {
         Require(choices.Contains(answer, StringComparer.Ordinal), slug, "đáp án không nằm trong lựa chọn");
         var payload = new JsonObject { ["choices"] = Strings(choices), ["targetLabel"] = "" };
         if (focus is not null) payload["focusVisual"] = focus;
+        // Hình mẫu bé nhìn thấy: trẻ chưa biết đọc chỉ cần so hình dáng, không phải nhớ tên hay phân biệt bằng tai.
+        if (target is not null) payload["playTarget"] = target;
         Add(slug, type, title, prompt, icon, payload, answer, retry, choices, scene, image,
             type == InteractionTypes.ListenAndChoose ? "Con nghe cô đọc rồi chạm vào đáp án đúng." : "Con nhìn hình rồi chạm vào đáp án đúng.", spoken: spoken);
     }
 
-    public void Listen(string slug, string title, Say prompt, string icon, string[] choices, string answer, Say? spoken = null, string[]? scene = null, Say? retry = null) =>
-        Pick(slug, title, prompt, icon, choices, answer, scene, null, retry, null, InteractionTypes.ListenAndChoose, spoken);
+    public void Listen(string slug, string title, Say prompt, string icon, string[] choices, string answer, Say? spoken = null, string[]? scene = null, Say? retry = null, string? target = null) =>
+        Pick(slug, title, prompt, icon, choices, answer, scene, null, retry, null, InteractionTypes.ListenAndChoose, spoken, target);
+
+    /// <summary>
+    /// Làm quen chữ qua tranh: tranh và từ có chữ cái được tô màu, bé kéo chữ giống hệt vào ô có mờ sẵn hình chữ.
+    /// Thay cho câu "âm đầu là gì", vốn đòi trẻ phải tách được âm khi chưa biết đọc.
+    /// </summary>
+    public void Word(string slug, string title, Say prompt, string icon, string[] choices, string answer, string picture, string word, Say? retry = null)
+    {
+        Require(choices.Contains(answer, StringComparer.Ordinal), slug, "đáp án không nằm trong lựa chọn");
+        var payload = new JsonObject
+        {
+            ["choices"] = Strings(choices),
+            ["targetLabel"] = "",
+            ["play"] = "word",
+            ["playTarget"] = answer,
+            ["wordPicture"] = picture,
+            ["wordText"] = word
+        };
+        Add(slug, InteractionTypes.SingleChoice, title, prompt, icon, payload, answer, retry, choices, null, null,
+            "Con kéo chữ giống hệt vào ô, hoặc chạm vào chữ đó là được.");
+    }
 
     public void Multi(string slug, string title, Say prompt, string icon, string[] choices, string[] answers, string[]? scene = null, Say? retry = null)
     {
@@ -161,9 +202,11 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
             pairs.SelectMany(p => new[] { p.Left, p.Right }), null, null, "Con chạm một hình bên trái rồi chạm hình hợp với nó bên phải.");
     }
 
-    public void Order(string slug, string title, Say prompt, string icon, string[] items, string[]? scene = null, Say? retry = null)
+    /// <param name="example">Dãy mẫu đã xếp đúng chiều (số khác với bài) để bé hình dung được dãy số cần xếp.</param>
+    public void Order(string slug, string title, Say prompt, string icon, string[] items, string[]? scene = null, Say? retry = null, string[]? example = null)
     {
         var payload = new JsonObject { ["items"] = Strings(items) };
+        if (example is not null) payload["orderExample"] = Strings(example);
         Add(slug, InteractionTypes.Ordering, title, prompt, icon, payload, string.Join('|', items), retry, items, scene, null,
             "Con chạm lần lượt từng thẻ theo đúng thứ tự.");
     }
@@ -191,7 +234,7 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
             ["visualMode"] = "symbols-only"
         };
         Add(slug, InteractionTypes.Counting, title, prompt, icon, payload, count.ToString(), retry, choices, null, null,
-            "Con chạm vào từng hình để đếm, rồi chọn số đúng.");
+            "Con chạm vào từng hình để đếm, rồi chọn số đúng.", extraSpeech: CountingSpeech(count));
     }
 
     public void Build(string slug, string title, Say prompt, string icon, string emoji, int count, Say? retry = null)
@@ -206,7 +249,7 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
             ["targetLabel"] = target
         };
         Add(slug, InteractionTypes.QuantityBuilder, title, prompt, icon, payload, count.ToString(), retry, [target], null, null,
-            "Con bấm thêm hoặc bớt cho đủ số lượng cô cần.");
+            "Con bấm thêm hoặc bớt cho đủ số lượng cô cần.", extraSpeech: CountingSpeech(Math.Min(12, count + 3)));
     }
 
     public void Compare(string slug, string title, Say prompt, string icon, string emoji, int left, int right, string mode, Say? retry = null)
@@ -296,17 +339,29 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
         payload["speech"] = speech;
         payload["mapIcon"] = icon;
         payload["stage"] = Stage;
-        payload["bankVersion"] = LessonBank.Version;
+        payload["bankVersion"] = Version;
 
         sink.Add(new BankLesson(LessonBank.CodePrefix + slug, Group, Topic, type, title, instruction, prompt.Text, payload, answer,
             retrySay.Text, correct.Text, retrySay.Text, symbol, strokes, _order));
     }
 
     private static JsonArray Pair(Say say) => new(say.ViSpeech, say.En);
+
+    /// <summary>Lời đọc các số bé đếm tới trong lúc làm bài, để Voice đọc "Ba" chứ không đọc ký tự "3".</summary>
+    private static JsonObject CountingSpeech(int upTo)
+    {
+        var speech = new JsonObject();
+        for (var n = 1; n <= upTo; n++)
+        {
+            speech[n.ToString()] = new JsonArray(Lexicon.NumberWordVi(n), Lexicon.NumberEn(n));
+        }
+        return speech;
+    }
+
     private static JsonArray Strings(IEnumerable<string> values) => new(values.Select(x => (JsonNode)JsonValue.Create(x)!).ToArray());
 
     public static string[] NumberChoices(int n) =>
-        new[] { Math.Max(0, n - 1), n, n + 1 }.Distinct().Select(x => x.ToString()).ToArray();
+        (n <= 1 ? new[] { 1, 2, 3 } : [n - 1, n, n + 1]).Select(x => x.ToString()).ToArray();
 
     private void Require(bool condition, string slug, string message)
     {

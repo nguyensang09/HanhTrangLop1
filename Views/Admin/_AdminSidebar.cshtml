@@ -38,6 +38,10 @@
             <span class="material-symbols-outlined">account_tree</span>
             <span class="nav-text">Kho bài học & Chương trình</span>
         </a>
+        <a class="@(currentAction == "KidsModules" ? "active" : "")" asp-controller="Admin" asp-action="KidsModules" data-tooltip="Hiển thị Góc của bé" title="Hiển thị Góc của bé">
+            <span class="material-symbols-outlined">visibility</span>
+            <span class="nav-text">Hiển thị Góc của bé</span>
+        </a>
         <a class="@(currentAction == "MediaLibrary" ? "active" : "")" asp-controller="Admin" asp-action="MediaLibrary" data-tooltip="Thư viện hình ảnh" title="Thư viện hình ảnh">
             <span class="material-symbols-outlined">perm_media</span>
             <span class="nav-text">Thư viện hình ảnh</span>

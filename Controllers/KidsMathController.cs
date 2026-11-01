@@ -12,11 +12,13 @@ public class KidsMathController : Controller
     private readonly ChildProfileResolver _childResolver;
     private readonly MathWorldService _mathWorld;
     private readonly MathVoiceService _voices;
+    private readonly KidsModuleService _modules;
     private readonly ILogger<KidsMathController> _logger;
     private readonly IHostApplicationLifetime _lifetime;
 
-    public KidsMathController(ChildProfileResolver childResolver, MathWorldService mathWorld, MathVoiceService voices, ILogger<KidsMathController> logger, IHostApplicationLifetime lifetime)
+    public KidsMathController(ChildProfileResolver childResolver, MathWorldService mathWorld, MathVoiceService voices, KidsModuleService modules, ILogger<KidsMathController> logger, IHostApplicationLifetime lifetime)
     {
+        _modules = modules;
         _voices = voices;
         _childResolver = childResolver;
         _mathWorld = mathWorld;
@@ -27,6 +29,8 @@ public class KidsMathController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index(string? op)
     {
+        if (!await _modules.IsVisibleAsync(MathCurriculum.SkillGroupCode)) return RedirectToAction("Home", "Kids");
+
         var child = await _childResolver.GetSelectedChildAsync(HttpContext);
         if (child is null) return RedirectToChildPicker();
 
@@ -36,6 +40,8 @@ public class KidsMathController : Controller
     [HttpGet("lesson/{id:guid}")]
     public async Task<IActionResult> Play(Guid id)
     {
+        if (!await _modules.IsVisibleAsync(MathCurriculum.SkillGroupCode)) return RedirectToAction("Home", "Kids");
+
         var child = await _childResolver.GetSelectedChildAsync(HttpContext);
         if (child is null) return RedirectToChildPicker();
 

@@ -1113,6 +1113,41 @@ public sealed class VoiceLibraryMaintenanceService
             diskFiles.Length, orphans.Count, orphanBytes, deleted, apply);
     }
 
+    /// <summary>
+    /// Xóa file Voice không còn dòng Voice hay dữ liệu nào tham chiếu (ví dụ file giọng cũ còn sót sau khi sinh lại dưới tên mới),
+    /// cùng các dòng media trỏ tới chúng. Trả về số file trên đĩa, số file đã xóa và số tham chiếu trỏ tới file không tồn tại.
+    /// </summary>
+    public async Task<(int OnDisk, int Deleted, int BrokenReferences)> RemoveUnreferencedVoiceFilesAsync(CancellationToken cancellationToken = default)
+    {
+        await CleanupRedundantAudioAssetRowsAsync(cancellationToken);
+
+        var folder = Path.GetFullPath(Path.Combine(_environment.WebRootPath, "uploads", "audio"));
+        var referenced = await GetActiveVoiceStoragePathsAsync(cancellationToken);
+        foreach (var name in await FindAudioFileNamesReferencedInDatabaseAsync(cancellationToken))
+        {
+            referenced.Add($"/uploads/audio/{name}");
+        }
+
+        var files = Directory.GetFiles(folder, "*", SearchOption.TopDirectoryOnly);
+        var deleted = 0;
+        foreach (var path in files)
+        {
+            if (referenced.Contains($"/uploads/audio/{Path.GetFileName(path)}")) continue;
+            try
+            {
+                File.Delete(path);
+                deleted++;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning("Không xóa được file Voice thừa {File}: {Error}", path, ex.Message);
+            }
+        }
+
+        var broken = referenced.Count(url => !File.Exists(Path.Combine(folder, Path.GetFileName(url))));
+        return (files.Length, deleted, broken);
+    }
+
     /// <summary>Tên các file trong /uploads/audio/ được nhắc tới trong bất kỳ cột văn bản nào của CSDL (payload bài, nội dung...).</summary>
     private async Task<HashSet<string>> FindAudioFileNamesReferencedInDatabaseAsync(CancellationToken cancellationToken)
     {
@@ -1125,7 +1160,8 @@ public sealed class VoiceLibraryMaintenanceService
               AND c.DATA_TYPE IN ('nvarchar', 'varchar', 'ntext', 'text')
               AND (c.CHARACTER_MAXIMUM_LENGTH = -1 OR c.CHARACTER_MAXIMUM_LENGTH >= 20)
             """).ToListAsync(cancellationToken);
-        var pattern = new System.Text.RegularExpressions.Regex(@"/uploads/audio/([^""'\s\\?#<>|]+)");
+        // Payload JSON lưu chữ có dấu trong tên file dạng \uXXXX nên phải đọc cả dạng này, không dừng ở dấu gạch chéo.
+        var pattern = new System.Text.RegularExpressions.Regex(@"/uploads/audio/((?:[^""'\s\\?#<>|]|\\u[0-9a-fA-F]{4})+)");
         foreach (var column in columns)
         {
             var sql = $"SELECT CAST([{column.Column}] AS nvarchar(max)) AS [Value] FROM [dbo].[{column.Table}] WHERE [{column.Column}] LIKE N'%/uploads/audio/%'";
@@ -1134,7 +1170,7 @@ public sealed class VoiceLibraryMaintenanceService
             {
                 foreach (System.Text.RegularExpressions.Match match in pattern.Matches(value ?? string.Empty))
                 {
-                    names.Add(Uri.UnescapeDataString(match.Groups[1].Value));
+                    names.Add(Uri.UnescapeDataString(System.Text.RegularExpressions.Regex.Unescape(match.Groups[1].Value)));
                 }
             }
         }
@@ -2309,7 +2345,8 @@ public sealed class VoiceLibraryMaintenanceService
         return null;
     }
 
-    public async Task<string> GenerateVoiceCacheFileAsync(TextToSpeechCache entry, CancellationToken cancellationToken = default)
+    /// <param name="overwrite">Đọc lại và thay file đang có (sinh lại toàn bộ kho); mặc định dùng lại file đã có.</param>
+    public async Task<string> GenerateVoiceCacheFileAsync(TextToSpeechCache entry, CancellationToken cancellationToken = default, bool overwrite = false)
     {
         var text = ResolveTextForSpeechSynthesis(NormalizeSpeechText(string.IsNullOrWhiteSpace(entry.OriginalText)
             ? entry.NormalizedText
@@ -2335,18 +2372,18 @@ public sealed class VoiceLibraryMaintenanceService
         var storedName = BuildDeterministicVoiceFileName("voice", entry.Name, text, voice, rate);
         var diskPath = Path.Combine(folder, storedName);
         var storagePath = $"/uploads/audio/{storedName}";
-        if (File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
+        if (!overwrite && File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
         {
             await EnsureMediaAssetForAudioAsync(storagePath, storedName, AudioCacheKey(entry.NormalizedText), cancellationToken);
             return storagePath;
         }
 
-        await SynthesizeToFileAsync(text, voice, rate, diskPath, cancellationToken);
+        await SynthesizeToFileAsync(text, voice, rate, diskPath, cancellationToken, overwrite);
         await EnsureMediaAssetForAudioAsync(storagePath, storedName, AudioCacheKey(entry.NormalizedText), cancellationToken);
         return storagePath;
     }
 
-    public async Task<string> GenerateVoiceCacheFileEnAsync(TextToSpeechCache entry, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateVoiceCacheFileEnAsync(TextToSpeechCache entry, CancellationToken cancellationToken = default, bool overwrite = false)
     {
         var textEn = entry.TextEn;
         if (string.IsNullOrWhiteSpace(textEn))
@@ -2376,13 +2413,13 @@ public sealed class VoiceLibraryMaintenanceService
         var storedName = BuildDeterministicVoiceFileName("voice-en", entry.Name, textEn, voiceEn, rateEn);
         var diskPath = Path.Combine(folder, storedName);
         var storagePath = $"/uploads/audio/{storedName}";
-        if (File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
+        if (!overwrite && File.Exists(diskPath) && new FileInfo(diskPath).Length > 0)
         {
             await EnsureMediaAssetForAudioAsync(storagePath, storedName, AudioCacheKey($"en:{entry.NormalizedText}"), cancellationToken);
             return storagePath;
         }
 
-        await SynthesizeToFileAsync(textEn, voiceEn, rateEn, diskPath, cancellationToken);
+        await SynthesizeToFileAsync(textEn, voiceEn, rateEn, diskPath, cancellationToken, overwrite);
 
         await EnsureMediaAssetForAudioAsync(storagePath, storedName, AudioCacheKey($"en:{entry.NormalizedText}"), cancellationToken);
         return storagePath;
@@ -2541,13 +2578,13 @@ public sealed class VoiceLibraryMaintenanceService
     /// bổ sung, trang quản trị): mỗi đường dẫn chỉ một luồng sinh, luồng sau dùng lại file vừa có. Ghi ra file tạm
     /// rồi mới đổi tên nên bé không bao giờ nhận file dở dang, và một lần hủy/lỗi không xóa nhầm file tốt của luồng khác.
     /// </summary>
-    private static async Task SynthesizeToFileAsync(string text, string voice, string rate, string outputPath, CancellationToken cancellationToken)
+    private static async Task SynthesizeToFileAsync(string text, string voice, string rate, string outputPath, CancellationToken cancellationToken, bool overwrite = false)
     {
         var gate = VoiceFileLocks.GetOrAdd(outputPath, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken);
         try
         {
-            if (File.Exists(outputPath) && new FileInfo(outputPath).Length > 0) return;
+            if (!overwrite && File.Exists(outputPath) && new FileInfo(outputPath).Length > 0) return;
 
             // File tạm nằm ngoài wwwroot: bước build quét wwwroot (static web assets) sẽ lỗi nếu gặp file tạm vừa biến mất.
             var tempFolder = Path.Combine(Path.GetTempPath(), "HanhTrangLop1-voice");
@@ -2603,17 +2640,9 @@ public sealed class VoiceLibraryMaintenanceService
             // Fallback sang python subprocess
         }
 
+        // Chỉ dùng đúng giọng trong cấu hình. Trước đây giọng lỗi sẽ tự chuyển sang người đọc khác (kể cả giọng nam) mà vẫn
+        // lưu dưới tên file của giọng chính, làm kho Voice lẫn nhiều người đọc mà không ai biết.
         var voiceCandidates = new List<string> { voice };
-        if (voice.StartsWith("en-", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!voice.Equals("en-US-JennyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-JennyNeural");
-            if (!voice.Equals("en-US-AriaNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("en-US-AriaNeural");
-        }
-        else if (voice.StartsWith("vi-", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!voice.Equals("vi-VN-HoaiMyNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-HoaiMyNeural");
-            if (!voice.Equals("vi-VN-NamMinhNeural", StringComparison.OrdinalIgnoreCase)) voiceCandidates.Add("vi-VN-NamMinhNeural");
-        }
 
         var candidates = new[]
         {
@@ -2960,7 +2989,11 @@ public sealed class VoiceLibraryMaintenanceService
     /// <summary>File Voice đã tồn tại và có nội dung trên đĩa.</summary>
     public bool VoiceFileExists(string? url) => HasVoiceFile(url);
 
-    private static IEnumerable<string> CollectOptionSpeechLabels(JsonObject payload)
+    /// <summary>
+    /// Mọi nhãn trang làm bài có thể đọc khi bé thao tác. Trang quản trị, xem thử và trang của bé dùng chung danh sách này
+    /// nên thông tin Voice trên quản trị luôn khớp với thứ bé nghe.
+    /// </summary>
+    public static IEnumerable<string> CollectOptionSpeechLabels(JsonObject payload)
     {
         foreach (var value in ReadJsonStringArray(payload, "choices")) yield return value;
         foreach (var value in ReadJsonStringArray(payload, "items")) yield return value;
@@ -2976,6 +3009,49 @@ public sealed class VoiceLibraryMaintenanceService
 
         var rightLabel = ReadJsonString(payload, "rightLabel");
         if (!string.IsNullOrWhiteSpace(rightLabel)) yield return rightLabel;
+
+        // So sánh số lượng có thêm nút "Bằng nhau".
+        if (payload.ContainsKey("comparisonMode") && ReadJsonString(payload, "visualMode") != "shape") yield return "Bằng nhau";
+
+        // Đếm và tạo số lượng: cô đọc số bé vừa đếm tới.
+        if (!payload.ContainsKey("comparisonMode") && payload.ContainsKey("objectSymbol"))
+        {
+            var countTo = Math.Max(ReadJsonCount(payload, "targetCount"), ReadJsonCount(payload, "maxItems"));
+            for (var number = 1; number <= Math.Min(countTo, 20); number++) yield return number.ToString();
+        }
+    }
+
+    private static int ReadJsonCount(JsonObject payload, string name) =>
+        payload[name] is JsonValue value && value.TryGetValue<int>(out var number) ? number : 0;
+
+    /// <summary>Gắn file Voice theo lời đọc cho từng nhãn của payload (bản hiển thị, không lưu lại CSDL).</summary>
+    public async Task<string> EnrichPayloadOptionAudioAsync(string? payloadJson, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(payloadJson)) return "{}";
+        JsonObject? payload;
+        try
+        {
+            payload = JsonNode.Parse(payloadJson)?.AsObject();
+        }
+        catch (Exception ex) when (ex is System.Text.Json.JsonException or InvalidOperationException)
+        {
+            return payloadJson;
+        }
+        if (payload is null) return payloadJson;
+
+        var audioMap = new JsonObject();
+        var audioMapEn = new JsonObject();
+        foreach (var label in CollectOptionSpeechLabels(payload).Distinct(StringComparer.Ordinal).ToList())
+        {
+            var spoken = Spoken(payload, label);
+            var url = await ResolveVoiceAudioUrlAsync(spoken, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(url)) audioMap[label.Trim()] = url;
+            var urlEn = await ResolveVoiceAudioUrlEnAsync(spoken, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(urlEn)) audioMapEn[label.Trim()] = urlEn;
+        }
+        payload["optionAudio"] = audioMap;
+        payload["optionAudioEn"] = audioMapEn;
+        return payload.ToJsonString();
     }
 
     private static bool IsSpeakableText(string? text)

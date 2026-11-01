@@ -25,6 +25,12 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HanhTrangLop1.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/entry.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/kid-font.css" asp-append-version="true" />
+    @if (_isKidsZone || _isFocusMode)
+    {
+        <link rel="preload" href="~/fonts/andika/andika-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+        <link rel="preload" href="~/fonts/andika/andika-700-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+    }
     <script>
         (function() {
             var ua = navigator.userAgent || '';

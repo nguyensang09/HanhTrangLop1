@@ -81,15 +81,15 @@ public static class ActivityTemplateCatalog
     private static readonly IReadOnlyDictionary<string, TopicActivityRule> SkillGroupRules =
         new Dictionary<string, TopicActivityRule>(StringComparer.OrdinalIgnoreCase)
         {
-            ["chu-cai"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.Matching),
-            ["chu-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.Matching),
+            ["chu-cai"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.Classification),
+            ["chu-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.MultiSelect),
             ["so-luong-toan"] = Rule(InteractionTypes.Counting, InteractionTypes.QuantityBuilder, InteractionTypes.Comparison, InteractionTypes.SingleChoice, InteractionTypes.DragDrop, InteractionTypes.MultiSelect),
             ["tu-duy-logic"] = Rule(InteractionTypes.Classification, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.MultiSelect, InteractionTypes.SingleChoice),
             ["ky-nang-song"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification, InteractionTypes.Matching),
             ["ngon-ngu"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification),
-            ["hinh-dang-khong-gian"] = Rule(InteractionTypes.SingleChoice, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.DragDrop, InteractionTypes.Comparison),
+            ["hinh-dang-khong-gian"] = Rule(InteractionTypes.SingleChoice, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.DragDrop, InteractionTypes.Comparison, InteractionTypes.MultiSelect, InteractionTypes.Ordering),
             ["ghi-nho-tap-trung"] = Rule(InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.SingleChoice, InteractionTypes.Classification),
-            ["van-dong-tinh"] = RuleWithTracing(InteractionTypes.Ordering, InteractionTypes.DragDrop, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect),
+            ["van-dong-tinh"] = RuleWithTracing(InteractionTypes.Ordering, InteractionTypes.DragDrop, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification),
             ["kham-pha"] = Rule(InteractionTypes.Classification, InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Ordering)
         };
 

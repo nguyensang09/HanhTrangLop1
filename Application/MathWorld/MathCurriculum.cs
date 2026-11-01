@@ -22,7 +22,7 @@ public static class MathCurriculum
     public const int MaxNumber = 10;
 
     /// <summary>Tăng số này khi đổi nội dung sinh bài để seed cập nhật các bài chưa bị quản trị viên chỉnh sửa.</summary>
-    public const int ContentVersion = 3;
+    public const int ContentVersion = 6;
 
     public static readonly MathOperationDefinition Addition = new(
         "add", "+", "+", "Phép cộng", "phep-cong", true, "#ff8a3d", "Gộp lại, thêm vào");
@@ -46,6 +46,14 @@ public static class MathCurriculum
         public const string Match = "match";
         public const string Adventure = "adventure";
         public const string Quick = "quick";
+        public const string Balance = "balance";
+        public const string TrueFalse = "truefalse";
+        public const string Train = "train";
+        public const string Memory = "memory";
+        public const string Sort = "sort";
+        public const string Pop = "pop";
+        public const string Fish = "fish";
+        public const string Bus = "bus";
     }
 
     public static readonly IReadOnlyList<MathStyleDefinition> StyleCatalog =
@@ -58,7 +66,15 @@ public static class MathCurriculum
         new(Styles.Hop, "Ếch nhảy tia số", "🐸", "Giúp ếch nhảy tới hoặc lùi trên tia số."),
         new(Styles.Match, "Ghép cặp", "🔗", "Nối mỗi phép tính với kết quả tương ứng."),
         new(Styles.Adventure, "Phiêu lưu", "🗺️", "Giải phép tính để vượt chướng ngại vật, tìm kho báu."),
-        new(Styles.Quick, "Tên lửa tính nhẩm", "🚀", "Tính nhẩm nhanh dần, không tính giờ, đúng liên tiếp để bay cao.")
+        new(Styles.Quick, "Tên lửa tính nhẩm", "🚀", "Tính nhẩm nhanh dần, không tính giờ, đúng liên tiếp để bay cao."),
+        new(Styles.Balance, "Cân thăng bằng", "⚖️", "Đặt quả cân số lên đĩa để cân thăng bằng."),
+        new(Styles.TrueFalse, "Đúng hay sai", "👍", "Nhìn phép tính rồi giơ ngón cái lên hoặc xuống."),
+        new(Styles.Train, "Đoàn tàu đếm tiếp", "🚂", "Đếm theo từng toa tàu rồi chạm vào một số đúng."),
+        new(Styles.Memory, "Lật thẻ", "🃏", "Lật thẻ tìm phép tính và kết quả của nó."),
+        new(Styles.Sort, "Nhà số", "🏠", "Đưa từng phép tính về đúng ngôi nhà mang kết quả của nó."),
+        new(Styles.Pop, "Chọc bong bóng", "🫧", "Chọc hết bong bóng có phép tính bằng số cho trước."),
+        new(Styles.Fish, "Câu cá", "🎣", "Chạm chú cá mang kết quả đúng của phép tính."),
+        new(Styles.Bus, "Xe buýt", "🚌", "Nhìn các bạn lên, xuống xe rồi chọn số bạn trên xe.")
     ];
 
     public static MathStyleDefinition GetStyle(string? key) =>
@@ -113,16 +129,16 @@ public static class MathCurriculum
         _ => []
     };
 
-    /// <summary>Toàn bộ phép cộng hợp lệ trong phạm vi 10 (66 phép tính).</summary>
+    /// <summary>Phép cộng trong phạm vi 10, không có số 0 (45 phép tính): cộng với 0 làm bé khó hiểu hơn hẳn các bài khác.</summary>
     public static IReadOnlyList<MathProblem> AdditionFacts() =>
-        (from sum in Enumerable.Range(0, MaxNumber + 1)
-         from a in Enumerable.Range(0, sum + 1)
+        (from sum in Enumerable.Range(2, MaxNumber - 1)
+         from a in Enumerable.Range(1, sum - 1)
          select new MathProblem("+", a, sum - a)).ToList();
 
-    /// <summary>Toàn bộ phép trừ hợp lệ trong phạm vi 10, kết quả không âm (66 phép tính).</summary>
+    /// <summary>Phép trừ trong phạm vi 10, không có số 0 ở số trừ lẫn kết quả (45 phép tính).</summary>
     public static IReadOnlyList<MathProblem> SubtractionFacts() =>
-        (from a in Enumerable.Range(0, MaxNumber + 1)
-         from b in Enumerable.Range(0, a + 1)
+        (from a in Enumerable.Range(2, MaxNumber - 1)
+         from b in Enumerable.Range(1, a - 1)
          select new MathProblem("-", a, b)).ToList();
 
     public static Guid StableGuid(string key)
@@ -189,12 +205,13 @@ public static class MathCurriculum
 
         // Chặng 3: toàn bộ phép tính có tổng (hoặc số bị trừ) từ 6 đến 10, mỗi bài tối đa 8 câu.
         var s3 = stages[2];
-        var s3Styles = new[] { Styles.Choose, Styles.Build, Styles.Drag, Styles.Count, Styles.Hop, Styles.Choose, Styles.Drag, Styles.Build };
+        var s3Styles = new[] { Styles.Choose, Styles.Build, Styles.Drag, Styles.Count, Styles.Hop, Styles.Balance, Styles.Drag, Styles.Build };
         var s3Index = 0;
         for (var size = 6; size <= MaxNumber; size++)
         {
             var family = facts.Where(p => Size(p) == size).OrderBy(p => p.B).ToList();
-            var parts = BalancedChunks(family, (int)Math.Ceiling(family.Count / 8.0));
+            // Số phần cố định theo từng số để số bài của chặng không đổi: mã các bài chen sau chặng này giữ nguyên, tiến độ của bé không lệch.
+            var parts = BalancedChunks(family, size >= 8 ? 2 : 1);
             for (var part = 0; part < parts.Count; part++)
             {
                 var title = (isAdd ? $"Cộng ra {size}" : $"Trừ từ {size}") + (parts.Count > 1 ? $" · Phần {part + 1}" : string.Empty);
@@ -234,6 +251,97 @@ public static class MathCurriculum
             var mixed = Enumerable.Range(0, 10).Select(i => i % 2 == 0 ? addRamp[i] : subRamp[i]);
             AddLesson(s5, "Đại thử thách cộng trừ", "The big plus and minus challenge", Styles.Quick, mixed, optionCount: 4);
         }
+
+        // Các cách chơi bổ sung: mã bài nối tiếp nên bài cũ giữ nguyên mã và tiến độ; SortOrder chen giữa bài cũ
+        // (after = chỉ số bài đứng trước) để bé gặp dạng mới sớm, không phải làm hết kiểu cũ mới tới kiểu mới.
+        void AddExtra(MathStageDefinition stage, int after, string title, string titleEn, string style, IEnumerable<MathQuestionDefinition> questions)
+        {
+            var index = lessons.Count(x => x.Operation == op && x.Stage == stage) + 1;
+            var code = $"{LessonCodePrefix}{op.Key}-s{stage.Order}-{index:00}";
+            var sortOrder = opIndex * 1000 + stage.Order * 100 + after * 10 + 5;
+            lessons.Add(new MathLessonDefinition(code, op, stage, index, sortOrder, title, titleEn, style, BuildInstruction(op, style), questions.ToList()));
+        }
+
+        MathTheme NextTheme() => Themes[themeCursor++ % Themes.Length];
+        MathQuestionDefinition Single(MathProblem p, string seed) => SingleQuestion(p, 3, NextTheme(), $"{seed}:{p}");
+        var word = isAdd ? "cộng" : "trừ";
+        var wordEn = isAdd ? "adding" : "subtracting";
+        var counted = facts.Where(p => p.A >= 1 && p.B >= 1 && p.Result >= 1).ToList();
+
+        AddExtra(s1, 2, isAdd ? "Đoàn tàu đếm tiếp" : "Đoàn tàu đếm lùi", isAdd ? "The counting-on train" : "The counting-back train", Styles.Train,
+            Shuffle(counted.Where(p => p.B <= 3 && Size(p) is >= 3 and <= 7), $"{op.Key}-train-1").Take(5).Select(p => Single(p, "train-1")));
+
+        AddExtra(s2, 1, "Cân thăng bằng", "Balance the scale", Styles.Balance,
+            Shuffle(counted.Where(p => Size(p) <= 5), $"{op.Key}-balance-1").Take(5).Select(p => Single(p, "balance-1")));
+        AddExtra(s2, 2, $"Đúng hay sai: phép {word}", $"True or false: {wordEn}", Styles.TrueFalse,
+            ClaimQuestions(Shuffle(counted.Where(p => Size(p) <= 5), $"{op.Key}-claim-1").Take(6), NextTheme, $"{op.Key}-claim-1"));
+        AddExtra(s2, 3, "Lật thẻ tìm đôi", "Flip and find the pairs", Styles.Memory,
+            BuildBoards(counted.Where(p => Size(p) <= 5), 2, $"{op.Key}-flip-5", 3).Select(b => Board(b, NextTheme())));
+
+        AddExtra(s3, 2, "Nhà số vui vẻ", "The happy number houses", Styles.Sort,
+            HouseBoards(counted.Where(p => Size(p) >= 6), 3, $"{op.Key}-house").Select(b => Board(b, NextTheme())));
+        AddExtra(s3, 4, "Chọc bong bóng phép tính", "Pop the problem bubbles", Styles.Pop,
+            PopBoards(counted.Where(p => Size(p) >= 4), 3, $"{op.Key}-pop").Select(b => b with { Theme = NextTheme() }));
+        AddExtra(s3, 6, isAdd ? "Tàu đếm tiếp đường dài" : "Tàu đếm lùi đường dài", isAdd ? "The long counting-on ride" : "The long counting-back ride", Styles.Train,
+            Shuffle(counted.Where(p => p.B is >= 2 and <= 5 && Size(p) >= 6), $"{op.Key}-train-2").Take(5).Select(p => Single(p, "train-2")));
+
+        AddExtra(s5, 1, "Lật thẻ phạm vi 10", "Flip the cards up to 10", Styles.Memory,
+            BuildBoards(counted.Where(p => Size(p) >= 6), 3, $"{op.Key}-flip-10", 4).Select(b => Board(b, NextTheme())));
+        AddExtra(s5, 3, $"Thử tài đúng sai: phép {word}", $"True or false challenge: {wordEn}", Styles.TrueFalse,
+            ClaimQuestions(Shuffle(counted.Where(p => Size(p) >= 6), $"{op.Key}-claim-2").Take(8), NextTheme, $"{op.Key}-claim-2"));
+        AddExtra(s5, 4, "Cân thử thách", "The scale challenge", Styles.Balance,
+            Shuffle(counted.Where(p => Size(p) >= 6), $"{op.Key}-balance-2").Take(6).Select(p => Single(p, "balance-2")));
+
+        // Mã bài mới nối tiếp sau các bài trên trong từng chặng, không làm đổi mã bài cũ.
+        AddExtra(s1, 3, "Xe buýt đến trường", "The school bus", Styles.Bus,
+            Shuffle(counted.Where(p => Size(p) is >= 2 and <= 6), $"{op.Key}-bus-1").Take(5).Select(p => Single(p, "bus-1")));
+        AddExtra(s2, 4, "Câu cá phép tính", "Fishing for answers", Styles.Fish,
+            Shuffle(counted.Where(p => Size(p) <= 6), $"{op.Key}-fish-1").Take(5).Select(p => Single(p, "fish-1")));
+        AddExtra(s3, 7, "Xe buýt đông vui", "The busy bus", Styles.Bus,
+            Shuffle(counted.Where(p => Size(p) >= 5), $"{op.Key}-bus-2").Take(5).Select(p => Single(p, "bus-2")));
+        AddExtra(s5, 5, "Câu cá phạm vi 10", "Fishing up to 10", Styles.Fish,
+            Shuffle(counted.Where(p => Size(p) >= 6), $"{op.Key}-fish-2").Take(6).Select(p => Single(p, "fish-2")));
+    }
+
+    private static MathQuestionDefinition Board(IReadOnlyList<MathProblem> pairs, MathTheme theme) => new(null, pairs, [], theme);
+
+    /// <summary>Câu đúng/sai: xen kẽ phép tính đúng và phép tính kết quả lệch 1–2 đơn vị.</summary>
+    private static IEnumerable<MathQuestionDefinition> ClaimQuestions(IEnumerable<MathProblem> problems, Func<MathTheme> theme, string seed)
+    {
+        var rng = new StableRandom(seed);
+        return problems.Select((p, i) =>
+        {
+            var offset = rng.Next(2) + 1;
+            var wrong = p.Result + offset <= MaxNumber && (p.Result - offset < 1 || rng.Next(2) == 0) ? p.Result + offset : p.Result - offset;
+            return new MathQuestionDefinition(p, [], [], theme()) { ClaimedResult = i % 2 == 0 ? p.Result : wrong };
+        }).ToList();
+    }
+
+    /// <summary>Bảng "nhà số": 5 phép tính thuộc đúng hai kết quả khác nhau.</summary>
+    private static IReadOnlyList<IReadOnlyList<MathProblem>> HouseBoards(IEnumerable<MathProblem> source, int boardCount, string seed)
+    {
+        var byResult = Shuffle(source, seed).GroupBy(p => p.Result).Where(g => g.Count() >= 3).OrderBy(g => g.Key).ToList();
+        var boards = new List<IReadOnlyList<MathProblem>>();
+        for (var i = 0; i < boardCount; i++)
+        {
+            var first = byResult[i % byResult.Count];
+            var second = byResult[(i + byResult.Count / 2) % byResult.Count];
+            boards.Add(first.Take(3).Concat(second.Take(2)).ToList());
+        }
+        return boards;
+    }
+
+    /// <summary>Bảng "chọc bong bóng": 3 phép tính bằng số đích, 3 phép tính khác.</summary>
+    private static IEnumerable<MathQuestionDefinition> PopBoards(IEnumerable<MathProblem> source, int boardCount, string seed)
+    {
+        var pool = Shuffle(source, seed);
+        var targets = pool.GroupBy(p => p.Result).Where(g => g.Count() >= 3).Select(g => g.Key).OrderBy(x => x).ToList();
+        for (var i = 0; i < boardCount; i++)
+        {
+            var target = targets[(i * 2 + 1) % targets.Count];
+            var board = pool.Where(p => p.Result == target).Take(3).Concat(pool.Where(p => p.Result != target).Skip(i * 3).Take(3)).ToList();
+            yield return new MathQuestionDefinition(null, board, [], Themes[0]) { Target = target };
+        }
     }
 
     /// <summary>10 phép tính tăng dần: 3 dễ (≤5), 4 vừa (6–8), 3 khó (9–10).</summary>
@@ -245,7 +353,7 @@ public static class MathCurriculum
         return easy.Concat(mid).Concat(hard).ToList();
     }
 
-    private static IReadOnlyList<IReadOnlyList<MathProblem>> BuildBoards(IEnumerable<MathProblem> source, int boardCount, string seed)
+    private static IReadOnlyList<IReadOnlyList<MathProblem>> BuildBoards(IEnumerable<MathProblem> source, int boardCount, string seed, int pairsPerBoard = 4)
     {
         var pool = Shuffle(source.Where(p => p.B >= 1 || p.A >= 1), seed);
         var used = new HashSet<string>();
@@ -257,7 +365,7 @@ public static class MathCurriculum
             {
                 if (board.Any(x => x.Result == p.Result)) continue;
                 board.Add(p);
-                if (board.Count == 4) break;
+                if (board.Count == pairsPerBoard) break;
             }
             foreach (var p in board) used.Add(p.ToString());
             boards.Add(board);
@@ -275,7 +383,7 @@ public static class MathCurriculum
     {
         var answer = p.Answer;
         var candidates = new[] { answer + 1, answer - 1, answer + 2, answer - 2, p.A, p.B, p.Result, answer + 3, answer - 3, answer + 4, answer - 4 }
-            .Where(x => x is >= 0 and <= MaxNumber && x != answer)
+            .Where(x => x is >= 1 and <= MaxNumber && x != answer)
             .Distinct()
             .ToList();
         // Lấy ngẫu nhiên tất định trong nhóm gần đáp án để đáp án nhiễu hợp lý nhưng không lặp mẫu.
@@ -323,6 +431,14 @@ public static class MathCurriculum
             Styles.Match => "Chạm vào một phép tính, rồi chạm vào kết quả đúng của nó.",
             Styles.Adventure => "Giải phép tính để phá chướng ngại vật và tìm đường tới kho báu.",
             Styles.Quick => "Tính nhẩm thật giỏi để tên lửa bay cao. Không cần vội, con cứ từ từ nhé!",
+            Styles.Balance => "Chạm quả cân có số đúng để cân thăng bằng.",
+            Styles.TrueFalse => "Nhìn phép tính, đúng thì giơ ngón cái lên, sai thì giơ ngón cái xuống.",
+            Styles.Train => isAdd ? "Đếm tiếp theo từng toa tàu rồi chạm vào số đúng." : "Đếm lùi theo từng toa tàu rồi chạm vào số đúng.",
+            Styles.Fish => "Chạm vào chú cá mang kết quả đúng.",
+            Styles.Bus => isAdd ? "Nhìn các bạn lên xe rồi chạm vào số bạn trên xe." : "Nhìn các bạn xuống xe rồi chạm vào số bạn còn trên xe.",
+            Styles.Memory => "Lật hai thẻ để tìm phép tính và kết quả của nó.",
+            Styles.Sort => "Đưa từng phép tính về ngôi nhà mang kết quả của nó.",
+            Styles.Pop => "Chọc hết bong bóng có phép tính bằng số cô đang giơ.",
             _ => "Con làm theo hướng dẫn của cô nhé."
         };
     }
@@ -331,7 +447,17 @@ public static class MathCurriculum
 
     public static string BuildPrompt(MathLessonDefinition lesson, MathQuestionDefinition q)
     {
-        if (q.IsBoard) return "Ghép mỗi phép tính với kết quả đúng nhé!";
+        if (q.IsBoard)
+        {
+            return lesson.Style switch
+            {
+                Styles.Memory => "Lật thẻ tìm phép tính và kết quả của nó nhé!",
+                Styles.Sort => "Đưa mỗi phép tính về đúng ngôi nhà nhé!",
+                Styles.Pop => $"Chọc hết bong bóng có phép tính bằng {q.Target} nhé!",
+                _ => "Ghép mỗi phép tính với kết quả đúng nhé!"
+            };
+        }
+
         var p = q.Problem!;
         var t = q.Theme;
         var isAdd = p.Op == "+";
@@ -350,6 +476,9 @@ public static class MathCurriculum
                 ? $"Có {p.A} {t.Noun}, {t.AddVerb} {p.B} {t.Unit}. Có tất cả mấy {t.Noun}?"
                 : $"Có {p.A} {t.Noun}, {p.B} {t.Unit} {t.TakeVerb}. Còn lại mấy {t.Noun}?",
             Styles.Missing or Styles.Drag when p.Missing != "result" => $"Số nào còn thiếu: {p.ToDisplay()}",
+            Styles.TrueFalse => $"{p.A} {p.DisplayOp} {p.B} = {q.ClaimedResult} — đúng hay sai?",
+            Styles.Balance => $"{p.ToDisplay()} — quả cân nào làm cân thăng bằng?",
+            Styles.Train => $"{p.ToDisplay()} — con đếm theo đoàn tàu nhé!",
             _ => $"{p.ToDisplay()} — bằng mấy?"
         };
     }
@@ -374,8 +503,6 @@ public static class MathCurriculum
                         $"Đếm tiếp từ {p.A} đến {p.Result}: {Up(p.A, p.B)}. Con đếm được mấy bước?"),
                 "a" => ($"Số nào thêm {p.B} thì được {p.Result}?",
                         $"Con đếm lùi {p.B} bước từ {p.Result}: {Down(p.Result, p.B)}."),
-                _ when p.B == 0 => ("Cộng với 0 thì số đó vẫn giữ nguyên!", $"{p.A} cộng 0 vẫn là {p.A}."),
-                _ when p.A == 0 => ("0 cộng với số nào cũng bằng chính số đó!", $"0 cộng {p.B} vẫn là {p.B}."),
                 _ => ("Con đếm lại thật chậm từng cái một nhé.",
                       $"Bắt đầu từ {p.A}, đếm thêm {p.B}: {Up(p.A, p.B)}.")
             };
@@ -387,8 +514,6 @@ public static class MathCurriculum
                     $"Đếm lùi từ {p.A} xuống {p.Result}: {Down(p.A, p.B)}. Con đếm được mấy bước?"),
             "a" => ($"Số nào bớt đi {p.B} thì còn {p.Result}?",
                     $"Con lấy {p.Result} đếm thêm {p.B}: {Up(p.Result, p.B)}."),
-            _ when p.B == 0 => ("Bớt đi 0 thì số đó vẫn giữ nguyên!", $"{p.A} trừ 0 vẫn là {p.A}."),
-            _ when p.B == p.A => ("Bớt đi hết thì không còn gì cả!", $"{p.A} trừ {p.A} bằng 0."),
             _ => ("Con thử bớt từng cái một rồi đếm phần còn lại nhé.",
                   $"Từ {p.A}, đếm lùi {p.B} bước: {Down(p.A, p.B)}.")
         };
@@ -403,6 +528,7 @@ public static class MathCurriculum
             {
                 kind = "board",
                 pairs = q.Pairs.Select(p => new { op = p.Op, a = p.A, b = p.B, result = p.Result }).ToArray(),
+                target = q.Target,
                 emoji = t.Emoji,
                 hint1,
                 hint2
@@ -416,6 +542,7 @@ public static class MathCurriculum
                 result = q.Problem.Result,
                 missing = q.Problem.Missing,
                 options = q.Options,
+                claimed = q.ClaimedResult,
                 emoji = t.Emoji,
                 noun = t.Noun,
                 unit = t.Unit,
@@ -464,6 +591,7 @@ public static class MathCurriculum
                 foreach (var p in problems)
                 {
                     if (!p.IsValid) errors.Add($"{lesson.Code}: phép tính ngoài phạm vi 0–10: {p}");
+                    if (p.A < 1 || p.B < 1 || p.Result < 1) errors.Add($"{lesson.Code}: phép tính có số 0: {p}");
                     if (p.Missing != "result" && lesson.Style is Styles.Count or Styles.Build or Styles.Hop or Styles.Match)
                         errors.Add($"{lesson.Code}: phong cách {lesson.Style} chỉ hỗ trợ ẩn kết quả.");
                 }
@@ -471,19 +599,30 @@ public static class MathCurriculum
                 if (q.IsBoard)
                 {
                     if (q.Pairs.Count < 2) errors.Add($"{lesson.Code}: bảng ghép cặp quá ít.");
-                    if (q.Pairs.Select(x => x.Result).Distinct().Count() != q.Pairs.Count) errors.Add($"{lesson.Code}: bảng ghép cặp có kết quả trùng.");
+                    // Nhà số và chọc bong bóng cố ý có nhiều phép tính cùng kết quả; ghép cặp thì mỗi kết quả chỉ một lần.
+                    var allowsSameResult = lesson.Style is Styles.Sort or Styles.Pop;
+                    if (!allowsSameResult && q.Pairs.Select(x => x.Result).Distinct().Count() != q.Pairs.Count) errors.Add($"{lesson.Code}: bảng ghép cặp có kết quả trùng.");
+                    if (lesson.Style == Styles.Sort && q.Pairs.Select(x => x.Result).Distinct().Count() != 2) errors.Add($"{lesson.Code}: nhà số phải có đúng 2 kết quả.");
+                    if (lesson.Style == Styles.Pop && (q.Target is null || q.Pairs.Count(x => x.Result == q.Target) < 2)) errors.Add($"{lesson.Code}: chọc bong bóng thiếu phép tính đúng.");
                     continue;
                 }
 
                 var answer = q.Problem!.Answer;
+                if (lesson.Style == Styles.TrueFalse)
+                {
+                    if (q.ClaimedResult is not (>= 1 and <= MaxNumber)) errors.Add($"{lesson.Code}: câu đúng/sai có kết quả ngoài phạm vi ở {q.Problem}.");
+                    continue;
+                }
+                if (lesson.Style == Styles.Train && q.Problem.B < 1) errors.Add($"{lesson.Code}: đoàn tàu cần ít nhất một toa trống ở {q.Problem}.");
+
                 var usesOptions = lesson.Style is not (Styles.Missing or Styles.Hop);
                 if (usesOptions && !q.Options.Contains(answer)) errors.Add($"{lesson.Code}: đáp án {answer} không nằm trong lựa chọn của {q.Problem}.");
                 if (q.Options.Distinct().Count() != q.Options.Count) errors.Add($"{lesson.Code}: lựa chọn bị trùng ở {q.Problem}.");
-                if (q.Options.Any(x => x is < 0 or > MaxNumber)) errors.Add($"{lesson.Code}: lựa chọn ngoài phạm vi ở {q.Problem}.");
+                if (q.Options.Any(x => x is < 1 or > MaxNumber)) errors.Add($"{lesson.Code}: lựa chọn ngoài phạm vi ở {q.Problem}.");
             }
         }
 
-        // Bao phủ: mọi phép cộng/trừ hợp lệ 0–10 phải xuất hiện ít nhất một lần dưới dạng tìm kết quả.
+        // Bao phủ: mọi phép cộng/trừ hợp lệ 1–10 phải xuất hiện ít nhất một lần dưới dạng tìm kết quả.
         var covered = lessons.SelectMany(l => l.Questions)
             .SelectMany(q => q.IsBoard ? q.Pairs : [q.Problem!])
             .Where(p => p.Missing == "result")
@@ -590,10 +729,18 @@ public sealed record MathQuestionDefinition(
 {
     public bool IsBoard => Pairs.Count > 0;
 
-    /// <summary>Đáp án chuẩn hóa: một số, hoặc dãy kết quả theo thứ tự phép tính của bảng ghép cặp.</summary>
+    /// <summary>Số đích của bảng "chọc bong bóng".</summary>
+    public int? Target { get; init; }
+
+    /// <summary>Kết quả Bíp đưa ra ở câu đúng/sai (có thể sai); có giá trị thì đáp án là "dung" hoặc "sai".</summary>
+    public int? ClaimedResult { get; init; }
+
+    /// <summary>Đáp án chuẩn hóa: một số, dãy kết quả của bảng ghép cặp, hoặc "dung"/"sai" ở câu đúng/sai.</summary>
     public string AnswerValue => IsBoard
         ? string.Join(",", Pairs.Select(p => p.Result))
-        : Problem!.Answer.ToString();
+        : ClaimedResult is { } claimed
+            ? (claimed == Problem!.Result ? "dung" : "sai")
+            : Problem!.Answer.ToString();
 }
 
 public sealed record MathLessonDefinition(

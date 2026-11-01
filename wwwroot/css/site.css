@@ -6581,6 +6581,8 @@ a {
 
 .answer-shape-circle { border-radius: 50% !important; background: #ef4444; }
 .answer-shape-square { border-radius: 8px !important; background: #3b82f6; }
+.answer-shape-oval { width: 78px !important; height: 48px !important; border-radius: 50% !important; }
+.answer-shape-rectangle { width: 78px !important; height: 44px !important; }
 .answer-shape-triangle {
   width: 0 !important;
   height: 0 !important;
@@ -22312,21 +22314,52 @@ body.kids-zone-active a {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── 6. Focus mode (đang trong bài học): chặn pull-to-refresh ── */
+/* ── 6-7. Khu vực của bé: chặn kéo tải lại trang, vuốt một ngón để cuộn, không zoom bằng hai ngón hay chạm đúp.
+   overscroll-behavior chỉ đặt ở html (khung cuộn thật của trang). Đặt trên body hay main thì cử chỉ vuốt dừng lại ở đó,
+   không chuyền lên trang, nên trên iPad gần như không cuộn được dù máy tính vẫn kéo thanh cuộn bình thường. ── */
+html:has(body.kids-zone-active),
+html:has(body.focus-mode-active) {
+  overscroll-behavior-y: none;
+  touch-action: pan-x pan-y;
+}
+
+body.kids-zone-active,
 body.focus-mode-active {
-  overscroll-behavior: none;
-  overscroll-behavior-y: none;
+  touch-action: pan-x pan-y;
 }
 
-body.focus-mode-active .app-page,
-body.focus-mode-active main {
-  overscroll-behavior: none;
+/* Thanh cuộn luôn hiện trên iPad (xem site.js). */
+.touch-scrollbar {
+  position: fixed;
+  top: 8px;
+  right: 0;
+  bottom: 8px;
+  z-index: 2147483000;
+  display: none;
+  width: 30px;
+  touch-action: none;
 }
-
-/* ── 7. Kids zone chung: chặn pull-to-refresh ── */
-body.kids-zone-active {
-  overscroll-behavior-y: none;
+.touch-scrollbar.is-on { display: block; }
+.touch-scrollbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 5px;
+  bottom: 0;
+  width: 8px;
+  border-radius: 8px;
+  background: rgba(31, 27, 77, .12);
 }
+.touch-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  right: 3px;
+  width: 12px;
+  border-radius: 12px;
+  background: rgba(31, 27, 77, .5);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .7);
+}
+.touch-scrollbar.is-dragging .touch-scrollbar-thumb { background: rgba(31, 27, 77, .75); }
 
 /* ── 8. Image elements: không kéo ảnh ra ngoài được (iOS drag image) ── */
 .kid-screen img,
@@ -23107,3 +23140,9 @@ body.focus-mode-active .learning-focus-shell {
     display: none !important;
   }
 }
+
+/* Câu dài và lời "Bé nghe" đọc được trọn vẹn: chữ một hàng, công cụ nghe và tải file xuống hàng dưới. */
+.builder-voice-row { grid-template-columns: 110px minmax(0, 1fr); }
+.builder-voice-row > span { white-space: normal; overflow: visible; }
+.builder-voice-row > .builder-voice-actions { grid-column: 1 / -1; justify-content: flex-end; flex-wrap: wrap; }
+.builder-voice-heard { display: block; font-size: 11px; font-weight: 600; color: #0369a1; white-space: normal; }

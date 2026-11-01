@@ -1,4 +1,6 @@
 @model HanhTrangLop1.Models.ChildProfile
+@using HanhTrangLop1.Application.Learning
+@inject KidsModuleService Modules
 @{
     ViewData["Title"] = "Góc Nghe Song Ngữ Anh - Việt";
 
@@ -228,14 +230,20 @@
             <span class="material-symbols-outlined" aria-hidden="true">home</span>
             <span>Trang chủ</span>
         </a>
-        <a asp-controller="Kids" asp-action="Today">
-            <span class="material-symbols-outlined" aria-hidden="true">map</span>
-            <span>Bài tập</span>
-        </a>
-        <a asp-controller="Kids" asp-action="Rewards">
-            <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
-            <span>Quà tặng</span>
-        </a>
+        @if (await Modules.IsVisibleAsync(KidsModuleKeys.Today))
+        {
+            <a asp-controller="Kids" asp-action="Today">
+                <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                <span>Bài tập</span>
+            </a>
+        }
+        @if (await Modules.IsVisibleAsync(KidsModuleKeys.Rewards))
+        {
+            <a asp-controller="Kids" asp-action="Rewards">
+                <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
+                <span>Quà tặng</span>
+            </a>
+        }
         <a href="#" onclick="openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
             <span class="material-symbols-outlined" aria-hidden="true">lock</span>
             <span>Phụ huynh</span>

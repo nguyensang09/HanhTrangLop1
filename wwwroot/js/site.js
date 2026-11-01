@@ -44,12 +44,9 @@
     }
 
     // ── A. Chặn pinch-to-zoom (multi-finger gesture) trên iPad / Điện thoại ──────────────────────
-    var lastTouchEndTime = 0;
-    var activeTouchCount = 0;
-
+    // Chỉ chặn khi có từ 2 ngón tay trở lên: vuốt 1 ngón để cuộn luôn do trình duyệt tự xử lý.
     document.addEventListener('touchstart', function (e) {
         if (isPC || !isKidsZone()) return;
-        activeTouchCount = e.touches.length;
         // 2+ ngón tay → pinch-zoom / rotate gesture → chặn trên iPad/Phone
         if (e.touches.length >= 2) {
             if (e.cancelable) e.preventDefault();
@@ -64,58 +61,9 @@
         }
     }, { passive: false });
 
-    // ── B. Chặn double-tap zoom trên iPad / Điện thoại ────────────────────────────
-    document.addEventListener('touchend', function (e) {
-        if (isPC || !isKidsZone()) return;
-        var now = Date.now();
-        var timeSinceLast = now - lastTouchEndTime;
-        lastTouchEndTime = now;
-
-        if (timeSinceLast < 300 && timeSinceLast > 0) {
-            var target = e.target;
-            var tag = target ? target.tagName.toUpperCase() : '';
-            if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
-                if (e.cancelable) e.preventDefault();
-            }
-        }
-    }, { passive: false });
-
-    // ── C. Chặn pull-to-refresh trên iPad / Điện thoại ──────
-    var touchStartY = 0;
-    document.addEventListener('touchstart', function (e) {
-        if (isPC || !isKidsZone()) return;
-        if (e.touches.length === 1) {
-            touchStartY = e.touches[0].clientY;
-        }
-    }, { passive: true });
-
-    document.addEventListener('touchmove', function (e) {
-        if (isPC || !isKidsZone()) return;
-        if (e.touches.length !== 1) return;
-
-        // Riêng các màn hình danh sách học tập cần vuốt và cuộn:
-        // /kids/bilingual-listen, /kids/tap-to (/kids/tracing), /kids/home...
-        // Tuyệt đối mở hoàn toàn cử chỉ vuốt và thanh cuộn, không can thiệp touchmove
-        var path = (window.location.pathname || '').toLowerCase();
-        if (document.querySelector('.bilingual-listen-screen, .tracing-hub-screen, .kid-home-screen, .ipad-home-hub-screen') ||
-            path.includes('/bilingual-listen') ||
-            path.includes('/tap-to') ||
-            path.includes('/tracing') ||
-            path.includes('/home') ||
-            path === '/kids' ||
-            path === '/kids/') {
-            return;
-        }
-
-        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0;
-        var touchY = e.touches[0].clientY;
-        var isPullingDown = touchY > touchStartY;
-
-        // Chặn pull-to-refresh: đang ở top của trang và kéo xuống
-        if (scrollTop <= 0 && isPullingDown) {
-            if (e.cancelable) e.preventDefault();
-        }
-    }, { passive: false });
+    // ── B. Double-tap zoom và pull-to-refresh do CSS lo (touch-action, overscroll-behavior ở body.kids-zone-active).
+    // Trước đây hai việc này chặn bằng JS: chạm nhanh hai lần bị nuốt mất lần sau, còn vuốt xuống trong khung cuộn
+    // bên trong bị coi là kéo tải lại trang nên không cuộn ngược lên được.
 
     // Đánh dấu lớp mở thanh cuộn cho các màn hình danh sách bài học của bé
     function markScrollableKidsScreens() {
@@ -153,12 +101,18 @@
         }
     });
 
-    // ── F. Context menu (long-press) trên cảm ứng (MỞ TRÊN PC) ──
+    // ── F. Chuột phải / chạm giữ: khóa ở khu vực của bé trên mọi thiết bị, tránh bé bấm nhầm vào các tác vụ của trình duyệt.
+    // Trang phụ huynh và quản trị vẫn dùng bình thường. Ô nhập chữ giữ lại để còn dán được.
     document.addEventListener('contextmenu', function (e) {
-        if (isPC || !isKidsZone()) return; // Trên PC: Cho phép chuột phải
+        if (!isKidsZone()) return;
         var tag = e.target ? e.target.tagName.toUpperCase() : '';
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
         e.preventDefault();
+    });
+
+    // Giữ rồi kéo ảnh hoặc liên kết trên máy tính tạo ra "bóng" kéo của trình duyệt, làm hỏng thao tác của bé.
+    document.addEventListener('dragstart', function (e) {
+        if (isKidsZone()) e.preventDefault();
     });
 
     // ── G. Chặn gesturestart / gesturechange (Safari iOS) ────
@@ -176,6 +130,76 @@
         if (isPC || !isKidsZone()) return;
         e.preventDefault();
     }, { passive: false });
+
+    // ── H. Thanh cuộn luôn hiện trên iPad ────
+    // Safari trên iPad giấu thanh cuộn, còn các thẻ kéo thả chiếm gần hết màn hình thì khó tìm chỗ vuốt. Thanh này
+    // nằm sát mép phải, kéo được bằng ngón tay như thanh cuộn trên máy tính, chỉ hiện khi trang dài hơn màn hình.
+    function setupTouchScrollbar() {
+        if (isPC || !isKidsZone() || !document.body) return;
+        var rail = document.createElement('div');
+        rail.className = 'touch-scrollbar';
+        rail.setAttribute('aria-hidden', 'true');
+        var thumb = document.createElement('div');
+        thumb.className = 'touch-scrollbar-thumb';
+        rail.appendChild(thumb);
+        document.body.appendChild(rail);
+
+        var doc = document.documentElement;
+        var dragOffset = null;
+        var frame = 0;
+
+        function metrics() {
+            var viewport = window.innerHeight;
+            var content = Math.max(doc.scrollHeight, document.body.scrollHeight);
+            var railHeight = rail.clientHeight;
+            var thumbHeight = Math.max(56, railHeight * viewport / Math.max(content, 1));
+            return { max: content - viewport, travel: railHeight - thumbHeight, thumbHeight: thumbHeight };
+        }
+        function paint() {
+            frame = 0;
+            var m = metrics();
+            rail.classList.toggle('is-on', m.max > 8);
+            thumb.style.height = m.thumbHeight + 'px';
+            var ratio = m.max > 0 ? Math.min(1, window.scrollY / m.max) : 0;
+            thumb.style.transform = 'translateY(' + (ratio * m.travel) + 'px)';
+        }
+        function schedule() { if (!frame) frame = window.requestAnimationFrame(paint); }
+        function scrollToPointer(clientY) {
+            var m = metrics();
+            if (m.travel <= 0) return;
+            var position = clientY - rail.getBoundingClientRect().top - dragOffset;
+            window.scrollTo(0, Math.max(0, Math.min(1, position / m.travel)) * m.max);
+        }
+
+        rail.addEventListener('pointerdown', function (e) {
+            var thumbRect = thumb.getBoundingClientRect();
+            var onThumb = e.clientY >= thumbRect.top && e.clientY <= thumbRect.bottom;
+            dragOffset = onThumb ? e.clientY - thumbRect.top : thumbRect.height / 2;
+            try { rail.setPointerCapture(e.pointerId); } catch (err) { /* trình duyệt cũ: vẫn cuộn được khi ngón tay còn trên thanh */ }
+            rail.classList.add('is-dragging');
+            scrollToPointer(e.clientY);
+            e.preventDefault();
+        });
+        rail.addEventListener('pointermove', function (e) {
+            if (dragOffset !== null) scrollToPointer(e.clientY);
+        });
+        function release() {
+            dragOffset = null;
+            rail.classList.remove('is-dragging');
+        }
+        rail.addEventListener('pointerup', release);
+        rail.addEventListener('pointercancel', release);
+
+        window.addEventListener('scroll', schedule, { passive: true });
+        window.addEventListener('resize', schedule, { passive: true });
+        if (typeof ResizeObserver === 'function') new ResizeObserver(schedule).observe(document.body);
+        paint();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupTouchScrollbar);
+    } else {
+        setupTouchScrollbar();
+    }
 
 })();
 
@@ -233,8 +257,6 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
     voiceCacheEntries.forEach((entry) => {
         const norm = readEntry(entry, "normalizedText");
         const orig = readEntry(entry, "originalText");
-        const textEn = readEntry(entry, "textEn");
-        const name = readEntry(entry, "name");
         if (norm) {
             voiceByText.set(normalizeLookupText(norm), entry);
             voiceByText.set((norm || "").trim().toLocaleLowerCase("vi-VN"), entry);
@@ -243,17 +265,18 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             voiceByText.set(normalizeLookupText(orig), entry);
             voiceByText.set((orig || "").trim().toLocaleLowerCase("vi-VN"), entry);
         }
-        if (textEn) {
-            voiceByText.set(normalizeLookupText(textEn), entry);
-            voiceByText.set((textEn || "").trim().toLocaleLowerCase("vi-VN"), entry);
-        }
-        if (name) {
-            const nameParts = name.split(" - ");
-            if (nameParts.length > 1) {
-                voiceByText.set(normalizeLookupText(nameParts.slice(1).join(" - ")), entry);
-            }
-        }
     });
+    // Bảng lời đọc của bài: kho Voice lưu theo lời đọc (chữ "Ă" đọc là "á"), giống hệt cách trang của bé tra file.
+    let lessonSpeech = {};
+    try {
+        lessonSpeech = JSON.parse(form.querySelector("[data-lesson-speech-json]")?.value || "{}") || {};
+    } catch {
+        lessonSpeech = {};
+    }
+    const spokenFor = (display) => {
+        const pair = lessonSpeech[display] || lessonSpeech[String(display || "").trim()];
+        return Array.isArray(pair) && pair[0] ? String(pair[0]).trim() : display;
+    };
     const readyVoiceEntries = voiceCacheEntries
         .filter((entry) => {
             const hasVi = typeof readEntry(entry, "hasAudioVi") === "boolean"
@@ -595,7 +618,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             if (!required && !normalized) return;
             const key = `${kind}|${normalized.toLocaleLowerCase("vi-VN")}`;
             if (normalized && rows.some((row) => row.key === key)) return;
-            rows.push({key, kind, text: normalized, required});
+            rows.push({key, kind, text: normalized, spoken: spokenFor(normalized), required});
         };
         const addLines = (kind, value) => {
             (value || "")
@@ -616,8 +639,9 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
 
         // Chỉ giữ Voice Câu hỏi bài học (PromptText), Phản hồi đúng/sai và các đáp án
         add("C\u00e2u h\u1ecfi b\u00e0i h\u1ecdc", read("PromptText") || read("Title"), true);
-        add("Ph\u1ea3n h\u1ed3i \u0111\u00fang", read("CorrectFeedback"), true);
-        add("Ph\u1ea3n h\u1ed3i sai", read("RetryFeedback"), true);
+        // Phản hồi đúng lúc học luôn là câu chuẩn, không theo ô nhập.
+        add("Ph\u1ea3n h\u1ed3i \u0111\u00fang", panel.dataset.correctText, true);
+        add("Ph\u1ea3n h\u1ed3i sai", read("RetryFeedback") || panel.dataset.retryText, true);
 
         choiceInputs.forEach((input, index) => add(`\u0110\u00e1p \u00e1n ${index + 1}`, input.value));
 
@@ -636,16 +660,19 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         if (type === "classification") {
             addMappings("V\u1eadt", "Nh\u00f3m", read("ClassificationText"));
         }
-        if (["counting", "quantity_builder", "comparison"].includes(type)) {
-            add("\u0110\u1ed3 v\u1eadt", read("ObjectSymbol"));
-        }
         if (type === "comparison") {
             add("Nh\u00f3m tr\u00e1i", read("LeftLabel"));
             add("Nh\u00f3m ph\u1ea3i", read("RightLabel"));
+            if (read("ComparisonVisualMode") !== "shape") add("N\u00fat", "B\u1eb1ng nhau");
+        }
+        // Đếm và tạo số lượng: cô đọc số bé vừa đếm tới.
+        if (["counting", "quantity_builder"].includes(type)) {
+            const countTo = Number(read("TargetCount") || 0) + (type === "quantity_builder" ? 3 : 0);
+            for (let number = 1; number <= Math.min(countTo, type === "quantity_builder" ? 12 : 20); number += 1) add("S\u1ed1 \u0111\u1ebfm", String(number));
         }
 
         const voiceStateFor = (row) => {
-            const match = row.text ? voiceByText.get(normalizeLookupText(row.text)) : null;
+            const match = row.text ? voiceByText.get(normalizeLookupText(row.spoken)) : null;
             const hasExplicitVi = typeof readEntry(match, "hasAudioVi") === "boolean";
             const hasExplicitEn = typeof readEntry(match, "hasAudioEn") === "boolean";
             return {
@@ -661,7 +688,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         rows.forEach((row, index) => {
             const item = document.createElement("div");
             item.className = `builder-voice-row ${row.text ? "" : "is-empty"}`;
-            const match = row.text ? voiceByText.get(normalizeLookupText(row.text)) : null;
+            const match = row.text ? voiceByText.get(normalizeLookupText(row.spoken)) : null;
             const audioUrl = readEntry(match, "audioUrl");
             const status = readEntry(match, "status");
             const audioUrlEn = readEntry(match, "audioUrlEn");
@@ -675,12 +702,18 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
             kind.textContent = row.kind;
             const text = document.createElement("span");
             text.textContent = row.text || "Chưa nhập text";
+            if (row.text && row.spoken !== row.text) {
+                const heard = document.createElement("small");
+                heard.className = "builder-voice-heard";
+                heard.textContent = ` Bé nghe: “${row.spoken}”`;
+                text.append(heard);
+            }
             const actions = document.createElement("div");
             actions.className = "builder-voice-actions";
 
             const updateEntryAudio = (result) => {
                 if (result && (result.audioUrl || result.audioUrlEn)) {
-                    const normalizedKey = normalizeLookupText(result.normalizedText || row.text);
+                    const normalizedKey = normalizeLookupText(result.normalizedText || row.spoken);
                     voiceByText.set(normalizedKey, result);
                     if (!readyVoiceEntries.some((v) => readEntry(v, "id") === result.id)) {
                         readyVoiceEntries.unshift(result);
@@ -731,7 +764,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                         const data = new FormData();
                         data.append("id", readEntry(currentMatch, "id") || "");
                         data.append("sourceId", sourceId);
-                        data.append("text", row.text);
+                        data.append("text", row.spoken);
                         data.append("usageType", row.kind);
                         data.append("__RequestVerificationToken", token);
                         const response = await fetch("/admin/voice-cache/copy-inline", {
@@ -763,7 +796,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                     const data = new FormData();
                     data.append("id", readEntry(currentMatch, "id") || "");
                     data.append("audioFile", file);
-                    data.append("text", row.text);
+                    data.append("text", row.spoken);
                     data.append("usageType", row.kind);
                     data.append("__RequestVerificationToken", token);
                     fileInput.disabled = true;
@@ -799,7 +832,7 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
                     try {
                         const data = new FormData();
                         data.append("id", readEntry(currentMatch, "id") || "");
-                        data.append("text", row.text);
+                        data.append("text", row.spoken);
                         data.append("usageType", row.kind);
                         data.append("__RequestVerificationToken", token);
                         const response = await fetch("/admin/voice-cache/generate-inline", {

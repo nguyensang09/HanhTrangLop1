@@ -105,6 +105,7 @@ public static partial class Lexicon
         yield return (nameof(MemoryTable), MemoryTable);
         yield return (nameof(MotorTable), MotorTable);
         yield return (nameof(WorldTable), WorldTable);
+        yield return (nameof(PracticeTable), PracticeTable);
     }
 
     private static void Load(Dictionary<string, Term> terms, string table, string source)

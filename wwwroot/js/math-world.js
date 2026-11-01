@@ -139,20 +139,7 @@
     var player = new Audio();
     player.preload = 'auto';
     var voiceToken = 0;
-    var browserVoice = null;
     var cutPlayback = null; // Kết thúc ngay câu đang phát khi có Voice mới.
-    var cutSpeech = null;
-
-    function pickBrowserVoice() {
-        if (!('speechSynthesis' in window)) return;
-        var prefix = voiceCfg.lang === 'en' ? 'en' : 'vi';
-        var voices = (window.speechSynthesis.getVoices() || []).filter(function (v) { return v.lang && v.lang.toLowerCase().indexOf(prefix) === 0; });
-        browserVoice = voices.filter(function (v) { return /female|nữ|samantha|linh|hoaimy|jenny|aria/i.test(v.name); })[0] || voices[0] || null;
-    }
-    if ('speechSynthesis' in window) {
-        pickBrowserVoice();
-        window.speechSynthesis.onvoiceschanged = pickBrowserVoice;
-    }
 
     function setSpeaking(on) { root.classList.toggle('is-speaking', on); }
 
@@ -178,32 +165,10 @@
         });
     }
 
-    function speakText(text, token) {
-        return new Promise(function (resolve) {
-            if (!text || token !== voiceToken || !('speechSynthesis' in window)) { resolve(); return; }
-            // Không có giọng đúng ngôn ngữ trên thiết bị thì im lặng còn hơn đọc sai giọng.
-            if (!browserVoice) pickBrowserVoice();
-            if (!browserVoice) { resolve(); return; }
-            try {
-                var u = new SpeechSynthesisUtterance(text);
-                u.lang = voiceCfg.speechLang;
-                u.voice = browserVoice;
-                u.rate = voiceCfg.lang === 'en' ? 0.9 : 0.95;
-                cutSpeech = resolve;
-                u.onend = u.onerror = function () { resolve(); };
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(u);
-                setTimeout(resolve, 12000);
-            } catch (e) { resolve(); }
-        });
-    }
-
     function stopVoice() {
         voiceToken++;
         try { player.pause(); } catch (e) { }
         if (cutPlayback) cutPlayback();
-        if (cutSpeech) { cutSpeech(); cutSpeech = null; }
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         setSpeaking(false);
     }
 
@@ -219,9 +184,9 @@
             return chain.then(function () {
                 if (token !== voiceToken) return;
                 var line = typeof item === 'string' ? voiceLines[item] : (voiceCfg.lang === 'vi' ? item : null);
-                if (!line) return;
-                if (line.url) return playFile(line.url, token).catch(function () { return speakText(line.text, token); });
-                return speakText(line.text, token);
+                // Chỉ phát file trong kho Voice chung, không đọc bằng giọng máy của thiết bị.
+                if (!line || !line.url) return;
+                return playFile(line.url, token).catch(function () { });
             });
         }, Promise.resolve()).then(function () { if (token === voiceToken) setSpeaking(false); });
     }
@@ -280,8 +245,8 @@
         if (old) old.remove();
         var t = txt('div', 'mw-toast mw-toast--' + kind, message);
         stageEl.appendChild(t);
-        setTimeout(function () { t.classList.add('is-out'); }, 1100);
-        setTimeout(function () { t.remove(); }, 1500);
+        setTimeout(function () { t.classList.add('is-out'); }, 700);
+        setTimeout(function () { t.remove(); }, 1000);
     }
 
     function renderProgress() {
@@ -337,15 +302,15 @@
             var praise = PRAISE[k];
             toast('🎉 ' + praise, 'ok');
             var isBoard = cur.p.kind === 'board';
-            say(isBoard ? praise + ' Con đã ghép đủ các cặp!' : praise + ' ' + solvedText(cur.p), 'happy');
+            say(isBoard ? praise + ' Con đã làm xong rồi!' : praise + ' ' + solvedText(cur.p), 'happy');
             // Thứ tự Voice: đáp án bé chọn → một câu khen ngắn → sang câu mới (chữ trên màn hình vẫn hiện phép tính đã giải).
             var spoken = voice([opts.lead, 'praise' + k]);
             var host = stageEl.querySelector('.mw-card');
             if (host) host.classList.add('is-solved');
             if (opts.onSolved) opts.onSolved();
-            // Chờ Bíp đọc xong (tối đa 5 giây) rồi mới sang câu mới.
-            var minDelay = wait(opts.delay || (reduceMotion ? 900 : 1300));
-            Promise.race([Promise.all([spoken, minDelay]), wait(5000)]).then(nextQuestion);
+            // Chờ Bíp đọc xong nhưng không quá mức trần, để nhịp sang câu mới luôn nhanh.
+            var minDelay = wait(opts.delay || (reduceMotion ? 450 : 700));
+            Promise.race([Promise.all([spoken, minDelay]), wait(1900)]).then(nextQuestion);
         }
 
         return ctx;
@@ -541,6 +506,57 @@
         tile.addEventListener('click', function (e) { if (e.detail === 0) onDrop(); }); // bàn phím
     }
 
+    // Kéo một thẻ tới một trong nhiều đích; chạm nhẹ không kéo là "chọn" (bé chạm thẻ rồi chạm đích cũng được).
+    function enableDragMany(tile, targets, onDrop, onTap) {
+        var pointerId = null, startX = 0, startY = 0, moved = false, ghost = null;
+        function hit(e) {
+            return targets.filter(function (target) {
+                var r = target.getBoundingClientRect();
+                return e.clientX >= r.left - 16 && e.clientX <= r.right + 16 && e.clientY >= r.top - 16 && e.clientY <= r.bottom + 16;
+            })[0] || null;
+        }
+        function cleanup() {
+            if (ghost) ghost.remove();
+            ghost = null;
+            tile.classList.remove('is-lifted');
+            targets.forEach(function (target) { target.classList.remove('is-hover'); });
+            document.body.classList.remove('drag-interaction-active');
+        }
+        tile.addEventListener('pointerdown', function (e) {
+            if (tile.disabled) return;
+            pointerId = e.pointerId; startX = e.clientX; startY = e.clientY; moved = false;
+            try { tile.setPointerCapture(pointerId); } catch (err) { }
+        });
+        tile.addEventListener('pointermove', function (e) {
+            if (pointerId !== e.pointerId) return;
+            if (!moved && Math.abs(e.clientX - startX) + Math.abs(e.clientY - startY) > 8) {
+                moved = true;
+                ghost = tile.cloneNode(true);
+                ghost.className = 'mw-tile mw-tile-ghost';
+                document.body.appendChild(ghost);
+                tile.classList.add('is-lifted');
+                document.body.classList.add('drag-interaction-active');
+            }
+            if (moved) {
+                ghost.style.left = e.clientX + 'px';
+                ghost.style.top = e.clientY + 'px';
+                var over = hit(e);
+                targets.forEach(function (target) { target.classList.toggle('is-hover', target === over); });
+            }
+        });
+        function end(e) {
+            if (pointerId !== e.pointerId) return;
+            pointerId = null;
+            var wasMoved = moved;
+            var target = wasMoved && e.type === 'pointerup' ? hit(e) : null;
+            cleanup();
+            if (target) onDrop(target);
+            else if (!wasMoved && e.type === 'pointerup') onTap();
+        }
+        tile.addEventListener('pointerup', end);
+        tile.addEventListener('pointercancel', end);
+    }
+
     // ---------------------------------------------------------------- Các phong cách chơi
     var RENDERERS = {
         choose: function (host, ctx) {
@@ -729,7 +745,7 @@
             host.appendChild(eq.node);
             host.appendChild(txt('p', 'mw-card-tip', '🔍 Số nào đang trốn trong ô ?'));
             var pad = el('div', 'mw-numpad');
-            for (var n = 0; n <= 10; n++) {
+            for (var n = 1; n <= 10; n++) {
                 (function (value) {
                     var key = button('mw-numkey', String(value));
                     key.style.setProperty('--n', value);
@@ -921,10 +937,10 @@
                 adv.walker.style.setProperty('--pos', index + 1);
                 sfx('hop');
                 if (index + 1 === questions.length) {
-                    setTimeout(function () { adv.spots[adv.spots.length - 1].textContent = '💎'; adv.walker.style.setProperty('--pos', index + 2); }, 600);
+                    setTimeout(function () { adv.spots[adv.spots.length - 1].textContent = '💎'; adv.walker.style.setProperty('--pos', index + 2); }, 400);
                 }
             };
-            onPicked.delay = reduceMotion ? 1000 : 1700;
+            onPicked.delay = reduceMotion ? 500 : 1000;
             host.appendChild(optionButtons(ctx, ctx.p.options, 'stone', eq.slot, onPicked));
             ctx.hintHost(host);
             requestAnimationFrame(function () {
@@ -969,6 +985,297 @@
             wrap.appendChild(main);
             host.appendChild(wrap);
             ctx.hintHost(main);
+        },
+
+        // Cân thăng bằng: đặt quả cân số lên đĩa phải, cân nghiêng cho bé thấy nặng hay nhẹ, thăng bằng là đúng.
+        balance: function (host, ctx) {
+            var p = ctx.p;
+            var scale = el('div', 'mw-scale');
+            scale.setAttribute('data-tilt', 'left');
+            var beam = el('div', 'mw-scale-beam');
+            var left = el('div', 'mw-scale-pan mw-scale-pan--left');
+            left.appendChild(pictureRow(p));
+            var right = el('div', 'mw-scale-pan mw-scale-pan--right');
+            var slot = txt('span', 'mw-weight mw-weight--slot', '?');
+            right.appendChild(slot);
+            beam.appendChild(left);
+            beam.appendChild(right);
+            scale.appendChild(beam);
+            scale.appendChild(el('span', 'mw-scale-post'));
+            host.appendChild(scale);
+            var eq = buildEquation(p);
+            host.appendChild(eq.node);
+            host.appendChild(txt('p', 'mw-card-tip', '⚖️ Chạm quả cân để đặt lên đĩa bên phải'));
+            var tray = el('div', 'mw-weights');
+            p.options.forEach(function (value) {
+                var weight = button('mw-weight', String(value));
+                weight.setAttribute('aria-label', 'Quả cân số ' + value);
+                weight.addEventListener('click', function () {
+                    if (ctx.isDone() || weight.disabled) return;
+                    slot.textContent = value;
+                    slot.classList.add('is-filled');
+                    scale.setAttribute('data-tilt', value === p.result ? 'level' : value > p.result ? 'right' : 'left');
+                    if (ctx.check(value, { target: weight, lead: answerVoiceKey(value) })) {
+                        weight.classList.add('is-used');
+                        fillSlot(eq.slot, value);
+                    } else {
+                        weight.disabled = true;
+                        weight.classList.add('is-wrong');
+                    }
+                });
+                tray.appendChild(weight);
+            });
+            host.appendChild(tray);
+            ctx.hintHost(host);
+        },
+
+        // Đúng hay sai: Bíp đưa ra một phép tính đã có kết quả, bé giơ ngón cái lên hoặc xuống.
+        truefalse: function (host, ctx) {
+            var p = ctx.p;
+            var eq = el('div', 'mw-eq mw-eq--claim');
+            eq.appendChild(txt('span', 'mw-eq-num', String(p.a)));
+            eq.appendChild(txt('span', 'mw-eq-op', opSymbol(p.op)));
+            eq.appendChild(txt('span', 'mw-eq-num', String(p.b)));
+            eq.appendChild(txt('span', 'mw-eq-op', '='));
+            var shown = txt('span', 'mw-eq-num mw-eq-num--claim', String(p.claimed));
+            eq.appendChild(shown);
+            host.appendChild(eq);
+            var row = el('div', 'mw-verdict');
+            [['dung', '👍', 'Đúng'], ['sai', '👎', 'Sai']].forEach(function (choice) {
+                var b = button('mw-verdict-btn mw-verdict-btn--' + choice[0], null);
+                b.appendChild(txt('span', 'mw-verdict-icon', choice[1]));
+                b.appendChild(txt('span', 'mw-verdict-text', choice[2]));
+                b.addEventListener('click', function () {
+                    if (ctx.isDone() || b.disabled) return;
+                    if (ctx.check(choice[0], { target: b })) {
+                        b.classList.add('is-correct');
+                        shown.textContent = p.result;
+                        shown.classList.add('is-fixed');
+                    } else {
+                        b.classList.add('is-wrong');
+                        b.disabled = true;
+                    }
+                });
+                row.appendChild(b);
+            });
+            host.appendChild(row);
+            ctx.hintHost(host);
+        },
+
+        // Đoàn tàu đếm tiếp: toa đầu mang số xuất phát, mỗi toa trống là một bước đếm, toa cuối là đáp án.
+        // Bé chỉ chọn một số cho toa cuối; đúng thì các toa tự sáng lên lần lượt để bé thấy cách đếm.
+        train: function (host, ctx) {
+            var p = ctx.p;
+            var step = p.op === '+' ? 1 : -1;
+            var track = el('div', 'mw-train');
+            track.appendChild(txt('span', 'mw-train-engine', '🚂'));
+            track.appendChild(txt('span', 'mw-car is-filled', String(p.a)));
+            var cars = [];
+            for (var i = 1; i <= p.b; i++) {
+                var car = txt('span', 'mw-car' + (i === p.b ? ' is-goal' : ''), i === p.b ? '?' : '');
+                track.appendChild(car);
+                cars.push(car);
+            }
+            host.appendChild(track);
+            var eq = buildEquation(p);
+            host.appendChild(eq.node);
+            host.appendChild(txt('p', 'mw-card-tip', step > 0 ? '🚃 Đếm tiếp theo từng toa rồi chạm số đúng' : '🚃 Đếm lùi theo từng toa rồi chạm số đúng'));
+            host.appendChild(optionButtons(ctx, p.options, 'balloon', eq.slot, lightCars));
+            lightCars.delay = reduceMotion ? 450 : 500 + p.b * 180;
+            function lightCars() {
+                cars.forEach(function (node, index) {
+                    setTimeout(function () {
+                        node.textContent = p.a + step * (index + 1);
+                        node.classList.add('is-filled');
+                    }, reduceMotion ? 0 : index * 180);
+                });
+            }
+            ctx.hintHost(host);
+        },
+
+        // Câu cá: mỗi chú cá mang một số, bé chạm chú cá có kết quả đúng.
+        fish: function (host, ctx) {
+            var p = ctx.p;
+            var eq = buildEquation(p);
+            host.appendChild(eq.node);
+            var pond = el('div', 'mw-fishpond');
+            pond.appendChild(txt('span', 'mw-fishpond-rod', '🎣'));
+            pond.appendChild(optionButtons(ctx, p.options, 'fish', eq.slot));
+            host.appendChild(pond);
+            ctx.hintHost(host);
+        },
+
+        // Xe buýt: bé nhìn các bạn lên xe (phép cộng) hoặc xuống xe (phép trừ) rồi chọn số bạn trên xe.
+        bus: function (host, ctx) {
+            var p = ctx.p;
+            var riders = ['🧒', '👧', '👦', '🧒🏻', '👧🏻', '👦🏻'];
+            function rider(index, cls) { return txt('span', 'mw-rider' + (cls ? ' ' + cls : ''), riders[index % riders.length]); }
+            var scene = el('div', 'mw-bus');
+            var bus = el('div', 'mw-bus-body');
+            var seats = el('div', 'mw-bus-seats');
+            for (var i = 0; i < p.a; i++) seats.appendChild(rider(i, p.op === '-' && i >= p.a - p.b ? 'is-leaving' : ''));
+            bus.appendChild(seats);
+            bus.appendChild(txt('span', 'mw-bus-wheels', '⚫ ⚫'));
+            scene.appendChild(bus);
+            if (p.op === '+') {
+                var stop = el('div', 'mw-bus-stop');
+                stop.appendChild(txt('span', 'mw-bus-sign', 'Lên xe'));
+                var waiting = el('div', 'mw-bus-riders');
+                for (var j = 0; j < p.b; j++) waiting.appendChild(rider(p.a + j, 'is-joining'));
+                stop.appendChild(waiting);
+                scene.appendChild(stop);
+            }
+            host.appendChild(scene);
+            var eq = buildEquation(p);
+            host.appendChild(eq.node);
+            host.appendChild(txt('p', 'mw-card-tip', p.op === '+' ? '🚌 Các bạn lên xe, trên xe có tất cả mấy bạn?' : '🚌 Các bạn mờ đã xuống xe, trên xe còn mấy bạn?'));
+            host.appendChild(optionButtons(ctx, p.options, 'balloon', eq.slot));
+            ctx.hintHost(host);
+        },
+
+        // Lật thẻ: tìm phép tính và kết quả của nó. Lật nhầm chỉ úp lại, không tính là sai vì đây là trò ghi nhớ.
+        memory: function (host, ctx) {
+            var pairs = ctx.p.pairs || [];
+            var deck = [];
+            pairs.forEach(function (pair, i) {
+                deck.push({ pair: i, label: pair.a + ' ' + opSymbol(pair.op) + ' ' + pair.b, speak: 'x:' + pair.a + pair.op + pair.b, cls: 'is-eq' });
+                deck.push({ pair: i, label: String(pair.result), speak: 'n' + pair.result, cls: 'is-res' });
+            });
+            var board = el('div', 'mw-memory');
+            board.setAttribute('data-count', deck.length);
+            var open = [];
+            var found = 0;
+            var busy = false;
+            shuffle(deck).forEach(function (info) {
+                var card = button('mw-flip', null);
+                card.setAttribute('aria-label', 'Thẻ úp');
+                var inner = el('span', 'mw-flip-inner');
+                // Mặt úp vẫn thấy mờ mờ nội dung để bé dễ hình dung và làm quen.
+                inner.appendChild(txt('span', 'mw-flip-back ' + info.cls, info.label));
+                inner.appendChild(txt('span', 'mw-flip-front ' + info.cls, info.label));
+                card.appendChild(inner);
+                card.addEventListener('click', function () {
+                    if (ctx.isDone() || busy || card.classList.contains('is-open')) return;
+                    card.classList.add('is-open');
+                    card.setAttribute('aria-label', info.label);
+                    sfx('tap');
+                    voice(info.speak);
+                    open.push({ card: card, info: info });
+                    if (open.length < 2) return;
+                    var a = open[0], b = open[1];
+                    open = [];
+                    if (a.info.pair === b.info.pair) {
+                        a.card.classList.add('is-found');
+                        b.card.classList.add('is-found');
+                        found++;
+                        sfx('pop');
+                        if (found === pairs.length) ctx.finish(pairs.map(function (x) { return x.result; }).join(','));
+                        return;
+                    }
+                    busy = true;
+                    sfx('wrong');
+                    toast(RETRY[0], 'retry');
+                    setTimeout(function () {
+                        [a, b].forEach(function (x) {
+                            x.card.classList.remove('is-open');
+                            x.card.setAttribute('aria-label', 'Thẻ úp');
+                        });
+                        busy = false;
+                    }, reduceMotion ? 500 : 900);
+                });
+                board.appendChild(card);
+            });
+            host.appendChild(board);
+            ctx.hintHost(host);
+        },
+
+        // Nhà số: mỗi ngôi nhà mang một con số, bé kéo (hoặc chạm rồi chọn nhà) từng phép tính vào đúng nhà.
+        sort: function (host, ctx) {
+            var pairs = ctx.p.pairs || [];
+            var results = pairs.map(function (x) { return x.result; }).filter(function (v, i, all) { return all.indexOf(v) === i; }).sort(function (a, b) { return a - b; });
+            var houses = el('div', 'mw-houses');
+            var houseEls = {};
+            results.forEach(function (value) {
+                var house = button('mw-house', null);
+                house.appendChild(txt('span', 'mw-house-roof', '🏠'));
+                house.appendChild(txt('strong', 'mw-house-num', String(value)));
+                house.appendChild(el('span', 'mw-house-items'));
+                house.setAttribute('aria-label', 'Nhà số ' + value);
+                house.addEventListener('click', function () { if (selected) place(selected, value); });
+                houseEls[value] = house;
+                houses.appendChild(house);
+            });
+            var tray = el('div', 'mw-tiles');
+            var placed = 0;
+            var selected = null;
+            function place(entry, value) {
+                if (ctx.isDone() || entry.tile.disabled) return;
+                entry.tile.classList.remove('is-selected');
+                selected = null;
+                var pair = entry.pair;
+                if (pair.result === value) {
+                    entry.tile.disabled = true;
+                    entry.tile.classList.add('is-used');
+                    houseEls[value].querySelector('.mw-house-items').appendChild(txt('span', 'mw-house-item', pair.a + ' ' + opSymbol(pair.op) + ' ' + pair.b));
+                    placed++;
+                    sfx('pop');
+                    if (placed === pairs.length) ctx.finish(pairs.map(function (x) { return x.result; }).join(','));
+                    else voice('r:' + pair.a + pair.op + pair.b);
+                } else {
+                    ctx.miss(houseEls[value], { op: pair.op, a: pair.a, b: pair.b, result: pair.result, missing: 'result' });
+                }
+            }
+            shuffle(pairs).forEach(function (pair) {
+                var tile = button('mw-tile mw-tile--wide', pair.a + ' ' + opSymbol(pair.op) + ' ' + pair.b);
+                var entry = { tile: tile, pair: pair };
+                enableDragMany(tile, results.map(function (v) { return houseEls[v]; }), function (house) {
+                    var value = results.filter(function (v) { return houseEls[v] === house; })[0];
+                    place(entry, value);
+                }, function () {
+                    if (ctx.isDone() || tile.disabled) return;
+                    if (selected) selected.tile.classList.remove('is-selected');
+                    selected = entry;
+                    tile.classList.add('is-selected');
+                    sfx('tap');
+                    voice('x:' + pair.a + pair.op + pair.b);
+                });
+                tray.appendChild(tile);
+            });
+            host.appendChild(tray);
+            host.appendChild(houses);
+            ctx.hintHost(host);
+        },
+
+        // Chọc bong bóng: chọc hết các bong bóng có phép tính bằng số Bíp đang giơ.
+        pop: function (host, ctx) {
+            var pairs = ctx.p.pairs || [];
+            var target = ctx.p.target;
+            var goal = el('div', 'mw-pop-goal');
+            goal.appendChild(txt('span', 'mw-pop-goal-label', 'Tìm phép tính bằng'));
+            goal.appendChild(txt('strong', 'mw-pop-goal-num', String(target)));
+            host.appendChild(goal);
+            var field = el('div', 'mw-bubbles');
+            var remaining = pairs.filter(function (x) { return x.result === target; }).length;
+            shuffle(pairs).forEach(function (pair, i) {
+                var bubble = button('mw-bubble-btn', pair.a + ' ' + opSymbol(pair.op) + ' ' + pair.b);
+                bubble.style.setProperty('--i', i);
+                bubble.addEventListener('click', function () {
+                    if (ctx.isDone() || bubble.disabled) return;
+                    if (pair.result === target) {
+                        bubble.disabled = true;
+                        bubble.classList.add('is-popped');
+                        remaining--;
+                        sfx('pop');
+                        if (remaining === 0) ctx.finish(pairs.map(function (x) { return x.result; }).join(','));
+                        else voice('r:' + pair.a + pair.op + pair.b);
+                    } else {
+                        ctx.miss(bubble, { op: pair.op, a: pair.a, b: pair.b, result: pair.result, missing: 'result' });
+                    }
+                });
+                field.appendChild(bubble);
+            });
+            host.appendChild(field);
+            ctx.hintHost(host);
         }
     };
 

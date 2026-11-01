@@ -1,0 +1,226 @@
+@using HanhTrangLop1.Application.Learning
+@using HanhTrangLop1.Application.MathWorld
+@model IReadOnlyList<KidsModule>
+@{
+    ViewData["Title"] = "Hiển thị Góc của bé";
+    var todayModule = Model.FirstOrDefault(m => m.Key == KidsModuleKeys.Today);
+    var visibleCount = Model.Count(m => m.IsVisible);
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@("@")600;700;800&display=swap" />
+<link rel="stylesheet" href="~/css/math-entry.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/kid-hub.css" asp-append-version="true" />
+<style>
+    .kmp-note { color: #475569; font-size: 14px; margin: 0 0 12px; }
+    .kmp-savebar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; box-shadow: 0 4px 14px rgba(15, 23, 42, .08); }
+    .kmp-savebar strong { flex: 1; min-width: 200px; font-size: 14px; }
+    .kmp-savebar.is-dirty { border-color: #f59e0b; background: #fffbeb; }
+    .kmp-frame.kh { min-height: 0; border-radius: 22px; overflow: hidden; border: 6px solid #1f2937; padding-bottom: 28px; }
+    .kmp-frame .kh-pill, .kmp-frame .kh-avatar, .kmp-frame .kh-continue { pointer-events: none; }
+    .kmp-frame .kh-hero.is-off .kh-hero-card { display: none; }
+    .kmp-tile { position: relative; cursor: pointer; transition: opacity .15s ease, filter .15s ease, transform .15s ease; }
+    .kmp-tile:focus-visible { outline: 4px solid #2563eb; outline-offset: 3px; }
+    .kmp-tile.is-dragging { opacity: .6; transform: scale(1.03); z-index: 5; }
+    /* Đang hiện: chỉ một biểu tượng nhỏ ở góc để thẻ giống hệt trang của bé. Đang ẩn: nhãn lớn giữa thẻ. */
+    .kmp-state { position: absolute; top: 6px; left: 6px; z-index: 6; display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 28px; height: 28px; border-radius: 999px; font: 700 14px/1 'Be Vietnam Pro', system-ui, sans-serif; background: #dcfce7; color: #166534; }
+    .kmp-state [data-state-text] { display: none; }
+    .kmp-state .material-symbols-outlined { font-size: 17px; }
+    .kmp-tile.is-off { filter: none; opacity: 1; }
+    .kmp-tile.is-off > :not(.kmp-state):not(.kmp-tools):not(input) { opacity: .28; filter: grayscale(.85); }
+    .kmp-tile.is-off { background: #f1f5f9; }
+    .kmp-tile.is-off:hover > :not(.kmp-state):not(.kmp-tools):not(input) { opacity: .5; }
+    .kmp-tile.is-off .kmp-state { top: 50%; left: 50%; width: auto; height: auto; padding: 8px 16px; transform: translate(-50%, -50%); background: #1f2937; color: #fff; }
+    .kmp-tile.is-off .kmp-state [data-state-text] { display: inline; }
+    @@media (max-width: 1280px) { .kmp-frame .kh-hero { grid-template-columns: 1fr; } }
+    .kmp-tools { position: absolute; left: 8px; bottom: 8px; z-index: 6; display: flex; gap: 4px; }
+    .kmp-tools button, .kmp-grip { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 10px; background: rgba(255, 255, 255, .92); color: #334155; box-shadow: 0 1px 3px rgba(15, 23, 42, .25); cursor: pointer; }
+    .kmp-grip { cursor: grab; touch-action: none; }
+    .kmp-pin { position: absolute; left: 8px; bottom: 8px; z-index: 6; padding: 4px 10px; border-radius: 999px; font: 700 12px/1.4 'Be Vietnam Pro', system-ui, sans-serif; background: #fef3c7; color: #92400e; }
+    @@media (prefers-reduced-motion: reduce) { .kmp-tile { transition: none; } }
+</style>
+
+<section class="admin-layout">
+    <partial name="_AdminSidebar" />
+    <main class="admin-main">
+        <partial name="_AdminFlash" />
+        <partial name="_AdminHeader" model="@("Hiển thị Góc của bé")" />
+
+        <p class="kmp-note">
+            Đây là đúng trang bé nhìn thấy. Chạm vào một thẻ để ẩn (thẻ mờ đi) hoặc hiện lại; kéo nút <span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle">drag_indicator</span> hoặc bấm mũi tên để đổi vị trí.
+            Module bị ẩn vẫn giữ nguyên bài học, tiến độ và phần thưởng.
+        </p>
+
+        <form asp-action="SaveKidsModules" method="post" id="kidsModulesForm">
+            <div class="kmp-savebar" id="kmpBar">
+                <strong id="kmpStatus">Bé đang thấy <span id="kmpCount">@visibleCount</span>/@Model.Count mục</strong>
+                <a class="app-btn app-btn-muted app-btn-small" asp-controller="Kids" asp-action="Home" target="_blank" rel="noopener">
+                    <span class="material-symbols-outlined">open_in_new</span>Mở trang thật
+                </a>
+                <button class="app-btn" type="submit">
+                    <span class="material-symbols-outlined">save</span>
+                    Lưu cấu hình
+                </button>
+            </div>
+
+            <div class="kh kh-home kmp-frame">
+                <header class="kh-topbar">
+                    <span class="kh-avatar" aria-hidden="true"><img src="~/images/mascot-squirrel-3d.png" alt="" /></span>
+                    <div class="kh-brand">
+                        <span class="kh-brand-mark" aria-hidden="true">🎒</span>
+                        <span class="kh-brand-text"><small>Hành Trang Lớp 1</small><strong>Chào Bé yêu 👋</strong></span>
+                    </div>
+                    <span class="kh-pill kh-pill--stars"><span aria-hidden="true">⭐</span><strong>0</strong><small class="kh-hide-sm">sao vàng</small></span>
+                    <span class="kh-pill kh-pill--lock"><span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="kh-hide-sm">Ba mẹ</span></span>
+                </header>
+
+                <section class="kh-hero @(todayModule?.IsVisible == false ? "is-off" : "")" id="kmpHero">
+                    <div class="kh-guide">
+                        <img class="kh-guide-img" src="~/images/mascot-squirrel-3d.png" alt="" />
+                        <p class="kh-bubble">Bé yêu ơi, hôm nay mình học gì nào? Bé chọn bài học để khám phá nhé! 🌰</p>
+                    </div>
+                    <div class="kh-hero-card">
+                        <span class="kh-continue kh-continue--gold">
+                            <span class="kh-continue-orb" aria-hidden="true">🗺️</span>
+                            <span class="kh-continue-text"><small>Hành trình học tập · Ngày 1</small><strong>Bài học rèn luyện trong ngày</strong></span>
+                            <span class="kh-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                        </span>
+                    </div>
+                </section>
+
+                <div class="kh-home-bar">
+                    <h2>Bé muốn chơi gì nào? 🎯</h2>
+                    <span class="kh-chip">Tổng cộng: <span id="kmpChip">@visibleCount</span> mục học tập</span>
+                </div>
+
+                <div class="kh-grid" id="kidsModuleList">
+                    @foreach (var module in Model)
+                    {
+                        var isMath = module.Key == MathCurriculum.SkillGroupCode;
+                        var card = isMath ? null : KidsModuleCard.For(module, null, 0, 1, null);
+                        <div class="kh-tile kmp-tile @(isMath ? "kh-tone-violet math-island-tile" : card!.Theme) @(module.IsVisible ? "" : "is-off")"
+                             role="switch" tabindex="0" aria-checked="@(module.IsVisible ? "true" : "false")" aria-label="@module.Name"
+                             data-key="@module.Key" data-pinned="@(module.IsPinned ? "true" : "false")">
+                            <input type="hidden" name="order" value="@module.Key" />
+                            <input type="checkbox" name="visible" value="@module.Key" checked="@module.IsVisible" hidden />
+                            @if (isMath)
+                            {
+                                <partial name="_KidsMathTileBody" model="(0, MathCurriculum.Lessons.Count, 0)" />
+                            }
+                            else
+                            {
+                                <partial name="_KidsModuleTileBody" model="card" />
+                            }
+                            <span class="kmp-state"><span class="material-symbols-outlined" aria-hidden="true" data-state-icon>@(module.IsVisible ? "visibility" : "visibility_off")</span><span data-state-text>@(module.IsVisible ? "Đang hiện" : "Đang ẩn")</span></span>
+                            @if (module.IsPinned)
+                            {
+                                <span class="kmp-pin">Luôn đứng đầu</span>
+                            }
+                            else
+                            {
+                                <span class="kmp-tools">
+                                    <span class="kmp-grip material-symbols-outlined" data-grip title="Kéo để đổi vị trí" aria-hidden="true">drag_indicator</span>
+                                    <button type="button" data-move="-1" aria-label="Đưa @module.Name lên trước" title="Lên trước"><span class="material-symbols-outlined">arrow_back</span></button>
+                                    <button type="button" data-move="1" aria-label="Đưa @module.Name ra sau" title="Ra sau"><span class="material-symbols-outlined">arrow_forward</span></button>
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </form>
+    </main>
+</section>
+
+<script>
+    (function () {
+        var list = document.getElementById('kidsModuleList');
+        var bar = document.getElementById('kmpBar');
+        var form = document.getElementById('kidsModulesForm');
+        var hero = document.getElementById('kmpHero');
+        var dirty = false;
+        var justDragged = false;
+
+        function refresh() {
+            var count = list.querySelectorAll('input[name="visible"]:checked').length;
+            document.getElementById('kmpCount').textContent = count;
+            document.getElementById('kmpChip').textContent = count;
+        }
+        function markDirty() {
+            dirty = true;
+            bar.classList.add('is-dirty');
+        }
+        function toggle(tile) {
+            var box = tile.querySelector('input[name="visible"]');
+            box.checked = !box.checked;
+            tile.classList.toggle('is-off', !box.checked);
+            tile.setAttribute('aria-checked', box.checked ? 'true' : 'false');
+            tile.querySelector('[data-state-icon]').textContent = box.checked ? 'visibility' : 'visibility_off';
+            tile.querySelector('[data-state-text]').textContent = box.checked ? 'Đang hiện' : 'Đang ẩn';
+            if (tile.dataset.key === 'today') hero.classList.toggle('is-off', !box.checked);
+            refresh();
+            markDirty();
+        }
+        function isPinned(tile) { return tile && tile.dataset.pinned === 'true'; }
+
+        list.addEventListener('click', function (event) {
+            var mover = event.target.closest('[data-move]');
+            var tile = event.target.closest('.kmp-tile');
+            if (!tile) return;
+            if (mover) {
+                if (mover.dataset.move === '-1') {
+                    var previous = tile.previousElementSibling;
+                    if (previous && !isPinned(previous)) list.insertBefore(tile, previous);
+                } else if (tile.nextElementSibling) {
+                    list.insertBefore(tile.nextElementSibling, tile);
+                }
+                mover.focus();
+                markDirty();
+                return;
+            }
+            if (event.target.closest('[data-grip]')) return;
+            if (justDragged) { justDragged = false; return; }
+            toggle(tile);
+        });
+
+        list.addEventListener('keydown', function (event) {
+            if ((event.key === ' ' || event.key === 'Enter') && event.target.classList.contains('kmp-tile')) {
+                event.preventDefault();
+                toggle(event.target);
+            }
+        });
+
+        // Kéo bằng nút cầm: thẻ đổi chỗ ngay khi ngón tay hoặc chuột đi qua thẻ khác, thấy được kết quả như trang của bé.
+        list.addEventListener('pointerdown', function (event) {
+            var grip = event.target.closest('[data-grip]');
+            if (!grip) return;
+            event.preventDefault();
+            var tile = grip.closest('.kmp-tile');
+            tile.classList.add('is-dragging');
+            var move = function (e) {
+                var under = document.elementFromPoint(e.clientX, e.clientY);
+                var over = under && under.closest('.kmp-tile');
+                if (!over || over === tile || isPinned(over)) return;
+                var rect = over.getBoundingClientRect();
+                var after = e.clientY > rect.bottom || (e.clientY >= rect.top && e.clientX > rect.left + rect.width / 2);
+                list.insertBefore(tile, after ? over.nextElementSibling : over);
+                markDirty();
+            };
+            var end = function () {
+                tile.classList.remove('is-dragging');
+                justDragged = true;
+                setTimeout(function () { justDragged = false; }, 0);
+                window.removeEventListener('pointermove', move);
+                window.removeEventListener('pointerup', end);
+                window.removeEventListener('pointercancel', end);
+            };
+            window.addEventListener('pointermove', move);
+            window.addEventListener('pointerup', end);
+            window.addEventListener('pointercancel', end);
+        });
+
+        form.addEventListener('submit', function () { dirty = false; });
+        window.addEventListener('beforeunload', function (event) {
+            if (dirty) { event.preventDefault(); event.returnValue = ''; }
+        });
+    })();
+</script>

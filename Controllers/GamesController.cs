@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HanhTrangLop1.Application.Learning;
 using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
@@ -16,6 +17,7 @@ public class GamesController : Controller
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly VoiceLibraryMaintenanceService _voiceLibraryService;
+    private readonly KidsModuleService _modules;
 
     /// <summary>
     /// Danh mục trò chơi. Số màn khớp với wwwroot/js/games/game-levels.js. Mỗi trò gắn với một nhóm bài học
@@ -42,8 +44,10 @@ public class GamesController : Controller
     public GamesController(
         ApplicationDbContext db,
         UserManager<ApplicationUser> userManager,
-        VoiceLibraryMaintenanceService voiceLibraryService)
+        VoiceLibraryMaintenanceService voiceLibraryService,
+        KidsModuleService modules)
     {
+        _modules = modules;
         _db = db;
         _userManager = userManager;
         _voiceLibraryService = voiceLibraryService;
@@ -148,6 +152,8 @@ public class GamesController : Controller
     [HttpGet("/games")]
     public async Task<IActionResult> Index()
     {
+        if (!await _modules.IsVisibleAsync(KidsModuleKeys.Games)) return RedirectToAction("Home", "Kids");
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {
@@ -200,6 +206,8 @@ public class GamesController : Controller
     [HttpGet("/games/play")]
     public async Task<IActionResult> Play(string game = "bubble", int? level = null)
     {
+        if (!await _modules.IsVisibleAsync(KidsModuleKeys.Games)) return RedirectToAction("Home", "Kids");
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {

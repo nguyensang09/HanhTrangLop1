@@ -66,7 +66,7 @@ public static partial class LessonBank
             spoken: new Say("Con gì to ơi là to, có cái vòi thật dài?", "Which animal is huge and has a really long trunk?"));
 
         g.Listen("v5-lang-sound-rooster", "Ai gáy ò ó o?", soundPrompt, "🐔",
-            ["Con vịt", "Con chim", "Con gà"], "Con gà",
+            ["Con vịt", "Con chim", "Con gà trống"], "Con gà trống",
             spoken: new Say("Ò ó o! Con vật nào gáy vang mỗi sáng?", "Cock-a-doodle-doo! Which animal crows every morning?"));
 
         g.Listen("v5-lang-riddle-umbrella", "Đố con: cái gì che mưa?", riddlePrompt, "☂️",
@@ -116,7 +116,7 @@ public static partial class LessonBank
             "It's winter and snow covers the forest. Little Fox finds a blue scarf on a branch and wraps it around his neck. Then Squirrel runs up: \"That's my scarf! I dropped it!\" Fox gives it back right away.");
         g.Story("v5-lang-cao-find", "Cáo nhỏ nhặt được gì?", fox,
             new Say("Cáo nhỏ thấy gì trên cành cây?", "What does Little Fox find on the branch?"),
-            "🧣", ["Găng tay", "Khăn quàng", "Mũ len"], "Khăn quàng", Ill("cao-chiec-khan"),
+            "🧣", ["Găng tay", "Khăn quàng", "Mũ lưỡi trai"], "Khăn quàng", Ill("cao-chiec-khan"),
             retry: new Say("Con nhìn thứ màu xanh đang treo trên cành cây nhé!", "Look at the blue thing hanging on the branch!"));
         g.Story("v5-lang-cao-owner", "Chiếc khăn của ai?", fox,
             new Say("Chiếc khăn xanh là của ai?", "Whose blue scarf is it?"),
@@ -337,8 +337,8 @@ public static partial class LessonBank
             retry: new Say("Con nhìn hai tay thỏ đang nắm vào đâu nhé!", "Look at what Rabbit is holding with both hands!"));
 
         var smallCarrots = new Say(
-            "Cà rốt của thỏ con nhỏ xíu. Bác thỏ đội mũ rơm dạy: “Cháu nhổ cỏ, tưới nước mỗi ngày nhé.” Thỏ con chăm chỉ làm theo. Ít lâu sau, cà rốt to và ngọt, đầy cả giỏ.",
-            "Little Bunny's carrots are tiny. Grandpa Rabbit in his straw hat says, \"Pull the weeds and water them every day.\" Little Bunny works hard, and soon there's a whole basket of big, sweet carrots.");
+            "Cà rốt của thỏ con nhỏ xíu. Bác thỏ đội mũ rơm dạy: “Cháu nhổ cỏ, dùng bình tưới nước mỗi ngày nhé.” Thỏ con chăm chỉ làm theo. Ít lâu sau, cà rốt to và ngọt, đầy cả giỏ.",
+            "Little Bunny's carrots are tiny. Grandpa Rabbit in his straw hat says, \"Pull the weeds and use the watering can every day.\" Little Bunny works hard, and soon there's a whole basket of big, sweet carrots.");
         g.Story("ngon-ngu-story-tho-con-ca-rot", "Thỏ con chăm vườn", smallCarrots,
             new Say("Ai dạy thỏ con trồng cà rốt?", "Who teaches Little Bunny how to grow carrots?"),
             "👒", ["Mẹ chim", "Bác thỏ đội mũ rơm", "Bạn sóc nâu"], "Bác thỏ đội mũ rơm", Ill("tho-con-ca-rot"),
@@ -389,7 +389,7 @@ public static partial class Lexicon
         Để dành ăn mùa đông | ❄️ | to eat in winter
         Nhặt hạt dẻ | 🌰 | pick up chestnuts
         Bỏ vào giỏ | 🧺 | put them in the basket
-        Cất cho mùa đông | 🍂 | hide them for winter
+        Cất cho mùa đông | ❄️ | hide them for winter
         Trong bồn tắm | 🛁 | in the bathtub
         Ở bờ suối | 🏞️ | at the stream
         Dưới vòi nước | 🚰 | under the tap
@@ -420,7 +420,7 @@ public static partial class Lexicon
         Mẹ chim | 🐦 | Mother Bird
         Bác thỏ đội mũ rơm | 👒 | Grandpa Rabbit in a straw hat
         Bạn sóc nâu | 🐿️ | Brown Squirrel
-        Bình tưới nước | 🚿 | watering can
+        Bình tưới nước | 💧 | watering can
         Cà rốt còn nhỏ xíu | 🥕 | the carrots are tiny
         Nhổ cỏ, tưới nước | 🌿 | pull weeds and water
         Cà rốt to đầy giỏ | 🧺 | a basket full of big carrots

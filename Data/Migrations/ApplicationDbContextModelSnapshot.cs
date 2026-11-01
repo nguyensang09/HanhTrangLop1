@@ -374,6 +374,26 @@ namespace HanhTrangLop1.Data.Migrations
                     b.ToTable("GardenItems");
                 });
 
+            modelBuilder.Entity("HanhTrangLop1.Models.KidsModuleSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("KidsModuleSettings");
+                });
+
             modelBuilder.Entity("HanhTrangLop1.Models.LearningAttempt", b =>
                 {
                     b.Property<Guid>("Id")

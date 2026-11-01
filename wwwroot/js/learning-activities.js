@@ -28,12 +28,83 @@
         return shuffled;
     };
 
+    // Kho bài lưu các mục sắp xếp đúng thứ tự: giữ bản gốc trước khi xáo cho cách chơi "leo cầu thang".
+    const orderedItems = Array.isArray(payload.items) ? [...payload.items] : [];
+
     if (Array.isArray(payload.choices)) payload.choices = shuffleForDisplay(payload.choices);
     if (Array.isArray(payload.items)) payload.items = shuffleForDisplay(payload.items);
     if (Array.isArray(payload.pairs)) payload.pairs = shuffleForDisplay(payload.pairs);
     if (Array.isArray(payload.mappings)) payload.mappings = shuffleForDisplay(payload.mappings);
 
     const type = runtime.dataset.activityType;
+
+    // ==========================================
+    // Cách chơi: cùng một bài, cùng cách chấm, nhưng nhiều kiểu thao tác
+    // ==========================================
+    // Tách "cách chơi" khỏi "dạng bài" như Đảo Toán Học tách phong cách khỏi bộ câu hỏi: đáp án gửi lên máy chủ
+    // không đổi nên dữ liệu bài, tiến độ và cách chấm giữ nguyên. Mỗi lần mở bài chọn một cách chơi hợp với nội dung
+    // và tránh hai cách vừa dùng, kể cả khi bài trước thuộc nhóm khác (Bài học hôm nay trộn nhiều nhóm).
+    const playTarget = String(payload.playTarget || "").trim();
+    // Danh mục cách chơi. Thêm một cách chơi mới chỉ cần một dòng ở đây (dùng cho dạng bài nào, khi nào) và một hàm vẽ
+    // trong SINGLE_PLAYS, CHOICE_SKINS hoặc PLAY_RENDERERS; dữ liệu bài và cách chấm không phải sửa.
+    const CHOICE_TYPES = ["single_choice", "listen_choose"];
+    const choiceCount = () => (payload.choices || []).length;
+    const choicesUpTo = (max) => () => choiceCount() >= 2 && choiceCount() <= max;
+    const hasPlayTarget = () => Boolean(playTarget) && (payload.choices || []).includes(playTarget) && choiceCount() >= 2;
+    const expectsCount = () => Number(payload.expectedAnswerCount || 0) > 0;
+    const fewPairs = () => (payload.pairs || []).length <= 4;
+    const PLAY_CATALOG = [
+        { key: "tap", types: CHOICE_TYPES },
+        { key: "float", types: CHOICE_TYPES, when: choicesUpTo(6) },
+        { key: "tree", types: CHOICE_TYPES, when: choicesUpTo(6) },
+        { key: "feed", types: CHOICE_TYPES, when: choicesUpTo(5) },
+        { key: "pond", types: CHOICE_TYPES, when: choicesUpTo(4) },
+        { key: "race", types: CHOICE_TYPES, when: choicesUpTo(4) },
+        { key: "hunt", types: CHOICE_TYPES, when: hasPlayTarget },
+        { key: "stones", types: CHOICE_TYPES, when: hasPlayTarget },
+        { key: "reveal", types: CHOICE_TYPES, when: hasPlayTarget },
+        { key: "burrow", types: CHOICE_TYPES, when: hasPlayTarget },
+        { key: "tap", types: ["multi_select"] },
+        { key: "basket", types: ["multi_select"], when: expectsCount },
+        { key: "net", types: ["multi_select"], when: expectsCount },
+        { key: "lines", types: ["matching"] },
+        { key: "memory", types: ["matching"], when: fewPairs },
+        { key: "homes", types: ["matching"], when: fewPairs },
+        { key: "slots", types: ["ordering"] },
+        { key: "stairs", types: ["ordering"], when: () => payload.bankVersion && orderedItems.length >= 2 },
+        { key: "carriages", types: ["ordering"], when: () => payload.bankVersion && orderedItems.length >= 2 && orderedItems.length <= 6 },
+        { key: "count", types: ["counting"] },
+        { key: "frame", types: ["counting"], when: () => Number(payload.targetCount || 0) <= 10 },
+        { key: "stepper", types: ["quantity_builder"] },
+        { key: "gather", types: ["quantity_builder"] },
+        { key: "cells", types: ["quantity_builder"], when: () => Number(payload.maxItems || 99) <= 12 },
+        { key: "seesaw", types: ["comparison"] },
+        { key: "towers", types: ["comparison"], when: () => payload.visualMode !== "shape" },
+        { key: "baskets", types: ["classification"] },
+        { key: "onebyone", types: ["classification"] }
+    ];
+    const playOptionsFor = () => PLAY_CATALOG
+        .filter((entry) => entry.types.includes(type) && (!entry.when || entry.when()))
+        .map((entry) => entry.key);
+    const pickPlay = () => {
+        if (payload.play) return String(payload.play);
+        const options = playOptionsFor();
+        if (options.length < 2) return options[0] || "";
+        let recent = [];
+        try {
+            recent = JSON.parse(window.sessionStorage.getItem("lw-recent-plays") || "[]");
+        } catch { /* trình duyệt chặn lưu trữ: chỉ mất phần tránh lặp */ }
+        let pool = options.filter((option) => !recent.includes(option));
+        if (pool.length === 0) pool = options.filter((option) => option !== recent[0]);
+        if (pool.length === 0) pool = options;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        try {
+            window.sessionStorage.setItem("lw-recent-plays", JSON.stringify([chosen, ...recent].slice(0, 2)));
+        } catch { /* như trên */ }
+        return chosen;
+    };
+    const play = pickPlay();
+    if (play) runtime.dataset.play = play;
 
     // ==========================================
     // Cơ chế tự động kiểm tra đáp án dùng chung
@@ -43,9 +114,12 @@
     //   - instant: chọn một đáp án là xong (chọn một, nghe và chọn, kéo thả, đếm, so sánh...)
     //   - complete: phải điền đủ toàn bộ cặp/nhóm (nối cặp, phân loại, chọn nhiều đáp án)
     //   - settle: bé có thể chỉnh nhiều lần, chấm sau khi dừng chỉnh (sắp xếp, tạo số lượng)
-    const INSTANT_DELAY = 1000;
-    const COMPLETE_DELAY = 900;
-    const SETTLE_DELAY = 2600;
+    const INSTANT_DELAY = 250;
+    const COMPLETE_DELAY = 300;
+    const SETTLE_DELAY = 1500;
+    // Sau khi đúng: giữ hiệu ứng tối thiểu ngần này, chờ Voice "đáp án → Chính xác!" đọc xong nhưng không quá mức trần.
+    const CORRECT_MIN_HOLD = 700;
+    const CORRECT_MAX_HOLD = 2300;
     const settleTypes = new Set(["ordering", "quantity_builder"]);
     const autoCheckEnabled = runtime.dataset.activityAutocheck !== "false";
 
@@ -162,9 +236,8 @@
             statusElement?.classList.add("is-holding");
             return;
         }
-        const minDelay = 2200;
-        runProgress(minDelay);
-        await Promise.race([Promise.all([spoken, wait(minDelay)]), wait(6000)]);
+        runProgress(CORRECT_MIN_HOLD);
+        await Promise.race([Promise.all([spoken, wait(CORRECT_MIN_HOLD)]), wait(CORRECT_MAX_HOLD)]);
         window.location.assign(nextUrl);
     };
 
@@ -183,6 +256,32 @@
         renderActivity();
         lockBoard(false);
         hasSubmitted = false;
+    };
+
+    // Các cách chơi nhiều lượt (bắt bóng, qua suối, leo cầu thang, lật thẻ) tự biết thẻ bé vừa chạm là đúng hay sai,
+    // chưa gửi lên máy chủ: chỉ báo để bé thử lại, không tính là một lần làm sai. Voice nhắc đọc sau tên thẻ bé vừa chạm.
+    const RETRY_TEXT = "Chưa đúng rồi, con thử lại nhé!";
+    const notifyWrong = (...tiles) => {
+        tiles.forEach((tile) => {
+            tile.classList.remove("is-wrong");
+            void tile.offsetWidth;
+            tile.classList.add("is-wrong");
+            window.setTimeout(() => tile.classList.remove("is-wrong"), 700);
+        });
+        if (statusElement) {
+            statusElement.hidden = false;
+            setResultState("is-retry", "replay");
+            if (statusText) statusText.textContent = RETRY_TEXT;
+            if (statusProgress) {
+                statusProgress.style.transition = "none";
+                statusProgress.style.width = "0%";
+            }
+            window.requestAnimationFrame(() => statusElement.classList.add("is-active"));
+        }
+        void playFeedback({ correct: false, message: RETRY_TEXT });
+    };
+    const clearWrongNotice = () => {
+        if (statusElement?.classList.contains("is-retry") && !hasSubmitted) hideStatus();
     };
 
     // Khóa bảng làm bài trong lúc chấm: bé chạm thêm đáp án khác lúc này sẽ làm màn hình lệch với kết quả
@@ -407,6 +506,8 @@
             mediaUrl = "";
             pictogram = "";
         }
+        // Bài trong kho có sẵn hình cho từng nhãn: không đoán hình theo chữ, tránh nhãn không có hình lại mượn nhầm hình khác.
+        if (payload.bankVersion) pictogram = "";
 
         button.replaceChildren();
 
@@ -858,7 +959,7 @@
         runtime.append(goalPill(goalIcon, goalText, dots));
 
         const choices = payload.choices || [];
-        const grid = tileGrid(`lw-choice-grid${allowMultiple ? " is-multi" : ""}`, choices);
+        const grid = tileGrid(`lw-choice-grid${allowMultiple ? " is-multi" : ""}${goal?.gridClass ? ` ${goal.gridClass}` : ""}`, choices);
         const tiles = [];
         const refresh = () => {
             tiles.forEach(({ tile, choice }) => tile.classList.toggle("is-selected", selected.has(choice)));
@@ -906,10 +1007,10 @@
     const renderMultiSelect = () => renderChoice(true);
 
     // Kéo vào ô: một ô đích thật to; chạm vào hình là hình bay vào ô, hoặc kéo hình thả vào ô.
-    const renderDragDrop = () => {
+    const renderDragDrop = (options = {}) => {
         appendEquationVisual();
         appendFocusVisual();
-        runtime.append(goalPill("pan_tool_alt", "Kéo hình vào ô"));
+        runtime.append(goalPill(options.goalIcon || "pan_tool_alt", options.goalText || "Kéo hình vào ô"));
         const choices = payload.choices || [];
         const stage = el("div", "lw-dnd");
         const source = tileGrid("lw-dnd-source", choices);
@@ -921,7 +1022,9 @@
         const targetText = String(payload.targetLabel || "").trim();
         const zoneVisual = resolveVisual(targetText);
         const zonePictogram = targetText ? resolvePictogram(targetText) : "";
-        if (zoneVisual) {
+        if (options.art) {
+            zoneArt.append(el("span", "answer-emoji", options.art));
+        } else if (zoneVisual) {
             renderVisual(zoneArt, zoneVisual, targetText);
         } else if (zonePictogram) {
             const image = el("img", "answer-pictogram");
@@ -932,9 +1035,18 @@
             zoneArt.append(icon("inventory_2", "lw-drop-icon"));
         }
         const zoneSlot = el("span", "lw-drop-slot");
-        zoneSlot.append(icon("south", "lw-drop-arrow"));
+        if (options.ghost) zoneSlot.append(el("span", "lw-drop-ghost", options.ghost));
+        else zoneSlot.append(icon("south", "lw-drop-arrow"));
         zone.append(zoneArt, zoneSlot);
-        if (targetText) zone.append(el("strong", "lw-drop-label", targetText));
+        if (options.word) {
+            // Tô màu chữ đầu của từ để bé thấy chữ cần tìm nằm ở đâu trong từ.
+            const [first, ...rest] = Array.from(options.word);
+            const label = el("strong", "lw-drop-label lw-word");
+            label.append(el("span", "lw-word-first", first), document.createTextNode(rest.join("")));
+            zone.append(label);
+        } else if (targetText) {
+            zone.append(el("strong", "lw-drop-label", targetText));
+        }
         zone.setAttribute("aria-label", targetText || "Ô thả hình");
 
         let current = null;
@@ -948,7 +1060,7 @@
             zoneSlot.replaceChildren(item);
             zone.classList.add("is-filled");
             flash(zone, "is-gulp");
-            setAnswer(choice, true, true, 1000);
+            setAnswer(choice, true, true);
         };
 
         choices.forEach((choice, index) => {
@@ -1176,6 +1288,26 @@
         scheduleDraw();
     };
 
+    // Dãy mẫu đã xếp sẵn (khác số với bài): mỗi số kèm số chấm tương ứng, mũi tên chỉ chiều xếp để bé hình dung dãy số.
+    const orderExample = Array.isArray(payload.orderExample) ? payload.orderExample.map(String) : [];
+    const appendOrderExample = () => {
+        if (orderExample.length === 0) return;
+        const card = el("div", "lw-example");
+        card.setAttribute("role", "img");
+        card.setAttribute("aria-label", `Ví dụ xếp số: ${orderExample.join(", ")}`);
+        card.append(el("span", "lw-example-tag", "Ví dụ"));
+        orderExample.forEach((value, index) => {
+            if (index > 0) card.append(icon("arrow_forward", "lw-example-arrow"));
+            const step = el("span", "lw-example-step");
+            step.append(el("strong", "lw-example-num", value));
+            const dots = el("span", "lw-example-dots");
+            for (let dot = 0; dot < Math.min(Number(value) || 0, 10); dot += 1) dots.append(el("i"));
+            step.append(dots);
+            card.append(step);
+        });
+        runtime.append(card);
+    };
+
     // Sắp xếp thứ tự: hàng ô số 1-2-3 ở trên, các thẻ ở dưới. Chạm thẻ là thẻ bay vào ô trống đầu tiên
     // (chạm lại thẻ đã xếp để trả về), hoặc kéo thẻ thả vào đúng ô (thả vào ô đã có thẻ thì đổi chỗ).
     // Đáp án vẫn là chuỗi "a|b|c" theo thứ tự ô.
@@ -1184,8 +1316,9 @@
         const slots = new Array(items.length).fill(null);
 
         runtime.append(goalPill("format_list_numbered", "Xếp theo thứ tự"));
+        appendOrderExample();
 
-        const board = el("div", "lw-seq");
+        const board = el("div", `lw-seq${orderExample.length ? " has-example" : ""}`);
         board.dataset.count = String(items.length);
         const track = el("div", "lw-seq-track");
         track.setAttribute("aria-label", "Thứ tự bé đã xếp");
@@ -1362,6 +1495,10 @@
         scene.append(field, tools);
         runtime.append(scene);
 
+        appendCountChoices();
+    };
+
+    const appendCountChoices = () => {
         const choices = payload.choices || [];
         runtime.append(goalPill("123","Có tất cả mấy hình?"));
         const grid = tileGrid("lw-num-grid", choices);
@@ -1375,7 +1512,7 @@
                 tiles.forEach((item) => item.classList.toggle("is-selected", item === tile));
                 grid.classList.add("has-pick");
                 flash(tile, "is-bounce");
-                setAnswer(String(choice), true, true, 1000);
+                setAnswer(String(choice), true, true);
             });
             grid.append(tile);
         });
@@ -1462,7 +1599,7 @@
             : (mode === "less" ? "Chạm vào nhóm ít hơn" : mode === "more" ? "Chạm vào nhóm nhiều hơn" : "So sánh hai nhóm");
         runtime.append(goalPill("balance", goalText));
 
-        const board = el("div", `lw-cmp ${isShapeComparison ? "is-shape" : "is-quantity"}`);
+        const board = el("div", `lw-cmp ${isShapeComparison ? "is-shape" : "is-quantity"}${play === "towers" ? " is-towers" : ""}`);
         const row = el("div", "lw-cmp-row");
         const seesaw = el("div", "lw-cmp-seesaw");
         seesaw.setAttribute("aria-hidden", "true");
@@ -1481,7 +1618,7 @@
             board.classList.add("has-pick");
             board.dataset.tilt = tiltFor(value);
             flash(button, "is-bounce");
-            setAnswer(value, true, true, 1000);
+            setAnswer(value, true, true);
         };
 
         const group = (label, count, value, side) => {
@@ -1653,18 +1790,652 @@
         renderChoice(false, { icon: "auto_stories", text: "Chọn câu trả lời đúng" });
     };
 
-    const renderListenChoose = () => {
-        const row = el("div", "lw-listen-row");
-        row.append(listenButton("Nghe lại", "hearing"));
-        runtime.append(row);
-        renderChoice(false);
+    // Thẻ hình mẫu: bé so hình dáng với mẫu, không cần biết đọc hay nhớ tên.
+    const targetCard = () => {
+        const card = el("div", "lw-target");
+        card.setAttribute("role", "img");
+        card.setAttribute("aria-label", `Hình mẫu ${playTarget}`);
+        card.append(icon("search", "lw-target-icon"), el("strong", "lw-target-glyph", playTarget));
+        return card;
+    };
+
+    // Bắt bóng: chọc hết các quả bóng giống mẫu. Chạm nhầm thì báo để bé thử lại.
+    const renderHunt = () => {
+        const others = (payload.choices || []).filter((choice) => choice !== playTarget);
+        const tokens = shuffleForDisplay([playTarget, playTarget, playTarget, ...others, ...others].slice(0, 8));
+        let remaining = tokens.filter((token) => token === playTarget).length;
+        runtime.append(goalPill("toys", "Chọc hết bóng giống mẫu"), targetCard());
+        const field = tileGrid("lw-hunt", tokens);
+        tokens.forEach((token, index) => {
+            const tile = makeTile(token, "lw-tile--balloon");
+            tile.style.setProperty("--i", String(index));
+            tile.addEventListener("click", () => {
+                playAnswerAudio(token);
+                if (token !== playTarget) {
+                    notifyWrong(tile);
+                    return;
+                }
+                clearWrongNotice();
+                tile.disabled = true;
+                tile.classList.add("is-popped");
+                remaining -= 1;
+                if (remaining === 0) setAnswer(playTarget, true, true);
+            });
+            field.append(tile);
+        });
+        finishGrid(field);
+        runtime.append(field);
+    };
+
+    // Qua suối: mỗi lượt chọn hòn đá giống mẫu để bạn thỏ nhảy tới, đủ lượt là tới đích.
+    const renderStones = () => {
+        const others = (payload.choices || []).filter((choice) => choice !== playTarget);
+        const rounds = 3;
+        let position = 0;
+        runtime.append(goalPill("directions_walk", "Chạm hòn đá giống mẫu"), targetCard());
+        const path = el("div", "lw-path");
+        path.style.setProperty("--stops", String(rounds));
+        path.append(el("span", "lw-path-goal", "🥕"));
+        const walker = el("span", "lw-path-walker", "🐰");
+        path.append(walker);
+        const stones = el("div", "lw-stones");
+        const drawRound = () => {
+            walker.style.setProperty("--pos", String(position));
+            stones.replaceChildren();
+            const distractors = shuffleForDisplay(others).slice(0, 2);
+            shuffleForDisplay([playTarget, ...distractors]).forEach((value, index) => {
+                const stone = makeTile(value, "lw-tile--stone");
+                stone.style.setProperty("--i", String(index));
+                stone.addEventListener("click", () => {
+                    playAnswerAudio(value);
+                    if (value !== playTarget) {
+                        notifyWrong(stone);
+                        return;
+                    }
+                    clearWrongNotice();
+                    position += 1;
+                    if (position >= rounds) {
+                        walker.style.setProperty("--pos", String(position));
+                        stones.replaceChildren();
+                        setAnswer(playTarget, true, true);
+                        return;
+                    }
+                    drawRound();
+                });
+                stones.append(stone);
+            });
+        };
+        runtime.append(path, stones);
+        drawRound();
+    };
+
+    const FEED_FRIENDS = ["🐻", "🐰", "🐵", "🐸", "🐶", "🐱"];
+
+    const renderSingle = () => {
+        if (type === "listen_choose") {
+            const row = el("div", "lw-listen-row");
+            row.append(listenButton("Nghe lại", "hearing"));
+            runtime.append(row);
+        }
+        if (SINGLE_PLAYS[play]) {
+            SINGLE_PLAYS[play]();
+            return;
+        }
+        if (playTarget) runtime.append(targetCard());
+        if (play === "feed") {
+            renderDragDrop({
+                goalText: playTarget ? "Kéo thẻ giống mẫu cho bạn nhỏ" : "Kéo đáp án đúng cho bạn nhỏ",
+                goalIcon: "pets",
+                art: FEED_FRIENDS[Math.floor(Math.random() * FEED_FRIENDS.length)]
+            });
+            return;
+        }
+        renderChoice(false, CHOICE_SKINS[play] || null);
+    };
+
+    // Lật tranh: mỗi lần chọn đúng thẻ giống mẫu, một mảnh che được mở ra; đủ bốn mảnh là thấy cả bức tranh.
+    const REVEAL_PICTURES = ["🦁", "🐼", "🦄", "🐙", "🦋", "🚀", "🐳", "🦜"];
+    const renderReveal = () => {
+        const others = (payload.choices || []).filter((choice) => choice !== playTarget);
+        const panels = [];
+        let opened = 0;
+        runtime.append(goalPill("image_search", "Chọn thẻ giống mẫu để mở tranh"), targetCard());
+        const picture = el("div", "lw-reveal");
+        picture.append(el("span", "lw-reveal-art", REVEAL_PICTURES[Math.floor(Math.random() * REVEAL_PICTURES.length)]));
+        const cover = el("div", "lw-reveal-cover");
+        for (let index = 0; index < 4; index += 1) {
+            const panel = el("span", "lw-reveal-panel", "?");
+            panels.push(panel);
+            cover.append(panel);
+        }
+        picture.append(cover);
+        const row = el("div", "lw-stones");
+        const draw = () => {
+            row.replaceChildren();
+            shuffleForDisplay([playTarget, ...shuffleForDisplay(others).slice(0, 2)]).forEach((value, index) => {
+                const tile = makeTile(value, "lw-tile--stone");
+                tile.style.setProperty("--i", String(index));
+                tile.addEventListener("click", () => {
+                    playAnswerAudio(value);
+                    if (value !== playTarget) {
+                        notifyWrong(tile);
+                        return;
+                    }
+                    clearWrongNotice();
+                    panels[opened].classList.add("is-open");
+                    opened += 1;
+                    if (opened >= panels.length) {
+                        row.replaceChildren();
+                        setAnswer(playTarget, true, true);
+                        return;
+                    }
+                    draw();
+                });
+                row.append(tile);
+            });
+        };
+        runtime.append(picture, row);
+        draw();
+    };
+
+    // Thỏ chui hang: các bạn thỏ mang thẻ thò lên khỏi hang, thẻ giống mẫu luôn có mặt nên bé không phải thi tốc độ.
+    const renderBurrow = () => {
+        const others = (payload.choices || []).filter((choice) => choice !== playTarget);
+        const need = 3;
+        let caught = 0;
+        let timer = 0;
+        const dots = el("span", "lw-goal-dots");
+        const dotItems = Array.from({ length: need }, () => {
+            const dot = el("i");
+            dots.append(dot);
+            return dot;
+        });
+        runtime.append(goalPill("cruelty_free", "Chạm bạn thỏ cầm thẻ giống mẫu", dots), targetCard());
+        const field = el("div", "lw-burrows");
+        const holes = Array.from({ length: 6 }, () => {
+            const hole = el("div", "lw-burrow");
+            field.append(hole);
+            return hole;
+        });
+        const show = () => {
+            window.clearTimeout(timer);
+            if (!field.isConnected || hasSubmitted) return;
+            holes.forEach((hole) => hole.replaceChildren());
+            const spots = shuffleForDisplay(holes).slice(0, 2);
+            const values = shuffleForDisplay([playTarget, shuffleForDisplay(others)[0]]);
+            values.forEach((value, index) => {
+                const tile = makeTile(value, "lw-tile--burrow");
+                tile.addEventListener("click", () => {
+                    playAnswerAudio(value);
+                    if (value !== playTarget) {
+                        notifyWrong(tile);
+                        return;
+                    }
+                    clearWrongNotice();
+                    dotItems[caught]?.classList.add("is-on");
+                    caught += 1;
+                    window.clearTimeout(timer);
+                    tile.disabled = true;
+                    tile.classList.add("is-popped");
+                    if (caught >= need) setAnswer(playTarget, true, true);
+                    else timer = window.setTimeout(show, 450);
+                });
+                spots[index].append(tile);
+            });
+            timer = window.setTimeout(show, 3600);
+        };
+        runtime.append(field);
+        show();
+    };
+
+    // Cách chơi có bảng riêng và cách chơi chỉ đổi hình thức của bảng chọn đáp án.
+    const SINGLE_PLAYS = {
+        word: () => renderDragDrop({ goalText: "Kéo chữ giống chữ có màu vào ô", goalIcon: "image", art: payload.wordPicture, ghost: playTarget, word: payload.wordText }),
+        hunt: () => renderHunt(),
+        stones: () => renderStones(),
+        reveal: () => renderReveal(),
+        burrow: () => renderBurrow()
+    };
+    const CHOICE_SKINS = {
+        float: { icon: "toys", text: "Chạm vào quả bóng đúng", gridClass: "lw-float" },
+        tree: { icon: "park", text: "Hái quả đúng trên cây", gridClass: "lw-tree" },
+        pond: { icon: "phishing", text: "Câu chú cá mang đáp án đúng", gridClass: "lw-pond" },
+        race: { icon: "sports_score", text: "Chọn xe mang đáp án đúng", gridClass: "lw-race" }
+    };
+
+    // Bỏ vào giỏ: chạm hoặc kéo từng thẻ đúng vào giỏ; chạm thẻ trong giỏ để lấy ra. Đáp án vẫn như chọn nhiều.
+    const renderBasket = () => {
+        const expected = Number(payload.expectedAnswerCount || 0);
+        const choices = payload.choices || [];
+        const picked = new Set();
+        const dots = el("span", "lw-goal-dots");
+        const dotItems = Array.from({ length: expected }, () => {
+            const dot = el("i");
+            dots.append(dot);
+            return dot;
+        });
+        runtime.append(goalPill("shopping_basket", `Bỏ đủ ${expected} thẻ vào giỏ`, dots));
+        const tray = tileGrid("lw-sort-tray", choices);
+        const zone = el("div", "lw-basket lw-basket--single");
+        zone.setAttribute("role", "button");
+        zone.setAttribute("aria-label", "Giỏ của bé");
+        zone.style.setProperty("--basket-color", activityColors[3]);
+        const inner = el("div", "lw-basket-items");
+        const rim = el("span", "lw-basket-rim");
+        rim.setAttribute("aria-hidden", "true");
+        zone.append(el("div", "lw-basket-head", "🧺"), inner, rim);
+        const tiles = new Map();
+        const refresh = () => {
+            tiles.forEach((tile, choice) => { tile.hidden = picked.has(choice); });
+            inner.replaceChildren();
+            picked.forEach((choice) => {
+                const chip = el("span", "lw-basket-chip");
+                chip.setAttribute("role", "button");
+                decorateButton(chip, choice);
+                chip.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    picked.delete(choice);
+                    refresh();
+                });
+                inner.append(chip);
+            });
+            zone.classList.toggle("has-items", picked.size > 0);
+            dotItems.forEach((dot, index) => dot.classList.toggle("is-on", index < picked.size));
+            setAnswer([...picked].sort().join("|"), picked.size === expected);
+        };
+        const put = (choice) => {
+            playAnswerAudio(choice);
+            picked.add(choice);
+            flash(zone, "is-gulp");
+            refresh();
+        };
+        choices.forEach((choice, index) => {
+            const tile = makeTile(choice, "lw-tile--drag");
+            tile.style.setProperty("--i", String(index));
+            tiles.set(choice, tile);
+            enableDrag(tile, { targets: () => [zone], onDrop: () => put(choice), onTap: () => put(choice) });
+            tray.append(tile);
+        });
+        finishGrid(tray);
+        runtime.append(tray, zone);
+    };
+
+    // Lật thẻ: thẻ úp vẫn thấy mờ mờ nội dung để bé dễ hình dung và làm quen. Lật nhầm thì báo rồi úp lại.
+    const renderMemory = () => {
+        const pairs = payload.pairs || [];
+        const mappings = {};
+        const deck = shuffleForDisplay(pairs.flatMap((pair, index) => [
+            { index, label: String(pair.left ?? "") },
+            { index, label: String(pair.right ?? "") }
+        ]));
+        runtime.append(goalPill("flip", "Lật thẻ tìm đôi bạn"));
+        const grid = tileGrid("lw-memory", deck.map((card) => card.label));
+        let open = [];
+        let busy = false;
+        deck.forEach((card, position) => {
+            const tile = makeTile(card.label, "lw-tile--flip");
+            tile.classList.add("is-covered");
+            tile.style.setProperty("--i", String(position));
+            tile.addEventListener("click", () => {
+                if (busy || !tile.classList.contains("is-covered")) return;
+                clearWrongNotice();
+                tile.classList.remove("is-covered");
+                flash(tile, "is-flipping");
+                playAnswerAudio(card.label);
+                open.push({ tile, card });
+                if (open.length < 2) return;
+                const [first, second] = open;
+                open = [];
+                if (first.card.index === second.card.index) {
+                    first.tile.classList.add("is-found");
+                    second.tile.classList.add("is-found");
+                    const pair = pairs[first.card.index];
+                    mappings[String(pair.left ?? "")] = String(pair.right ?? "");
+                    setAnswer(canonicalMappings(mappings), Object.keys(mappings).length === pairs.length);
+                    return;
+                }
+                busy = true;
+                notifyWrong(first.tile, second.tile);
+                window.setTimeout(() => {
+                    first.tile.classList.add("is-covered");
+                    second.tile.classList.add("is-covered");
+                    flash(first.tile, "is-flipping");
+                    flash(second.tile, "is-flipping");
+                    busy = false;
+                }, reduceMotion() ? 700 : 1100);
+            });
+            grid.append(tile);
+        });
+        finishGrid(grid);
+        runtime.append(grid);
+    };
+
+    // Leo cầu thang: chạm đúng thẻ tiếp theo thì bạn nhỏ leo lên một bậc. Chạm nhầm thì báo để bé thử lại.
+    const renderStairs = () => {
+        let next = 0;
+        runtime.append(goalPill("stairs", "Chạm lần lượt để leo cầu thang"));
+        appendOrderExample();
+        const stairs = el("div", "lw-stairs");
+        stairs.dataset.count = String(orderedItems.length);
+        const steps = orderedItems.map((_, index) => {
+            const step = el("div", "lw-stair");
+            step.style.setProperty("--step", String(index + 1));
+            stairs.append(step);
+            return step;
+        });
+        const climber = el("span", "lw-climber", "🐿️");
+        steps[0]?.append(climber);
+        const pool = tileGrid("lw-seq-pool lw-stairs-pool", payload.items || []);
+        (payload.items || []).forEach((item, index) => {
+            const tile = makeTile(item, "lw-tile--seq");
+            tile.style.setProperty("--i", String(index));
+            tile.addEventListener("click", () => {
+                playAnswerAudio(item);
+                if (item !== orderedItems[next]) {
+                    notifyWrong(tile);
+                    return;
+                }
+                clearWrongNotice();
+                tile.hidden = true;
+                const chip = el("span", "lw-stair-item");
+                decorateButton(chip, item);
+                steps[next].prepend(chip);
+                steps[next].classList.add("is-done");
+                next += 1;
+                if (next < steps.length) steps[next].append(climber);
+                else setAnswer(orderedItems.join("|"), true, true);
+            });
+            pool.append(tile);
+        });
+        finishGrid(pool);
+        runtime.append(stairs, pool);
+    };
+
+    // Nhặt đồ: chạm từng món trên bãi cỏ để bỏ vào giỏ, chạm món trong giỏ để trả lại, đủ thì cô tự chấm.
+    const renderGather = () => {
+        const maxItems = Math.max(1, Number(payload.maxItems || 10));
+        const symbol = payload.objectSymbol || "●";
+        let count = 0;
+        runtime.append(goalPill("touch_app", "Chạm từng món để nhặt vào giỏ"));
+        const card = el("div", "lw-build");
+        const flag = el("div", "lw-build-goal");
+        flag.append(icon("flag"), el("strong", "", payload.targetLabel || `Mục tiêu: ${payload.targetCount ?? ""}`));
+        const meadow = el("div", "lw-meadow");
+        const tray = el("div", "lw-build-tray is-empty");
+        const number = el("output", "lw-build-count", "0");
+        number.setAttribute("aria-live", "polite");
+        for (let index = 0; index < maxItems; index += 1) {
+            const object = el("button", "lw-gather-obj");
+            object.type = "button";
+            object.setAttribute("aria-label", `Món ${index + 1}`);
+            object.style.setProperty("--i", String(index));
+            appendRepeatedVisuals(object, symbol, 1);
+            object.addEventListener("click", () => {
+                const inTray = object.parentNode === tray;
+                (inTray ? meadow : tray).append(object);
+                count += inTray ? -1 : 1;
+                number.textContent = String(count);
+                tray.classList.toggle("is-empty", count === 0);
+                flash(number, "is-bounce");
+                speak(String(count));
+                setAnswer(String(count), count > 0);
+            });
+            meadow.append(object);
+        }
+        card.append(flag, meadow, tray, number);
+        runtime.append(card);
+    };
+
+    // Về đúng nhà: mỗi ô có sẵn một thẻ bên trái, bé đưa thẻ hợp với nó vào ô (chạm rồi chạm ô, hoặc kéo thả).
+    const renderHomes = () => {
+        const pairs = payload.pairs || [];
+        const mappings = {};
+        const rights = shuffleForDisplay(pairs.map((pair) => String(pair.right ?? "")));
+        let picked = null;
+        runtime.append(goalPill("home_pin", "Đưa mỗi thẻ về đúng nhà"));
+        const homes = el("div", "lw-homes");
+        const pool = tileGrid("lw-sort-tray", rights);
+        const slots = new Map();
+        const tiles = [];
+        const refresh = () => {
+            tiles.forEach(({ tile }) => tile.classList.toggle("is-selected", picked === tile));
+            homes.classList.toggle("is-ready", picked !== null);
+            setAnswer(canonicalMappings(mappings), Object.keys(mappings).length === pairs.length);
+        };
+        const empty = (slot) => {
+            const left = slot.dataset.left;
+            const holder = tiles.find(({ tile }) => tile.dataset.home === left);
+            if (holder) {
+                holder.tile.hidden = false;
+                delete holder.tile.dataset.home;
+            }
+            delete mappings[left];
+            slot.replaceChildren();
+            slot.classList.remove("has-item");
+        };
+        const place = (tile, right, slot) => {
+            if (slot.classList.contains("has-item")) empty(slot);
+            const left = slot.dataset.left;
+            mappings[left] = right;
+            tile.dataset.home = left;
+            tile.hidden = true;
+            const chip = el("span", "lw-home-chip");
+            decorateButton(chip, right);
+            slot.append(chip);
+            slot.classList.add("has-item");
+            picked = null;
+            playAnswerAudio(right);
+            flash(slot, "is-gulp");
+            refresh();
+        };
+        pairs.forEach((pair) => {
+            const left = String(pair.left ?? "");
+            const row = el("div", "lw-home");
+            const owner = el("div", "lw-home-owner");
+            decorateButton(owner, left);
+            owner.addEventListener("click", () => playAnswerAudio(left));
+            const slot = el("button", "lw-home-slot");
+            slot.type = "button";
+            slot.dataset.left = left;
+            slot.setAttribute("aria-label", `Ô của ${left}`);
+            slot.addEventListener("click", () => {
+                if (picked) place(picked, picked.dataset.right, slot);
+                else if (slot.classList.contains("has-item")) {
+                    empty(slot);
+                    refresh();
+                }
+            });
+            slots.set(left, slot);
+            row.append(owner, icon("arrow_forward", "lw-home-arrow"), slot);
+            homes.append(row);
+        });
+        rights.forEach((right, index) => {
+            const tile = makeTile(right, "lw-tile--drag");
+            tile.dataset.right = right;
+            tile.style.setProperty("--i", String(index));
+            tiles.push({ tile, right });
+            enableDrag(tile, {
+                targets: () => [...slots.values()],
+                onDrop: (slot) => place(tile, right, slot),
+                onTap: () => {
+                    picked = picked === tile ? null : tile;
+                    playAnswerAudio(right);
+                    refresh();
+                }
+            });
+            pool.append(tile);
+        });
+        finishGrid(pool);
+        runtime.append(homes, pool);
+    };
+
+    // Nối toa tàu: chạm đúng thẻ tiếp theo thì toa đó nối vào đoàn tàu. Chạm nhầm thì báo để bé thử lại.
+    const renderCarriages = () => {
+        let next = 0;
+        runtime.append(goalPill("train", "Chạm lần lượt để nối toa tàu"));
+        appendOrderExample();
+        const train = el("div", "lw-carriages");
+        train.append(el("span", "lw-carriage-engine", "🚂"));
+        const cars = orderedItems.map(() => {
+            const car = el("div", "lw-carriage");
+            train.append(car);
+            return car;
+        });
+        const pool = tileGrid("lw-seq-pool", payload.items || []);
+        (payload.items || []).forEach((item, index) => {
+            const tile = makeTile(item, "lw-tile--seq");
+            tile.style.setProperty("--i", String(index));
+            tile.addEventListener("click", () => {
+                playAnswerAudio(item);
+                if (item !== orderedItems[next]) {
+                    notifyWrong(tile);
+                    return;
+                }
+                clearWrongNotice();
+                tile.hidden = true;
+                const chip = el("span", "lw-stair-item");
+                decorateButton(chip, item);
+                cars[next].append(chip);
+                cars[next].classList.add("is-done");
+                flash(cars[next], "is-gulp");
+                next += 1;
+                if (next === orderedItems.length) setAnswer(orderedItems.join("|"), true, true);
+            });
+            pool.append(tile);
+        });
+        finishGrid(pool);
+        runtime.append(train, pool);
+    };
+
+    // Bảng mười ô: các hình xếp sẵn trong hai hàng năm ô để bé nhìn là thấy số lượng, rồi chọn số.
+    const renderFrame = () => {
+        const total = Math.max(0, Number(payload.targetCount || 0));
+        const symbol = payload.objectSymbol || "●";
+        runtime.append(goalPill("grid_view", "Nhìn bảng mười ô rồi chọn số"));
+        const frame = el("div", "lw-frame");
+        for (let index = 0; index < 10; index += 1) {
+            const cell = el("span", "lw-frame-cell");
+            if (index < total) appendRepeatedVisuals(cell, symbol, 1);
+            frame.append(cell);
+        }
+        runtime.append(frame);
+        appendCountChoices();
+    };
+
+    // Xếp vào ô: chạm từng ô trống để đặt một hình, chạm lại để bỏ ra; đủ thì cô tự chấm.
+    const renderCells = () => {
+        const maxItems = Math.max(1, Number(payload.maxItems || 10));
+        const symbol = payload.objectSymbol || "●";
+        let count = 0;
+        runtime.append(goalPill("grid_on", "Chạm từng ô để đặt hình vào"));
+        const card = el("div", "lw-build");
+        const flag = el("div", "lw-build-goal");
+        flag.append(icon("flag"), el("strong", "", payload.targetLabel || `Mục tiêu: ${payload.targetCount ?? ""}`));
+        const grid = el("div", "lw-cells");
+        const number = el("output", "lw-build-count", "0");
+        number.setAttribute("aria-live", "polite");
+        for (let index = 0; index < maxItems; index += 1) {
+            const cell = el("button", "lw-cell");
+            cell.type = "button";
+            cell.setAttribute("aria-label", `Ô ${index + 1}`);
+            cell.addEventListener("click", () => {
+                const filled = cell.classList.toggle("is-filled");
+                cell.replaceChildren();
+                if (filled) appendRepeatedVisuals(cell, symbol, 1);
+                count += filled ? 1 : -1;
+                number.textContent = String(count);
+                flash(number, "is-bounce");
+                if (count > 0) speak(String(count));
+                setAnswer(String(count), count > 0);
+            });
+            grid.append(cell);
+        }
+        card.append(flag, grid, number);
+        runtime.append(card);
+    };
+
+    // Từng món một: mỗi lượt một món hiện thật to, bé chạm giỏ đúng hoặc kéo món vào giỏ.
+    const renderOneByOne = () => {
+        const queue = [...(payload.mappings || [])];
+        const categories = payload.categories || [];
+        const answers = {};
+        runtime.append(goalPill("low_priority", "Đưa từng món vào đúng giỏ"));
+        const stage = el("div", "lw-onebyone");
+        const baskets = el("div", "lw-sort-baskets");
+        baskets.dataset.count = String(categories.length);
+        const zones = new Map();
+        let current = null;
+        const drawCurrent = () => {
+            stage.replaceChildren();
+            current = queue[0] || null;
+            if (!current) {
+                setAnswer(canonicalMappings(answers), true);
+                return;
+            }
+            const item = current.left;
+            const tile = makeTile(item, "lw-tile--drag lw-tile--hero");
+            enableDrag(tile, {
+                targets: () => [...zones.keys()],
+                onDrop: (zone) => assign(zones.get(zone).category),
+                onTap: () => playAnswerAudio(item)
+            });
+            stage.append(tile);
+            playAnswerAudio(item);
+        };
+        const assign = (category) => {
+            if (!current) return;
+            const item = current.left;
+            answers[item] = category;
+            queue.shift();
+            const entry = [...zones.values()].find((value) => value.category === category);
+            const chip = el("span", "lw-basket-chip");
+            decorateButton(chip, item);
+            entry.inner.append(chip);
+            entry.zone.classList.add("has-items");
+            flash(entry.zone, "is-gulp");
+            playAnswerAudio(category);
+            window.setTimeout(drawCurrent, reduceMotion() ? 0 : 500);
+            current = null;
+            stage.replaceChildren();
+        };
+        categories.forEach((category, index) => {
+            const zone = el("div", "lw-basket");
+            zone.setAttribute("role", "button");
+            zone.setAttribute("aria-label", `Giỏ ${category}`);
+            zone.style.setProperty("--basket-color", activityColors[(index + 2) % activityColors.length]);
+            const head = el("div", "lw-basket-head");
+            decorateButton(head, category);
+            const inner = el("div", "lw-basket-items");
+            const rim = el("span", "lw-basket-rim");
+            rim.setAttribute("aria-hidden", "true");
+            zone.append(head, inner, rim);
+            zone.addEventListener("click", () => assign(category));
+            zones.set(zone, { category, zone, inner });
+            baskets.append(zone);
+        });
+        runtime.append(stage, baskets);
+        drawCurrent();
+    };
+
+    // Cách chơi vẽ bảng riêng, thay cho bảng mặc định của dạng bài.
+    const PLAY_RENDERERS = {
+        basket: () => renderBasket(),
+        net: () => renderChoice(true, { icon: "flutter_dash", text: `Bắt đủ ${Number(payload.expectedAnswerCount || 0)} chú bướm đúng`, gridClass: "lw-net" }),
+        memory: () => renderMemory(),
+        homes: () => renderHomes(),
+        stairs: () => renderStairs(),
+        carriages: () => renderCarriages(),
+        frame: () => renderFrame(),
+        gather: () => renderGather(),
+        cells: () => renderCells(),
+        onebyone: () => renderOneByOne()
     };
 
     const renderers = {
-        single_choice: () => renderChoice(false),
-        listen_choose: renderListenChoose,
+        single_choice: renderSingle,
+        listen_choose: renderSingle,
         multi_select: renderMultiSelect,
-        drag_drop: renderDragDrop,
+        drag_drop: () => renderDragDrop(),
         matching: renderMatching,
         ordering: renderOrdering,
         counting: renderCounting,
@@ -1704,7 +2475,7 @@
         runtime.classList.remove("is-dragging");
         runtime.classList.add("lw-act", `lw-act--${type}`);
         appendScene();
-        renderers[type]?.();
+        (PLAY_RENDERERS[play] || renderers[type])?.();
     };
     renderActivity();
 })();

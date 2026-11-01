@@ -32,6 +32,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ChildInventoryItem> ChildInventoryItems => Set<ChildInventoryItem>();
     public DbSet<ContentReview> ContentReviews => Set<ContentReview>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<KidsModuleSetting> KidsModuleSettings => Set<KidsModuleSetting>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

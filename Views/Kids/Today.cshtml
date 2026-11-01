@@ -1,4 +1,6 @@
 ﻿@model TodayLessonViewModel
+@using HanhTrangLop1.Application.Learning
+@inject KidsModuleService Modules
 @{
     ViewData["Title"] = $"Bài Học Hôm Nay - Ngày {Model.SelectedDayNumber}";
     var progressPercent = Model.TotalCount == 0 ? 0 : (Model.CompletedCount * 100 / Model.TotalCount);
@@ -354,14 +356,20 @@
             <span class="material-symbols-outlined" aria-hidden="true">home</span>
             <span>Trang chủ</span>
         </a>
-        <a class="active" asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')" aria-current="page">
-            <span class="material-symbols-outlined" aria-hidden="true">map</span>
-            <span>Bài tập</span>
-        </a>
-        <a asp-controller="Kids" asp-action="Rewards" onclick="playAudioChime('tap')">
-            <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
-            <span>Quà tặng</span>
-        </a>
+        @if (await Modules.IsVisibleAsync(KidsModuleKeys.Today))
+        {
+            <a class="active" asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')" aria-current="page">
+                <span class="material-symbols-outlined" aria-hidden="true">map</span>
+                <span>Bài tập</span>
+            </a>
+        }
+        @if (await Modules.IsVisibleAsync(KidsModuleKeys.Rewards))
+        {
+            <a asp-controller="Kids" asp-action="Rewards" onclick="playAudioChime('tap')">
+                <span class="material-symbols-outlined" aria-hidden="true">emoji_events</span>
+                <span>Quà tặng</span>
+            </a>
+        }
         <a href="#" onclick="playAudioChime('tap'); openParentGate('/parent/dashboard'); return false;" title="Cổng mở khóa cho phụ huynh">
             <span class="material-symbols-outlined" aria-hidden="true">lock</span>
             <span>Phụ huynh</span>

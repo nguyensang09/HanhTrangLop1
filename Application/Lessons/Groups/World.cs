@@ -52,8 +52,8 @@ public static partial class LessonBank
             retry: new Say("Bạn này có cái mỏ dẹt và bơi rất giỏi đó!", "This one has a flat beak and is a great swimmer!"));
 
         g.Story("v5-world-story-bear-honey", "Gấu nâu tìm mật",
-            new Say("Gấu nâu đi dạo trong rừng. Bạn ấy thấy một tổ ong vàng treo trên cành cây. Gấu thò tay lấy mật ngọt, đầy cả một hũ. Các chú ong bay vo ve quanh tổ.",
-                "Brown Bear went for a walk in the forest. He found a big yellow beehive hanging from a branch. He scooped out sweet honey and filled a whole jar. The bees buzzed all around."),
+            new Say("Gấu nâu đi dạo trong rừng. Bạn ấy thấy một tổ ong vàng treo trên cành cây. Gấu thò tay lấy một ít mật ngọt vào hũ nhỏ. Các chú ong bay vo ve quanh tổ.",
+                "Brown Bear went for a walk in the forest. He found a big yellow beehive hanging from a branch. He scooped a little sweet honey into a small jar. The bees buzzed all around."),
             new Say("Gấu nâu lấy món gì ngọt ngào từ tổ ong?", "What sweet treat did Brown Bear take from the beehive?"),
             "🐻", ["Quả táo", "Mật ong", "Que kem"], "Mật ong", "/images/lessons/doc-hieu/ill-gau-mat-ong.jpg",
             retry: new Say("Con nhìn cái hũ vàng gấu đang ôm nhé, ong làm ra món đó!", "Look at the yellow jar in Bear's arm. The bees make it!"));
@@ -112,8 +112,8 @@ public static partial class LessonBank
             new Say("Bạn nào có cánh để bay, bạn nào có vây để bơi? Con chia hai nhóm nhé!", "Who has wings to fly, and who has fins to swim? Make two groups!"),
             "🐦", ["Bay trên trời", "Bơi dưới nước"],
             [("Con chim", "Bay trên trời"), ("Con ong", "Bay trên trời"), ("Con bướm", "Bay trên trời"),
-             ("Con cá", "Bơi dưới nước"), ("Cá voi", "Bơi dưới nước"), ("Bạch tuộc", "Bơi dưới nước")],
-            retry: new Say("Bạn có cánh thì bay, bạn có vây hay xúc tu thì bơi nhé!", "Wings are for flying. Fins and tentacles are for swimming!"));
+             ("Con cá", "Bơi dưới nước"), ("Cá voi", "Bơi dưới nước"), ("Con cá heo", "Bơi dưới nước")],
+            retry: new Say("Bạn có cánh thì bay, bạn có vây thì bơi nhé!", "Wings are for flying. Fins are for swimming!"));
 
         g.Story("v5-world-story-turtle", "Rùa xanh qua suối",
             new Say("Rùa xanh bơi rất giỏi dưới nước và cũng bò được trên cạn. Hôm nay, rùa ngồi trên bè cùng thỏ trắng qua suối. Thỏ không biết bơi nên cầm sào đẩy bè thật cẩn thận.",
@@ -225,7 +225,7 @@ public static partial class LessonBank
 
         g.Multi("v5-world-multi-tree-gifts", "Cây xanh tặng gì?",
             new Say("Cây xanh tặng chúng ta những món quà nào? Con chọn hết nhé!", "What gifts do trees give us? Tap all of them!"),
-            "🌳", ["Quả xoài", "Ô tô", "Bóng cây mát rượi", "Điện thoại", "Cái ghế"], ["Quả xoài", "Bóng cây mát rượi", "Cái ghế"],
+            "🌳", ["Quả xoài", "Ô tô", "Bóng cây mát rượi", "Điện thoại", "Gỗ làm bàn ghế"], ["Quả xoài", "Bóng cây mát rượi", "Gỗ làm bàn ghế"],
             retry: new Say("Cây cho quả ngọt, bóng mát và cả gỗ để làm bàn ghế đó!", "Trees give us sweet fruit, cool shade and wood for chairs!"));
 
         g.Story("v5-world-story-squirrel", "Sóc nhặt hạt dẻ",
@@ -297,8 +297,8 @@ public static partial class LessonBank
 
         g.Match("v5-world-match-seasons", "Bốn mùa vui",
             new Say("Con nối mỗi mùa với điều đặc biệt của mùa đó nhé!", "Match each season with something special about it!"),
-            "🍂", [("Mùa hè", "Que kem"), ("Mùa thu", "Lá vàng rơi"), ("Mùa đông", "Áo ấm")],
-            retry: new Say("Mùa hè nóng nực, mùa thu lá rụng, mùa đông lạnh giá nhé!", "Summer is hot, leaves fall in autumn, and winter is cold!"));
+            "🍂", [("Mùa xuân", "Hoa đào"), ("Mùa hè", "Que kem"), ("Mùa thu", "Lá vàng rơi"), ("Mùa đông", "Áo ấm")],
+            retry: new Say("Mùa xuân hoa nở, mùa hè nóng nực, mùa thu lá rụng, mùa đông lạnh giá nhé!", "Flowers bloom in spring, summer is hot, leaves fall in autumn, and winter is cold!"));
 
         g.Order("v5-world-order-seasons", "Vòng quay bốn mùa",
             new Say("Một năm có bốn mùa. Con xếp các mùa theo thứ tự, bắt đầu từ mùa xuân nhé!", "A year has four seasons. Put them in order, starting with spring!"),
@@ -390,7 +390,7 @@ public static partial class LessonBank
             new Say("Mẹ đưa bạn Bin đến trường. Bin đội chiếc mũ bảo hiểm màu xanh và nắm chặt tay mẹ. Hai mẹ con đứng chờ đèn xanh rồi mới qua đường.",
                 "Mum took Bin to school. Bin wore a blue helmet and held Mum's hand tightly. They waited for the green light before crossing the road."),
             new Say("Bin đội gì trên đầu để an toàn khi đi đường?", "What did Bin wear on his head to stay safe on the road?"),
-            "⛑️", ["Mũ len", "Mũ bảo hiểm", "Mũ rộng vành"], "Mũ bảo hiểm", "/images/lessons/visual-road-safety.png",
+            "⛑️", ["Mũ lưỡi trai", "Mũ bảo hiểm", "Mũ rộng vành"], "Mũ bảo hiểm", "/images/lessons/visual-road-safety.png",
             retry: new Say("Con nhìn chiếc mũ cứng màu xanh trên đầu Bin nhé!", "Look at the hard blue hat on Bin's head!"));
 
         g.Pick("v5-world-tractor", "Giúp bác nông dân",
@@ -442,7 +442,7 @@ public static partial class Lexicon
         Sống dưới nước | 🌊 | lives in water
         Sa mạc cát nóng | 🏜️ | the hot sandy desert
         Xứ băng tuyết | 🏔️ | the icy, snowy land
-        Biển xanh | 🐚 | the blue sea
+        Biển xanh | 🌊 | the blue sea
         Bay trên trời | ☁️ | flies in the sky
         Bơi dưới nước | 🌊 | swims in the water
         Bay thật cao | 🕊️ | flying up high
@@ -465,7 +465,7 @@ public static partial class Lexicon
         Bó hoa | 💐 | bunch of flowers
         Hoa hồng | 🌹 | rose
         Táo xanh còn non | 🍏 | young green apple
-        Bóng cây mát rượi | ⛱️ | cool shade
+        Bóng cây mát rượi | 🌳 | cool shade
         // Thời tiết, mùa, ngày đêm
         Trời nắng chang chang | ☀️ | a hot sunny day
         Trời mưa rào | 🌧️ | a rainy day

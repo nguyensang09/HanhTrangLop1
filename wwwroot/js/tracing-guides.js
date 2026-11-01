@@ -983,7 +983,7 @@
       const maxWidth = Number(node.dataset.maxWidth || 790);
       const x = Number(node.getAttribute("x") || 460);
       const y = Number(node.getAttribute("y") || 300);
-      context.font = `900 ${fontSize}px "Be Vietnam Pro", "Arial", sans-serif`;
+      context.font = `900 ${fontSize}px "Andika", "Arial", sans-serif`;
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.lineJoin = "round";
@@ -1118,7 +1118,7 @@
           y: row.y,
           "text-anchor": "middle",
           "dominant-baseline": "middle",
-          "font-family": "'Be Vietnam Pro', 'Arial', sans-serif",
+          "font-family": "'Andika', 'Arial', sans-serif",
           "font-size": row.fontSize,
           "font-weight": "900",
           fill: "rgba(255,255,255,.35)",
@@ -1134,7 +1134,7 @@
           "data-max-width": row.maxWidth,
           "text-anchor": "middle",
           "dominant-baseline": "middle",
-          "font-family": "'Be Vietnam Pro', 'Arial', sans-serif",
+          "font-family": "'Andika', 'Arial', sans-serif",
           "font-size": row.fontSize,
           "font-weight": "900",
           fill: "rgba(255,255,255,.18)",

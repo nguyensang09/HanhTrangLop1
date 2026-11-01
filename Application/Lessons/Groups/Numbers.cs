@@ -31,52 +31,53 @@ public static partial class LessonBank
 
     private static void AddNumbers(LessonGroupBuilder g)
     {
-        for (var n = 0; n <= 20; n++)
+
+        void AddFind(int n, string[]? scene)
         {
-            if (n % 5 == 0 && n < 20) g.Stage = n == 0 ? "Số 0 đến 4" : $"Số {n} đến {Math.Min(20, n + 4)}";
-            if (n == 20) g.Stage = "Số 16 đến 20";
             g.Topic = n <= 9 ? "so-0-9" : "so-10-20";
-            var key = n.ToString("00");
             var look = NumberLookAlikes[n];
-            var theme = CountThemes[n % CountThemes.Length];
-            string[]? scene = n is >= 1 and <= 10 ? Enumerable.Repeat(theme.Emoji, n).ToArray() : null;
-
-            g.Pick($"number-single-{key}", $"Số {n}",
+            g.Pick($"number-single-{n:00}", $"Số {n}",
                 new Say($"Con tìm giúp cô số {n} nhé!", $"Can you find the number {NumEn(n)} for me?", $"Con tìm giúp cô số {NumVi(n)} nhé!"),
-                n.ToString(), [look[0].ToString(), n.ToString(), look[1].ToString()], n.ToString(), scene: scene,
+                n.ToString(), [look[0].ToString(), n.ToString(), look[1].ToString()], n.ToString(), scene: scene, target: n.ToString(),
                 retry: new Say($"Chưa đúng rồi. Số {n} trông thế này nè, con tìm lại nhé!", $"Not quite. Look at the number {NumEn(n)} again!", $"Chưa đúng rồi. Số {NumVi(n)} trông thế này nè, con tìm lại nhé!"));
-
-            g.Listen($"number-listen-{key}", $"Nghe và tìm số {n}",
-                new Say("Cô đọc số mấy? Con chạm vào số đó nhé!", "Which number do you hear? Tap it!"),
-                "🎧", [look[1].ToString(), look[0].ToString(), n.ToString()], n.ToString(),
-                spoken: new Say($"Số {NumVi(n)}. Con chạm vào số {NumVi(n)} nhé!", $"Listen: {NumEn(n)}. Tap the number {NumEn(n)}!"));
-
-            if (n is >= 1 and <= 19)
-            {
-                var after = n % 2 == 1;
-                var answer = after ? n + 1 : n - 1;
-                var wrong = after ? n - 1 : n + 1;
-                var wrong2 = after ? Math.Min(20, n + 2) : Math.Max(0, n - 2);
-                g.Topic = "thu-tu-so";
-                g.Pick($"number-neighbor-{key}", after ? $"Số đứng sau {n}" : $"Số đứng trước {n}",
-                    after
-                        ? new Say($"Đếm tiếp nào: sau số {n} là số mấy?", $"Let's count on: what comes after {NumEn(n)}?", $"Đếm tiếp nào: sau số {NumVi(n)} là số mấy?")
-                        : new Say($"Đếm lùi nào: số nào đứng ngay trước số {n}?", $"Let's count back: what comes just before {NumEn(n)}?", $"Đếm lùi nào: số nào đứng ngay trước số {NumVi(n)}?"),
-                    "🔢", new[] { answer, wrong, wrong2 }.Distinct().OrderBy(x => x).Select(x => x.ToString()).ToArray(), answer.ToString(),
-                    scene: after ? [n.ToString(), "?"] : ["?", n.ToString()],
-                    retry: new Say("Con đếm từ đầu theo cô nhé: một, hai, ba...", "Count along with me: one, two, three..."));
-            }
-
-            g.Topic = "viet-so";
-            g.Trace($"number-trace-{key}", $"Tập tô số {n}",
-                new Say($"Con tô số {n} theo nét chấm nhé!", $"Trace the number {NumEn(n)} along the dotted lines!", $"Con tô số {NumVi(n)} theo nét chấm nhé!"),
-                "✏️", n.ToString(), n > 9 ? 2 : 1);
         }
 
-        g.Stage = "Ghép số với số lượng";
-        g.Topic = "so-0-9";
-        for (var n = 1; n <= 9; n++)
+        void AddListen(int n)
         {
+            g.Topic = n <= 9 ? "so-0-9" : "so-10-20";
+            var look = NumberLookAlikes[n];
+            g.Listen($"number-listen-{n:00}", $"Nghe và tìm số {n}",
+                new Say("Cô đọc số mấy? Con chạm vào số đó nhé!", "Which number do you hear? Tap it!"),
+                "🎧", [look[1].ToString(), look[0].ToString(), n.ToString()], n.ToString(), target: n.ToString(),
+                spoken: new Say($"Số {NumVi(n)}. Con chạm vào số {NumVi(n)} nhé!", $"Listen: {NumEn(n)}. Tap the number {NumEn(n)}!"));
+        }
+
+        void AddNeighbor(int n)
+        {
+            // Số cần tìm luôn nằm giữa số đứng trước và số đứng sau nó, nên số 19 hỏi "đứng trước" để dãy không vượt quá 20.
+            var after = n % 2 == 1 && n < 19;
+            var answer = after ? n + 1 : n - 1;
+            var left = answer - 1;
+            var right = answer + 1;
+            var (wrong, wrong2) = answer switch
+            {
+                <= 2 => (answer + 2, answer + 3),
+                >= 19 => (answer - 2, answer - 3),
+                _ => (answer - 2, answer + 2)
+            };
+            g.Topic = "thu-tu-so";
+            g.Pick($"number-neighbor-{n:00}", after ? $"Số đứng sau {n}" : $"Số đứng trước {n}",
+                after
+                    ? new Say($"Đếm tiếp nào: sau số {left}, trước số {right} là số mấy?", $"Let's count on: what comes after {NumEn(left)} and before {NumEn(right)}?", $"Đếm tiếp nào: sau số {NumVi(left)}, trước số {NumVi(right)} là số mấy?")
+                    : new Say($"Đếm lùi nào: trước số {right}, sau số {left} là số mấy?", $"Let's count back: what comes before {NumEn(right)} and after {NumEn(left)}?", $"Đếm lùi nào: trước số {NumVi(right)}, sau số {NumVi(left)} là số mấy?"),
+                "🔢", new[] { answer, wrong, wrong2 }.OrderBy(x => x).Select(x => x.ToString()).ToArray(), answer.ToString(),
+                scene: [left.ToString(), "?", right.ToString()],
+                retry: new Say("Con đếm từ đầu theo cô nhé: một, hai, ba...", "Count along with me: one, two, three..."));
+        }
+
+        void AddQuantityMatch(int n)
+        {
+            g.Topic = "so-0-9";
             var start = Math.Min(n, 7);
             var pairs = Enumerable.Range(start, 3)
                 .Select(x => (x.ToString(), QuantityLabel(CountThemes[(x + n) % CountThemes.Length], x)))
@@ -86,17 +87,56 @@ public static partial class LessonBank
                 "🧮", pairs);
         }
 
-        g.Stage = "Xếp thứ tự số";
-        g.Topic = "thu-tu-so";
-        for (var n = 1; n <= 7; n++)
+        // Dãy mẫu cùng chiều xếp nhưng khác số với bài, để bé thấy cách xếp mà không lộ đáp án.
+        string[] ExampleRow(int n, bool down)
         {
+            var start = n >= 4 ? 1 : n + 3;
+            var row = Enumerable.Range(start, 3).Select(x => x.ToString());
+            return (down ? row.Reverse() : row).ToArray();
+        }
+
+        void AddOrderUp(int n)
+        {
+            g.Topic = "thu-tu-so";
             var seq = Enumerable.Range(n, 3).Select(x => x.ToString()).ToArray();
             g.Order($"number-up-{n}", $"Xếp từ bé đến lớn: {n} đến {n + 2}",
                 new Say("Con xếp các số từ bé đến lớn nhé!", "Put the numbers in order from smallest to biggest!"),
-                "📶", seq);
+                "📶", seq, example: ExampleRow(n, false));
+        }
+
+        void AddOrderDown(int n)
+        {
+            g.Topic = "thu-tu-so";
+            var seq = Enumerable.Range(n, 3).Select(x => x.ToString()).Reverse().ToArray();
             g.Order($"number-down-{n}", $"Xếp từ lớn đến bé: {n + 2} về {n}",
                 new Say("Bây giờ con xếp các số từ lớn đến bé nhé!", "Now put the numbers in order from biggest to smallest!"),
-                "📉", seq.Reverse().ToArray());
+                "📉", seq, example: ExampleRow(n, true));
+        }
+
+        // Mỗi số là một chặng ngắn trộn các kiểu thao tác; bài ghép và xếp thứ tự đan vào đúng lúc bé đã biết các số đó,
+        // thay vì học hết các số rồi mới làm liền hàng chục bài cùng một kiểu. Mã bài giữ nguyên nên tiến độ không đổi.
+        for (var n = 0; n <= 20; n++)
+        {
+            if (n % 5 == 0 && n < 20) g.Stage = n == 0 ? "Số 0 đến 4" : $"Số {n} đến {Math.Min(20, n + 4)}";
+            if (n == 20) g.Stage = "Số 16 đến 20";
+            var theme = CountThemes[n % CountThemes.Length];
+            string[]? scene = n is >= 1 and <= 10 ? Enumerable.Repeat(theme.Emoji, n).ToArray() : null;
+            var number = n;
+
+            var steps = new List<Action> { () => AddFind(number, scene) };
+            if (n is >= 1 and <= 9) steps.Add(() => AddQuantityMatch(number));
+            steps.Add(() => AddListen(number));
+            if (n is >= 3 and <= 9) steps.Add(() => AddOrderUp(number - 2));
+            if (n is >= 1 and <= 19) steps.Add(() => AddNeighbor(number));
+            if (n is >= 3 and <= 9) steps.Add(() => AddOrderDown(number - 2));
+            // Sau bài làm quen, thứ tự các phần còn lại đổi theo từng số.
+            if (n % 2 == 1) steps.Reverse(1, steps.Count - 1);
+            foreach (var step in steps) step();
+
+            g.Topic = "viet-so";
+            g.Trace($"number-trace-{n:00}", $"Tập tô số {n}",
+                new Say($"Con tô số {n} theo nét chấm nhé!", $"Trace the number {NumEn(n)} along the dotted lines!", $"Con tô số {NumVi(n)} theo nét chấm nhé!"),
+                "✏️", n.ToString(), n > 9 ? 2 : 1);
         }
     }
 }

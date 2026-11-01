@@ -90,7 +90,8 @@ public static class MathVoiceCatalog
 
             if (q.IsBoard)
             {
-                lines.Add(new(prefix + "ask", "Con ghép mỗi phép tính với kết quả đúng nhé!", "Match each problem with the right answer!"));
+                var (boardVi, boardEn) = BoardAsk(lesson, q);
+                lines.Add(new(prefix + "ask", boardVi, boardEn));
                 lines.Add(new(prefix + "hint1", hint1, hint1En));
                 lines.Add(new(prefix + "hint2", hint2, hint2En));
                 foreach (var pair in q.Pairs)
@@ -130,6 +131,14 @@ public static class MathVoiceCatalog
 
     // ---------- Câu hỏi đọc thành lời ----------
 
+    private static (string Vi, string En) BoardAsk(MathLessonDefinition lesson, MathQuestionDefinition q) => lesson.Style switch
+    {
+        MathCurriculum.Styles.Memory => ("Con lật thẻ tìm phép tính và kết quả của nó nhé!", "Flip the cards to find each problem and its answer!"),
+        MathCurriculum.Styles.Sort => ("Con đưa mỗi phép tính về đúng ngôi nhà nhé!", "Take each problem to the right house!"),
+        MathCurriculum.Styles.Pop => ($"Con chọc hết bong bóng có phép tính bằng {Vi(q.Target ?? 0)} nhé!", $"Pop all the bubbles that equal {En(q.Target ?? 0)}!"),
+        _ => ("Con ghép mỗi phép tính với kết quả đúng nhé!", "Match each problem with the right answer!")
+    };
+
     private static (string Vi, string En) Ask(MathLessonDefinition lesson, MathQuestionDefinition q)
     {
         var p = q.Problem!;
@@ -142,6 +151,9 @@ public static class MathVoiceCatalog
 
         switch (lesson.Style)
         {
+            case MathCurriculum.Styles.TrueFalse:
+                return ($"{Cap(ExpressionVi(p))} bằng {Vi(q.ClaimedResult ?? 0)}. Đúng hay sai?",
+                        $"{Cap(ExpressionEn(p))} equals {En(q.ClaimedResult ?? 0)}. True or false?");
             case MathCurriculum.Styles.Count when story:
                 return isAdd
                     ? ($"Có {Vi(p.A)} {t.Noun} và {Vi(p.B)} {t.Noun}. Con đếm xem có tất cả bao nhiêu {t.Noun} nhé?",
@@ -258,6 +270,14 @@ public static class MathVoiceCatalog
             MathCurriculum.Styles.Match => "Tap a problem, then tap its answer.",
             MathCurriculum.Styles.Adventure => "Solve each problem to clear the way to the treasure.",
             MathCurriculum.Styles.Quick => "Solve in your head to make the rocket fly higher. No rush, take your time!",
+            MathCurriculum.Styles.Balance => "Tap the weight with the right number to balance the scale.",
+            MathCurriculum.Styles.TrueFalse => "Look at the problem. Thumbs up if it is right, thumbs down if it is wrong.",
+            MathCurriculum.Styles.Train => isAdd ? "Count on along the train cars, then tap the right number." : "Count back along the train cars, then tap the right number.",
+            MathCurriculum.Styles.Fish => "Tap the fish with the right answer.",
+            MathCurriculum.Styles.Bus => isAdd ? "Watch the children get on, then tap how many are on the bus." : "Watch the children get off, then tap how many are still on the bus.",
+            MathCurriculum.Styles.Memory => "Flip two cards to find a problem and its answer.",
+            MathCurriculum.Styles.Sort => "Take each problem to the house with its answer.",
+            MathCurriculum.Styles.Pop => "Pop all the bubbles that equal the number I am holding.",
             _ => "Follow my instructions."
         };
     }

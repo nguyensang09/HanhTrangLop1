@@ -1,4 +1,5 @@
 @model CreateChoiceItemViewModel
+@using HanhTrangLop1.Infrastructure
 @{
     var isEdit = Model.Id.HasValue;
     ViewData["Title"] = isEdit ? "Sửa bài học" : "Tạo bài học";
@@ -366,6 +367,7 @@
                                 <option value="@ContentStatus.Draft">Bản nháp (Đang soạn)</option>
                                 <option value="@ContentStatus.Review">Chờ duyệt</option>
                                 <option value="@ContentStatus.Archived">Lưu trữ (Bé không thấy bài)</option>
+                                <option value="@ContentStatus.Hidden">Đang ẩn (Bé không thấy bài)</option>
                             </select>
                         </div>
                     </div>
@@ -529,7 +531,7 @@
                     </div>
 
                     <!-- Voice panel -->
-                    <div class="builder-config-section builder-config-section-always builder-voice-panel mb-3" data-builder-voice-panel>
+                    <div class="builder-config-section builder-config-section-always builder-voice-panel mb-3" data-builder-voice-panel data-correct-text="@LearningFeedback.CorrectVi" data-retry-text="@LearningFeedback.RetryVi">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h4 class="mb-0" style="font-size:0.92rem; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:6px;">
                                 <span class="material-symbols-outlined" style="font-size:1.2rem; color:#0284c7;">record_voice_over</span>
@@ -544,7 +546,8 @@
                                 <strong data-builder-voice-filled-en style="background:#16a34a; min-width:26px; min-height:20px; font-size:11px; border-radius:6px; color:#fff; display:inline-flex; align-items:center; justify-content:center;">0</strong>
                             </div>
                         </div>
-                        <p class="builder-field-help" style="margin-bottom:8px; font-size:11px; color:#64748b;">Nghe thử phát âm, chọn file từ kho voice, tải file từ máy hoặc bấm Tạo voice AI.</p>
+                        <p class="builder-field-help" style="margin-bottom:8px; font-size:11px; color:#64748b;">Danh sách này là đúng những câu bé nghe khi học: chữ hiển thị khác lời đọc thì có ghi rõ "Bé nghe". Lời hướng dẫn chỉ hiện bằng chữ, không có Voice. Nghe thử, chọn file từ kho, tải file lên hoặc bấm Tạo file.</p>
+                        <input type="hidden" asp-for="SpeechMapJson" data-lesson-speech-json />
                         <div class="builder-voice-list" data-builder-voice-list></div>
                     </div>
 

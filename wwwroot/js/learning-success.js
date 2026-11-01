@@ -4,7 +4,7 @@
     const bar = document.querySelector("[data-lw-result].is-correct");
     if (!bar) return;
 
-    const AUTO_CONTINUE_DELAY = 2600;
+    const AUTO_CONTINUE_DELAY = 1200;
     const destination = (bar.dataset.destination || "").trim() || "/kids/today";
     const holdForDecision = bar.dataset.hold === "true";
     const progress = bar.querySelector("[data-activity-autocheck-progress]");

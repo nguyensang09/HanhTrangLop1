@@ -23,6 +23,7 @@ public class KidsController : Controller
     private readonly VoiceLibraryMaintenanceService _voiceLibraryService;
     private readonly RewardProgressionService _rewardProgressionService;
     private readonly LessonPathService _lessonPath;
+    private readonly KidsModuleService _modules;
     private readonly IHostApplicationLifetime _lifetime;
     private readonly ILogger<KidsController> _logger;
 
@@ -33,6 +34,7 @@ public class KidsController : Controller
         VoiceLibraryMaintenanceService voiceLibraryService,
         RewardProgressionService rewardProgressionService,
         LessonPathService lessonPath,
+        KidsModuleService modules,
         IHostApplicationLifetime lifetime,
         ILogger<KidsController> logger)
     {
@@ -42,6 +44,7 @@ public class KidsController : Controller
         _voiceLibraryService = voiceLibraryService;
         _rewardProgressionService = rewardProgressionService;
         _lessonPath = lessonPath;
+        _modules = modules;
         _lifetime = lifetime;
         _logger = logger;
     }
@@ -115,6 +118,8 @@ public class KidsController : Controller
     [HttpGet("today")]
     public async Task<IActionResult> Today(int? day)
     {
+        if (!await _modules.IsVisibleAsync(KidsModuleKeys.Today)) return RedirectToAction(nameof(Home));
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {
@@ -135,9 +140,10 @@ public class KidsController : Controller
     [HttpGet("skill")]
     public async Task<IActionResult> Skills()
     {
+        var hiddenGroupIds = await _modules.GetHiddenGroupIdsAsync();
         var firstSkill = await _db.SkillGroups
             .AsNoTracking()
-            .Where(x => x.IsActive)
+            .Where(x => x.IsActive && !hiddenGroupIds.Contains(x.Id))
             .OrderBy(x => x.SortOrder)
             .FirstOrDefaultAsync();
 
@@ -159,6 +165,8 @@ public class KidsController : Controller
         {
             return NotFound();
         }
+
+        if (!await _modules.IsGroupVisibleAsync(id)) return RedirectToAction(nameof(Home));
 
         // Đảo Toán Học có bản đồ và trình chơi riêng; mọi liên kết tới nhóm này (ví dụ từ Kho quà) đều dẫn về đó.
         if (skillGroup.Code == MathCurriculum.SkillGroupCode)
@@ -249,6 +257,8 @@ public class KidsController : Controller
     [HttpGet("tap-to")]
     public async Task<IActionResult> Tracing(string? tab = "all")
     {
+        if (!await _modules.IsVisibleAsync(KidsModuleKeys.Tracing)) return RedirectToAction(nameof(Home));
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {
@@ -415,6 +425,8 @@ public class KidsController : Controller
     [HttpGet("bilingual-listen")]
     public async Task<IActionResult> BilingualListen()
     {
+        if (!await _modules.IsVisibleAsync(KidsModuleKeys.Bilingual)) return RedirectToAction(nameof(Home));
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {
@@ -465,8 +477,16 @@ public class KidsController : Controller
 
         if (item is null || !ActivityTemplateCatalog.IsItemAllowed(item))
         {
+            // Bài vừa bị quản trị viên ẩn (bé còn giữ đường dẫn cũ): về trang chủ thay vì báo lỗi.
+            if (await IsHiddenLessonAsync(id)) return RedirectToAction(nameof(Home));
             return NotFound();
         }
+
+        // Nhóm đang ẩn thì bé không vào bài bằng đường dẫn cũ; bài tô nét mở từ Góc tập tô thuộc module Tập tô.
+        var moduleVisible = fromTracing
+            ? await _modules.IsVisibleAsync(KidsModuleKeys.Tracing)
+            : await _modules.IsGroupVisibleAsync(item.SkillGroupId);
+        if (!moduleVisible) return RedirectToAction(nameof(Home));
 
         // Bài đang khóa trên lộ trình (nằm sau bài đang học) không mở được bằng đường dẫn trực tiếp: bé phải học lần lượt.
         if (skillGroupId.HasValue && !completed && await IsLockedOnPathAsync(child, skillGroupId.Value, item.Id))
@@ -566,6 +586,7 @@ public class KidsController : Controller
         var question = item?.Questions.FirstOrDefault(x => x.Id == answer.QuestionId);
         if (item is null || question is null || !ActivityTemplateCatalog.IsItemAllowed(item))
         {
+            if (await IsHiddenLessonAsync(id)) return RedirectToAction(nameof(Home));
             return NotFound();
         }
 
@@ -771,7 +792,7 @@ public class KidsController : Controller
 
         var completedCount = attempts.Where(x => x.Status == "completed").Select(x => x.LearningItemId).Distinct().Count();
         var starsEarned = attempts.GroupBy(x => x.LearningItemId).Sum(g => g.Max(x => x.StarsEarned));
-        var plannedItemCount = ReadSessionPlanIds(session.SessionPlanJson).Distinct().Count();
+        var plannedItemCount = (await _todayLessonService.GetSessionItemsAsync(session)).Count;
         if (session.Status == "active" && plannedItemCount > 0 && completedCount >= plannedItemCount)
         {
             await _todayLessonService.CompleteSessionAsync(session);
@@ -799,6 +820,8 @@ public class KidsController : Controller
     [HttpGet("rewards")]
     public async Task<IActionResult> Rewards()
     {
+        if (!await _modules.IsVisibleAsync(KidsModuleKeys.Rewards)) return RedirectToAction(nameof(Home));
+
         var child = await GetSelectedChildProfileAsync();
         if (child is null)
         {
@@ -826,7 +849,8 @@ public class KidsController : Controller
             .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch)
             .OrderByDescending(x => x.ClaimedAt ?? x.UnlockedAt)
             .ToListAsync();
-        var groups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.SortOrder).ToListAsync();
+        var hiddenGroupIds = await _modules.GetHiddenGroupIdsAsync();
+        var groups = await _db.SkillGroups.AsNoTracking().Where(x => x.IsActive && !hiddenGroupIds.Contains(x.Id)).OrderBy(x => x.SortOrder).ToListAsync();
         var lessonCounts = await _db.LearningItems.AsNoTracking()
             .Where(x => x.Status == ContentStatus.Published)
             .GroupBy(x => x.SkillGroupId)
@@ -1010,7 +1034,7 @@ public class KidsController : Controller
         }
 
         // 2. Chiến binh chăm chỉ: Hoàn thành buổi học hôm nay
-        var plannedItemCount = ReadSessionPlanIds(session.SessionPlanJson).Distinct().Count();
+        var plannedItemCount = (await _todayLessonService.GetSessionItemsAsync(session)).Count;
         if (session.Status == "completed" && plannedItemCount > 0 && completedCount >= plannedItemCount)
         {
             TryAward("badge-daily-champion");
@@ -1365,6 +1389,9 @@ public class KidsController : Controller
         };
     }
 
+    private Task<bool> IsHiddenLessonAsync(Guid id) =>
+        _db.LearningItems.AnyAsync(x => x.Id == id && x.Status == ContentStatus.Hidden);
+
     private async Task<string> ResolveActiveVoiceUrlAsync(string? text)
     {
         if (string.IsNullOrWhiteSpace(text)) return string.Empty;
@@ -1418,94 +1445,8 @@ public class KidsController : Controller
         return (message, url);
     }
 
-    private async Task<string> EnrichPayloadOptionAudioAsync(string? payloadJson)
-    {
-        if (string.IsNullOrWhiteSpace(payloadJson)) return "{}";
-        try
-        {
-            var payload = System.Text.Json.Nodes.JsonNode.Parse(payloadJson)?.AsObject();
-            if (payload is null) return payloadJson;
-
-            var audioMap = new System.Text.Json.Nodes.JsonObject();
-            var audioMapEn = new System.Text.Json.Nodes.JsonObject();
-            var labels = CollectOptionLabelsFromPayload(payload).ToList();
-
-            foreach (var label in labels)
-            {
-                var cleanLabel = label.Trim();
-                var spoken = VoiceLibraryMaintenanceService.SpokenText(payload, label);
-                var url = await ResolveActiveVoiceUrlAsync(spoken);
-                if (!string.IsNullOrWhiteSpace(url))
-                {
-                    audioMap[cleanLabel] = url;
-                    if (!string.Equals(cleanLabel, label, StringComparison.Ordinal))
-                    {
-                        audioMap[label] = url;
-                    }
-                }
-
-                var urlEn = await ResolveActiveVoiceUrlEnAsync(spoken);
-                if (!string.IsNullOrWhiteSpace(urlEn))
-                {
-                    audioMapEn[cleanLabel] = urlEn;
-                    if (!string.Equals(cleanLabel, label, StringComparison.Ordinal))
-                    {
-                        audioMapEn[label] = urlEn;
-                    }
-                }
-            }
-
-            payload["optionAudio"] = audioMap;
-            payload["optionAudioEn"] = audioMapEn;
-            return payload.ToJsonString();
-        }
-        catch
-        {
-            return payloadJson ?? "{}";
-        }
-    }
-
-    private static IEnumerable<string> CollectOptionLabelsFromPayload(System.Text.Json.Nodes.JsonObject payload)
-    {
-        if (payload.TryGetPropertyValue("choices", out var chNode) && chNode is System.Text.Json.Nodes.JsonArray chArr)
-        {
-            foreach (var item in chArr) if (item != null) yield return item.ToString();
-        }
-        if (payload.TryGetPropertyValue("items", out var itNode) && itNode is System.Text.Json.Nodes.JsonArray itArr)
-        {
-            foreach (var item in itArr) if (item != null) yield return item.ToString();
-        }
-        if (payload.TryGetPropertyValue("categories", out var catNode) && catNode is System.Text.Json.Nodes.JsonArray catArr)
-        {
-            foreach (var item in catArr) if (item != null) yield return item.ToString();
-        }
-        if (payload.TryGetPropertyValue("pairs", out var pNode) && pNode is System.Text.Json.Nodes.JsonArray pArr)
-        {
-            foreach (var item in pArr)
-            {
-                if (item is System.Text.Json.Nodes.JsonObject obj)
-                {
-                    if (obj.TryGetPropertyValue("left", out var l) && l != null) yield return l.ToString();
-                    if (obj.TryGetPropertyValue("right", out var r) && r != null) yield return r.ToString();
-                }
-            }
-        }
-        if (payload.TryGetPropertyValue("mappings", out var mNode) && mNode is System.Text.Json.Nodes.JsonArray mArr)
-        {
-            foreach (var item in mArr)
-            {
-                if (item is System.Text.Json.Nodes.JsonObject obj)
-                {
-                    if (obj.TryGetPropertyValue("left", out var l) && l != null) yield return l.ToString();
-                    if (obj.TryGetPropertyValue("right", out var r) && r != null) yield return r.ToString();
-                }
-            }
-        }
-        if (payload.TryGetPropertyValue("targetLabel", out var tlNode) && tlNode != null && !string.IsNullOrWhiteSpace(tlNode.ToString()))
-        {
-            yield return tlNode.ToString();
-        }
-    }
+    private Task<string> EnrichPayloadOptionAudioAsync(string? payloadJson) =>
+        _voiceLibraryService.EnrichPayloadOptionAudioAsync(payloadJson, HttpContext.RequestAborted);
 
     private static string ExtractTracingSymbol(string? payloadSymbol, string? itemTitle, string? promptText)
     {

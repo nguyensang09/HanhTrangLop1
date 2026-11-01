@@ -9,10 +9,12 @@ namespace HanhTrangLop1.Application.Learning;
 public class TodayLessonService
 {
     private readonly ApplicationDbContext _db;
+    private readonly KidsModuleService _modules;
 
-    public TodayLessonService(ApplicationDbContext db)
+    public TodayLessonService(ApplicationDbContext db, KidsModuleService modules)
     {
         _db = db;
+        _modules = modules;
     }
 
     public static readonly IReadOnlyList<(int Day, string Title, string Description, string Icon, string Color)> DayThemes = new (int, string, string, string, string)[]
@@ -207,8 +209,11 @@ public class TodayLessonService
             .Include(x => x.Topic)
             .Where(x => ids.Contains(x.Id) && x.Status == ContentStatus.Published)
             .ToListAsync();
+        // Bài thuộc module đang ẩn được bỏ qua nhưng vẫn nằm trong kế hoạch đã lưu: bật lại là hiện lại đúng chỗ.
+        var isVisible = await BuildVisibilityFilterAsync();
         var itemById = items
             .Where(ActivityTemplateCatalog.IsItemAllowed)
+            .Where(isVisible)
             .ToDictionary(x => x.Id);
 
         return ids
@@ -217,12 +222,19 @@ public class TodayLessonService
             .ToList();
     }
 
-    public Task<Guid?> FindNextItemIdAsync(LearningSession session, Guid currentItemId)
+    public async Task<Guid?> FindNextItemIdAsync(LearningSession session, Guid currentItemId)
     {
-        var ids = ReadPlanIds(session.SessionPlanJson);
+        var ids = (await GetSessionItemsAsync(session)).Select(x => x.Id).ToList();
         var currentIndex = ids.IndexOf(currentItemId);
-        Guid? nextId = currentIndex >= 0 && currentIndex + 1 < ids.Count ? ids[currentIndex + 1] : null;
-        return Task.FromResult(nextId);
+        return currentIndex >= 0 && currentIndex + 1 < ids.Count ? ids[currentIndex + 1] : null;
+    }
+
+    private async Task<Func<LearningItem, bool>> BuildVisibilityFilterAsync()
+    {
+        var hiddenGroupIds = await _modules.GetHiddenGroupIdsAsync();
+        var tracingVisible = await _modules.IsVisibleAsync(KidsModuleKeys.Tracing);
+        return item => !hiddenGroupIds.Contains(item.SkillGroupId) &&
+                       (tracingVisible || item.InteractionType != InteractionTypes.Tracing);
     }
 
     public async Task CompleteSessionAsync(LearningSession session)
@@ -254,7 +266,8 @@ public class TodayLessonService
             .ThenBy(x => x.SortOrder)
             .ToListAsync();
 
-        allItems = allItems.Where(ActivityTemplateCatalog.IsItemAllowed).ToList();
+        var isVisible = await BuildVisibilityFilterAsync();
+        allItems = allItems.Where(ActivityTemplateCatalog.IsItemAllowed).Where(isVisible).ToList();
         if (allItems.Count == 0) return [];
 
         // Phân nhóm theo kỹ năng để bốc bài phối hợp

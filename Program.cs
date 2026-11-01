@@ -54,7 +54,9 @@ builder.Services.AddSession(options =>
 builder.Services.AddScoped<TodayLessonService>();
 builder.Services.AddScoped<RewardProgressionService>();
 builder.Services.AddScoped<LessonPathService>();
+builder.Services.AddScoped<KidsModuleService>();
 builder.Services.AddScoped<VoiceLibraryMaintenanceService>();
+builder.Services.AddSingleton<VoiceRegenerationJob>();
 builder.Services.AddScoped<ChildProfileResolver>();
 builder.Services.AddScoped<MathWorldService>();
 builder.Services.AddScoped<MathVoiceService>();
@@ -114,6 +116,30 @@ if (args.Contains("--purge-archived-lessons", StringComparer.OrdinalIgnoreCase) 
             $"still missing VI={result.MissingVi} EN={result.MissingEn}; files on disk {result.FilesOnDisk}, " +
             $"unused {result.OrphanFiles} ({result.OrphanBytes / 1024 / 1024} MB), deleted {result.DeletedFiles}.");
     }
+    return;
+}
+
+// Sinh lại toàn bộ Voice bằng đúng một giọng trong cấu hình; dừng giữa chừng thì chạy lại lệnh này để làm tiếp.
+if (args.Contains("--regenerate-all-voices", StringComparer.OrdinalIgnoreCase))
+{
+    await SeedDataInitializer.InitializeAsync(app.Services, app.Configuration, app.Logger);
+    var job = app.Services.GetRequiredService<VoiceRegenerationJob>();
+    using var progress = new Timer(_ =>
+    {
+        var s = job.Status;
+        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {s.Stage}: {s.Done}/{s.Total} rows, {s.Generated} files, {s.Failed} failed");
+    }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    var final = await job.RunAsync();
+    Console.WriteLine($"Voice regeneration {final.Stage}: rows {final.Done}/{final.Total}, generated {final.Generated}, failed {final.Failed}. {final.LastError}");
+    return;
+}
+
+// Xóa file Voice không còn được dữ liệu nào tham chiếu.
+if (args.Contains("--remove-unreferenced-voice-files", StringComparer.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var cleanup = await scope.ServiceProvider.GetRequiredService<VoiceLibraryMaintenanceService>().RemoveUnreferencedVoiceFilesAsync();
+    Console.WriteLine($"Voice files on disk {cleanup.OnDisk}, deleted {cleanup.Deleted}, broken references {cleanup.BrokenReferences}.");
     return;
 }
 

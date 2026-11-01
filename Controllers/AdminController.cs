@@ -1,3 +1,5 @@
+using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.MathWorld;
 using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
@@ -25,7 +27,8 @@ public class AdminController : Controller
         ContentStatus.Draft,
         ContentStatus.Review,
         ContentStatus.Published,
-        ContentStatus.Archived
+        ContentStatus.Archived,
+        ContentStatus.Hidden
     ];
 
     private static readonly string[] SupportedInteractionTypes =
@@ -321,26 +324,10 @@ public class AdminController : Controller
         var result = new Dictionary<Guid, AdminLearningItemVoiceStatus>();
         foreach (var item in items)
         {
-            var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
-            var texts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (question is not null)
-            {
-                void AddText(string? value)
-                {
-                    var normalized = NormalizeSpeechText(value ?? string.Empty);
-                    if (!string.IsNullOrWhiteSpace(normalized)) texts.Add(normalized);
-                }
-
-                AddText(question.PromptText);
-                AddText(ReadJsonString(question.FeedbackJson, "correct"));
-                AddText(ReadJsonString(question.FeedbackJson, "retry"));
-                var payload = JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
-                if (item.InteractionType == InteractionTypes.StoryChoice)
-                {
-                    AddText(ReadJsonString(payload, "speechText"));
-                }
-                foreach (var label in CollectOptionSpeechLabels(payload)) AddText(label);
-            }
+            var texts = CollectLessonVoiceLines(item)
+                .Select(x => NormalizeSpeechText(x.Text))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var status = new AdminLearningItemVoiceStatus { RequiredCount = texts.Count };
             foreach (var text in texts)
@@ -352,6 +339,57 @@ public class AdminController : Controller
             result[item.Id] = status;
         }
         return result;
+    }
+
+    private sealed record LessonVoiceLine(string Type, string TypeName, string Text);
+
+    /// <summary>
+    /// Những câu bé thực sự nghe trong một bài, đúng theo lời đọc mà trang làm bài dùng: bài Đảo Toán Học lấy từ kịch bản
+    /// Voice, bài trong kho lấy lời đọc viết sẵn thay cho chữ hiển thị, phản hồi đúng là câu chuẩn. Mọi màn hình quản lý Voice
+    /// dùng chung danh sách này để con số trên trang quản trị khớp với âm thanh lúc học.
+    /// </summary>
+    private static List<LessonVoiceLine> CollectLessonVoiceLines(LearningItem item)
+    {
+        var lines = new List<LessonVoiceLine>();
+        if (item.InteractionType == InteractionTypes.MathPlay)
+        {
+            var lesson = MathCurriculum.Lessons.FirstOrDefault(x => x.Code == item.Code);
+            if (lesson is not null)
+            {
+                lines.AddRange(MathVoiceService.LinesFor(lesson).Select(x => new LessonVoiceLine("math", "Lời đọc Đảo Toán Học", x.Vi)));
+            }
+            return lines.DistinctBy(x => x.Text, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        var question = item.Questions.OrderBy(x => x.SortOrder).FirstOrDefault();
+        if (question is null) return lines;
+
+        var payload = string.IsNullOrWhiteSpace(question.PayloadJson)
+            ? new JsonObject()
+            : JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
+        void Add(string type, string typeName, string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            var spoken = VoiceLibraryMaintenanceService.SpokenText(payload, text).Trim();
+            if (spoken.Length > 0 && !lines.Any(x => string.Equals(x.Text, spoken, StringComparison.OrdinalIgnoreCase)))
+            {
+                lines.Add(new LessonVoiceLine(type, typeName, spoken));
+            }
+        }
+
+        Add("question", item.InteractionType == InteractionTypes.Tracing ? "Tô nét chữ" : "Câu hỏi / Yêu cầu", question.PromptText);
+        if (item.InteractionType == InteractionTypes.StoryChoice)
+        {
+            Add("content", "Nội dung bài nghe", ReadJsonString(payload, "speechText"));
+        }
+        foreach (var label in CollectOptionSpeechLabels(payload))
+        {
+            Add("option", $"Đáp án: {label}", label);
+        }
+        Add("correct-feedback", "Phản hồi đúng", LearningFeedback.CorrectVi);
+        var retry = ReadJsonString(question.FeedbackJson, "retry");
+        Add("retry-feedback", "Phản hồi thử lại", string.IsNullOrWhiteSpace(retry) ? LearningFeedback.RetryVi : retry);
+        return lines;
     }
 
     /// <summary>
@@ -446,7 +484,7 @@ public class AdminController : Controller
 
         var correctAnswer = LearningJsonReader.ReadCorrectAnswer(question.CorrectAnswerJson);
         var isCorrect = LearningAnswerEvaluator.IsCorrect(item.InteractionType, answer.AnswerValue, correctAnswer);
-        var feedbackMessage = LearningJsonReader.ReadFeedback(question.FeedbackJson, isCorrect);
+        var feedbackMessage = isCorrect ? LearningFeedback.CorrectVi : LearningJsonReader.ReadFeedback(question.FeedbackJson, false);
 
         var model = await BuildAdminPreviewLearnViewModelAsync(item, question, feedbackMessage, isCorrect, englishVoice: englishVoice);
         return View("PreviewLearningItem", model);
@@ -496,31 +534,35 @@ public class AdminController : Controller
             .OrderBy(x => x.SortOrder)
             .FirstOrDefaultAsync();
 
-        var titleAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrl", string.Empty);
-        var titleAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "titleAudioUrlEn", string.Empty);
-        var questionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrl", string.Empty);
-        var questionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "questionAudioUrlEn", string.Empty);
-        var instructionAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrl", string.Empty);
-        var instructionAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "instructionAudioUrlEn", string.Empty);
-        var tracingAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrl", string.Empty);
-        var tracingAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "audioUrlEn", string.Empty);
-        var correctFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrl", string.Empty);
-        var correctFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "correctAudioUrlEn", string.Empty);
-        var retryFeedbackAudioUrl = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrl", string.Empty);
-        var retryFeedbackAudioUrlEn = question is null ? string.Empty : LearningJsonReader.ReadStringProperty(question.PayloadJson, "retryAudioUrlEn", string.Empty);
+        // Xem thử tra Voice đúng như trang của bé: theo lời đọc trong bảng "speech" của bài, phản hồi đúng là câu chuẩn.
+        var payloadNode = question is null ? new JsonObject() : JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
+        async Task<(string Vi, string En)> ResolveSpoken(string? display)
+        {
+            var spoken = VoiceLibraryMaintenanceService.SpokenText(payloadNode, display);
+            return (await _voiceLibraryService.ResolveVoiceAudioUrlAsync(spoken) ?? string.Empty,
+                    await _voiceLibraryService.ResolveVoiceAudioUrlEnAsync(spoken) ?? string.Empty);
+        }
 
-        if (string.IsNullOrWhiteSpace(titleAudioUrl)) titleAudioUrl = await ResolveActiveAdminVoiceUrlAsync(item.Title);
-        if (string.IsNullOrWhiteSpace(titleAudioUrlEn)) titleAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(item.Title);
-        if (string.IsNullOrWhiteSpace(instructionAudioUrl)) instructionAudioUrl = await ResolveActiveAdminVoiceUrlAsync(item.InstructionText);
-        if (string.IsNullOrWhiteSpace(instructionAudioUrlEn)) instructionAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(item.InstructionText);
-        if (string.IsNullOrWhiteSpace(questionAudioUrl)) questionAudioUrl = await ResolveActiveAdminVoiceUrlAsync(question?.PromptText ?? item.Title);
-        if (string.IsNullOrWhiteSpace(questionAudioUrlEn)) questionAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync(question?.PromptText ?? item.Title);
-        if (string.IsNullOrWhiteSpace(tracingAudioUrl)) tracingAudioUrl = questionAudioUrl;
-        if (string.IsNullOrWhiteSpace(tracingAudioUrlEn)) tracingAudioUrlEn = questionAudioUrlEn;
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrl)) correctFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Giỏi lắm");
-        if (string.IsNullOrWhiteSpace(correctFeedbackAudioUrlEn)) correctFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Giỏi lắm");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrl)) retryFeedbackAudioUrl = await ResolveActiveAdminVoiceUrlAsync("Con thử lại nhé");
-        if (string.IsNullOrWhiteSpace(retryFeedbackAudioUrlEn)) retryFeedbackAudioUrlEn = await ResolveActiveAdminVoiceUrlEnAsync("Con thử lại nhé");
+        var (questionAudioUrl, questionAudioUrlEn) = await ResolveSpoken(question?.PromptText ?? item.Title);
+        var (correctFeedbackAudioUrl, correctFeedbackAudioUrlEn) = await ResolveSpoken(LearningFeedback.CorrectVi);
+        var retryText = question is null ? string.Empty : ReadJsonString(question.FeedbackJson, "retry");
+        var (retryFeedbackAudioUrl, retryFeedbackAudioUrlEn) = await ResolveSpoken(string.IsNullOrWhiteSpace(retryText) ? LearningFeedback.RetryVi : retryText);
+        var titleAudioUrl = questionAudioUrl;
+        var titleAudioUrlEn = questionAudioUrlEn;
+        var instructionAudioUrl = questionAudioUrl;
+        var instructionAudioUrlEn = questionAudioUrlEn;
+        var tracingAudioUrl = questionAudioUrl;
+        var tracingAudioUrlEn = questionAudioUrlEn;
+        if (item.InteractionType == InteractionTypes.StoryChoice)
+        {
+            (tracingAudioUrl, tracingAudioUrlEn) = await ResolveSpoken(ReadJsonString(payloadNode, "speechText"));
+        }
+        if (question is not null)
+        {
+            // Chỉ đổi bản hiển thị của lần xem này, không lưu lại CSDL.
+            _db.Entry(question).State = EntityState.Detached;
+            question.PayloadJson = await _voiceLibraryService.EnrichPayloadOptionAudioAsync(question.PayloadJson);
+        }
 
         return new LearnViewModel
         {
@@ -763,28 +805,22 @@ public class AdminController : Controller
 
         await RemoveRedundantVoiceRowsAsync();
 
-        var question = item.Questions.FirstOrDefault();
-        var payload = question != null && !string.IsNullOrWhiteSpace(question.PayloadJson)
-            ? JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject()
-            : new JsonObject();
-
         var prompts = new List<object>();
         var requiredVoiceCount = 0;
         var readyVoiceViCount = 0;
         var readyVoiceEnCount = 0;
 
-        async Task AddPromptAsync(string type, string typeName, string? text, string? currentUrl, string? currentUrlEn)
+        // Mỗi câu lấy thẳng từ kho Voice chung theo lời đọc, đúng file bé nghe lúc học.
+        var voiceLines = CollectLessonVoiceLines(item);
+        var voiceRows = await LoadVoiceRowsAsync(voiceLines);
+        foreach (var line in voiceLines)
         {
-            if (string.IsNullOrWhiteSpace(text)) return;
-            var cleanText = text.Trim();
-            var cacheEntry = await _db.TextToSpeechCaches
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.OriginalText == cleanText || x.NormalizedText == cleanText);
-
-            var audioUrl = IsUsableAudioUrl(currentUrl) ? currentUrl : cacheEntry?.AudioUrl;
-            var audioUrlEn = IsUsableAudioUrl(currentUrlEn) ? currentUrlEn : cacheEntry?.AudioUrlEn;
-            if (!IsUsableAudioUrl(audioUrl)) audioUrl = string.Empty;
-            if (!IsUsableAudioUrl(audioUrlEn)) audioUrlEn = string.Empty;
+            var cleanText = line.Text;
+            var type = line.Type;
+            var typeName = line.TypeName;
+            voiceRows.TryGetValue(VoiceLibraryMaintenanceService.ComputeTextHash(cleanText), out var cacheEntry);
+            var audioUrl = cacheEntry?.Status == "ready" && IsUsableAudioUrl(cacheEntry.AudioUrl) ? cacheEntry.AudioUrl : string.Empty;
+            var audioUrlEn = cacheEntry?.StatusEn == "ready" && IsUsableAudioUrl(cacheEntry.AudioUrlEn) ? cacheEntry.AudioUrlEn : string.Empty;
             var textEn = cacheEntry?.TextEn ?? "";
             requiredVoiceCount++;
             if (!string.IsNullOrWhiteSpace(audioUrl)) readyVoiceViCount++;
@@ -801,46 +837,6 @@ public class AdminController : Controller
                 hasVi = !string.IsNullOrWhiteSpace(audioUrl),
                 hasEn = !string.IsNullOrWhiteSpace(audioUrlEn)
             });
-        }
-
-        // 1. Câu hỏi / Yêu cầu chính (chỉ giữ nội dung thực tế phát âm thanh)
-        if (question != null && !string.IsNullOrWhiteSpace(question.PromptText))
-        {
-            var promptType = item.InteractionType == InteractionTypes.Tracing ? "Tô nét chữ" : "Câu hỏi / Yêu cầu";
-            await AddPromptAsync("question", promptType, question.PromptText, payload["questionAudioUrl"]?.ToString(), payload["questionAudioUrlEn"]?.ToString());
-        }
-
-        // 2. Nội dung bài nghe riêng (dành cho dạng Nghe - chọn, Nghe truyện)
-        var speechText = ReadJsonString(payload, "speechText");
-        if (item.InteractionType == InteractionTypes.StoryChoice && !string.IsNullOrWhiteSpace(speechText))
-        {
-            await AddPromptAsync("content", "Nội dung bài nghe", speechText, payload["audioUrl"]?.ToString(), payload["audioUrlEn"]?.ToString());
-        }
-
-        // 3. Các đáp án / lựa chọn tương tác
-        foreach (var label in CollectOptionSpeechLabels(payload))
-        {
-            var optMap = payload["optionAudio"] as JsonObject;
-            var optMapEn = payload["optionAudioEn"] as JsonObject;
-            var optUrl = optMap?[label]?.ToString();
-            var optUrlEn = optMapEn?[label]?.ToString();
-            await AddPromptAsync("option", $"Đáp án: {label}", label, optUrl, optUrlEn);
-        }
-
-        // 4. Phản hồi đúng & sai
-        if (question != null)
-        {
-            var correctText = ReadJsonString(question.FeedbackJson, "correct");
-            if (!string.IsNullOrWhiteSpace(correctText))
-            {
-                await AddPromptAsync("correct-feedback", "Phản hồi đúng", correctText, payload["correctAudioUrl"]?.ToString(), payload["correctAudioUrlEn"]?.ToString());
-            }
-
-            var retryText = ReadJsonString(question.FeedbackJson, "retry");
-            if (!string.IsNullOrWhiteSpace(retryText))
-            {
-                await AddPromptAsync("retry-feedback", "Phản hồi thử lại", retryText, payload["retryAudioUrl"]?.ToString(), payload["retryAudioUrlEn"]?.ToString());
-            }
         }
 
         var hasVoiceVi = requiredVoiceCount > 0 && readyVoiceViCount == requiredVoiceCount;
@@ -865,6 +861,54 @@ public class AdminController : Controller
         });
     }
 
+    private async Task<Dictionary<string, TextToSpeechCache>> LoadVoiceRowsAsync(IEnumerable<LessonVoiceLine> lines, bool tracked = false)
+    {
+        var hashes = lines.Select(x => VoiceLibraryMaintenanceService.ComputeTextHash(x.Text)).Distinct().ToList();
+        var query = _db.TextToSpeechCaches.Where(x => x.UsageType != "bilingual-listen" && hashes.Contains(x.TextHash));
+        var rows = tracked ? await query.ToListAsync() : await query.AsNoTracking().ToListAsync();
+        return rows.GroupBy(x => x.TextHash).ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.Status == "ready").First());
+    }
+
+    /// <summary>Ẩn bài khỏi màn hình của bé hoặc hiện lại. Bài, tiến độ và lịch sử làm bài giữ nguyên.</summary>
+    [HttpPost("learning-items/{id:guid}/toggle-hidden")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleLearningItemHidden(Guid id)
+    {
+        var item = await _db.LearningItems.FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null) return NotFound();
+        if (item.Status != ContentStatus.Published && item.Status != ContentStatus.Hidden)
+        {
+            return BadRequest(new { error = "Chỉ ẩn hoặc hiện được bài đang xuất bản." });
+        }
+
+        item.Status = item.Status == ContentStatus.Hidden ? ContentStatus.Published : ContentStatus.Hidden;
+        item.UpdatedAt = DateTimeOffset.UtcNow;
+        _db.AuditLogs.Add(new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            Action = item.Status == ContentStatus.Hidden ? "hide_learning_item" : "show_learning_item",
+            EntityName = nameof(LearningItem),
+            DetailJson = JsonSerializer.Serialize(new { item.Id, item.Code, item.Title })
+        });
+        await _db.SaveChangesAsync();
+        return Ok(new { status = item.Status, statusName = ContentStatus.GetDisplayName(item.Status), hidden = item.Status == ContentStatus.Hidden });
+    }
+
+    /// <summary>Sinh lại toàn bộ Voice bằng đúng một giọng trong cấu hình, chạy nền.</summary>
+    [HttpPost("voice-cache/regenerate-all")]
+    [ValidateAntiForgeryToken]
+    public IActionResult RegenerateAllVoices(
+        [FromServices] VoiceRegenerationJob job,
+        [FromServices] IHostApplicationLifetime lifetime)
+    {
+        var started = job.TryStart(lifetime.ApplicationStopping);
+        return Ok(new { started, status = job.Status });
+    }
+
+    [HttpGet("voice-cache/regenerate-all/status")]
+    public IActionResult RegenerateAllVoicesStatus([FromServices] VoiceRegenerationJob job) => Ok(job.Status);
+
     [HttpPost("learning-items/{id:guid}/generate-audio-ajax")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateLearningItemAudioAjax(Guid id)
@@ -882,31 +926,7 @@ public class AdminController : Controller
         await _db.SaveChangesAsync();
 
         // 2. Generate missing files for this lesson's components (chỉ sinh câu hỏi, đáp án, phản hồi)
-        var question = item.Questions.FirstOrDefault();
-        var textsToGenerate = new List<string>();
-        if (question != null)
-        {
-            if (!string.IsNullOrWhiteSpace(question.PromptText)) textsToGenerate.Add(question.PromptText);
-            var c = ReadJsonString(question.FeedbackJson, "correct");
-            if (!string.IsNullOrWhiteSpace(c)) textsToGenerate.Add(c);
-            var r = ReadJsonString(question.FeedbackJson, "retry");
-            if (!string.IsNullOrWhiteSpace(r)) textsToGenerate.Add(r);
-            if (!string.IsNullOrWhiteSpace(question.PayloadJson))
-            {
-                var payload = JsonNode.Parse(question.PayloadJson)?.AsObject() ?? new JsonObject();
-                if (item.InteractionType == InteractionTypes.StoryChoice)
-                {
-                    var speechText = ReadJsonString(payload, "speechText");
-                    if (!string.IsNullOrWhiteSpace(speechText)) textsToGenerate.Add(speechText);
-                }
-                textsToGenerate.AddRange(CollectOptionSpeechLabels(payload));
-            }
-        }
-
-        var cleanTexts = textsToGenerate.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct().ToList();
-        var cacheEntries = await _db.TextToSpeechCaches
-            .Where(x => cleanTexts.Contains(x.OriginalText) || cleanTexts.Contains(x.NormalizedText))
-            .ToListAsync();
+        var cacheEntries = (await LoadVoiceRowsAsync(CollectLessonVoiceLines(item), tracked: true)).Values.ToList();
 
         var generatedVi = 0;
         var generatedEn = 0;
@@ -963,6 +983,28 @@ public class AdminController : Controller
             readyVoiceViCount = updatedVoiceStatus.VoiceViCount,
             readyVoiceEnCount = updatedVoiceStatus.VoiceEnCount
         });
+    }
+
+    [HttpGet("kids-modules")]
+    public async Task<IActionResult> KidsModules([FromServices] KidsModuleService modules) =>
+        View(await modules.GetAllAsync());
+
+    [HttpPost("kids-modules")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveKidsModules([FromServices] KidsModuleService modules, List<string>? order, List<string>? visible)
+    {
+        await modules.SaveAsync(order ?? [], (visible ?? []).ToHashSet());
+        _db.AuditLogs.Add(new AuditLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            Action = "update_kids_modules",
+            EntityName = nameof(KidsModuleSetting),
+            DetailJson = JsonSerializer.Serialize(new { order, visible })
+        });
+        await _db.SaveChangesAsync();
+        TempData["SuccessMessage"] = "Đã lưu cấu hình hiển thị Góc của bé.";
+        return RedirectToAction(nameof(KidsModules));
     }
 
     [HttpGet("catalogs")]
@@ -1075,29 +1117,11 @@ public class AdminController : Controller
                 .FirstOrDefaultAsync(x => x.Id == learningItemId.Value);
             if (targetLesson != null)
             {
-                var question = targetLesson.Questions.FirstOrDefault();
-                var filterTexts = new List<string>();
-                if (question != null)
-                {
-                    if (!string.IsNullOrWhiteSpace(question.PromptText)) filterTexts.Add(question.PromptText.Trim());
-                    var c = ReadJsonString(question.FeedbackJson, "correct");
-                    if (!string.IsNullOrWhiteSpace(c)) filterTexts.Add(c.Trim());
-                    var r = ReadJsonString(question.FeedbackJson, "retry");
-                    if (!string.IsNullOrWhiteSpace(r)) filterTexts.Add(r.Trim());
-
-                    if (!string.IsNullOrWhiteSpace(question.PayloadJson))
-                    {
-                        var payload = JsonNode.Parse(question.PayloadJson)?.AsObject();
-                        if (payload != null)
-                        {
-                            var speechText = ReadJsonString(payload, "speechText");
-                            if (!string.IsNullOrWhiteSpace(speechText)) filterTexts.Add(speechText.Trim());
-                            filterTexts.AddRange(CollectOptionSpeechLabels(payload));
-                        }
-                    }
-                }
-                var cleanFilterTexts = filterTexts.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList();
-                query = query.Where(x => cleanFilterTexts.Contains(x.OriginalText) || cleanFilterTexts.Contains(x.NormalizedText));
+                var lessonHashes = CollectLessonVoiceLines(targetLesson)
+                    .Select(x => VoiceLibraryMaintenanceService.ComputeTextHash(x.Text))
+                    .Distinct()
+                    .ToList();
+                query = query.Where(x => lessonHashes.Contains(x.TextHash));
             }
         }
         else if (topicId.HasValue)
@@ -1707,23 +1731,6 @@ public class AdminController : Controller
         return RedirectToAction(nameof(VoiceCache), new { status = totalMissingAfter > 0 ? "missing" : null });
     }
 
-    [HttpPost("voice-cache/reset-rebuild")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ResetAndRebuildAllVoices()
-    {
-        try
-        {
-            var result = await _voiceLibraryService.ResetAndRebuildAllVoicesAsync(HttpContext.RequestAborted);
-            TempData["AdminMessage"] = $"Đã dọn dẹp và tái lập thành công toàn bộ thư viện Voice chuẩn nữ! Khởi tạo {result.TotalVoices} voice duy nhất (sinh {result.GeneratedVi} file VN, {result.GeneratedEn} file EN), liên kết {result.UpdatedLessons} bài học.";
-        }
-        catch (Exception ex)
-        {
-            TempData["AdminMessage"] = $"Lỗi khi tái lập voice: {ex.Message}";
-        }
-
-        return RedirectToAction(nameof(VoiceCache));
-    }
-
     [HttpPost("voice-cache/generate-text")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateVoiceFromText(string text, string? textEn, string? name, string? usageType, string? returnUrl = null)
@@ -1935,7 +1942,7 @@ public class AdminController : Controller
 
         question.PromptText = Clean(model.PromptText);
         question.QuestionType = model.InteractionType;
-        question.PayloadJson = configuration.Value.PayloadJson;
+        question.PayloadJson = KeepAuthoredPayload(question.PayloadJson, configuration.Value.PayloadJson);
         question.CorrectAnswerJson = JsonSerializer.Serialize(new { value = configuration.Value.CorrectAnswer });
         question.HintJson = JsonSerializer.Serialize(new { level1 = Clean(model.HintText) });
         question.FeedbackJson = JsonSerializer.Serialize(new
@@ -2726,51 +2733,23 @@ public class AdminController : Controller
         payload["optionAudio"] = audioMap;
         return linkedCount;
     }
-    private static IEnumerable<string> CollectOptionSpeechLabels(JsonObject payload)
+    /// <summary>
+    /// Sửa bài trong kho không được làm mất phần viết sẵn mà biểu mẫu không có: lời đọc, hình cho từng đáp án, cảnh minh họa, cách chơi.
+    /// Nhãn đổi chữ thì không còn trong bảng lời đọc và được đọc đúng chữ mới.
+    /// </summary>
+    private static string KeepAuthoredPayload(string? oldJson, string newJson)
     {
-        foreach (var value in ReadJsonStringArray(payload, "choices"))
+        if (string.IsNullOrWhiteSpace(oldJson)) return newJson;
+        if (JsonNode.Parse(oldJson) is not JsonObject old || JsonNode.Parse(newJson) is not JsonObject updated) return newJson;
+        foreach (var key in new[] { "speech", "visuals", "scene", "mapIcon", "stage", "bankVersion", "play", "playTarget", "wordPicture", "wordText", "orderExample", "focusVisual" })
         {
-            yield return value;
+            if (old[key] is { } value && !updated.ContainsKey(key)) updated[key] = value.DeepClone();
         }
-
-        foreach (var value in ReadJsonStringArray(payload, "items"))
-        {
-            yield return value;
-        }
-
-        foreach (var value in ReadJsonStringArray(payload, "categories"))
-        {
-            yield return value;
-        }
-
-        foreach (var value in ReadJsonMappingLabels(payload, "pairs"))
-        {
-            yield return value;
-        }
-
-        foreach (var value in ReadJsonMappingLabels(payload, "mappings"))
-        {
-            yield return value;
-        }
-
-        var targetLabel = ReadJsonString(payload, "targetLabel");
-        if (!string.IsNullOrWhiteSpace(targetLabel))
-        {
-            yield return targetLabel;
-        }
-
-        var leftLabel = ReadJsonString(payload, "leftLabel");
-        if (!string.IsNullOrWhiteSpace(leftLabel))
-        {
-            yield return leftLabel;
-        }
-
-        var rightLabel = ReadJsonString(payload, "rightLabel");
-        if (!string.IsNullOrWhiteSpace(rightLabel))
-        {
-            yield return rightLabel;
-        }
+        return updated.ToJsonString();
     }
+
+    private static IEnumerable<string> CollectOptionSpeechLabels(JsonObject payload) =>
+        VoiceLibraryMaintenanceService.CollectOptionSpeechLabels(payload);
 
     private async Task<string> SaveMediaFileAsync(IFormFile file, string assetType, string? altText = null, string? category = null)
     {
@@ -3123,6 +3102,7 @@ public class AdminController : Controller
         return new CreateChoiceItemViewModel
         {
             Id = item.Id,
+            SpeechMapJson = question is null ? "{}" : (JsonNode.Parse(question.PayloadJson) as JsonObject)?["speech"]?.ToJsonString() ?? "{}",
             Status = item.Status,
             IsCompatible = ActivityTemplateCatalog.IsItemAllowed(item),
             Title = item.Title,

@@ -1,0 +1,19 @@
+@using HanhTrangLop1.Application.MathWorld
+@model (int Completed, int Total, int Percent)
+@* Đảo Toán Học: cùng kích thước với các thẻ khác, giữ minh họa đảo và rô-bốt Bíp làm điểm nhấn. *@
+<div class="kh-tile-top">
+    <span class="mit-art" aria-hidden="true">
+        <span class="mit-sea"></span>
+        <span class="mit-island"><span class="mit-palm">🌴</span></span>
+        <span class="mit-sym mit-sym--add">+</span>
+        <span class="mit-sym mit-sym--sub">−</span>
+        <span class="mit-bip"><partial name="_MathBip" model='"mw-bip--wave"' /></span>
+    </span>
+    <span class="kh-tile-badge">Mới • @MathCurriculum.StyleCatalog.Count cách chơi</span>
+</div>
+<h3 class="kh-tile-title">Đảo Toán Học</h3>
+<p class="kh-tile-desc">Cộng, trừ trong phạm vi 10</p>
+<span class="mit-progress" aria-label="Đã học @Model.Completed trên @Model.Total bài">
+    <span class="mit-progress-track"><span style="width:@Model.Percent%"></span></span>
+    <span class="mit-progress-text">@Model.Completed/@Model.Total</span>
+</span>

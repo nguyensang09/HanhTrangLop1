@@ -15,8 +15,8 @@ public static partial class LessonBank
         g.Topic = "tu-phuc-vu";
 
         var washStory = new Say(
-            "Tí vừa chơi cát ngoài sân về. Tí mở vòi nước, xoa xà phòng nổi đầy bọt. Rửa xong, Tí lau tay thật khô.",
-            "Ti just came in from playing in the sand. He turns on the tap and rubs on soap until it's all bubbly. Then he dries his hands really well.");
+            "Tí vừa chơi cát ngoài sân về. Tí mở vòi nước, xoa xà phòng nổi đầy bọt. Rửa xong, Tí lau tay vào khăn thật khô.",
+            "Ti just came in from playing in the sand. He turns on the tap and rubs on soap until it's all bubbly. Then he dries his hands on the towel.");
 
         g.Story("v5-life-wash-story-soap", "Tí rửa tay", washStory,
             new Say("Tí dùng gì để đôi tay sạch vi khuẩn?", "What does Ti use to wash the germs off his hands?"),
@@ -36,7 +36,7 @@ public static partial class LessonBank
 
         g.Story("v5-life-wash-story-towel", "Tí lau tay", washStory,
             new Say("Rửa xong, Tí lau tay vào đâu?", "After washing, what does Ti dry his hands on?"),
-            "🧻", ["Cái áo", "Gấu bông", "Khăn mặt"], "Khăn mặt", washImage,
+            "🧼", ["Cái áo", "Gấu bông", "Khăn lau tay"], "Khăn lau tay", washImage,
             retry: new Say("Con nhìn chiếc khăn vàng treo trên tường nhé!", "Look at the yellow towel hanging on the wall!"));
 
         g.Pick("v5-life-toothbrush", "Đồ dùng đánh răng",
@@ -46,7 +46,7 @@ public static partial class LessonBank
 
         g.Match("v5-life-match-body", "Đồ dùng giữ sạch cơ thể",
             new Say("Mỗi đồ dùng giúp giữ sạch một phần cơ thể. Con nối cho đúng nhé!", "Each thing keeps one part of the body clean. Match them up!"),
-            "🦷", [("Bàn chải đánh răng", "Hàm răng"), ("Xà phòng", "Đôi bàn tay"), ("Đôi tất", "Bàn chân")]);
+            "🦷", [("Bàn chải đánh răng", "Hàm răng"), ("Xà phòng", "Đôi bàn tay"), ("Dầu gội đầu", "Mái tóc")]);
 
         g.Order("life-order-morning", "Buổi sáng của con",
             new Say("Buổi sáng con làm gì trước, làm gì sau? Con xếp lại nhé!", "What do you do first in the morning, and what comes next? Put them in order!"),
@@ -65,7 +65,7 @@ public static partial class LessonBank
 
         g.Pick("v5-life-tidy-toys", "Chơi xong thì cất",
             new Say("Chơi xong, đồ chơi nằm khắp sàn nhà. Con làm gì nhỉ?", "Playtime is over and toys are all over the floor. What should you do?"),
-            "🧺", ["Để đồ chơi bừa trên sàn", "Đá đồ chơi vào gầm giường", "Cất đồ chơi vào hộp"], "Cất đồ chơi vào hộp",
+            "📦", ["Để đồ chơi bừa trên sàn", "Đá đồ chơi vào gầm giường", "Cất đồ chơi vào hộp"], "Cất đồ chơi vào hộp",
             retry: new Say("Đồ chơi cũng cần về nhà của nó, đó là chiếc hộp!", "Toys need to go home too, and their home is the box!"));
 
         g.Sort("v5-life-sort-tidy", "Cất đồ đúng chỗ",
@@ -107,7 +107,7 @@ public static partial class LessonBank
 
         g.Story("v5-life-road-helmet", "Chiếc mũ của Tũn", roadStory,
             new Say("Tũn đội gì để bảo vệ cái đầu?", "What does Tun wear to protect his head?"),
-            "⛑️", ["Mũ rộng vành", "Mũ len", "Mũ bảo hiểm"], "Mũ bảo hiểm", roadImage,
+            "⛑️", ["Mũ rộng vành", "Mũ lưỡi trai", "Mũ bảo hiểm"], "Mũ bảo hiểm", roadImage,
             retry: new Say("Con nhìn chiếc mũ cứng màu xanh trên đầu Tũn nhé!", "Look at the hard blue hat on Tun's head!"));
 
         g.Story("v5-life-road-hand", "Tũn chờ qua đường", roadStory,
@@ -136,7 +136,7 @@ public static partial class LessonBank
             retry: new Say("Điện rất nguy hiểm, có thể làm con bị thương đấy!", "Electricity is very dangerous. It can hurt you!"));
 
         g.Multi("v5-life-multi-danger", "Đồ vật nguy hiểm",
-            new Say("Những thứ nào nóng hoặc sắc, con không được chạm vào?", "Which things are hot or sharp, so you must not touch them?"),
+            new Say("Những thứ nào nguy hiểm, con không được chạm vào?", "Which things are dangerous, so you must not touch them?"),
             "🔥", ["Bếp lửa đang cháy", "Quả bóng", "Con dao sắc", "Gấu bông", "Ổ cắm điện"], ["Bếp lửa đang cháy", "Con dao sắc", "Ổ cắm điện"],
             retry: new Say("Có ba thứ nguy hiểm đấy: thứ rất nóng, thứ rất sắc và thứ có điện.", "There are three dangerous ones: something hot, something sharp and something with electricity."));
 
@@ -197,8 +197,8 @@ public static partial class LessonBank
             "💞", [("Được tặng quà", "Vui vẻ"), ("Làm hỏng đồ chơi", "Buồn bã"), ("Nghe sấm nổ to", "Sợ hãi")]);
 
         var sharingStory = new Say(
-            "Giờ vẽ, bút màu của Tôm bị gãy hết. Tôm chỉ vẽ được đám mây xám nên ngồi buồn thiu. Mai thấy vậy liền đưa cho Tôm chiếc bút màu đỏ của mình.",
-            "In drawing time, all of Tom's colouring pencils are broken. He can only draw a grey cloud, so he sits there feeling sad. Mai sees this and hands Tom her red pencil.");
+            "Giờ vẽ, Tôm muốn tô bông hoa đỏ nhưng lại không có bút màu đỏ nên ngồi buồn thiu. Mai thấy vậy liền đưa cho Tôm chiếc bút màu đỏ của mình.",
+            "In drawing time, Tom wants to colour a red flower, but he has no red pencil, so he sits there feeling sad. Mai sees this and hands Tom her red pencil.");
 
         g.Story("v5-life-sharing-feel", "Tôm buồn thiu", sharingStory,
             new Say("Lúc đầu, Tôm cảm thấy thế nào?", "How does Tom feel at first?"),
@@ -308,7 +308,7 @@ public static partial class Lexicon
         Làm ướt tay | 💧 | wet your hands
         Xoa xà phòng | 🫧 | rub on soap
         Xả sạch bọt | 🚰 | rinse off the bubbles
-        Lau khô tay | 🧻 | dry your hands
+        Lau khô tay | 🙌 | dry your hands
         Thức dậy | 🌅 | wake up
         Đánh răng rửa mặt | 🪥 | brush teeth and wash face
         Ăn sáng | 🥣 | eat breakfast
@@ -321,7 +321,7 @@ public static partial class Lexicon
         Đi giày | 👟 | put on shoes
         Hộp đồ chơi | 📦 | toy box
         Giá sách | 📚 | bookshelf
-        Cất đồ chơi vào hộp | 🧺 | put the toys back in the box
+        Cất đồ chơi vào hộp | 📦 | put the toys back in the box
         Để đồ chơi bừa trên sàn | 🧩 | leave the toys on the floor
         Đá đồ chơi vào gầm giường | 🦶 | kick the toys under the bed
         Đánh răng | 🪥 | brush my teeth

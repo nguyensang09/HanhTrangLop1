@@ -1,6 +1,8 @@
 @model KidsHomeViewModel
+@using HanhTrangLop1.Application.Learning
 @using HanhTrangLop1.Application.MathWorld
 @inject MathWorldService MathWorld
+@inject KidsModuleService Modules
 @{
     ViewData["Title"] = "Góc Khám Phá Của Bé - Hành Trang Lớp 1";
 
@@ -21,121 +23,25 @@
 
     var childName = Model.ChildProfile?.Nickname ?? "Bé yêu";
 
-    // Helper trích xuất thông tin nhóm kỹ năng
-    (string Title, string Icon, string Emoji, string Theme, string Badge, string Desc, string Url) GetSkillGroupCard(SkillGroup g)
-    {
-        var (icon, emoji, theme, badge, desc) = g.Code switch
-        {
-            "chu-cai" => ("menu_book", "📖", "card-theme-coral", "33 Chữ Việt – Anh & Nét", "Mặt chữ, nét chuẩn & phát âm"),
-            "chu-so" => ("pin", "🔢", "card-theme-emerald", "Chữ Số 0 - 20", "Đếm số lượng & tập viết số đẹp"),
-            "so-luong-toan" => ("calculate", "🧮", "card-theme-sky", "Đếm & So Sánh", "So sánh lớn bé, tách gộp nhóm"),
-            "tu-duy-logic" => ("extension", "💡", "card-theme-cyan", "Tư Duy & Ghép Bóng", "Quy luật, phân loại & tư duy"),
-            "ky-nang-song" => ("volunteer_activism", "💖", "card-theme-rose", "Kỹ Năng & Tự Lập", "Tự phục vụ, an toàn & cảm xúc"),
-            "ngon-ngu" => ("auto_stories", "📚", "card-theme-purple", "Vốn Từ & Âm Vần", "Nghe hiểu, kể chuyện & từ vựng"),
-            "hinh-dang-khong-gian" => ("category", "🔺", "card-theme-teal", "Hình Khối & Không Gian", "Nhận biết hình học & định hướng"),
-            "ghi-nho-tap-trung" => ("psychology", "🧠", "card-theme-amber", "Ghi Nhớ & Tập Trung", "Rèn trí nhớ & khả năng quan sát"),
-            _ => (g.IconKey ?? "school", "🌟", "card-theme-coral", g.Name, g.Description ?? "Hành trình khám phá tri thức")
-        };
-
-        return (g.Name, icon, emoji, theme, badge, desc, Url.Action("Skill", "Kids", new { id = g.Id })!);
-    }
-
-    // Tách các nhóm kỹ năng cụ thể
-    var chuCaiGroup = Model.SkillGroups.FirstOrDefault(g => g.Code == "chu-cai");
-    var chuSoGroup = Model.SkillGroups.FirstOrDefault(g => g.Code == "chu-so");
-    var soLuongToanGroup = Model.SkillGroups.FirstOrDefault(g => g.Code == "so-luong-toan");
-    // Đảo Toán Học có thẻ riêng (minh họa đảo, tiến độ) đứng đầu lưới nên không dựng lại bằng mẫu chung.
-    var otherSkillGroups = Model.SkillGroups
-        .Where(g => g.Code != "chu-cai" && g.Code != "chu-so" && g.Code != "so-luong-toan" && g.Code != MathCurriculum.SkillGroupCode)
-        .ToList();
-    var hasMathIsland = Model.SkillGroups.Any(g => g.Code == MathCurriculum.SkillGroupCode);
+    // Danh sách và thứ tự module do quản trị viên cấu hình (Bài học hôm nay luôn đứng đầu).
+    var visibleModules = await Modules.GetVisibleAsync();
+    var hasMathIsland = visibleModules.Any(m => m.Key == MathCurriculum.SkillGroupCode);
+    var todayVisible = visibleModules.Any(m => m.Key == KidsModuleKeys.Today);
+    var rewardsVisible = visibleModules.Any(m => m.Key == KidsModuleKeys.Rewards);
     var mathProgress = hasMathIsland && Model.ChildProfile is not null
         ? await MathWorld.GetProgressSummaryAsync(Model.ChildProfile)
         : (Completed: 0, Total: 0);
     var mathPercent = mathProgress.Total == 0 ? 0 : mathProgress.Completed * 100 / mathProgress.Total;
 
-    // Sắp xếp thứ tự chính xác theo yêu cầu:
-    // bé tập tô nét -> Chữ cái -> chữ số -> số lượng toán học -> bài hôm nay -> nghe song ngữ -> các mục khác -> kho quà của bé
-    var activityCards = new List<(string Title, string Icon, string Emoji, string Theme, string Badge, string Desc, string Url)>();
-
-    // 1. Bé tập tô nét
-    activityCards.Add((
-        "Bé Tập Tô Nét",
-        "draw",
-        "🎨",
-        "card-theme-coral",
-        "Xưởng Vẽ Sáng Tạo",
-        "Luyện nét chữ, tô chữ cái và vẽ hình",
-        Url.Action("Tracing", "Kids")!
-    ));
-
-    // 2. Chữ cái
-    if (chuCaiGroup != null)
+    string? ModuleUrl(KidsModule module) => module.Key switch
     {
-        activityCards.Add(GetSkillGroupCard(chuCaiGroup));
-    }
-
-    // 3. Chữ số
-    if (chuSoGroup != null)
-    {
-        activityCards.Add(GetSkillGroupCard(chuSoGroup));
-    }
-
-    // 4. Số lượng và toán học
-    if (soLuongToanGroup != null)
-    {
-        activityCards.Add(GetSkillGroupCard(soLuongToanGroup));
-    }
-
-    // 5. Trò chơi vui nhộn (Game Hub mini-games)
-    activityCards.Add((
-        "Trò Chơi Vui Nhộn",
-        "sports_esports",
-        "🎮",
-        "card-theme-coral",
-        "4 Mini-game Hấp Dẫn",
-        "Bắn bóng, đào vàng, khinh khí cầu & tàu số",
-        Url.Action("Index", "Games")!
-    ));
-
-    // 6. Bài học hôm nay
-    activityCards.Add((
-        "Bài Học Hôm Nay",
-        "play_circle",
-        "⭐",
-        "card-theme-amber",
-        $"Ngày {Model.CurrentDayNumber} • Mục Tiêu",
-        Model.TodayTheme?.Title ?? "Bài học rèn luyện trong ngày",
-        Url.Action("Today", "Kids")!
-    ));
-
-    // 6. Nghe song ngữ
-    activityCards.Add((
-        "Nghe Song Ngữ",
-        "record_voice_over",
-        "🎧",
-        "card-theme-purple",
-        "Phát Âm Bản Xứ",
-        "Luyện nghe chuẩn ABC & Số 0-20",
-        Url.Action("BilingualListen", "Kids")!
-    ));
-
-    // 7. Các mục khác (các nhóm kỹ năng còn lại)
-    foreach (var g in otherSkillGroups)
-    {
-        activityCards.Add(GetSkillGroupCard(g));
-    }
-
-    // 8. Kho quà của bé (ở cuối cùng)
-    activityCards.Add((
-        "Kho Quà Của Bé",
-        "emoji_events",
-        "🏆",
-        "card-theme-gold",
-        $"{Model.Stars} Sao Vàng ⭐",
-        "Mở rương báu, đổi quà & huy hiệu",
-        Url.Action("Rewards", "Kids")!
-    ));
+        KidsModuleKeys.Today => Url.Action("Today", "Kids"),
+        KidsModuleKeys.Tracing => Url.Action("Tracing", "Kids"),
+        KidsModuleKeys.Games => Url.Action("Index", "Games"),
+        KidsModuleKeys.Bilingual => Url.Action("BilingualListen", "Kids"),
+        KidsModuleKeys.Rewards => Url.Action("Rewards", "Kids"),
+        _ => Model.SkillGroups.Any(g => g.Id == module.SkillGroupId) ? Url.Action("Skill", "Kids", new { id = module.SkillGroupId }) : null
+    };
 }
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
@@ -168,9 +74,18 @@
                 <strong>Chào @childName 👋</strong>
             </span>
         </div>
-        <a class="kh-pill kh-pill--stars" asp-controller="Kids" asp-action="Rewards" title="Số sao thưởng bé tích lũy được • Bấm xem kho quà" onclick="playAudioChime('celebrate')">
-            <span aria-hidden="true">⭐</span><strong>@Model.Stars</strong><small class="kh-hide-sm">sao vàng</small>
-        </a>
+        @if (rewardsVisible)
+        {
+            <a class="kh-pill kh-pill--stars" asp-controller="Kids" asp-action="Rewards" title="Số sao thưởng bé tích lũy được • Bấm xem kho quà" onclick="playAudioChime('celebrate')">
+                <span aria-hidden="true">⭐</span><strong>@Model.Stars</strong><small class="kh-hide-sm">sao vàng</small>
+            </a>
+        }
+        else
+        {
+            <span class="kh-pill kh-pill--stars" title="Số sao thưởng bé tích lũy được">
+                <span aria-hidden="true">⭐</span><strong>@Model.Stars</strong><small class="kh-hide-sm">sao vàng</small>
+            </span>
+        }
         <button type="button" class="kh-pill kh-pill--lock" onclick="playAudioChime('tap'); openParentGate('/parent/dashboard')" title="Chuyển sang Góc Phụ Huynh (Cần giải phép tính)" aria-label="Góc phụ huynh">
             <span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="kh-hide-sm">Ba mẹ</span>
         </button>
@@ -181,56 +96,42 @@
             <img class="kh-guide-img" src="~/images/mascot-squirrel-3d.png" alt="Sóc Nâu" />
             <p class="kh-bubble">@childName ơi, hôm nay mình học gì nào? Bé chọn bài học để khám phá nhé! 🌰</p>
         </div>
-        <div class="kh-hero-card">
-            <a class="kh-continue kh-continue--gold" asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')">
-                <span class="kh-continue-orb" aria-hidden="true">🗺️</span>
-                <span class="kh-continue-text">
-                    <small>Hành trình học tập · Ngày @Model.CurrentDayNumber</small>
-                    <strong>@(Model.TodayTheme?.Title ?? "Bài học rèn luyện trong ngày")</strong>
-                </span>
-                <span class="kh-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
-            </a>
-        </div>
+        @if (todayVisible)
+        {
+            <div class="kh-hero-card">
+                <a class="kh-continue kh-continue--gold" asp-controller="Kids" asp-action="Today" onclick="playAudioChime('tap')">
+                    <span class="kh-continue-orb" aria-hidden="true">🗺️</span>
+                    <span class="kh-continue-text">
+                        <small>Hành trình học tập · Ngày @Model.CurrentDayNumber</small>
+                        <strong>@(Model.TodayTheme?.Title ?? "Bài học rèn luyện trong ngày")</strong>
+                    </span>
+                    <span class="kh-continue-play material-symbols-outlined" aria-hidden="true">play_arrow</span>
+                </a>
+            </div>
+        }
     </section>
 
     <div class="kh-home-bar">
         <h2>Bé muốn chơi gì nào? 🎯</h2>
-        <span class="kh-chip">Tổng cộng: @(activityCards.Count + (hasMathIsland ? 1 : 0)) mục học tập</span>
+        <span class="kh-chip">Tổng cộng: @visibleModules.Count mục học tập</span>
     </div>
 
     <div class="kh-grid">
-        @if (hasMathIsland)
+        @foreach (var module in visibleModules)
         {
-            @* Đảo Toán Học: cùng kích thước với các thẻ khác, giữ minh họa đảo và rô-bốt Bíp làm điểm nhấn. *@
-            <a class="kh-tile kh-tone-violet math-island-tile" asp-controller="KidsMath" asp-action="Index" onclick="playAudioChime('celebrate')" title="Đảo Toán Học • Cộng, trừ trong phạm vi 10">
-                <div class="kh-tile-top">
-                    <span class="mit-art" aria-hidden="true">
-                        <span class="mit-sea"></span>
-                        <span class="mit-island"><span class="mit-palm">🌴</span></span>
-                        <span class="mit-sym mit-sym--add">+</span>
-                        <span class="mit-sym mit-sym--sub">−</span>
-                        <span class="mit-bip"><partial name="_MathBip" model='"mw-bip--wave"' /></span>
-                    </span>
-                    <span class="kh-tile-badge">Mới • 9 cách chơi</span>
-                </div>
-                <h3 class="kh-tile-title">Đảo Toán Học</h3>
-                <p class="kh-tile-desc">Cộng, trừ trong phạm vi 10</p>
-                <span class="mit-progress" aria-label="Đã học @mathProgress.Completed trên @mathProgress.Total bài">
-                    <span class="mit-progress-track"><span style="width:@mathPercent%"></span></span>
-                    <span class="mit-progress-text">@mathProgress.Completed/@mathProgress.Total</span>
-                </span>
-            </a>
-        }
-        @foreach (var card in activityCards)
-        {
-            <a class="kh-tile @(card.Theme.Replace("card-theme-", "kh-tone-"))" href="@card.Url" onclick="playAudioChime('tap')" title="@card.Title • @card.Badge">
-                <div class="kh-tile-top">
-                    <span class="kh-tile-orb" aria-hidden="true">@card.Emoji</span>
-                    <span class="kh-tile-badge">@card.Badge</span>
-                </div>
-                <h3 class="kh-tile-title">@card.Title</h3>
-                <p class="kh-tile-desc">@card.Desc</p>
-                <span class="kh-tile-go material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            if (module.Key == MathCurriculum.SkillGroupCode)
+            {
+                @* Đảo Toán Học: cùng kích thước với các thẻ khác, giữ minh họa đảo và rô-bốt Bíp làm điểm nhấn. *@
+                <a class="kh-tile kh-tone-violet math-island-tile" asp-controller="KidsMath" asp-action="Index" onclick="playAudioChime('celebrate')" title="Đảo Toán Học • Cộng, trừ trong phạm vi 10">
+                    <partial name="_KidsMathTileBody" model="(mathProgress.Completed, mathProgress.Total, mathPercent)" />
+                </a>
+                continue;
+            }
+
+            if (ModuleUrl(module) is not { } moduleUrl) continue;
+            var card = KidsModuleCard.For(module, Model.SkillGroups.FirstOrDefault(g => g.Id == module.SkillGroupId)?.Description, Model.Stars, Model.CurrentDayNumber, Model.TodayTheme?.Title);
+            <a class="kh-tile @card.Theme" href="@moduleUrl" onclick="playAudioChime('tap')" title="@card.Title • @card.Badge">
+                <partial name="_KidsModuleTileBody" model="card" />
             </a>
         }
     </div>

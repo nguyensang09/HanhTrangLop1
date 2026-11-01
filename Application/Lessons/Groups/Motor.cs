@@ -307,7 +307,7 @@ public static partial class Lexicon
         Cất bút vào hộp | 📦 | put the crayons away
         // Thủ công
         Tờ giấy trắng | 📄 | sheet of paper
-        Giấy màu | 🌈 | coloured paper
+        Giấy màu | 📄 | coloured paper
         Lọ hồ dán | 🧴 | glue
         Đất nặn | 🟠 | play dough
         Bông tuyết cắt giấy | ❄️ | paper snowflake

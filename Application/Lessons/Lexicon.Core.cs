@@ -94,7 +94,7 @@ public static partial class Lexicon
         Cái nồi | 🍲 | pot
         Bàn chải đánh răng | 🪥 | toothbrush
         Xà phòng | 🧼 | soap
-        Khăn mặt | 🧻 | towel
+        Khăn lau tay |  | towel
         Cái gối | 🛏️ | pillow
         Đồng hồ | ⏰ | clock
         Cái đèn | 💡 | lamp
@@ -115,7 +115,7 @@ public static partial class Lexicon
         Đôi giày | 👟 | shoes
         Đôi ủng | 👢 | boots
         Mũ rộng vành | 👒 | sun hat
-        Mũ len | 🧢 | cap
+        Mũ lưỡi trai | 🧢 | cap
         Kính râm | 🕶️ | sunglasses
         Mũ bảo hiểm | ⛑️ | helmet
         // Phương tiện

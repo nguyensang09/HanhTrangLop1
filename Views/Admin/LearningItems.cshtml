@@ -35,7 +35,7 @@
             <div class="filter-field search-field"><label for="search">Tìm bài học</label><input id="search" name="search" class="form-control" value="@Model.Search" placeholder="Tên bài, nhóm kỹ năng hoặc dạng bài" /></div>
             <div class="filter-field"><label for="skillGroupId">Nhóm kỹ năng</label><select id="skillGroupId" name="skillGroupId" class="form-control"><option value="">Tất cả nhóm</option>@foreach (var group in Model.SkillGroups){<option value="@group.Id" selected="@(Model.SkillGroupId == group.Id)">@group.Name</option>}</select></div>
             <div class="filter-field"><label for="interactionType">Dạng bài</label><select id="interactionType" name="interactionType" class="form-control"><option value="">Tất cả dạng</option>@foreach (var template in ActivityTemplateCatalog.Templates){<option value="@template.InteractionType" selected="@(Model.InteractionType == template.InteractionType)">@template.Name</option>}<option value="@InteractionTypes.Tracing" selected="@(Model.InteractionType == InteractionTypes.Tracing)">Tô theo nét</option></select></div>
-            <div class="filter-field"><label for="status">Trạng thái</label><select id="status" name="status" class="form-control"><option value="">Tất cả</option><option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option><option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option><option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option><option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option></select></div>
+            <div class="filter-field"><label for="status">Trạng thái</label><select id="status" name="status" class="form-control"><option value="">Tất cả</option><option value="@ContentStatus.Draft" selected="@(Model.Status == ContentStatus.Draft)">Nháp</option><option value="@ContentStatus.Review" selected="@(Model.Status == ContentStatus.Review)">Chờ duyệt</option><option value="@ContentStatus.Published" selected="@(Model.Status == ContentStatus.Published)">Xuất bản</option><option value="@ContentStatus.Archived" selected="@(Model.Status == ContentStatus.Archived)">Lưu trữ</option><option value="@ContentStatus.Hidden" selected="@(Model.Status == ContentStatus.Hidden)">Đang ẩn</option></select></div>
             <div class="filter-field"><label for="voiceStatus">Voice</label><select id="voiceStatus" name="voiceStatus" class="form-control"><option value="">Tất cả</option><option value="ready" selected="@(Model.VoiceFilter == "ready")">Đủ VI & EN</option><option value="missing" selected="@(Model.VoiceFilter == "missing")">Thiếu voice</option><option value="none" selected="@(Model.VoiceFilter == "none")">Chưa có voice</option></select></div>
             <button class="app-btn app-btn-small" type="submit"><span class="material-symbols-outlined">filter_alt</span>Lọc</button>
             @if (Model.HasActiveFilter){<a class="app-btn app-btn-muted app-btn-small" asp-action="LearningItems">Xóa lọc</a>}
@@ -72,7 +72,7 @@
                             @foreach (var item in activityGroup.Items)
                             {
                                 var voice = Model.VoiceStatuses.GetValueOrDefault(item.Id) ?? new AdminLearningItemVoiceStatus();
-                                <tr><td class="col-secondary"><span class="sort-badge">#@item.SortOrder</span></td><td><a class="table-link lesson-name" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td><td><span class="status-chip status-@item.Status">@ContentStatus.GetDisplayName(item.Status)</span></td><td><div data-voice-status-cell="@item.Id">@if (voice.Status == "full"){<span class="badge-voice-pill voice-ready">Đủ @voice.RequiredCount/@voice.RequiredCount</span>}else if (voice.Status == "partial"){<span class="badge-voice-pill voice-partial">VI @voice.VoiceViCount/@voice.RequiredCount · EN @voice.VoiceEnCount/@voice.RequiredCount</span>}else{<span class="badge-voice-pill voice-none">Chưa có</span>}</div></td><td class="table-actions"><a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id"><span class="material-symbols-outlined">visibility</span>Xem</a>@if(item.InteractionType == InteractionTypes.Tracing){<a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}else{<a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}<form class="inline-action-form" asp-action="DuplicateLearningItem" asp-route-id="@item.Id" method="post"><button class="mini-action" type="submit" title="Tạo một bản nháp giống bài này để sửa nhanh"><span class="material-symbols-outlined">content_copy</span>Nhân bản</button></form><form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete><button class="mini-action danger" type="submit"><span class="material-symbols-outlined">delete</span>Xóa</button></form></td></tr>
+                                <tr class="@(item.Status == ContentStatus.Hidden ? "is-lesson-hidden" : "")"><td class="col-secondary"><span class="sort-badge">#@item.SortOrder</span></td><td><a class="table-link lesson-name" asp-action="LearningItemDetail" asp-route-id="@item.Id">@item.Title</a></td><td><span class="status-chip status-@item.Status" data-status-chip>@ContentStatus.GetDisplayName(item.Status)</span></td><td><div data-voice-status-cell="@item.Id">@if (voice.Status == "full"){<span class="badge-voice-pill voice-ready">Đủ @voice.RequiredCount/@voice.RequiredCount</span>}else if (voice.Status == "partial"){<span class="badge-voice-pill voice-partial">VI @voice.VoiceViCount/@voice.RequiredCount · EN @voice.VoiceEnCount/@voice.RequiredCount</span>}else{<span class="badge-voice-pill voice-none">Chưa có</span>}</div></td><td class="table-actions"><a class="mini-action primary-link" asp-action="PreviewLearningItem" asp-route-id="@item.Id"><span class="material-symbols-outlined">visibility</span>Xem</a>@if(item.InteractionType == InteractionTypes.Tracing){<a class="mini-action" asp-action="CreateTracing" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}else{<a class="mini-action" asp-action="CreateChoice" asp-route-editId="@item.Id"><span class="material-symbols-outlined">edit</span>Sửa</a>}@if(item.Status == ContentStatus.Published || item.Status == ContentStatus.Hidden){<form class="inline-action-form" asp-action="ToggleLearningItemHidden" asp-route-id="@item.Id" method="post" data-toggle-hidden><button class="mini-action" type="submit" title="Ẩn bài này với bé hoặc hiện lại, bài và tiến độ giữ nguyên"><span class="material-symbols-outlined" data-hidden-icon>@(item.Status == ContentStatus.Hidden ? "visibility" : "visibility_off")</span><span data-hidden-text>@(item.Status == ContentStatus.Hidden ? "Hiện" : "Ẩn")</span></button></form>}<form class="inline-action-form" asp-action="DuplicateLearningItem" asp-route-id="@item.Id" method="post"><button class="mini-action" type="submit" title="Tạo một bản nháp giống bài này để sửa nhanh"><span class="material-symbols-outlined">content_copy</span>Nhân bản</button></form><form class="inline-action-form" asp-action="DeleteLearningItem" asp-route-id="@item.Id" method="post" data-confirm-delete><button class="mini-action danger" type="submit"><span class="material-symbols-outlined">delete</span>Xóa</button></form></td></tr>
                             }
                             </tbody></table></div></div>
                         </div>
@@ -98,3 +98,34 @@ document.querySelectorAll('[data-toggle-trigger]').forEach(header => header.addE
 }));
 </script>
 }
+
+<style>
+    .status-hidden { background: #e2e8f0; color: #334155; }
+    tr.is-lesson-hidden > td:not(.table-actions) { opacity: .5; }
+</style>
+<script>
+    // Ẩn/hiện ngay tại chỗ, không tải lại trang để cây nhóm bài đang mở không bị đóng lại.
+    document.addEventListener('submit', async function (event) {
+        var form = event.target;
+        if (!form.matches('[data-toggle-hidden]')) return;
+        event.preventDefault();
+        var button = form.querySelector('button');
+        button.disabled = true;
+        try {
+            var response = await fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin', headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(String(response.status));
+            var data = await response.json();
+            var row = form.closest('tr');
+            row.classList.toggle('is-lesson-hidden', data.hidden);
+            var chip = row.querySelector('[data-status-chip]');
+            chip.textContent = data.statusName;
+            chip.className = 'status-chip status-' + data.status;
+            form.querySelector('[data-hidden-icon]').textContent = data.hidden ? 'visibility' : 'visibility_off';
+            form.querySelector('[data-hidden-text]').textContent = data.hidden ? 'Hiện' : 'Ẩn';
+        } catch (error) {
+            window.alert('Chưa đổi được trạng thái bài, bạn thử lại nhé.');
+        } finally {
+            button.disabled = false;
+        }
+    });
+</script>

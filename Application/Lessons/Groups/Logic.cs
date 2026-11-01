@@ -225,12 +225,12 @@ public static partial class LessonBank
             "🌱", ["Hạt giống", "Mầm cây", "Cái cây"],
             retry: new Say("Cây nào cũng bắt đầu từ một hạt nhỏ xíu.", "Every tree starts from a tiny seed."));
 
-        g.Sort("v5-logic-sort-pocket", "Có vừa túi áo không?",
-            new Say("Đồ nào bỏ vừa túi áo, đồ nào quá to? Con xếp giúp cô nhé!", "Which things fit in your pocket, and which are too big? Sort them for me!"),
-            "👖", ["Bỏ vừa túi áo", "Quá to để bỏ túi"],
-            [("Cái chìa khóa", "Bỏ vừa túi áo"), ("Kẹo", "Bỏ vừa túi áo"), ("Hạt dẻ", "Bỏ vừa túi áo"),
+        g.Sort("v5-logic-sort-pocket", "Có vừa túi quần không?",
+            new Say("Đồ nào bỏ vừa túi quần, đồ nào quá to? Con xếp giúp cô nhé!", "Which things fit in your pocket, and which are too big? Sort them for me!"),
+            "👖", ["Bỏ vừa túi quần", "Quá to để bỏ túi"],
+            [("Cái chìa khóa", "Bỏ vừa túi quần"), ("Kẹo", "Bỏ vừa túi quần"), ("Hạt dẻ", "Bỏ vừa túi quần"),
              ("Xe đạp", "Quá to để bỏ túi"), ("Cái ghế", "Quá to để bỏ túi"), ("Con voi", "Quá to để bỏ túi")],
-            retry: new Say("Con thử tưởng tượng nhét nó vào túi áo xem có vừa không!", "Imagine putting it in your pocket. Does it fit?"));
+            retry: new Say("Con thử tưởng tượng nhét nó vào túi quần xem có vừa không!", "Imagine putting it in your pocket. Does it fit?"));
 
         g.Order("v5-logic-size-big-small-sea", "Từ to đến nhỏ dưới biển",
             new Say("Dưới biển có bạn to, bạn nhỏ. Con xếp từ to nhất đến nhỏ nhất nhé!", "Big and small friends live in the sea. Line them up from biggest to smallest!"),
@@ -329,7 +329,7 @@ public static partial class Lexicon
         Đồ dùng ngày mưa | 🌧️ | things for rainy days
         Nhóm biết lớn lên | 🌱 | things that grow
         Nhóm không tự lớn | 🧱 | things that don't grow
-        Bỏ vừa túi áo | 👖 | fits in a pocket
+        Bỏ vừa túi quần | 👖 | fits in a pocket
         Quá to để bỏ túi | 🙅 | too big for a pocket
         Để trong bếp | 🍳 | goes in the kitchen
         Để trong cặp sách | 🎒 | goes in the school bag
