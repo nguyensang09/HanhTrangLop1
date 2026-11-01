@@ -21,7 +21,6 @@
 }
 .lw[data-group="chu-cai"] { --lw-main: #ff6b8b; --lw-deep: #d9446a; --lw-soft: #ffeef2; --lw-sky-top: #fff3f6; --lw-sky-bottom: #ffdfe8; --lw-hill: #ffc7d6; --lw-hill-2: #ffadc2; }
 .lw[data-group="chu-so"] { --lw-main: #1fb57f; --lw-deep: #138a5f; --lw-soft: #e6fbf2; --lw-sky-top: #effdf6; --lw-sky-bottom: #d3f6e6; --lw-hill: #aeeccf; --lw-hill-2: #86e0b8; }
-.lw[data-group="so-luong-toan"] { --lw-main: #2f9bff; --lw-deep: #1c72cc; --lw-soft: #e8f4ff; --lw-sky-top: #eef7ff; --lw-sky-bottom: #d5ebff; --lw-hill: #b6dcff; --lw-hill-2: #94caff; }
 .lw[data-group="tu-duy-logic"] { --lw-main: #0fb5c9; --lw-deep: #0b8796; --lw-soft: #e4f9fb; --lw-sky-top: #ecfcfd; --lw-sky-bottom: #cff4f8; --lw-hill: #a6e9f1; --lw-hill-2: #7fdcea; }
 .lw[data-group="ky-nang-song"] { --lw-main: #f2557a; --lw-deep: #c93259; --lw-soft: #ffeef3; --lw-sky-top: #fff2f6; --lw-sky-bottom: #ffdce7; --lw-hill: #ffc3d5; --lw-hill-2: #ffa6c0; }
 .lw[data-group="ngon-ngu"] { --lw-main: #9b5cff; --lw-deep: #7438d6; --lw-soft: #f3ecff; --lw-sky-top: #f7f2ff; --lw-sky-bottom: #e8dcff; --lw-hill: #d5c2ff; --lw-hill-2: #bfa3ff; }
@@ -1433,14 +1432,6 @@
 @keyframes lw-wrong-shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
 
 /* Dãy mẫu của bài xếp số. */
-.lw .lw-example { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: clamp(6px, 1.4vw, 14px); width: min(100%, 620px); margin: 0 auto 14px; padding: 10px 16px; border: 3px dashed var(--lw-main, #ff8a3d); border-radius: 22px; background: #fffdf5; }
-.lw .lw-example-tag { padding: 3px 12px; border-radius: 999px; background: var(--lw-main, #ff8a3d); color: #fff; font: 800 .95rem 'Baloo 2', 'Be Vietnam Pro', sans-serif; }
-.lw .lw-example-step { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; min-width: 56px; }
-.lw .lw-example-num { font: 800 clamp(1.8rem, 5vw, 2.5rem)/1 'Baloo 2', 'Be Vietnam Pro', sans-serif; color: var(--lw-deep, #d9631a); }
-.lw .lw-example-dots { display: grid; grid-template-columns: repeat(5, 9px); gap: 3px; justify-content: center; min-height: 9px; }
-.lw .lw-example-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--lw-main, #ff8a3d); }
-.lw .lw-example-arrow { color: var(--lw-main, #ff8a3d); font-size: 1.6rem; }
-.lw .lw-seq.has-example .lw-seq-num { display: none; }
 .lw .lw-tile--flip.is-found { outline: 4px solid #1fb57f; pointer-events: none; }
 
 /* Làm quen chữ qua tranh */
@@ -1582,6 +1573,14 @@
 .lw .lw-carriage.is-done { border-style: solid; border-color: var(--lw-main, #ff8a3d); background: #fff5ea; }
 .lw .lw-carriage.is-gulp { animation: lw-bounce .45s ease; }
 .lw .lw-carriage .answer-emoji { font-size: clamp(2rem, 5vw, 2.8rem); }
+/* Đoàn tàu thiếu toa: luôn một hàng để bé đọc được cả dãy từ trái sang phải, đầu tàu quay về phía trước (bên trái). */
+.lw .lw-gaptrain { flex-wrap: nowrap; gap: clamp(3px, 1vw, 8px); }
+.lw .lw-gaptrain .lw-carriage-engine { flex: none; font-size: clamp(2.2rem, 8vw, 4.4rem); transform: none; }
+.lw .lw-gaptrain .lw-carriage { flex: 1 1 0; min-width: 0; max-width: 132px; min-height: clamp(76px, 13vw, 116px); font-family: inherit; font-size: clamp(1.8rem, 6.5vw, 3.2rem); line-height: 1; color: #3f2d1d; cursor: pointer; touch-action: manipulation; }
+.lw .lw-gaptrain .lw-carriage::after { font-size: .6rem; letter-spacing: .5rem; }
+.lw .lw-gaptrain .lw-carriage.is-given { border-style: solid; border-color: #29b6a6; background: #e9faf7; }
+.lw .lw-gaptrain .lw-carriage.is-next { border-color: var(--lw-main, #ff8a3d); background: #fff5ea; animation: lw-car-wait 1.2s ease-in-out infinite; }
+@keyframes lw-car-wait { 50% { transform: translateY(-5px); } }
 
 /* ===== Bảng mười ô, xếp vào ô ===== */
 .lw .lw-frame { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: min(100%, 560px); margin: 0 auto 16px; padding: 10px; border-radius: 20px; background: #fff; border: 4px solid var(--lw-main, #ff8a3d); }
@@ -1605,6 +1604,6 @@
 .lw .lw-tile--hero.is-single-symbol .answer-label { font-size: clamp(4rem, 10vw, 5.6rem) !important; line-height: 1 !important; }
 
 @media (prefers-reduced-motion: reduce) {
-    .lw .lw-pond .lw-tile, .lw .lw-net .lw-tile, .lw .lw-tile--burrow, .lw .lw-tile--flip.is-flipping, .lw .lw-tile--flip.is-found, .lw .lw-carriage.is-gulp, .lw .lw-home-slot.is-gulp { animation: none; }
+    .lw .lw-pond .lw-tile, .lw .lw-net .lw-tile, .lw .lw-tile--burrow, .lw .lw-tile--flip.is-flipping, .lw .lw-tile--flip.is-found, .lw .lw-carriage.is-gulp, .lw .lw-gaptrain .lw-carriage.is-next, .lw .lw-home-slot.is-gulp { animation: none; }
     .lw .lw-race .lw-tile::before, .lw .lw-reveal-panel { transition: none; }
 }

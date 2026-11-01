@@ -45,26 +45,46 @@ public static partial class LessonBank
     public const int Version = 1;
 
     /// <summary>Lần sửa nội dung gần nhất áp dụng cho toàn kho: tăng khi sửa dữ liệu ở nhiều nhóm một lúc.</summary>
-    public const int ContentRevision = 5;
+    public const int ContentRevision = 6;
+
+    /// <summary>Lần sửa riêng của nhóm Số và Đếm (gộp thêm bài đếm và so sánh), không làm mới bài của các nhóm khác.</summary>
+    private const int NumbersRevision = 7;
+
+    /// <summary>Thứ tự chặng của Số và Đếm: chặng đếm xen giữa các chặng số để bé đếm được ngay khi vừa biết số, không phải học hết số 20 trước.</summary>
+    private static readonly string[] NumberStageOrder =
+    [
+        "Số 0 đến 4", "Đếm từ 1 đến 3", "Số 5 đến 9", "Đếm từ 4 đến 6", "Đếm từ 7 đến 10", "Số 10 đến 14", "Số 15 đến 19", "Số 16 đến 20", "Ôn tập vui"
+    ];
+
+    private static IReadOnlySet<string> _quantityCodes = new HashSet<string>();
 
     private static readonly Lazy<IReadOnlyList<BankLesson>> LazyAll = new(Build);
     public static IReadOnlyList<BankLesson> All => LazyAll.Value;
+
+    /// <summary>Bài đếm và so sánh, trước đây là nhóm riêng: dùng cho huy hiệu và gợi ý trò chơi của mảng này.</summary>
+    public static bool IsQuantityLesson(string? code)
+    {
+        _ = LazyAll.Value;
+        return code is not null && _quantityCodes.Contains(code);
+    }
 
     private static IReadOnlyList<BankLesson> Build()
     {
         var lessons = new List<BankLesson>();
         // Bài ôn tập luôn thêm sau bài cũ của nhóm để không đổi thứ tự đường học của bé.
-        void Group(string code, Action<LessonGroupBuilder> add, Action<LessonGroupBuilder> practice)
+        void Group(string code, Action<LessonGroupBuilder> add, Action<LessonGroupBuilder> practice, int revision = ContentRevision)
         {
-            var builder = new LessonGroupBuilder(code, lessons);
+            var builder = new LessonGroupBuilder(code, lessons) { Version = revision };
             add(builder);
-            builder.Version = ContentRevision;
             practice(builder);
         }
 
         Group("chu-cai", AddLetters, AddLetterPractice);
-        Group("chu-so", AddNumbers, AddNumberPractice);
-        Group("so-luong-toan", AddQuantity, AddQuantityPractice);
+        Group("chu-so", AddNumbers, AddNumberPractice, NumbersRevision);
+        var quantityStart = lessons.Count;
+        Group("chu-so", AddQuantity, AddQuantityPractice, NumbersRevision);
+        _quantityCodes = lessons.Skip(quantityStart).Select(x => x.Code).ToHashSet();
+        ArrangeStages(lessons, "chu-so", NumberStageOrder);
         Group("tu-duy-logic", AddLogic, AddLogicPractice);
         Group("ky-nang-song", AddLifeSkills, AddLifePractice);
         Group("ngon-ngu", AddLanguage, AddLanguagePractice);
@@ -74,6 +94,21 @@ public static partial class LessonBank
         Group("kham-pha", AddWorld, AddWorldPractice);
         Validate(lessons);
         return lessons;
+    }
+
+    /// <summary>Xếp lại bài của nhóm theo thứ tự chặng, giữ nguyên thứ tự bài trong từng chặng.</summary>
+    private static void ArrangeStages(List<BankLesson> lessons, string group, string[] stageOrder)
+    {
+        int Rank(BankLesson lesson)
+        {
+            var rank = Array.IndexOf(stageOrder, lesson.Payload["stage"]?.GetValue<string>());
+            return rank >= 0 ? rank : throw new InvalidOperationException($"Bài {lesson.Code} có chặng chưa được xếp thứ tự.");
+        }
+
+        var order = 0;
+        var arranged = lessons.Where(x => x.Group == group).OrderBy(Rank).Select(x => x with { SortOrder = ++order * 10 }).ToList();
+        lessons.RemoveAll(x => x.Group == group);
+        lessons.AddRange(arranged);
     }
 
     private static void Validate(IReadOnlyList<BankLesson> lessons)
@@ -202,13 +237,32 @@ internal sealed class LessonGroupBuilder(string group, List<BankLesson> sink)
             pairs.SelectMany(p => new[] { p.Left, p.Right }), null, null, "Con chạm một hình bên trái rồi chạm hình hợp với nó bên phải.");
     }
 
-    /// <param name="example">Dãy mẫu đã xếp đúng chiều (số khác với bài) để bé hình dung được dãy số cần xếp.</param>
-    public void Order(string slug, string title, Say prompt, string icon, string[] items, string[]? scene = null, Say? retry = null, string[]? example = null)
+    public void Order(string slug, string title, Say prompt, string icon, string[] items, string[]? scene = null, Say? retry = null)
     {
         var payload = new JsonObject { ["items"] = Strings(items) };
-        if (example is not null) payload["orderExample"] = Strings(example);
         Add(slug, InteractionTypes.Ordering, title, prompt, icon, payload, string.Join('|', items), retry, items, scene, null,
             "Con chạm lần lượt từng thẻ theo đúng thứ tự.");
+    }
+
+    /// <summary>
+    /// Đoàn tàu thiếu toa: bé nhìn cả dãy đã có sẵn và chọn đáp án cho từng toa trống, nên chính dãy là ví dụ để bé biết xếp gì tiếp theo.
+    /// Đáp án là các giá trị còn thiếu theo thứ tự toa; đáp án nhiễu ở ngoài dãy để bé phải nhìn dãy chứ không chỉ chạm hết các thẻ.
+    /// </summary>
+    public void OrderRow(string slug, string title, Say prompt, string icon, string[] row, int[] blanks, string decoy, Say retry)
+    {
+        Require(blanks.Length >= 2 && blanks.Distinct().Count() == blanks.Length && blanks.All(x => x >= 0 && x < row.Length), slug, "dãy cần ít nhất 2 toa trống hợp lệ");
+        Require(row.Length - blanks.Length >= 2 && !blanks.Contains(0), slug, "dãy phải giữ toa đầu và ít nhất 2 toa để bé thấy chiều xếp");
+        Require(!row.Contains(decoy, StringComparer.Ordinal), slug, "đáp án nhiễu không được nằm trong dãy");
+        var items = blanks.Order().Select(x => row[x]).ToArray();
+        var payload = new JsonObject
+        {
+            ["items"] = Strings(items),
+            ["orderRow"] = Strings(row.Select((value, index) => blanks.Contains(index) ? string.Empty : value)),
+            ["orderDecoys"] = Strings([decoy]),
+            ["play"] = "gaptrain"
+        };
+        Add(slug, InteractionTypes.Ordering, title, prompt, icon, payload, string.Join('|', items), retry, row.Append(decoy), null, null,
+            "Con nhìn cả đoàn tàu rồi chạm đáp án cho từng toa trống. Chạm lại toa vừa điền để đổi.");
     }
 
     public void Sort(string slug, string title, Say prompt, string icon, string[] categories, (string Item, string Category)[] mappings, Say? retry = null)

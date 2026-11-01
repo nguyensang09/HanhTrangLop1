@@ -272,7 +272,7 @@ public class TodayLessonService
 
         // Phân nhóm theo kỹ năng để bốc bài phối hợp
         var letterItems = allItems.Where(x => x.SkillGroup?.Code == "chu-cai" && x.InteractionType != InteractionTypes.Tracing).ToList();
-        var numberItems = allItems.Where(x => (x.SkillGroup?.Code == "chu-so" || x.SkillGroup?.Code == "so-luong-toan") && x.InteractionType != InteractionTypes.Tracing).ToList();
+        var numberItems = allItems.Where(x => x.SkillGroup?.Code == "chu-so" && x.InteractionType != InteractionTypes.Tracing).ToList();
         var logicAndLifeItems = allItems.Where(x => x.SkillGroup?.Code == "tu-duy-logic" || x.SkillGroup?.Code == "ky-nang-song" || x.SkillGroup?.Code == "hinh-dang-khong-gian" || x.SkillGroup?.Code == "ngon-ngu").ToList();
         var tracingItems = allItems.Where(x => x.InteractionType == InteractionTypes.Tracing).ToList();
 

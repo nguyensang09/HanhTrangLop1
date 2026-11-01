@@ -72,7 +72,7 @@ public static partial class LessonBank
         // làm liền hàng chục bài cùng một kiểu. Mã bài giữ nguyên nên tiến độ của bé không đổi.
         for (var n = 1; n <= 10; n++)
         {
-            g.Stage = n <= 3 ? "Số 1 đến 3" : n <= 6 ? "Số 4 đến 6" : "Số 7 đến 10";
+            g.Stage = n <= 3 ? "Đếm từ 1 đến 3" : n <= 6 ? "Đếm từ 4 đến 6" : "Đếm từ 7 đến 10";
             if (n % 2 == 1) AddCount(n);
             else AddMake(n);
 

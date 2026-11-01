@@ -1,4 +1,5 @@
 using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.Lessons;
 using HanhTrangLop1.Application.MathWorld;
 using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
@@ -158,6 +159,8 @@ public class KidsController : Controller
     [HttpGet("skills/{id:guid}")]
     public async Task<IActionResult> Skill(Guid id)
     {
+        if (id == CurriculumCatalog.RetiredQuantityGroupId) return RedirectToAction(nameof(Skill), new { id = CurriculumCatalog.NumbersGroupId });
+
         var skillGroup = await _db.SkillGroups
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
@@ -1067,7 +1070,12 @@ public class KidsController : Controller
 
         if (CompletedGroup("chu-cai")) TryAward("badge-alphabet-star");
         if (CompletedGroup("chu-so")) TryAward("badge-number-explorer");
-        if (CompletedGroup("so-luong-toan")) TryAward("badge-math-whiz");
+        var publishedCodes = await _db.LearningItems.AsNoTracking()
+            .Where(x => x.Status == ContentStatus.Published && x.SkillGroup!.Code == "chu-so")
+            .Select(x => x.Code).ToListAsync();
+        var quantityCodes = publishedCodes.Where(LessonBank.IsQuantityLesson).ToHashSet();
+        if (quantityCodes.Count > 0 && uniqueProgress.Count(x => x.LearningItem is not null && quantityCodes.Contains(x.LearningItem.Code)) >= quantityCodes.Count)
+            TryAward("badge-math-whiz");
         if (CompletedGroup("tu-duy-logic")) TryAward("badge-logic-explorer");
         if (CompletedGroup("ky-nang-song")) TryAward("badge-habit-hero");
         if (CompletedGroup("ngon-ngu")) TryAward("badge-story-teller");

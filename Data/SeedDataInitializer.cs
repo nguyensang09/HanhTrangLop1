@@ -25,6 +25,7 @@ public static class SeedDataInitializer
         await SeedRolesAsync(roleManager);
         await SeedAdminAsync(userManager, configuration, logger);
         await SeedCurriculumCatalogAsync(db);
+        await SkillGroupMerge.MergeQuantityIntoNumbersAsync(db);
         await SeedRewardsAsync(db);
 
         var createdLessons = await LearningContentSeed.SeedAsync(db);
@@ -233,12 +234,12 @@ public static class SeedDataInitializer
             // Huy hiệu nhóm kỹ năng
             ("badge-alphabet-star", "Ngôi Sao Chữ Cái", "badge", "menu_book", "Chinh phục các bài học chữ cái tiếng Việt"),
             ("badge-handwriting-hero", "Bàn Tay Khéo Léo", "badge", "edit", "Hoàn thành các bài luyện tô nét chữ chuẩn"),
-            ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Làm quen các con số và đếm số lượng"),
+            ("badge-math-whiz", "Nhà Toán Học Nhí", "badge", "calculate", "Hoàn thành các bài đếm và so sánh trong Số và Đếm"),
             ("badge-logic-explorer", "Thám Tử Thông Minh", "badge", "psychology", "Vượt qua các câu đố tư duy logic"),
             ("badge-habit-hero", "Bé Ngoan Tự Lập", "badge", "volunteer_activism", "Học tốt các kỹ năng sống và thói quen"),
             ("badge-story-teller", "Nhà Kể Chuyện Nhí", "badge", "auto_stories", "Mở rộng vốn từ và nghe hiểu câu chuyện"),
             ("badge-shape-master", "Kiến Trúc Sư Tí Hon", "badge", "category", "Phân biệt thành thạo các hình khối và không gian"),
-            ("badge-number-explorer", "Nhà Thám Hiểm Con Số", "badge", "pin", "Hoàn thành hành trình Chữ số"),
+            ("badge-number-explorer", "Nhà Thám Hiểm Con Số", "badge", "pin", "Hoàn thành hành trình Số và Đếm"),
             ("badge-focus-star", "Siêu Sao Tập Trung", "badge", "psychology", "Hoàn thành hành trình Ghi nhớ và tập trung"),
             ("badge-world-explorer", "Nhà Khám Phá Nhí", "badge", "rocket_launch", "Hoàn thành hành trình Khám phá thế giới"),
             ("badge-math-plus", "Siêu Sao Phép Cộng", "badge", "add_circle", "Hoàn thành tất cả bài Phép cộng trên Đảo Toán Học"),

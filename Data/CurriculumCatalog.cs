@@ -4,6 +4,11 @@ namespace HanhTrangLop1.Data;
 
 public static class CurriculumCatalog
 {
+    public static readonly Guid NumbersGroupId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+    /// <summary>Nhóm "Số lượng và toán học" đã gộp vào <see cref="NumbersGroupId"/>; liên kết cũ tới nhóm này được chuyển về nhóm chung.</summary>
+    public static readonly Guid RetiredQuantityGroupId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
     public static readonly IReadOnlyList<CurriculumGroupDefinition> Groups =
     [
         Group("11111111-1111-1111-1111-111111111111", "chu-cai", "Chữ cái", "Nhận biết, phát âm, ghép và viết chữ cái tiếng Việt.", "spellcheck", "#ff8542", 1,
@@ -13,20 +18,18 @@ public static class CurriculumCatalog
             Topic("aaaaaaaa-1111-1111-1111-111111111114", "ghep-hoa-thuong", "Ghép chữ hoa - thường", 4),
             Topic("aaaaaaaa-1111-1111-1111-111111111115", "phan-biet-chu", "Phân biệt chữ gần giống", 5)),
 
-        Group("22222222-2222-2222-2222-222222222222", "chu-so", "Chữ số", "Nhận biết hình dạng, tên gọi, thứ tự và cách viết số.", "pin", "#ffd45a", 2,
+        Group("22222222-2222-2222-2222-222222222222", "chu-so", "Số và Đếm", "Nhận biết số, thứ tự, đếm, so sánh, tách gộp và cộng bớt trực quan.", "pin", "#ffd45a", 2,
             Topic("aaaaaaaa-2222-2222-2222-222222222222", "so-0-9", "Số 0-9", 1),
             Topic("aaaaaaaa-2222-2222-2222-222222222223", "so-10-20", "Số 10-20", 2),
             Topic("aaaaaaaa-2222-2222-2222-222222222224", "thu-tu-so", "Thứ tự, trước và sau", 3),
             Topic("aaaaaaaa-2222-2222-2222-222222222225", "phan-biet-so", "Phân biệt số gần giống", 4),
-            Topic("aaaaaaaa-2222-2222-2222-222222222226", "viet-so", "Viết chữ số", 5)),
-
-        Group("33333333-3333-3333-3333-333333333333", "so-luong-toan", "Số lượng và toán học", "Đếm, so sánh, tách gộp và cộng bớt trực quan.", "calculate", "#46e6b3", 3,
-            Topic("aaaaaaaa-3333-3333-3333-333333333333", "dem-so-luong", "Đếm số lượng", 1),
-            Topic("aaaaaaaa-3333-3333-3333-333333333334", "tao-so-luong", "Tạo đúng số lượng", 2),
-            Topic("aaaaaaaa-3333-3333-3333-333333333335", "ghep-so-luong", "Ghép số với lượng", 3),
-            Topic("aaaaaaaa-3333-3333-3333-333333333336", "so-sanh", "So sánh nhiều - ít", 4),
-            Topic("aaaaaaaa-3333-3333-3333-333333333337", "tach-gop", "Tách và gộp nhóm", 5),
-            Topic("aaaaaaaa-3333-3333-3333-333333333338", "cong-bot", "Cộng và bớt trực quan", 6)),
+            Topic("aaaaaaaa-2222-2222-2222-222222222226", "viet-so", "Viết chữ số", 5),
+            Topic("aaaaaaaa-3333-3333-3333-333333333333", "dem-so-luong", "Đếm số lượng", 6),
+            Topic("aaaaaaaa-3333-3333-3333-333333333334", "tao-so-luong", "Tạo đúng số lượng", 7),
+            Topic("aaaaaaaa-3333-3333-3333-333333333335", "ghep-so-luong", "Ghép số với lượng", 8),
+            Topic("aaaaaaaa-3333-3333-3333-333333333336", "so-sanh", "So sánh nhiều - ít", 9),
+            Topic("aaaaaaaa-3333-3333-3333-333333333337", "tach-gop", "Tách và gộp nhóm", 10),
+            Topic("aaaaaaaa-3333-3333-3333-333333333338", "cong-bot", "Cộng và bớt trực quan", 11)),
 
         Group("44444444-4444-4444-4444-444444444444", "tu-duy-logic", "Tư duy logic", "Phân loại, quy luật, ghép bóng và tìm điểm khác biệt.", "extension", "#67b7dc", 4,
             Topic("aaaaaaaa-4444-4444-4444-444444444444", "phan-loai", "Phân loại", 1),

@@ -656,6 +656,8 @@ document.querySelectorAll("[data-admin-learning-form]").forEach((form) => {
         }
         if (type === "ordering") {
             addLines("Th\u1ee9 t\u1ef1", read("SequenceItemsText"));
+            // Đoàn tàu thiếu toa: các toa có sẵn và đáp án nhiễu cũng có Voice.
+            JSON.parse(read("OrderRowLabelsJson") || "[]").forEach((label) => add("Trong d\u00e3y", label));
         }
         if (type === "classification") {
             addMappings("V\u1eadt", "Nh\u00f3m", read("ClassificationText"));

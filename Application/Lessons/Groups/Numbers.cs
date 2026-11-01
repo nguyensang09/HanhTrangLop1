@@ -87,30 +87,33 @@ public static partial class LessonBank
                 "🧮", pairs);
         }
 
-        // Dãy mẫu cùng chiều xếp nhưng khác số với bài, để bé thấy cách xếp mà không lộ đáp án.
-        string[] ExampleRow(int n, bool down)
+        // Dãy kết thúc ở số bé vừa học (n + 2), tối thiểu đủ 4 toa. Vị trí toa trống đổi theo từng bài, toa đầu luôn hiện để bé biết dãy bắt đầu từ đâu.
+        int[][] upBlanks = [[1, 2], [1, 3], [1, 3], [2, 4], [1, 2, 4], [1, 3, 4], [2, 3, 4]];
+        int[][] downBlanks = [[1, 3], [2, 3], [2, 4], [1, 3], [1, 3, 4], [2, 3], [1, 2, 4]];
+        var rowRetry = new Say("Con đọc lại cả dãy từ đầu rồi chọn lại nhé!", "Read the whole row from the start, then choose again!");
+        (int From, int To, string Decoy) RowRange(int n)
         {
-            var start = n >= 4 ? 1 : n + 3;
-            var row = Enumerable.Range(start, 3).Select(x => x.ToString());
-            return (down ? row.Reverse() : row).ToArray();
+            var to = Math.Max(n + 2, 4);
+            var from = Math.Max(1, to - 4);
+            return (from, to, (from > 1 ? from - 1 : to + 1).ToString());
         }
 
         void AddOrderUp(int n)
         {
             g.Topic = "thu-tu-so";
-            var seq = Enumerable.Range(n, 3).Select(x => x.ToString()).ToArray();
-            g.Order($"number-up-{n}", $"Xếp từ bé đến lớn: {n} đến {n + 2}",
-                new Say("Con xếp các số từ bé đến lớn nhé!", "Put the numbers in order from smallest to biggest!"),
-                "📶", seq, example: ExampleRow(n, false));
+            var (from, to, decoy) = RowRange(n);
+            g.OrderRow($"number-up-{n}", $"Xếp từ bé đến lớn: {from} đến {to}",
+                new Say("Các toa xếp số từ bé đến lớn. Con chọn số còn thiếu cho toa trống nhé!", "The train cars go from smallest to biggest. Choose the missing numbers for the empty cars!"),
+                "📶", Enumerable.Range(from, to - from + 1).Select(x => x.ToString()).ToArray(), upBlanks[n - 1], decoy, rowRetry);
         }
 
         void AddOrderDown(int n)
         {
             g.Topic = "thu-tu-so";
-            var seq = Enumerable.Range(n, 3).Select(x => x.ToString()).Reverse().ToArray();
-            g.Order($"number-down-{n}", $"Xếp từ lớn đến bé: {n + 2} về {n}",
-                new Say("Bây giờ con xếp các số từ lớn đến bé nhé!", "Now put the numbers in order from biggest to smallest!"),
-                "📉", seq, example: ExampleRow(n, true));
+            var (from, to, decoy) = RowRange(n);
+            g.OrderRow($"number-down-{n}", $"Xếp từ lớn đến bé: {to} về {from}",
+                new Say("Các toa xếp số từ lớn đến bé. Con chọn số còn thiếu cho toa trống nhé!", "The train cars go from biggest to smallest. Choose the missing numbers for the empty cars!"),
+                "📉", Enumerable.Range(from, to - from + 1).Reverse().Select(x => x.ToString()).ToArray(), downBlanks[n - 1], decoy, rowRetry);
         }
 
         // Mỗi số là một chặng ngắn trộn các kiểu thao tác; bài ghép và xếp thứ tự đan vào đúng lúc bé đã biết các số đó,

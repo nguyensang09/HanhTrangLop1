@@ -4,7 +4,6 @@
    Bố cục khác nhau theo thế giới:
      chu-cai              → đoàn tàu chạy ngang (mỗi toa là một bài)
      chu-so               → tòa nhà, mỗi ô cửa sổ là một bài
-     so-luong-toan        → đường mòn trong rừng, khúc gỗ lượn ngoằn ngoèo
      tu-duy-logic         → bảng ghép hình
      ky-nang-song         → phố nhỏ với những ngôi nhà bên đường
      ngon-ngu             → kệ sách
@@ -907,78 +906,6 @@
 .sw--chu-so .sw-chest { border-radius: 10px; border: 6px solid #fff3c4; min-height: 150px; }
 
 /* =========================================================================
-   3. SỐ LƯỢNG & TOÁN — ĐƯỜNG MÒN RỪNG HẠT DẺ (khúc gỗ lượn sóng)
-   ========================================================================= */
-.sw--so-luong-toan {
-    --sw-accent: #e07b24;
-    --sw-accent-deep: #a8520c;
-    --sw-soft: #ffe9c7;
-    --sw-bg:
-        radial-gradient(60% 20% at 0% 30%, rgba(76, 150, 70, .35), transparent 70%),
-        radial-gradient(60% 20% at 100% 60%, rgba(76, 150, 70, .35), transparent 70%),
-        linear-gradient(180deg, #c9efb0 0%, #a5dc8a 40%, #7cc576 80%, #5fae5d 100%);
-}
-.sw--so-luong-toan .sw-stage { --sw-stage-bg: rgba(240, 250, 226, .9); }
-.sw--so-luong-toan .sw-track {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    padding: 22px 12px 30px;
-    position: relative;
-    isolation: isolate;
-}
-/* con đường đất */
-.sw--so-luong-toan .sw-track::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    top: 6px; bottom: 6px; left: 50%;
-    width: min(76%, 470px);
-    transform: translateX(-50%);
-    border-radius: 140px;
-    background:
-        radial-gradient(circle at 20% 10%, rgba(255, 255, 255, .25) 0 3px, transparent 4px) 0 0 / 46px 52px,
-        linear-gradient(90deg, #c99a68, #ddb688 20%, #e5c296 50%, #ddb688 80%, #c99a68);
-    box-shadow: inset 0 0 0 6px rgba(120, 80, 40, .15);
-}
-.sw--so-luong-toan .sw-slot {
-    width: min(100%, 360px);
-    transform: translateX(calc(var(--w) * clamp(10px, 5.5vw, 64px)));
-}
-.sw--so-luong-toan .sw-node {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    min-height: 96px;
-    padding: 8px 16px 8px 8px;
-    border-radius: 60px 26px 26px 60px;
-    text-align: left;
-    background: rgba(255, 255, 255, .95);
-}
-.sw--so-luong-toan .sw-orb {
-    width: 84px; height: 84px;
-    border: 4px solid #6b4220;
-    background: radial-gradient(circle, #f6d7a3 0 18%, #e3b277 18% 22%, #f6d7a3 22% 38%, #e3b277 38% 42%, #f6d7a3 42% 58%, #d39a5c 58% 63%, #8a5a2b 63%);
-    font-size: 1.9rem;
-}
-.sw--so-luong-toan .sw-orb-icon.is-glyph { color: #5a3410; }
-.sw--so-luong-toan .sw-info { justify-items: start; text-align: left; }
-.sw--so-luong-toan .sw-flag { left: 92px; transform: none; animation-name: sw-flag-plain; }
-.sw--so-luong-toan .is-done .sw-check { background: #a8520c; }
-.sw--so-luong-toan .sw-side {
-    position: absolute;
-    top: 50%;
-    font-size: clamp(1.8rem, 4vw, 2.6rem);
-    line-height: 1;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
-.sw--so-luong-toan .sw-side--l { right: calc(100% + 10px); }
-.sw--so-luong-toan .sw-side--r { left: calc(100% + 10px); }
-.sw--so-luong-toan .sw-slot--chest .sw-chest { flex-direction: row; gap: 12px; min-height: 96px; border-radius: 60px; }
-
-/* =========================================================================
    4. TƯ DUY LOGIC — BẢNG GHÉP HÌNH
    ========================================================================= */
 .sw--tu-duy-logic {
@@ -1559,9 +1486,6 @@
     .sw-stage-meta { order: 3; flex-basis: 100%; padding-left: 60px; }
     .sw-track { padding-left: 10px; padding-right: 10px; }
 
-    .sw--so-luong-toan .sw-side { display: none; }
-    .sw--so-luong-toan .sw-slot { width: calc(100% - 96px); }
-    .sw--so-luong-toan .sw-orb { width: 72px; height: 72px; font-size: 1.6rem; }
 
     .sw--ky-nang-song .sw-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .sw--tu-duy-logic .sw-track { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 6px 10px; }

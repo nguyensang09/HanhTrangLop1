@@ -29,8 +29,7 @@ public sealed record KidsModuleCard(string Title, string Emoji, string Theme, st
         KidsModuleKeys.Bilingual => new("Nghe Song Ngữ", "🎧", "kh-tone-purple", "Phát Âm Bản Xứ", "Luyện nghe chuẩn ABC & Số 0-20"),
         KidsModuleKeys.Rewards => new("Kho Quà Của Bé", "🏆", "kh-tone-gold", $"{stars} Sao Vàng ⭐", "Mở rương báu, đổi quà & huy hiệu"),
         "chu-cai" => new(module.Name, "📖", "kh-tone-coral", "33 Chữ Việt – Anh & Nét", "Mặt chữ, nét chuẩn & phát âm"),
-        "chu-so" => new(module.Name, "🔢", "kh-tone-emerald", "Chữ Số 0 - 20", "Đếm số lượng & tập viết số đẹp"),
-        "so-luong-toan" => new(module.Name, "🧮", "kh-tone-sky", "Đếm & So Sánh", "So sánh lớn bé, tách gộp nhóm"),
+        "chu-so" => new(module.Name, "🔢", "kh-tone-emerald", "Số 0 - 20 & Đếm", "Nhận biết số, đếm, so sánh & tách gộp"),
         "tu-duy-logic" => new(module.Name, "💡", "kh-tone-cyan", "Tư Duy & Ghép Bóng", "Quy luật, phân loại & tư duy"),
         "ky-nang-song" => new(module.Name, "💖", "kh-tone-rose", "Kỹ Năng & Tự Lập", "Tự phục vụ, an toàn & cảm xúc"),
         "ngon-ngu" => new(module.Name, "📚", "kh-tone-purple", "Vốn Từ & Âm Vần", "Nghe hiểu, kể chuyện & từ vựng"),
@@ -50,7 +49,7 @@ public sealed class KidsModuleService
     private static readonly string[] PinnedKeys = [KidsModuleKeys.Today];
 
     /// <summary>Thứ tự mặc định của các module không ghim, khi quản trị viên chưa sắp xếp.</summary>
-    private static readonly string[] DefaultLeading = [KidsModuleKeys.Numbers, MathCurriculum.SkillGroupCode, KidsModuleKeys.Tracing, "chu-cai", "so-luong-toan", KidsModuleKeys.Games, KidsModuleKeys.Bilingual];
+    private static readonly string[] DefaultLeading = [KidsModuleKeys.Numbers, MathCurriculum.SkillGroupCode, KidsModuleKeys.Tracing, "chu-cai", KidsModuleKeys.Games, KidsModuleKeys.Bilingual];
 
     private static readonly (string Key, string Name, string Icon)[] Features =
     [

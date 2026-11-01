@@ -1288,26 +1288,6 @@
         scheduleDraw();
     };
 
-    // Dãy mẫu đã xếp sẵn (khác số với bài): mỗi số kèm số chấm tương ứng, mũi tên chỉ chiều xếp để bé hình dung dãy số.
-    const orderExample = Array.isArray(payload.orderExample) ? payload.orderExample.map(String) : [];
-    const appendOrderExample = () => {
-        if (orderExample.length === 0) return;
-        const card = el("div", "lw-example");
-        card.setAttribute("role", "img");
-        card.setAttribute("aria-label", `Ví dụ xếp số: ${orderExample.join(", ")}`);
-        card.append(el("span", "lw-example-tag", "Ví dụ"));
-        orderExample.forEach((value, index) => {
-            if (index > 0) card.append(icon("arrow_forward", "lw-example-arrow"));
-            const step = el("span", "lw-example-step");
-            step.append(el("strong", "lw-example-num", value));
-            const dots = el("span", "lw-example-dots");
-            for (let dot = 0; dot < Math.min(Number(value) || 0, 10); dot += 1) dots.append(el("i"));
-            step.append(dots);
-            card.append(step);
-        });
-        runtime.append(card);
-    };
-
     // Sắp xếp thứ tự: hàng ô số 1-2-3 ở trên, các thẻ ở dưới. Chạm thẻ là thẻ bay vào ô trống đầu tiên
     // (chạm lại thẻ đã xếp để trả về), hoặc kéo thẻ thả vào đúng ô (thả vào ô đã có thẻ thì đổi chỗ).
     // Đáp án vẫn là chuỗi "a|b|c" theo thứ tự ô.
@@ -1316,9 +1296,8 @@
         const slots = new Array(items.length).fill(null);
 
         runtime.append(goalPill("format_list_numbered", "Xếp theo thứ tự"));
-        appendOrderExample();
 
-        const board = el("div", `lw-seq${orderExample.length ? " has-example" : ""}`);
+        const board = el("div", "lw-seq");
         board.dataset.count = String(items.length);
         const track = el("div", "lw-seq-track");
         track.setAttribute("aria-label", "Thứ tự bé đã xếp");
@@ -2114,7 +2093,6 @@
     const renderStairs = () => {
         let next = 0;
         runtime.append(goalPill("stairs", "Chạm lần lượt để leo cầu thang"));
-        appendOrderExample();
         const stairs = el("div", "lw-stairs");
         stairs.dataset.count = String(orderedItems.length);
         const steps = orderedItems.map((_, index) => {
@@ -2273,7 +2251,6 @@
     const renderCarriages = () => {
         let next = 0;
         runtime.append(goalPill("train", "Chạm lần lượt để nối toa tàu"));
-        appendOrderExample();
         const train = el("div", "lw-carriages");
         train.append(el("span", "lw-carriage-engine", "🚂"));
         const cars = orderedItems.map(() => {
@@ -2304,6 +2281,67 @@
             pool.append(tile);
         });
         finishGrid(pool);
+        runtime.append(train, pool);
+    };
+
+    // Đoàn tàu thiếu toa: cả dãy hiện sẵn, chạm đáp án là đáp án vào toa trống đầu tiên, chạm lại toa vừa điền để đổi.
+    // Điền đủ toa thì gửi lên chấm như mọi bài sắp xếp, nên chọn sai vẫn được tính là một lần làm sai.
+    const renderGapTrain = () => {
+        const row = (payload.orderRow || []).map((value) => String(value ?? "").trim());
+        const options = shuffleForDisplay([...orderedItems, ...(payload.orderDecoys || [])]);
+        const blanks = [];
+        const filled = [];
+        runtime.append(goalPill("train", "Chọn đáp án cho toa trống"));
+        const train = el("div", "lw-carriages lw-gaptrain");
+        train.append(el("span", "lw-carriage-engine", "🚂"));
+        const pool = tileGrid("lw-seq-pool", options);
+        const draw = () => {
+            const next = filled.indexOf(null);
+            blanks.forEach((car, index) => {
+                car.textContent = filled[index]?.value ?? "";
+                car.classList.toggle("is-done", filled[index] !== null);
+                car.classList.toggle("is-next", index === next);
+            });
+        };
+        row.forEach((value) => {
+            const car = el("button", "lw-carriage", value);
+            car.type = "button";
+            if (value) {
+                car.classList.add("is-given");
+                car.addEventListener("click", () => playAnswerAudio(value));
+            } else {
+                const index = blanks.length;
+                car.setAttribute("aria-label", `Toa trống ${index + 1}`);
+                car.addEventListener("click", () => {
+                    if (filled[index] === null) return;
+                    filled[index].tile.hidden = false;
+                    filled[index] = null;
+                    draw();
+                    setAnswer("", false);
+                });
+                blanks.push(car);
+                filled.push(null);
+            }
+            train.append(car);
+        });
+        options.forEach((option, index) => {
+            const value = String(option);
+            const tile = makeTile(value, "lw-tile--seq");
+            tile.style.setProperty("--i", String(index));
+            tile.addEventListener("click", () => {
+                const free = filled.indexOf(null);
+                if (free < 0) return;
+                filled[free] = { value, tile };
+                tile.hidden = true;
+                playAnswerAudio(value);
+                draw();
+                flash(blanks[free], "is-gulp");
+                if (filled.every(Boolean)) setAnswer(filled.map((entry) => entry.value).join("|"), true, true, 500);
+            });
+            pool.append(tile);
+        });
+        finishGrid(pool);
+        draw();
         runtime.append(train, pool);
     };
 
@@ -2425,6 +2463,7 @@
         homes: () => renderHomes(),
         stairs: () => renderStairs(),
         carriages: () => renderCarriages(),
+        gaptrain: () => renderGapTrain(),
         frame: () => renderFrame(),
         gather: () => renderGather(),
         cells: () => renderCells(),

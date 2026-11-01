@@ -82,8 +82,7 @@ public static class ActivityTemplateCatalog
         new Dictionary<string, TopicActivityRule>(StringComparer.OrdinalIgnoreCase)
         {
             ["chu-cai"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.ListenAndChoose, InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.Classification),
-            ["chu-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.MultiSelect),
-            ["so-luong-toan"] = Rule(InteractionTypes.Counting, InteractionTypes.QuantityBuilder, InteractionTypes.Comparison, InteractionTypes.SingleChoice, InteractionTypes.DragDrop, InteractionTypes.MultiSelect),
+            ["chu-so"] = RuleWithTracing(InteractionTypes.SingleChoice, InteractionTypes.ListenAndChoose, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.Classification, InteractionTypes.MultiSelect, InteractionTypes.Counting, InteractionTypes.QuantityBuilder, InteractionTypes.Comparison, InteractionTypes.DragDrop),
             ["tu-duy-logic"] = Rule(InteractionTypes.Classification, InteractionTypes.Ordering, InteractionTypes.Matching, InteractionTypes.MultiSelect, InteractionTypes.SingleChoice),
             ["ky-nang-song"] = Rule(InteractionTypes.StoryChoice, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification, InteractionTypes.Matching),
             ["ngon-ngu"] = Rule(InteractionTypes.ListenAndChoose, InteractionTypes.StoryChoice, InteractionTypes.Matching, InteractionTypes.Ordering, InteractionTypes.SingleChoice, InteractionTypes.MultiSelect, InteractionTypes.Classification),

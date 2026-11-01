@@ -2741,9 +2741,16 @@ public class AdminController : Controller
     {
         if (string.IsNullOrWhiteSpace(oldJson)) return newJson;
         if (JsonNode.Parse(oldJson) is not JsonObject old || JsonNode.Parse(newJson) is not JsonObject updated) return newJson;
-        foreach (var key in new[] { "speech", "visuals", "scene", "mapIcon", "stage", "bankVersion", "play", "playTarget", "wordPicture", "wordText", "orderExample", "focusVisual" })
+        foreach (var key in new[] { "speech", "visuals", "scene", "mapIcon", "stage", "bankVersion", "play", "playTarget", "wordPicture", "wordText", "orderRow", "orderDecoys", "focusVisual" })
         {
             if (old[key] is { } value && !updated.ContainsKey(key)) updated[key] = value.DeepClone();
+        }
+        // Đổi đáp án của đoàn tàu thiếu toa thì dãy cũ không còn khớp: bài trở về cách sắp xếp thông thường.
+        if (updated["orderRow"] is not null && updated["items"]?.ToJsonString() != old["items"]?.ToJsonString())
+        {
+            updated.Remove("orderRow");
+            updated.Remove("orderDecoys");
+            updated.Remove("play");
         }
         return updated.ToJsonString();
     }
@@ -3103,6 +3110,7 @@ public class AdminController : Controller
         {
             Id = item.Id,
             SpeechMapJson = question is null ? "{}" : (JsonNode.Parse(question.PayloadJson) as JsonObject)?["speech"]?.ToJsonString() ?? "{}",
+            OrderRowLabelsJson = question is null ? "[]" : JsonSerializer.Serialize(ReadJsonStringArray(payloadJson, "orderRow").Concat(ReadJsonStringArray(payloadJson, "orderDecoys")).Where(x => !string.IsNullOrWhiteSpace(x))),
             Status = item.Status,
             IsCompatible = ActivityTemplateCatalog.IsItemAllowed(item),
             Title = item.Title,

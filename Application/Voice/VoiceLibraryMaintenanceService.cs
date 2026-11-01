@@ -2997,6 +2997,9 @@ public sealed class VoiceLibraryMaintenanceService
     {
         foreach (var value in ReadJsonStringArray(payload, "choices")) yield return value;
         foreach (var value in ReadJsonStringArray(payload, "items")) yield return value;
+        // Đoàn tàu thiếu toa: toa có sẵn chạm vào là nghe, chuỗi rỗng là toa trống.
+        foreach (var value in ReadJsonStringArray(payload, "orderRow").Where(x => !string.IsNullOrWhiteSpace(x))) yield return value;
+        foreach (var value in ReadJsonStringArray(payload, "orderDecoys")) yield return value;
         foreach (var value in ReadJsonStringArray(payload, "categories")) yield return value;
         foreach (var value in ReadJsonMappingLabels(payload, "pairs")) yield return value;
         foreach (var value in ReadJsonMappingLabels(payload, "mappings")) yield return value;

@@ -66,6 +66,7 @@ public class CreateChoiceItemViewModel
 
     /// <summary>Bảng lời đọc của bài (chữ hiển thị → [lời Việt, lời Anh]) để bảng Voice tra đúng câu bé nghe.</summary>
     public string SpeechMapJson { get; set; } = "{}";
+    public string OrderRowLabelsJson { get; set; } = "[]";
 
     // Không đặt giá trị mặc định: nhờ vậy bộ điều khiển phân biệt được "giáo viên chọn
     // trạng thái Nháp" và "biểu mẫu không gửi trường trạng thái". Trường hợp sau sẽ giữ

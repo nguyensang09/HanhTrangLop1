@@ -1,5 +1,6 @@
 using System.Text.Json;
 using HanhTrangLop1.Application.Learning;
+using HanhTrangLop1.Application.Lessons;
 using HanhTrangLop1.Application.Voice;
 using HanhTrangLop1.Data;
 using HanhTrangLop1.Infrastructure;
@@ -35,7 +36,7 @@ public class GamesController : Controller
         new("balloon-word", "Khinh Khí Cầu Ghép Vần", "Kéo chữ và dấu thanh để ghép thành tiếng, thành từ có hình minh họa.",
             "letter", "☁️", "Ghép âm và dấu thanh", "/images/games/bg-balloon.png", "btn-3d-blue", 40, "ngon-ngu"),
         new("number-train", "Đoàn Tàu Chở Số", "Tìm toa số còn thiếu, xếp toa theo thứ tự và đếm hàng hóa trên tàu.",
-            "number", "🚂", "Số lượng và thứ tự", "/images/games/bg-train.png", "btn-3d-brown", 40, "so-luong-toan")
+            "number", "🚂", "Số lượng và thứ tự", "/images/games/bg-train.png", "btn-3d-brown", 40, "chu-so")
     ];
 
     /// <summary>Thứ tự 29 chữ cái trong trò Bắn bong bóng (màn 1–29), sau đó là số 0–20 (màn 30–50).</summary>
@@ -325,7 +326,7 @@ public class GamesController : Controller
         var recent = await _db.ChildLessonProgresses.AsNoTracking()
             .Where(x => x.ChildProfileId == child.Id && x.ProgressEpoch == child.ProgressEpoch && x.FirstCompletedAt != null)
             .OrderByDescending(x => x.LastAttemptedAt)
-            .Select(x => new { x.LearningItem!.Title, x.LearningItem.ContentJson, GroupCode = x.LearningItem.SkillGroup!.Code })
+            .Select(x => new { x.LearningItem!.Title, x.LearningItem.ContentJson, x.LearningItem.Code, GroupCode = x.LearningItem.SkillGroup!.Code })
             .FirstOrDefaultAsync();
         if (recent is null) return null;
 
@@ -335,9 +336,11 @@ public class GamesController : Controller
         {
             "chu-cai" when Array.IndexOf(BubbleLetters, icon.ToUpperInvariant()) is var i && i >= 0 =>
                 ("bubble", i + 1, $"Con vừa học chữ {icon.ToUpperInvariant()}. Mình bắn bong bóng chữ {icon.ToUpperInvariant()} để nhớ thật lâu nhé!"),
+            "chu-so" when LessonBank.IsQuantityLesson(recent.Code) =>
+                ("number-train", Next("number-train"), "Con vừa luyện đếm và so sánh. Lên đoàn tàu chở số đếm hàng nào!"),
             "chu-so" when int.TryParse(icon, out var n) && n is >= 0 and <= 20 =>
                 ("bubble", 30 + n, $"Con vừa học số {n}. Mình bắn bong bóng số {n} cho vui nhé!"),
-            "so-luong-toan" or "toan-hoc" =>
+            "toan-hoc" =>
                 ("number-train", Next("number-train"), "Con vừa luyện đếm và so sánh. Lên đoàn tàu chở số đếm hàng nào!"),
             "ngon-ngu" =>
                 ("balloon-word", Next("balloon-word"), "Con vừa học từ mới. Mình ghép vần trên khinh khí cầu nhé!"),

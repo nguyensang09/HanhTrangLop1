@@ -22,13 +22,21 @@ public static partial class LessonBank
                 retry: new Say("Chữ in hoa to và cao, chữ in thường nhỏ hơn con nhé!", "Capital letters are big and tall. Small letters are smaller!"));
         }
 
-        string[][] runs = [["A", "Ă", "Â"], ["B", "C", "D"], ["E", "Ê", "G"], ["O", "Ô", "Ơ"], ["U", "Ư", "V"]];
+        (string[] Row, int[] Blanks, string Decoy)[] runs =
+        [
+            (["A", "Ă", "Â", "B", "C"], [1, 3], "D"),
+            (["B", "C", "D", "Đ", "E"], [2, 4], "Ê"),
+            (["E", "Ê", "G", "H", "I"], [1, 3], "K"),
+            (["N", "O", "Ô", "Ơ", "P"], [2, 3], "Q"),
+            (["T", "U", "Ư", "V", "X"], [2, 4], "Y")
+        ];
         for (var i = 0; i < runs.Length; i++)
         {
-            g.Order($"x-letter-order-{i + 1}", $"Xếp chữ theo bảng chữ cái: {string.Join(", ", runs[i])}",
-                new Say("Con xếp các chữ theo đúng thứ tự trong bảng chữ cái nhé!", "Put the letters in alphabet order!"),
-                "🔤", runs[i],
-                retry: new Say("Con đọc lại bảng chữ cái từ đầu rồi xếp nhé!", "Say the alphabet from the start, then try again!"));
+            var run = runs[i];
+            g.OrderRow($"x-letter-order-{i + 1}", $"Bảng chữ cái: {run.Row[0]} đến {run.Row[^1]}",
+                new Say("Các toa xếp theo bảng chữ cái. Con chọn chữ còn thiếu cho toa trống nhé!", "The train cars follow the alphabet. Choose the missing letters for the empty cars!"),
+                "🔤", run.Row, run.Blanks, run.Decoy,
+                new Say("Con đọc lại bảng chữ cái từ đầu rồi chọn lại nhé!", "Say the alphabet from the start, then try again!"));
         }
 
         g.Multi("x-letter-multi-hat", "Những chữ đội mũ",
